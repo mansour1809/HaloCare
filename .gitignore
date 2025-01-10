@@ -398,3 +398,17 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# ASP.NET Core build artifacts
+bin/           # קבצי בינארי
+obj/           # קבצים זמניים
+*.dll          # קבצי ספריות דינמיות
+*.exe          # קבצי הרצה
+appsettings.json  # קובץ הגדרות רגיש
+
+# React build artifacts
+node_modules/  # תיקיית התלויות
+build/         # פלט הבנייה
+.env           # קבצי סביבה פרטיים
+
+
