@@ -11,9 +11,13 @@ namespace halocare.Models
         public string DocType { get; set; }
         public string DocPath { get; set; }
         public DateTime UploadDate { get; set; }
+        public int Version { get; set; }
+        public bool IsLatest { get; set; }
 
         // Navigation properties
         public virtual Kid Kid { get; set; }
         public virtual Employee Employee { get; set; }
+
+
     }
 }
