@@ -1,8 +1,7 @@
-﻿using halocare.Models;
+﻿using System;
 
-namespace halocare.Models
+namespace halocare.DAL.Models
 {
-
     public class Treatment
     {
         public int TreatmentId { get; set; }
@@ -13,9 +12,6 @@ namespace halocare.Models
         public string Description { get; set; }
         public int CooperationLevel { get; set; }
         public string Status { get; set; }
-
-        // Navigation properties
-        public virtual Kid Kid { get; set; }
-        public virtual Employee Employee { get; set; }
+        public string Highlight { get; set; }
     }
 }

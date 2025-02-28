@@ -1,14 +1,11 @@
-﻿using halocare.Models;
+﻿using System;
 
-namespace halocare.Models
+namespace halocare.DAL.Models
 {
     public class HomeVisit
     {
         public int VisitId { get; set; }
         public DateTime VisitDate { get; set; }
         public int KidId { get; set; }
-
-        // Navigation property
-        public virtual Kid Kid { get; set; }
     }
 }
