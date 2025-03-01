@@ -4,7 +4,7 @@
     using halocare.DAL.Models;
     using Microsoft.Extensions.Configuration;
 
-    namespace halocare.DAL.Repositories
+    namespace halocare.DAL.Repositories 
     {
         public class KidRepository : DBService
         {
