@@ -2,85 +2,121 @@
 using System.Collections.Generic;
 using System.Data;
 using halocare.DAL.Models;
+using halocare.DAL;
 using Microsoft.Extensions.Configuration;
 
 namespace halocare.DAL.Repositories
 {
-    public class CityRepository : DBService
+    public class AnswerToQuestionRepository : DBService
     {
-        public CityRepository(IConfiguration configuration) : base(configuration) { }
+        public AnswerToQuestionRepository(IConfiguration configuration) : base(configuration) { }
 
-        public List<City> GetAllCities()
-        {
-            List<City> cities = new List<City>();
-            DataTable dataTable = ExecuteQuery("GetAllCities");
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                City city = new City
-                {
-                    CityName = row["CityName"].ToString()
-                };
-
-                cities.Add(city);
-            }
-
-            return cities;
-        }
-
-        public City GetCityByName(string cityName)
+        public List<AnswerToQuestion> GetAnswersByKidAndForm(int kidId, int formId)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                { "@CityName", cityName }
+                { "@KidId", kidId },
+                { "@FormId", formId }
             };
 
-            DataTable dataTable = ExecuteQuery("GetCityByName", parameters);
+            List<AnswerToQuestion> answers = new List<AnswerToQuestion>();
+            DataTable dataTable = ExecuteQuery("GetAnswersByKidAndForm", parameters);
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                AnswerToQuestion answer = new AnswerToQuestion
+                {
+                    AnswerId = Convert.ToInt32(row["AnswerId"]),
+                    KidId = Convert.ToInt32(row["KidId"]),
+                    FormId = Convert.ToInt32(row["FormId"]),
+                    QuestionNo = Convert.ToInt32(row["QuestionNo"]),
+                    AnsDate = Convert.ToDateTime(row["AnsDate"]),
+                    Answer = row["Answer"].ToString(),
+                    Other = row["Other"].ToString(),
+                    EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
+                    ByParent = Convert.ToBoolean(row["ByParent"])
+                };
+
+                answers.Add(answer);
+            }
+
+            return answers;
+        }
+
+        public AnswerToQuestion GetAnswerById(int answerId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@AnswerId", answerId }
+            };
+
+            DataTable dataTable = ExecuteQuery("GetAnswerById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
 
             DataRow row = dataTable.Rows[0];
 
-            City city = new City
+            AnswerToQuestion answer = new AnswerToQuestion
             {
-                CityName = row["CityName"].ToString()
+                AnswerId = Convert.ToInt32(row["AnswerId"]),
+                KidId = Convert.ToInt32(row["KidId"]),
+                FormId = Convert.ToInt32(row["FormId"]),
+                QuestionNo = Convert.ToInt32(row["QuestionNo"]),
+                AnsDate = Convert.ToDateTime(row["AnsDate"]),
+                Answer = row["Answer"].ToString(),
+                Other = row["Other"].ToString(),
+                EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
+                ByParent = Convert.ToBoolean(row["ByParent"])
             };
 
-            return city;
+            return answer;
         }
 
-        public bool AddCity(City city)
+        public int AddAnswer(AnswerToQuestion answer)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                { "@CityName", city.CityName }
+                { "@KidId", answer.KidId },
+                { "@FormId", answer.FormId },
+                { "@QuestionNo", answer.QuestionNo },
+                { "@AnsDate", answer.AnsDate },
+                { "@Answer", answer.Answer },
+                { "@Other", answer.Other },
+                { "@EmployeeId", answer.EmployeeId },
+                { "@ByParent", answer.ByParent }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddCity", parameters);
+            return Convert.ToInt32(ExecuteScalar("AddAnswer", parameters));
+        }
+
+        public bool UpdateAnswer(AnswerToQuestion answer)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@AnswerId", answer.AnswerId },
+                { "@KidId", answer.KidId },
+                { "@FormId", answer.FormId },
+                { "@QuestionNo", answer.QuestionNo },
+                { "@AnsDate", answer.AnsDate },
+                { "@Answer", answer.Answer },
+                { "@Other", answer.Other },
+                { "@EmployeeId", answer.EmployeeId },
+                { "@ByParent", answer.ByParent }
+            };
+
+            int rowsAffected = ExecuteNonQuery("UpdateAnswer", parameters);
             return rowsAffected > 0;
         }
 
-        public bool UpdateCity(string oldCityName, string newCityName)
+        public bool DeleteAnswer(int answerId)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                { "@OldCityName", oldCityName },
-                { "@NewCityName", newCityName }
+                { "@AnswerId", answerId }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateCity", parameters);
-            return rowsAffected > 0;
-        }
-
-        public bool DeleteCity(string cityName)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>
-            {
-                { "@CityName", cityName }
-            };
-
-            int rowsAffected = ExecuteNonQuery("DeleteCity", parameters);
+            int rowsAffected = ExecuteNonQuery("DeleteAnswer", parameters);
             return rowsAffected > 0;
         }
     }
