@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
-using System.Reflection.Metadata;
+using halocare.DAL.Models;
 
 namespace halocare.Controllers
 {
@@ -22,7 +22,7 @@ namespace halocare.Controllers
 
         // GET: api/Documents
         [HttpGet]
-        public ActionResult<IEnumerable<Document>> GetDocuments()
+        public ActionResult<IEnumerable<Documentt>> GetDocuments()
         {
             try
             {
@@ -36,7 +36,7 @@ namespace halocare.Controllers
 
         // GET: api/Documents/5
         [HttpGet("{id}")]
-        public ActionResult<Document> GetDocument(int id)
+        public ActionResult<Documentt> GetDocument(int id)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace halocare.Controllers
 
         // GET: api/Documents/kid/5
         [HttpGet("kid/{kidId}")]
-        public ActionResult<IEnumerable<Document>> GetDocumentsByKidId(int kidId)
+        public ActionResult<IEnumerable<Documentt>> GetDocumentsByKidId(int kidId)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace halocare.Controllers
 
         // POST: api/Documents
         [HttpPost]
-        public ActionResult<Document> PostDocument([FromForm] DocumentUploadModel model)
+        public ActionResult<Documentt> PostDocument([FromForm] DocumentUploadModel model)
         {
             try
             {
@@ -175,7 +175,7 @@ namespace halocare.Controllers
 
         // PUT: api/Documents/5
         [HttpPut("{id}")]
-        public IActionResult PutDocument(int id, Document document)
+        public IActionResult PutDocument(int id, Documentt    document)
         {
             if (id != document.DocId)
             {
@@ -235,7 +235,7 @@ namespace halocare.Controllers
 
     public class DocumentUploadModel
     {
-        public Document Document { get; set; }
+        public Documentt Document { get; set; }
         public IFormFile File { get; set; }
     }
 }

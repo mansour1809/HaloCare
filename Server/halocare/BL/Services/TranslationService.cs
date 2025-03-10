@@ -14,111 +14,139 @@ namespace halocare.BL.Services
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly Dictionary<string, Dictionary<string, string>> _specialTerms;
+        private readonly ILogger<TranslationService> _logger;
 
-        public TranslationService(IConfiguration configuration)
+        public TranslationService(IConfiguration configuration, ILogger<TranslationService> logger)
         {
             _configuration = configuration;
             _httpClient = new HttpClient();
             _apiKey = _configuration.GetValue<string>("GoogleTranslateApiKey");
+            _logger = logger;
 
-            // מילון מונחים מיוחדים לתרגום
+            // מילון מונחים מיוחדים לתרגום - מורחב עם מושגים מתחום הטיפול בילדים
             _specialTerms = new Dictionary<string, Dictionary<string, string>>
-            {
-                // מעברית לערבית
-                {"he-ar", new Dictionary<string, string>
-                    {
-                        {"תש\"ה", "خطة تنمية إعادة التأهيل"},
-                        {"גן הילד", "روضة الطفل"},
-                        {"טיפול רגשי", "علاج عاطفي"},
-                        {"פיזיותרפיה", "العلاج الطبيعي"},
-                        {"ריפוי בעיסוק", "العلاج المهني"},
-                        {"קלינאית תקשורת", "معالجة النطق واللغة"}
-                    }
-                },
-                
-                // מעברית לרוסית
-                {"he-ru", new Dictionary<string, string>
-                    {
-                        {"תש\"ה", "План реабилитационного развития"},
-                        {"גן הילד", "Детский сад"},
-                        {"טיפול רגשי", "Эмоциональная терапия"},
-                        {"פיזיותרפיה", "Физиотерапия"},
-                        {"ריפוי בעיסוק", "Трудотерапия"},
-                        {"קלינאית תקשורת", "Логопед"}
-                    }
-                },
-                
-                // מעברית לאמהרית
-                {"he-am", new Dictionary<string, string>
-                    {
-                        {"תש\"ה", "የመልሶ ማቋቋም ልማት እቅድ"},
-                        {"גן הילד", "የህጻናት መዋያ"},
-                        {"טיפול רגשי", "የስሜት ሕክምና"},
-                        {"פיזיותרפיה", "ፊዚዮቴራፒ"},
-                        {"ריפוי בעיסוק", "ሙያዊ ሕክምና"},
-                        {"קלינאית תקשורת", "የንግግር ሕክምና"}
-                    }
+        {
+            // מעברית לערבית
+            {"he-ar", new Dictionary<string, string>
+                {
+                    {"תש\"ה", "خطة تنمية إعادة التأهيل"},
+                    {"גן הילד", "روضة الطفل"},
+                    {"טיפול רגשי", "العلاج العاطفي"},
+                    {"פיזיותרפיה", "العلاج الطبيعي"},
+                    {"ריפוי בעיסוק", "العلاج المهني"},
+                    {"קלינאית תקשורת", "معالج النطق واللغة"},
+                    {"טיפול התפתחותי", "العلاج التنموي"},
+                    {"פגישת אינטייק", "لقاء استقبال أولي"},
+                    {"מעקב נוכחות", "تتبع الحضور"},
+                    {"דוח טיפול", "تقرير العلاج"},
+                    {"ביקור בית", "زيارة منزلية"}
                 }
-            };
+            },
+            
+            // מעברית לרוסית
+            {"he-ru", new Dictionary<string, string>
+                {
+                    {"תש\"ה", "План реабилитационного развития"},
+                    {"גן הילד", "Детский сад"},
+                    {"טיפול רגשי", "Эмоциональная терапия"},
+                    {"פיזיותרפיה", "Физиотерапия"},
+                    {"ריפוי בעיסוק", "Трудотерапия"},
+                    {"קלינאית תקשורת", "Логопед"},
+                    {"טיפול התפתחותי", "Терапия развития"},
+                    {"פגישת אינטייק", "Первичная встреча"},
+                    {"מעקב נוכחות", "Учет посещаемости"},
+                    {"דוח טיפול", "Отчет о лечении"},
+                    {"ביקור בית", "Домашний визит"}
+                }
+            },
+            
+            // מעברית לאמהרית
+            {"he-am", new Dictionary<string, string>
+                {
+                    {"תש\"ה", "የመልሶ ማቋቋም ልማት እቅድ"},
+                    {"גן הילד", "የህጻናት መዋያ"},
+                    {"טיפול רגשי", "የስሜት ሕክምና"},
+                    {"פיזיותרפיה", "ፊዚዮቴራፒ"},
+                    {"ריפוי בעיסוק", "የሙያ ሕክምና"},
+                    {"קלינאית תקשורת", "የንግግር ሕክምና"},
+                    {"טיפול התפתחותי", "የእድገት ሕክምና"},
+                    {"פגישת אינטייק", "የመጀመሪያ ግንኙነት"},
+                    {"מעקב נוכחות", "የመገኘት መቆጣጠሪያ"},
+                    {"דוח טיפול", "የህክምና ሪፖርት"},
+                    {"ביקור בית", "የቤት ጉብኝት"}
+                }
+            }
+        };
         }
 
         public async Task<string> TranslateTextAsync(string text, string sourceLanguage, string targetLanguage)
         {
-            // החלפת מונחים מיוחדים לפני התרגום
-            string textToTranslate = text;
-            string langPair = $"{sourceLanguage}-{targetLanguage}";
-
-            if (_specialTerms.ContainsKey(langPair))
+            try
             {
-                foreach (var term in _specialTerms[langPair])
+                // החלפת מונחים מיוחדים לפני התרגום
+                string textToTranslate = text;
+                string langPair = $"{sourceLanguage}-{targetLanguage}";
+                Dictionary<string, string> specialTermReplacements = new Dictionary<string, string>();
+
+                if (_specialTerms.ContainsKey(langPair))
                 {
-                    textToTranslate = textToTranslate.Replace(term.Key, $"___SPECIAL_TERM_{term.Key}___");
-                }
-            }
-
-            // בניית הבקשה ל-Google Cloud Translation API
-            string url = $"https://translation.googleapis.com/language/translate/v2?key={_apiKey}";
-
-            var requestBody = new
-            {
-                q = textToTranslate,
-                source = sourceLanguage,
-                target = targetLanguage,
-                format = "text"
-            };
-
-            var content = new StringContent(
-                JsonSerializer.Serialize(requestBody),
-                Encoding.UTF8,
-                "application/json");
-
-            // שליחת הבקשה
-            HttpResponseMessage response = await _httpClient.PostAsync(url, content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                // קריאת התגובה
-                string responseBody = await response.Content.ReadAsStringAsync();
-                var translationResponse = JsonSerializer.Deserialize<TranslationResponse>(responseBody);
-
-                if (translationResponse?.Data?.Translations != null && translationResponse.Data.Translations.Count > 0)
-                {
-                    string translatedText = translationResponse.Data.Translations[0].TranslatedText;
-
-                    // החזרת המונחים המיוחדים
-                    if (_specialTerms.ContainsKey(langPair))
+                    int i = 0;
+                    foreach (var term in _specialTerms[langPair])
                     {
-                        foreach (var term in _specialTerms[langPair])
-                        {
-                            translatedText = translatedText.Replace($"___SPECIAL_TERM_{term.Key}___", term.Value);
-                        }
+                        string placeholder = $"___SPECIAL_TERM_{i}___";
+                        textToTranslate = textToTranslate.Replace(term.Key, placeholder);
+                        specialTermReplacements[placeholder] = term.Value;
+                        i++;
                     }
-
-                    return translatedText;
                 }
-            }
 
-            throw new Exception($"שגיאה בתרגום: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                // בניית הבקשה ל-Google Cloud Translation API
+                string url = $"https://translation.googleapis.com/language/translate/v2?key={_apiKey}";
+
+                var requestBody = new
+                {
+                    q = textToTranslate,
+                    source = sourceLanguage,
+                    target = targetLanguage,
+                    format = "text"
+                };
+
+                var content = new StringContent(
+                    System.Text.Json.JsonSerializer.Serialize(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                // שליחת הבקשה
+                HttpResponseMessage response = await _httpClient.PostAsync(url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // קריאת התגובה
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var translationResponse = System.Text.Json.JsonSerializer.Deserialize<TranslationResponse>(responseBody);
+
+                    if (translationResponse?.Data?.Translations != null && translationResponse.Data.Translations.Count > 0)
+                    {
+                        string translatedText = translationResponse.Data.Translations[0].TranslatedText;
+
+                        // החזרת המונחים המיוחדים
+                        foreach (var replacement in specialTermReplacements)
+                        {
+                            translatedText = translatedText.Replace(replacement.Key, replacement.Value);
+                        }
+
+                        return translatedText;
+                    }
+                }
+
+                _logger.LogError($"Translation error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                throw new Exception($"שגיאה בתרגום: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Translation exception: {ex.Message}");
+                throw new Exception($"שגיאה בתרגום: {ex.Message}");
+            }
         }
 
         public async Task<string> DetectLanguageAsync(string text)

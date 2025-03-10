@@ -138,5 +138,24 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+
+        // GET: api/TSHA/generate-ai/5
+        [HttpGet("generate-ai/{kidId}")]
+        public async Task<ActionResult<TSHA>> GenerateTSHAReportWithAI(int kidId)
+        {
+            try
+            {
+                var tsha = await _tshaService.GenerateTSHAReportWithAIAsync(kidId);
+                return Ok(tsha);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
     }
 }
