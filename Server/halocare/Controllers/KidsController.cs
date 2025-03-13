@@ -28,7 +28,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -42,14 +42,14 @@ namespace halocare.Controllers
 
                 if (kid == null)
                 {
-                    return NotFound($"ילד עם מזהה {id} לא נמצא");
+                    return NotFound($"kid with id {id} not found");
                 }
 
                 return Ok(kid);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"error: {ex.Message}");
             }
         }
 
@@ -68,7 +68,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -83,7 +83,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -98,7 +98,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -113,7 +113,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -128,7 +128,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -149,7 +149,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -172,7 +172,7 @@ namespace halocare.Controllers
                 }
                 else
                 {
-                    return NotFound($"ילד עם מזהה {id} לא נמצא");
+                    return NotFound($"kid with id {id} not found");
                 }
             }
             catch (ArgumentException ex)
@@ -181,7 +181,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
 
@@ -199,7 +199,7 @@ namespace halocare.Controllers
                 }
                 else
                 {
-                    return NotFound($"ילד עם מזהה {id} לא נמצא");
+                    return NotFound($"kid with id {id} not found");
                 }
             }
             catch (ArgumentException ex)
@@ -208,7 +208,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}");
             }
         }
     }

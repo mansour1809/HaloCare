@@ -122,7 +122,7 @@
                 return rowsAffected > 0;
             }
 
-            // במקום מחיקה פיזית, מעדכנים את IsActive ל-false
+            // not deleting the kid, just deactivate it
             public bool DeactivateKid(int id)
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>

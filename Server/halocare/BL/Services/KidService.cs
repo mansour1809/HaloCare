@@ -35,43 +35,43 @@ namespace halocare.BL.Services
 
         public int AddKid(Kid kid)
         {
-            // וידוא שהילד הינו בטווח הגילאים המתאים (0-3)
+            // check if the kid age is between 0-3 years
             DateTime minBirthDate = DateTime.Today.AddYears(-3);
             if (kid.BirthDate < minBirthDate)
             {
-                throw new ArgumentException("גיל הילד חייב להיות בטווח 0-3 שנים");
+                throw new ArgumentException("kid age have to be between 0-3 years");
             }
 
-            // הגדרת הילד כפעיל כברירת מחדל
+            // default values
             kid.IsActive = true;
 
-            // שמירת הילד
+            // save kid details
             return _kidRepository.AddKid(kid);
         }
 
         public bool UpdateKid(Kid kid)
         {
-            // וידוא שהילד קיים
+            // check if the kid exist
             Kid existingKid = _kidRepository.GetKidById(kid.Id);
             if (existingKid == null)
             {
                 throw new ArgumentException("הילד לא נמצא במערכת");
             }
 
-            // עדכון פרטי הילד
+            // update kid details
             return _kidRepository.UpdateKid(kid);
         }
 
         public bool DeactivateKid(int id)
         {
-            // וידוא שהילד קיים
+            // check if the kid exist
             Kid existingKid = _kidRepository.GetKidById(id);
             if (existingKid == null)
             {
-                throw new ArgumentException("הילד לא נמצא במערכת");
+                throw new ArgumentException("the kid is not exist");
             }
 
-            // ביטול הפעילות של הילד
+            // deactivate kid
             return _kidRepository.DeactivateKid(id);
         }
 
@@ -97,11 +97,11 @@ namespace halocare.BL.Services
 
         public Kid GetKidFile(int kidId)
         {
-            // מקבל ילד עם כל המידע הקשור אליו
+            // get kid with all details
             Kid kid = _kidRepository.GetKidById(kidId);
             if (kid == null)
             {
-                throw new ArgumentException("הילד לא נמצא במערכת");
+                throw new ArgumentException("the kid does not found");
             }
 
             return kid;

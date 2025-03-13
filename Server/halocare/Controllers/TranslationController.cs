@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
+using halocare.DAL.Models;
 
 namespace halocare.Controllers
 {

@@ -26,7 +26,7 @@ namespace halocare.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "שגיאה לא מטופלת");
+                _logger.LogError(ex, "not handled exception");
                 await HandleExceptionAsync(context, ex);
             }
         }
@@ -38,7 +38,7 @@ namespace halocare.Middleware
 
             var result = JsonSerializer.Serialize(new
             {
-                error = "שגיאה פנימית בשרת",
+                error = "Server Error",
                 details = exception.Message
             });
 
