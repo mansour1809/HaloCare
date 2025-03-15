@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Class> GetAllClasses()
         {
             List<Class> classes = new List<Class>();
-            DataTable dataTable = ExecuteQuery("GetAllClasses");
+            DataTable dataTable = ExecuteQuery("SP_GetAllClasses");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -37,7 +37,7 @@ namespace halocare.DAL.Repositories
                 { "@ClassId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetClassById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetClassById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -62,7 +62,7 @@ namespace halocare.DAL.Repositories
                 { "@TeacherId", classItem.TeacherId }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddClass", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddClass", parameters));
         }
 
         public bool UpdateClass(Class classItem)
@@ -74,7 +74,7 @@ namespace halocare.DAL.Repositories
                 { "@TeacherId", classItem.TeacherId }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateClass", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateClass", parameters);
             return rowsAffected > 0;
         }
 
@@ -85,7 +85,7 @@ namespace halocare.DAL.Repositories
                 { "@ClassId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteClass", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteClass", parameters);
             return rowsAffected > 0;
         }
     }

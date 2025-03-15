@@ -18,7 +18,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<EventEmployee> eventEmployees = new List<EventEmployee>();
-            DataTable dataTable = ExecuteQuery("GetEventEmployeesByEventId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventEmployeesByEventId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -42,7 +42,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<EventEmployee> eventEmployees = new List<EventEmployee>();
-            DataTable dataTable = ExecuteQuery("GetEventEmployeesByEmployeeId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventEmployeesByEmployeeId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -66,7 +66,7 @@ namespace halocare.DAL.Repositories
                 { "@EmployeeId", employeeId }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddEventEmployee", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddEventEmployee", parameters);
             return rowsAffected > 0;
         }
 
@@ -78,7 +78,7 @@ namespace halocare.DAL.Repositories
                 { "@EmployeeId", employeeId }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteEventEmployee", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteEventEmployee", parameters);
             return rowsAffected > 0;
         }
     }

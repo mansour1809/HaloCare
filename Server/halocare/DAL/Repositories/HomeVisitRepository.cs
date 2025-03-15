@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<HomeVisit> GetAllHomeVisits()
         {
             List<HomeVisit> homeVisits = new List<HomeVisit>();
-            DataTable dataTable = ExecuteQuery("GetAllHomeVisits");
+            DataTable dataTable = ExecuteQuery("SP_GetAllHomeVisits");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -38,7 +38,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<HomeVisit> homeVisits = new List<HomeVisit>();
-            DataTable dataTable = ExecuteQuery("GetHomeVisitsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetHomeVisitsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -62,7 +62,7 @@ namespace halocare.DAL.Repositories
                 { "@VisitId", visitId }
             };
 
-            DataTable dataTable = ExecuteQuery("GetHomeVisitById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetHomeVisitById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -87,7 +87,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", homeVisit.KidId }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddHomeVisit", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddHomeVisit", parameters));
         }
 
         public bool UpdateHomeVisit(HomeVisit homeVisit)
@@ -99,7 +99,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", homeVisit.KidId }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateHomeVisit", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateHomeVisit", parameters);
             return rowsAffected > 0;
         }
 
@@ -110,7 +110,7 @@ namespace halocare.DAL.Repositories
                 { "@VisitId", visitId }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteHomeVisit", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteHomeVisit", parameters);
             return rowsAffected > 0;
         }
     }

@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Role> GetAllRoles()
         {
             List<Role> roles = new List<Role>();
-            DataTable dataTable = ExecuteQuery("GetAllRoles");
+            DataTable dataTable = ExecuteQuery("SP_GetAllRoles");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -37,7 +37,7 @@ namespace halocare.DAL.Repositories
                 { "@RoleName", roleName }
             };
 
-            DataTable dataTable = ExecuteQuery("GetRoleByName", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetRoleByName", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -63,7 +63,7 @@ namespace halocare.DAL.Repositories
                 { "@Permissions", role.Permissions }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddRole", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddRole", parameters);
             return rowsAffected > 0;
         }
 
@@ -76,7 +76,7 @@ namespace halocare.DAL.Repositories
                 { "@Permissions", role.Permissions }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateRole", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateRole", parameters);
             return rowsAffected > 0;
         }
 
@@ -87,7 +87,7 @@ namespace halocare.DAL.Repositories
                 { "@RoleName", roleName }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteRole", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteRole", parameters);
             return rowsAffected > 0;
         }
     }

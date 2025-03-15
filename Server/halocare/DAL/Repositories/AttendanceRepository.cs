@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Attendance> GetAllAttendances()
         {
             List<Attendance> attendances = new List<Attendance>();
-            DataTable dataTable = ExecuteQuery("GetAllAttendances");
+            DataTable dataTable = ExecuteQuery("SP_GetAllAttendances");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -41,7 +41,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Attendance> attendances = new List<Attendance>();
-            DataTable dataTable = ExecuteQuery("GetAttendancesByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAttendancesByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -69,7 +69,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Attendance> attendances = new List<Attendance>();
-            DataTable dataTable = ExecuteQuery("GetAttendancesByDate", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAttendancesByDate", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -100,7 +100,7 @@ namespace halocare.DAL.Repositories
                 { "@ReportedBy", attendance.ReportedBy }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddAttendance", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddAttendance", parameters));
         }
 
         public bool UpdateAttendance(Attendance attendance)
@@ -115,7 +115,7 @@ namespace halocare.DAL.Repositories
                 { "@ReportedBy", attendance.ReportedBy }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateAttendance", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateAttendance", parameters);
             return rowsAffected > 0;
         }
     }

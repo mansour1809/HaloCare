@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Alert> GetAllAlerts()
         {
             List<Alert> alerts = new List<Alert>();
-            DataTable dataTable = ExecuteQuery("GetAllAlerts");
+            DataTable dataTable = ExecuteQuery("SP_GetAllAlerts");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -42,7 +42,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Alert> alerts = new List<Alert>();
-            DataTable dataTable = ExecuteQuery("GetAlertsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAlertsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -70,7 +70,7 @@ namespace halocare.DAL.Repositories
                 { "@AlertId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetAlertById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAlertById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -103,7 +103,7 @@ namespace halocare.DAL.Repositories
                 { "@Description", alert.Description }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddAlert", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_SP_AddAlert", parameters));
         }
 
         public bool UpdateAlert(Alert alert)
@@ -119,7 +119,7 @@ namespace halocare.DAL.Repositories
                 { "@Description", alert.Description }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateAlert", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateAlert", parameters);
             return rowsAffected > 0;
         }
 
@@ -130,7 +130,7 @@ namespace halocare.DAL.Repositories
                 { "@AlertId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteAlert", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteAlert", parameters);
             return rowsAffected > 0;
         }
     }

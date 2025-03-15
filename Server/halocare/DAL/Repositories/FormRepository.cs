@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Form> GetAllForms()
         {
             List<Form> forms = new List<Form>();
-            DataTable dataTable = ExecuteQuery("GetAllForms");
+            DataTable dataTable = ExecuteQuery("SP_GetAllForms");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -37,7 +37,7 @@ namespace halocare.DAL.Repositories
                 { "@FormId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetFormById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetFormById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -62,7 +62,7 @@ namespace halocare.DAL.Repositories
                 { "@FormDescription", form.FormDescription }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddForm", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddForm", parameters));
         }
 
         public bool UpdateForm(Form form)
@@ -74,7 +74,7 @@ namespace halocare.DAL.Repositories
                 { "@FormDescription", form.FormDescription }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateForm", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateForm", parameters);
             return rowsAffected > 0;
         }
 
@@ -85,7 +85,7 @@ namespace halocare.DAL.Repositories
                 { "@FormId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteForm", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteForm", parameters);
             return rowsAffected > 0;
         }
     }

@@ -96,7 +96,7 @@ function Calendar() {
   // פונקציה לטעינת אירועים מהשרת
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/Events');
+      const response = await axios.get('https://localhost:7225/api/Events');
       
       // התאמת הנתונים מהשרת לפורמט של FullCalendar
       const formattedEvents = response.data.map(event => ({
@@ -185,7 +185,7 @@ function Calendar() {
   // פונקציות טעינת נתוני עזר
   const fetchKids = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/Kids');
+      const response = await axios.get('https://localhost:7225/api/Kids');
       setKids(response.data);
     } catch (error) {
       console.error('שגיאה בטעינת ילדים:', error);
@@ -200,7 +200,7 @@ function Calendar() {
   
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/Employees');
+      const response = await axios.get('https://localhost:7225/api/Employees');
       setEmployees(response.data);
     } catch (error) {
       console.error('שגיאה בטעינת עובדים:', error);
@@ -290,10 +290,10 @@ function Calendar() {
       // אם יש id, מדובר בעדכון. אחרת, יצירת אירוע חדש
       if (selectedEvent) {
         eventData.id = selectedEvent.id;
-        response = await axios.put(`http://localhost:5000/api/Events/${selectedEvent.id}`, eventData);
+        response = await axios.put(`https://localhost:7225/api/Events/${selectedEvent.id}`, eventData);
         console.log('אירוע עודכן בהצלחה');
       } else {
-        response = await axios.post('http://localhost:5000/api/Events', eventData);
+        response = await axios.post('https://localhost:7225/api/Events', eventData);
         console.log('אירוע נוצר בהצלחה');
       }
       
@@ -353,7 +353,7 @@ function Calendar() {
   const handleDeleteEvent = async () => {
     if (selectedEvent) {
       try {
-        await axios.delete(`http://localhost:5000/api/Events/${selectedEvent.id}`);
+        await axios.delete(`https://localhost:7225/api/Events/${selectedEvent.id}`);
         console.log('אירוע נמחק בהצלחה');
         fetchEvents();
         setOpenDialog(false);

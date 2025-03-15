@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<HealthInsurance> GetAllHealthInsurances()
         {
             List<HealthInsurance> healthInsurances = new List<HealthInsurance>();
-            DataTable dataTable = ExecuteQuery("GetAllHealthInsurances");
+            DataTable dataTable = ExecuteQuery("SP_GetAllHealthInsurances");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -35,7 +35,7 @@ namespace halocare.DAL.Repositories
                 { "@HName", hName }
             };
 
-            DataTable dataTable = ExecuteQuery("GetHealthInsuranceByName", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetHealthInsuranceByName", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -57,7 +57,7 @@ namespace halocare.DAL.Repositories
                 { "@HName", healthInsurance.HName }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddHealthInsurance", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddHealthInsurance", parameters);
             return rowsAffected > 0;
         }
 
@@ -69,7 +69,7 @@ namespace halocare.DAL.Repositories
                 { "@NewHName", newHName }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateHealthInsurance", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateHealthInsurance", parameters);
             return rowsAffected > 0;
         }
 
@@ -80,7 +80,7 @@ namespace halocare.DAL.Repositories
                 { "@HName", hName }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteHealthInsurance", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteHealthInsurance", parameters);
             return rowsAffected > 0;
         }
     }

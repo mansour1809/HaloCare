@@ -15,8 +15,9 @@ namespace halocare.DAL
             _configuration = configuration;
         }
 
-        public SqlConnection Connect(string conString = "DefaultConnection")
+        public SqlConnection Connect(string conString = "myProjDB")
         {
+            Console.WriteLine(conString);
             string connectionString = _configuration.GetConnectionString(conString);
             SqlConnection con = new SqlConnection(connectionString);
             con.Open();
