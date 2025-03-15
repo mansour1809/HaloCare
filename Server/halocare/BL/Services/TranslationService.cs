@@ -17,12 +17,11 @@ namespace halocare.BL.Services
         private readonly Dictionary<string, Dictionary<string, string>> _specialTerms;
         private readonly ILogger<TranslationService> _logger;
 
-        public TranslationService(IConfiguration configuration, ILogger<TranslationService> logger)
+        public TranslationService(IConfiguration configuration)
         {
             _configuration = configuration;
             _httpClient = new HttpClient();
             _apiKey = _configuration.GetValue<string>("GoogleTranslateApiKey");
-            _logger = logger;
 
             // מילון מונחים מיוחדים לתרגום - מורחב עם מושגים מתחום הטיפול בילדים
             _specialTerms = new Dictionary<string, Dictionary<string, string>>

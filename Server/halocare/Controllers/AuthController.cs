@@ -8,9 +8,9 @@ namespace halocare.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AuthenticationService _authenticationService;
+        private readonly AuthService _authenticationService;
 
-        public AuthController(AuthenticationService authenticationService)
+        public AuthController(AuthService authenticationService)
         {
             _authenticationService = authenticationService;
         }

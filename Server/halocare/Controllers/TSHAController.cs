@@ -67,24 +67,24 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/TSHA/generate/5
-        [HttpGet("generate/{kidId}")]
-        public ActionResult<TSHA> GenerateTSHAReport(int kidId)
-        {
-            try
-            {
-                var tsha = _tshaService.GenerateTSHAReport(kidId);
-                return Ok(tsha);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-            }
-        }
+        //// GET: api/TSHA/generate/5
+        //[HttpGet("generate/{kidId}")]
+        //public ActionResult<TSHA> GenerateTSHAReport(int kidId)
+        //{
+        //    try
+        //    {
+        //        var tsha = _tshaService.GenerateTSHAReport(kidId);
+        //        return Ok(tsha);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+        //    }
+        //}
 
         // POST: api/TSHA
         [HttpPost]

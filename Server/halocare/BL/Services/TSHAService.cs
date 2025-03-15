@@ -20,10 +20,9 @@ namespace halocare.BL.Services
         private readonly ILogger<TSHAService> _logger;
         private readonly HttpClient _httpClient;
 
-        public TSHAService(IConfiguration configuration, ILogger<TSHAService> logger)
+        public TSHAService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _logger = logger;
             _httpClient = new HttpClient();
             _tshaRepository = new TSHARepository(configuration);
             _kidRepository = new KidRepository(configuration);
