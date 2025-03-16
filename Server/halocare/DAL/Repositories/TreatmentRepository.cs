@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Treatment> GetAllTreatments()
         {
             List<Treatment> treatments = new List<Treatment>();
-            DataTable dataTable = ExecuteQuery("GetAllTreatments");
+            DataTable dataTable = ExecuteQuery("SP_GetAllTreatments");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -44,7 +44,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Treatment> treatments = new List<Treatment>();
-            DataTable dataTable = ExecuteQuery("GetTreatmentsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetTreatmentsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -74,7 +74,7 @@ namespace halocare.DAL.Repositories
                 { "@TreatmentId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetTreatmentById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetTreatmentById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -111,7 +111,7 @@ namespace halocare.DAL.Repositories
                 { "@Highlight", treatment.Highlight }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddTreatment", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddTreatment", parameters));
         }
 
         public bool UpdateTreatment(Treatment treatment)
@@ -129,7 +129,7 @@ namespace halocare.DAL.Repositories
                 { "@Highlight", treatment.Highlight }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateTreatment", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateTreatment", parameters);
             return rowsAffected > 0;
         }
 
@@ -140,7 +140,7 @@ namespace halocare.DAL.Repositories
                 { "@TreatmentId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteTreatment", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteTreatment", parameters);
             return rowsAffected > 0;
         }
     }

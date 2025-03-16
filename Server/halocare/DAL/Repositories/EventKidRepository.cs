@@ -18,7 +18,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<EventKid> eventKids = new List<EventKid>();
-            DataTable dataTable = ExecuteQuery("GetEventKidsByEventId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventKidsByEventId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -42,7 +42,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<EventKid> eventKids = new List<EventKid>();
-            DataTable dataTable = ExecuteQuery("GetEventKidsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventKidsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -66,7 +66,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", kidId }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddEventKid", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddEventKid", parameters);
             return rowsAffected > 0;
         }
 
@@ -78,7 +78,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", kidId }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteEventKid", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteEventKid", parameters);
             return rowsAffected > 0;
         }
     }

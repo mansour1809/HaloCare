@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Documentt> GetAllDocuments()
         {
             List<Documentt> documents = new List<Documentt>();
-            DataTable dataTable = ExecuteQuery("GetAllDocuments");
+            DataTable dataTable = ExecuteQuery("SP_GetAllDocuments");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -41,7 +41,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Documentt> documents = new List<Documentt>();
-            DataTable dataTable = ExecuteQuery("GetDocumentsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetDocumentsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -68,7 +68,7 @@ namespace halocare.DAL.Repositories
                 { "@DocId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetDocumentById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetDocumentById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -99,7 +99,7 @@ namespace halocare.DAL.Repositories
                 { "@UploadDate", document.UploadDate }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddDocument", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddDocument", parameters));
         }
 
         public bool UpdateDocument(Documentt document)
@@ -114,7 +114,7 @@ namespace halocare.DAL.Repositories
                 { "@UploadDate", document.UploadDate }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateDocument", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateDocument", parameters);
             return rowsAffected > 0;
         }
 
@@ -125,7 +125,7 @@ namespace halocare.DAL.Repositories
                 { "@DocId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteDocument", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteDocument", parameters);
             return rowsAffected > 0;
         }
     }

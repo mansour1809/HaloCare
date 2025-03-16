@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<City> GetAllCities()
         {
             List<City> cities = new List<City>();
-            DataTable dataTable = ExecuteQuery("GetAllCities");
+            DataTable dataTable = ExecuteQuery("SP_GetAllCities");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -35,7 +35,7 @@ namespace halocare.DAL.Repositories
                 { "@CityName", cityName }
             };
 
-            DataTable dataTable = ExecuteQuery("GetCityByName", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetCityByName", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -57,7 +57,7 @@ namespace halocare.DAL.Repositories
                 { "@CityName", city.CityName }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddCity", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddCity", parameters);
             return rowsAffected > 0;
         }
 
@@ -69,7 +69,7 @@ namespace halocare.DAL.Repositories
                 { "@NewCityName", newCityName }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateCity", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateCity", parameters);
             return rowsAffected > 0;
         }
 
@@ -80,7 +80,7 @@ namespace halocare.DAL.Repositories
                 { "@CityName", cityName }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteCity", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteCity", parameters);
             return rowsAffected > 0;
         }
     }

@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Parent> GetAllParents()
         {
             List<Parent> parents = new List<Parent>();
-            DataTable dataTable = ExecuteQuery("GetAllParents");
+            DataTable dataTable = ExecuteQuery("SP_GetAllParents");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -42,7 +42,7 @@ namespace halocare.DAL.Repositories
                 { "@ParentId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetParentById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetParentById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -77,7 +77,7 @@ namespace halocare.DAL.Repositories
                 { "@Email", parent.Email }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddParent", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddParent", parameters));
         }
 
         public bool UpdateParent(Parent parent)
@@ -94,7 +94,7 @@ namespace halocare.DAL.Repositories
                 { "@Email", parent.Email }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateParent", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateParent", parameters);
             return rowsAffected > 0;
         }
     }

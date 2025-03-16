@@ -13,7 +13,7 @@
             public List<Kid> GetAllKids()
             {
                 List<Kid> kids = new List<Kid>();
-                DataTable dataTable = ExecuteQuery("GetAllKids");
+                DataTable dataTable = ExecuteQuery("SP_GetAllKids");
 
                 foreach (DataRow row in dataTable.Rows)
                 {
@@ -48,7 +48,7 @@
                 { "@Id", id }
             };
 
-                DataTable dataTable = ExecuteQuery("GetKidById", parameters);
+                DataTable dataTable = ExecuteQuery("SP_GetKidById", parameters);
 
                 if (dataTable.Rows.Count == 0)
                     return null;
@@ -95,7 +95,7 @@
                 { "@ParentId2", kid.ParentId2 }
             };
 
-                return Convert.ToInt32(ExecuteScalar("AddKid", parameters));
+                return Convert.ToInt32(ExecuteScalar("SP_AddKid", parameters));
             }
 
             public bool UpdateKid(Kid kid)
@@ -118,7 +118,7 @@
                 { "@ParentId2", kid.ParentId2 }
             };
 
-                int rowsAffected = ExecuteNonQuery("UpdateKid", parameters);
+                int rowsAffected = ExecuteNonQuery("SP_UpdateKid", parameters);
                 return rowsAffected > 0;
             }
 
@@ -131,7 +131,7 @@
                 { "@IsActive", false }
             };
 
-                int rowsAffected = ExecuteNonQuery("UpdateKidStatus", parameters);
+                int rowsAffected = ExecuteNonQuery("SP_UpdateKidStatus", parameters);
                 return rowsAffected > 0;
             }
         }

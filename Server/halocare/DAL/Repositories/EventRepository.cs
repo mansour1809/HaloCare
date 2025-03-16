@@ -13,8 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Event> GetAllEvents()
         {
             List<Event> events = new List<Event>();
-            DataTable dataTable = ExecuteQuery("GetAllEvents");
-
+            DataTable dataTable = ExecuteQuery("SP_GetAllEvents");
             foreach (DataRow row in dataTable.Rows)
             {
                 Event eventItem = new Event
@@ -41,7 +40,7 @@ namespace halocare.DAL.Repositories
                 { "@EventId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetEventById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -71,7 +70,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Event> events = new List<Event>();
-            DataTable dataTable = ExecuteQuery("GetEventsByDateRange", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEventsByDateRange", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -104,7 +103,7 @@ namespace halocare.DAL.Repositories
                 { "@CreatedBy", eventItem.CreatedBy }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddEvent", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddEvent", parameters));
         }
 
         public bool UpdateEvent(Event eventItem)
@@ -120,7 +119,7 @@ namespace halocare.DAL.Repositories
                 { "@CreatedBy", eventItem.CreatedBy }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateEvent", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEvent", parameters);
             return rowsAffected > 0;
         }
 
@@ -131,7 +130,7 @@ namespace halocare.DAL.Repositories
                 { "@EventId", id }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteEvent", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteEvent", parameters);
             return rowsAffected > 0;
         }
     }

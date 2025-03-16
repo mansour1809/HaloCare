@@ -18,7 +18,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<Question> questions = new List<Question>();
-            DataTable dataTable = ExecuteQuery("GetQuestionsByFormId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetQuestionsByFormId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -48,7 +48,7 @@ namespace halocare.DAL.Repositories
                 { "@QuestionNo", questionNo }
             };
 
-            DataTable dataTable = ExecuteQuery("GetQuestion", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetQuestion", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -84,7 +84,7 @@ namespace halocare.DAL.Repositories
                 { "@HasOther", question.HasOther }
             };
 
-            int rowsAffected = ExecuteNonQuery("AddQuestion", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_AddQuestion", parameters);
             return rowsAffected > 0;
         }
 
@@ -102,7 +102,7 @@ namespace halocare.DAL.Repositories
                 { "@HasOther", question.HasOther }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateQuestion", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateQuestion", parameters);
             return rowsAffected > 0;
         }
 
@@ -114,7 +114,7 @@ namespace halocare.DAL.Repositories
                 { "@QuestionNo", questionNo }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteQuestion", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteQuestion", parameters);
             return rowsAffected > 0;
         }
     }

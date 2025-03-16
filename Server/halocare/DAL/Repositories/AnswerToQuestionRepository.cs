@@ -20,7 +20,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<AnswerToQuestion> answers = new List<AnswerToQuestion>();
-            DataTable dataTable = ExecuteQuery("GetAnswersByKidAndForm", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAnswersByKidAndForm", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -50,7 +50,7 @@ namespace halocare.DAL.Repositories
                 { "@AnswerId", answerId }
             };
 
-            DataTable dataTable = ExecuteQuery("GetAnswerById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetAnswerById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -87,7 +87,7 @@ namespace halocare.DAL.Repositories
                 { "@ByParent", answer.ByParent }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddAnswer", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddAnswer", parameters));
         }
 
         public bool UpdateAnswer(AnswerToQuestion answer)
@@ -105,7 +105,7 @@ namespace halocare.DAL.Repositories
                 { "@ByParent", answer.ByParent }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateAnswer", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateAnswer", parameters);
             return rowsAffected > 0;
         }
 
@@ -116,7 +116,7 @@ namespace halocare.DAL.Repositories
                 { "@AnswerId", answerId }
             };
 
-            int rowsAffected = ExecuteNonQuery("DeleteAnswer", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_DeleteAnswer", parameters);
             return rowsAffected > 0;
         }
     }

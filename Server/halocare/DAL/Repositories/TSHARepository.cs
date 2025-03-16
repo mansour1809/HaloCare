@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<TSHA> GetAllTSHAs()
         {
             List<TSHA> tshas = new List<TSHA>();
-            DataTable dataTable = ExecuteQuery("GetAllTSHAs");
+            DataTable dataTable = ExecuteQuery("SP_GetAllTSHAs");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -41,7 +41,7 @@ namespace halocare.DAL.Repositories
             };
 
             List<TSHA> tshas = new List<TSHA>();
-            DataTable dataTable = ExecuteQuery("GetTSHAsByKidId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetTSHAsByKidId", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -68,7 +68,7 @@ namespace halocare.DAL.Repositories
                 { "@TshaId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetTSHAById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetTSHAById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -99,7 +99,7 @@ namespace halocare.DAL.Repositories
                 { "@Status", tsha.Status }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddTSHA", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddTSHA", parameters));
         }
 
         public bool UpdateTSHA(TSHA tsha)
@@ -114,7 +114,7 @@ namespace halocare.DAL.Repositories
                 { "@Status", tsha.Status }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateTSHA", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateTSHA", parameters);
             return rowsAffected > 0;
         }
     }

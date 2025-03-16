@@ -13,7 +13,7 @@ namespace halocare.DAL.Repositories
         public List<Employee> GetAllEmployees()
         {
             List<Employee> employees = new List<Employee>();
-            DataTable dataTable = ExecuteQuery("GetAllEmployees");
+            DataTable dataTable = ExecuteQuery("SP_GetAllEmployees");
 
             foreach (DataRow row in dataTable.Rows)
             {
@@ -47,7 +47,7 @@ namespace halocare.DAL.Repositories
                 { "@EmployeeId", id }
             };
 
-            DataTable dataTable = ExecuteQuery("GetEmployeeById", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEmployeeById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;
@@ -92,7 +92,7 @@ namespace halocare.DAL.Repositories
                 { "@RoleName", employee.RoleName }
             };
 
-            return Convert.ToInt32(ExecuteScalar("AddEmployee", parameters));
+            return Convert.ToInt32(ExecuteScalar("SP_AddEmployee", parameters));
         }
 
         public bool UpdateEmployee(Employee employee)
@@ -114,7 +114,7 @@ namespace halocare.DAL.Repositories
                 { "@RoleName", employee.RoleName }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateEmployee", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployee", parameters);
             return rowsAffected > 0;
         }
 
@@ -127,7 +127,7 @@ namespace halocare.DAL.Repositories
                 { "@IsActive", false }
             };
 
-            int rowsAffected = ExecuteNonQuery("UpdateEmployeeStatus", parameters);
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeStatus", parameters);
             return rowsAffected > 0;
         }
     }

@@ -8,12 +8,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace halocare.BL.Services
 {
-    public class AuthenticationService
+    public class AuthService
     {
         private readonly IConfiguration _configuration;
         private readonly EmployeeService _employeeService;
 
-        public AuthenticationService(IConfiguration configuration, EmployeeService employeeService)
+        public AuthService(IConfiguration configuration, EmployeeService employeeService)
         {
             _configuration = configuration;
             _employeeService = employeeService;
