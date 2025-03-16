@@ -76,21 +76,41 @@ namespace halocare.DAL.Repositories
 
         public int AddEmployee(Employee employee)
         {
+            //object photoParam;
+
+            //if (string.IsNullOrEmpty(employee.Photo))
+            //{
+            //    // If photo is empty or null, use DBNull.Value
+            //    photoParam = DBNull.Value;
+            //}
+            //else
+            //{
+            //    try
+            //    {
+            //        // Try to convert from Base64
+            //        photoParam = Convert.FromBase64String(employee.Photo);
+            //    }
+            //    catch (FormatException)
+            //    {
+            //        throw new ArgumentException("Invalid photo format. Photo should be a valid Base64 string.");
+            //    }
+            //}
+
             Dictionary<string, object> parameters = new Dictionary<string, object>
-            {
-                { "@FirstName", employee.FirstName },
-                { "@LastName", employee.LastName },
-                { "@BirthDate", employee.BirthDate },
-                { "@MobilePhone", employee.MobilePhone },
-                { "@Email", employee.Email },
-                { "@Password", employee.Password },
-                { "@Photo", employee.Photo },
-                { "@LicenseNum", employee.LicenseNum },
-                { "@StartDate", employee.StartDate },
-                { "@IsActive", employee.IsActive },
-                { "@ClassId", employee.ClassId },
-                { "@RoleName", employee.RoleName }
-            };
+    {
+        { "@FirstName", employee.FirstName },
+        { "@LastName", employee.LastName },
+        { "@BirthDate", employee.BirthDate },
+        { "@MobilePhone", employee.MobilePhone },
+        { "@Email", employee.Email },
+        { "@Password", employee.Password },
+        //{ "@Photo", photoParam }, // Using our prepared parameter
+        { "@LicenseNum", employee.LicenseNum },
+        { "@StartDate", employee.StartDate },
+        { "@IsActive", employee.IsActive },
+        { "@ClassId", employee.ClassId ?? (object)DBNull.Value },
+        { "@RoleName", employee.RoleName }
+    };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddEmployee", parameters));
         }

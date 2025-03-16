@@ -61,7 +61,6 @@ namespace halocare.Controllers
             {
                 int employeeId = _employeeService.AddEmployee(employee);
                 employee.EmployeeId = employeeId;
-
                 return CreatedAtAction(nameof(GetEmployee), new { id = employeeId }, employee);
             }
             catch (ArgumentException ex)
@@ -70,7 +69,7 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה : {ex.Message}");
             }
         }
 

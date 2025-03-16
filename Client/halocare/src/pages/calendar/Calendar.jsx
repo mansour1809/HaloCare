@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -20,13 +20,12 @@ import {
   Typography,
   Grid,
   Box,
-  Tooltip
+  Tooltip,
+  Paper
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import TodayIcon from '@mui/icons-material/Today';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
@@ -42,6 +41,7 @@ const eventColors = {
 };
 
 function Calendar() {
+  const calendarRef = useRef(null);
   // מצב לשמירת האירועים
   const [events, setEvents] = useState([]);
   
@@ -85,6 +85,9 @@ function Calendar() {
   
   // מצב להצגת הטופס
   const [showFilterForm, setShowFilterForm] = useState(false);
+
+  // מצב לשמירת האירועים המסוננים
+  const [filteredEvents, setFilteredEvents] = useState([]);
   
   // טעינת נתונים ראשונית
   useEffect(() => {
@@ -92,6 +95,11 @@ function Calendar() {
     fetchKids();
     fetchEmployees();
   }, []);
+  
+  // עדכון האירועים המסוננים כאשר משתנים האירועים או הסינון
+  useEffect(() => {
+    filterEvents();
+  }, [events, filterOptions]);
   
   // פונקציה לטעינת אירועים מהשרת
   const fetchEvents = async () => {
@@ -118,7 +126,7 @@ function Calendar() {
     } catch (error) {
       console.error('שגיאה בטעינת אירועים:', error);
       
-      // למטרות פיתוח - נתוני דמה אם אין עדיין חיבור לשרת
+      // נתוני דמה למקרה שאין חיבור לשרת
       const demoEvents = [
         {
           id: 1,
@@ -131,7 +139,8 @@ function Calendar() {
             location: 'חדר טיפולים 1',
             description: 'טיפול שבועי',
             type: 'טיפול פיזיותרפיה',
-            createdBy: 1
+            createdBy: 1,
+            kidId: 1
           }
         },
         {
@@ -145,7 +154,8 @@ function Calendar() {
             location: 'חדר ישיבות',
             description: 'פגישה עם הורי יוסי',
             type: 'פגישת הורים',
-            createdBy: 1
+            createdBy: 1,
+            kidId: 1
           }
         },
         {
@@ -159,7 +169,8 @@ function Calendar() {
             location: 'חדר טיפולים 2',
             description: 'טיפול רגשי שבועי',
             type: 'טיפול רגשי',
-            createdBy: 1
+            createdBy: 1,
+            kidId: 2
           }
         },
         {
@@ -173,13 +184,42 @@ function Calendar() {
             location: 'חדר פעילות',
             description: 'מפגש קבוצתי שבועי',
             type: 'מפגש קבוצתי',
-            createdBy: 1
+            createdBy: 1,
+            employeeId: 3
           }
         }
       ];
       
       setEvents(demoEvents);
     }
+  };
+  
+  // פונקציה לסינון אירועים
+  const filterEvents = () => {
+    let filtered = [...events];
+    
+    // סינון לפי ילד
+    if (filterOptions.kidId) {
+      filtered = filtered.filter(event => 
+        event.extendedProps.kidId === parseInt(filterOptions.kidId)
+      );
+    }
+    
+    // סינון לפי מטפל/עובד
+    if (filterOptions.employeeId) {
+      filtered = filtered.filter(event => 
+        event.extendedProps.employeeId === parseInt(filterOptions.employeeId)
+      );
+    }
+    
+    // סינון לפי סוג אירוע
+    if (filterOptions.eventType) {
+      filtered = filtered.filter(event => 
+        event.extendedProps.type === filterOptions.eventType
+      );
+    }
+    
+    setFilteredEvents(filtered);
   };
   
   // פונקציות טעינת נתוני עזר
@@ -380,6 +420,9 @@ function Calendar() {
   // החלפת תצוגת היומן
   const handleViewChange = (view) => {
     setCalendarView(view);
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView(view);
+    }
   };
   
   // סינון אירועים
@@ -399,50 +442,61 @@ function Calendar() {
       eventType: ''
     });
   };
+  
+  // מעבר ל"היום"
+  const goToToday = () => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().today();
+    }
+  };
 
   return (
     <div className="calendar-container" style={{ padding: '16px', direction: 'rtl' }}>
       {/* כותרת ובר ניווט */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" component="h1">
-          לוח שנה
-        </Typography>
-        
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setSelectedEvent(null);
-              setNewEvent({
-                title: '',
-                start: new Date().toISOString().slice(0, 16),
-                end: new Date(new Date().getTime() + 60*60*1000).toISOString().slice(0, 16),
-                location: '',
-                description: '',
-                createdBy: 1,
-                type: 'אחר'
-              });
-              setOpenDialog(true);
-            }}
-          >
-            אירוע חדש
-          </Button>
+      <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+            לוח שנה
+          </Typography>
           
-          <Button
-            variant="outlined"
-            startIcon={<FilterListIcon />}
-            onClick={() => setShowFilterForm(!showFilterForm)}
-          >
-            סינון
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSelectedEvent(null);
+                setNewEvent({
+                  title: '',
+                  start: new Date().toISOString().slice(0, 16),
+                  end: new Date(new Date().getTime() + 60*60*1000).toISOString().slice(0, 16),
+                  location: '',
+                  description: '',
+                  createdBy: 1,
+                  type: 'אחר'
+                });
+                setOpenDialog(true);
+              }}
+              sx={{ borderRadius: '8px' }}
+            >
+              אירוע חדש
+            </Button>
+            
+            <Button
+              variant="outlined"
+              startIcon={<FilterListIcon />}
+              onClick={() => setShowFilterForm(!showFilterForm)}
+              sx={{ borderRadius: '8px' }}
+            >
+              סינון
+            </Button>
+          </Box>
         </Box>
-      </Box>
+      </Paper>
       
       {/* טופס סינון */}
       {showFilterForm && (
-        <Box sx={{ mb: 2, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+        <Paper elevation={1} sx={{ mb: 2, p: 2, borderRadius: '8px' }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <FormControl fullWidth size="small">
@@ -504,90 +558,107 @@ function Calendar() {
               variant="outlined"
               color="secondary"
               onClick={resetFilters}
-              sx={{ mr: 1 }}
+              sx={{ mr: 1, borderRadius: '8px' }}
             >
               נקה
             </Button>
           </Box>
-        </Box>
+        </Paper>
       )}
       
       {/* בקרי תצוגת יומן */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Box>
-          <Button
-            variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
-            onClick={() => handleViewChange('dayGridMonth')}
-            sx={{ ml: 1 }}
-          >
-            חודש
-          </Button>
-          <Button
-            variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
-            onClick={() => handleViewChange('timeGridWeek')}
-            sx={{ ml: 1 }}
-          >
-            שבוע
-          </Button>
-          <Button
-            variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
-            onClick={() => handleViewChange('timeGridDay')}
-          >
-            יום
-          </Button>
+      <Paper elevation={1} sx={{ p: 2, mb: 2, borderRadius: '8px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Button
+              variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
+              onClick={() => handleViewChange('dayGridMonth')}
+              sx={{ ml: 1, borderRadius: '8px' }}
+            >
+              חודש
+            </Button>
+            <Button
+              variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
+              onClick={() => handleViewChange('timeGridWeek')}
+              sx={{ ml: 1, borderRadius: '8px' }}
+            >
+              שבוע
+            </Button>
+            <Button
+              variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
+              onClick={() => handleViewChange('timeGridDay')}
+              sx={{ borderRadius: '8px' }}
+            >
+              יום
+            </Button>
+          </Box>
+          
+          <Box>
+            <Tooltip title="היום">
+              <IconButton onClick={goToToday}>
+                <TodayIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
-        
-        <Box>
-          <Tooltip title="היום">
-            <IconButton>
-              <TodayIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
+      </Paper>
       
       {/* לוח השנה */}
-      <Box sx={{ bgcolor: 'white', borderRadius: 1, boxShadow: 1, p: 1 }}>
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView={calendarView}
-          locale={heLocale}
-          direction="rtl"
-          headerToolbar={{
-            right: '',
-            center: 'title',
-            left: ''
-          }}
-          events={events}
-          dateClick={handleDateClick}
-          eventClick={handleEventClick}
-          editable={true}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          weekends={true}
-          allDaySlot={false}
-          slotMinTime="07:00:00"
-          slotMaxTime="19:00:00"
-          height="auto"
-          slotLabelFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }}
-          eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }}
-          buttonText={{
-            today: 'היום',
-            month: 'חודש',
-            week: 'שבוע',
-            day: 'יום'
-          }}
-        />
-      </Box>
+      <Paper elevation={2} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
+        <Box sx={{ p: 2, bgcolor: 'white' }}>
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView={calendarView}
+            locale={heLocale}
+            direction="rtl"
+            headerToolbar={{
+              right: '',
+              center: 'title',
+              left: ''
+            }}
+            events={filterOptions.kidId || filterOptions.employeeId || filterOptions.eventType ? filteredEvents : events}
+            dateClick={handleDateClick}
+            eventClick={handleEventClick}
+            editable={true}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            weekends={true}
+            allDaySlot={false}
+            slotMinTime="07:00:00"
+            slotMaxTime="19:00:00"
+            height='auto'  // גובה קבוע לתצוגה טובה יותר
+            slotLabelFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }}
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            }}
+            buttonText={{
+              today: 'היום',
+              month: 'חודש',
+              week: 'שבוע',
+              day: 'יום'
+            }}
+            views={{
+              timeGridDay: {
+                titleFormat: { day: 'numeric', month: 'long', year: 'numeric' }
+              },
+              timeGridWeek: {
+                titleFormat: { day: 'numeric', month: 'long', year: 'numeric' }
+              },
+              dayGridMonth: {
+                titleFormat: { month: 'long', year: 'numeric' }
+              }
+            }}
+          />
+        </Box>
+      </Paper>
       
       {/* דיאלוג להוספה/עריכת אירוע */}
       <Dialog 
@@ -596,10 +667,13 @@ function Calendar() {
         maxWidth="sm" 
         fullWidth
         dir="rtl"
+        PaperProps={{
+          sx: { borderRadius: '8px' }
+        }}
       >
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {selectedEvent ? 'עריכת אירוע' : 'הוספת אירוע חדש'}
             </Typography>
             <IconButton onClick={() => setOpenDialog(false)}>
@@ -618,6 +692,7 @@ function Calendar() {
                 onChange={handleEventChange}
                 fullWidth
                 required
+                variant="outlined"
               />
             </Grid>
             
@@ -630,6 +705,7 @@ function Calendar() {
                 onChange={handleEventChange}
                 fullWidth
                 required
+                variant="outlined"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -643,17 +719,19 @@ function Calendar() {
                 onChange={handleEventChange}
                 fullWidth
                 required
+                variant="outlined"
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+              <FormControl fullWidth required variant="outlined">
                 <InputLabel>סוג אירוע</InputLabel>
                 <Select
                   name="type"
                   value={newEvent.type}
                   onChange={handleEventChange}
+                  label="סוג אירוע"
                 >
                   {eventTypes.map(type => (
                     <MenuItem key={type} value={type}>
@@ -672,6 +750,7 @@ function Calendar() {
                 onChange={handleEventChange}
                 fullWidth
                 required
+                variant="outlined"
                 InputProps={{
                   startAdornment: <LocationOnIcon color="action" sx={{ mr: 1 }} />
                 }}
@@ -687,21 +766,37 @@ function Calendar() {
                 fullWidth
                 multiline
                 rows={3}
+                variant="outlined"
               />
             </Grid>
           </Grid>
         </DialogContent>
         
-        <DialogActions>
+        <DialogActions sx={{ p: 2 }}>
           {selectedEvent && (
-            <Button onClick={handleDeleteEvent} color="error">
+            <Button 
+              onClick={handleDeleteEvent} 
+              color="error" 
+              variant="outlined"
+              sx={{ borderRadius: '8px' }}
+            >
               מחק
             </Button>
           )}
-          <Button onClick={() => setOpenDialog(false)} color="inherit">
+          <Box sx={{ flexGrow: 1 }} />
+          <Button 
+            onClick={() => setOpenDialog(false)} 
+            color="inherit"
+            sx={{ borderRadius: '8px', mr: 1 }}
+          >
             ביטול
           </Button>
-          <Button onClick={handleSaveEvent} color="primary" variant="contained">
+          <Button 
+            onClick={handleSaveEvent} 
+            color="primary" 
+            variant="contained"
+            sx={{ borderRadius: '8px' }}
+          >
             שמור
           </Button>
         </DialogActions>
