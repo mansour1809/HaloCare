@@ -1,6 +1,5 @@
 {
   "dependencies": {
-<<<<<<< HEAD
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.7",
@@ -15,13 +14,11 @@
     "react-i18next": "^15.4.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.3.0",
-    "recharts": "^2.15.1"
-=======
+    "recharts": "^2.15.1",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15"
->>>>>>> d9a032642aa9790d4507c066ed1c8f8b3530e5cf
   }
 }
