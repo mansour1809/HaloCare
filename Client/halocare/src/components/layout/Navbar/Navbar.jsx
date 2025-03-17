@@ -4,12 +4,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 
 const Navbar = () => {
   return (
-    <AppBar position="static" sx={{ 
-        backgroundColor: "#f5f5f5", 
-        color: "#333", 
-        direction: "rtl",
-        height: '64px' // תופס את כל הגובה של ההורה
-      }}>
+    <AppBar  sx={{ backgroundColor: "#f5f5f5", color: "#333", direction: "rtl" , height:'%'}}>
       <Toolbar>
         {/* Logo on the right */}
         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold", color: "#0077C2" }}>

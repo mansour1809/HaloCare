@@ -68,18 +68,16 @@ const Sidebar = () => {
 
   return (
     <Drawer
-  variant="permanent"
-  anchor="right"
-  sx={{
-    width: 250,
-    "& .MuiDrawer-paper": {
-      width: 250,
-      marginTop:'4.5%',
-       height: '93%',
-      backgroundColor: "#F8FAFC",
-    },
-  }}
->
+      variant="permanent"
+      anchor="right"
+      sx={{
+        width: 250,
+        "& .MuiDrawer-paper": {
+          width: 250,
+          backgroundColor: "#F8FAFC",
+        },
+      }}
+    >
       {/* Clickable Dashboard */}
       <Box sx={{ p: 1 }}>
         <ListItemButton onClick={() => navigate('/')}>

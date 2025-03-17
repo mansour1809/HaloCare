@@ -1,38 +1,24 @@
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar/Navbar';
 import Sidebar from './components/layout/Sidebar/Sidebar';
 import Calendar from './pages/calendar/Calendar';
-import { Box} from '@mui/material';
+import { Box } from '@mui/material';
 
 function App() {
-  // קבועים
+  // קבוע של רוחב הסייד-בר
   const SIDEBAR_WIDTH = 250;
-  const NAVBAR_HEIGHT = 64; // או כל גובה אחר שמתאים לנאב-בר שלך
 
   return (
     <BrowserRouter>
       {/* קונטיינר ראשי */}
-      <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-        {/* נאב-בר עליון - מוחלט כדי שלא יתפוס מקום בזרימה */}
-        <Box sx={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          zIndex: 1100,
-          height: `${NAVBAR_HEIGHT}px`
-        }}>
-          <Navbar />
-        </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        {/* נאב-בר עליון */}
+        <Navbar />
 
-        {/* קונטיינר לסייד-בר ולתוכן - עם מרווח עליון עבור הנאב-בר */}
-        <Box sx={{ 
-          display: 'flex', 
-          width: '100%',
-          height: '100%',
-          mt: `${NAVBAR_HEIGHT}px` // מרווח עליון בגובה הנאב-בר
-        }}>
-          {/* אזור התוכן - משמאל לסייד-בר */}
+        {/* קונטיינר לסייד-בר ולתוכן */}
+        <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+          {/* אזור התוכן - יהיה משמאל לסייד-בר */}
           <Box sx={{ 
             flexGrow: 1, 
             height: '100%', 
@@ -53,13 +39,8 @@ function App() {
             </Routes>
           </Box>
 
-          {/* סייד-בר בצד ימין - עם גובה מלא */}
-          <Box sx={{ 
-            width: SIDEBAR_WIDTH, 
-            flexShrink: 0,
-            height: '100%',
-            position: 'relative'
-          }}>
+          {/* סייד-בר בצד ימין */}
+          <Box sx={{ width: SIDEBAR_WIDTH, flexShrink: 0 }}>
             <Sidebar />
           </Box>
         </Box>
