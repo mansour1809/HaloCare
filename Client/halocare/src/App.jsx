@@ -1,8 +1,8 @@
-// App.jsx
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar/Navbar';
 import Sidebar from './components/layout/Sidebar/Sidebar';
-import Calendar from './pages/Calendar';
+import Calendar from './pages/calendar/Calendar';
 import { Box } from '@mui/material';
 
 
