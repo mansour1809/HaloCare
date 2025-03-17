@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   TextField, 
   Button, 
@@ -11,6 +11,7 @@ import {
   Snackbar
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 
 const LoginPage = ({ setIsAuthenticated }) => {
@@ -55,7 +56,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f0f4f8',
+        // backgroundColor: '#f0f4f8',
         direction: 'rtl'
       }}
     >
@@ -64,38 +65,11 @@ const LoginPage = ({ setIsAuthenticated }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '50px',
+          width: '65%',
           flexDirection: { xs: 'column', md: 'row' }
         }}
       >
-        <Box
-          sx={{
-            textAlign: 'center',
-            padding: '20px'
-          }}
-        >
-          <img 
-            src={'/Logo (2).jpeg'} 
-            alt="Halo Care Logo" 
-            style={{ 
-              height: '150px',
-              borderRadius: '10px',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-            }} 
-          />
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              mt: 2, 
-              fontWeight: 'bold',
-              color: '#0077C2' 
-            }}
-          >
-            HALO CARE
-          </Typography>
-          <Typography variant="subtitle1" color="textSecondary">
-            מערכת ניהול גן הילד
-          </Typography>
-        </Box>
+       
 
         <Paper 
           elevation={3} 
@@ -190,6 +164,23 @@ const LoginPage = ({ setIsAuthenticated }) => {
             למטרות הדגמה: admin@example.com / password
           </Typography>
         </Paper>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: '20px'
+          }}
+        >
+          <img 
+            src={'/logo.jpeg'} 
+            alt="Halo Care Logo" 
+            style={{ 
+              height: '450px',
+              borderRadius: '10px',
+            //   boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }} 
+          />
+
+        </Box>
       </Box>
 
       <Snackbar
@@ -204,6 +195,9 @@ const LoginPage = ({ setIsAuthenticated }) => {
       </Snackbar>
     </Box>
   );
+};
+LoginPage.propTypes = {
+  setIsAuthenticated: PropTypes.func.isRequired,
 };
 
 export default LoginPage;
