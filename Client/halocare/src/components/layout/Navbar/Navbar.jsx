@@ -8,7 +8,7 @@ const Navbar = () => {
       <Toolbar>
         {/* Logo on the right */}
         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold", color: "#0077C2" }}>
-          הלוגו שלי
+          <img src="aa/logo.jpeg" alt="" />
         </Typography>
 
         {/* Icons on the left */}
