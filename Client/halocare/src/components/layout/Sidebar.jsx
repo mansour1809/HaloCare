@@ -1,7 +1,7 @@
 import  { useState } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemText, Collapse } from '@mui/material';
 import { Menu, ExpandLess, ExpandMore } from '@mui/icons-material';
-import logo from '../assets/logo.png';
+
 
 
 const Sidebar = () => {
