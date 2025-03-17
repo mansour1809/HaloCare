@@ -5,6 +5,7 @@ import Sidebar from './components/layout/Sidebar/Sidebar';
 import Calendar from './pages/calendar/Calendar';
 import { Box } from '@mui/material';
 
+
 function App() {
   // קבוע של רוחב הסייד-בר
   const SIDEBAR_WIDTH = 250;
