@@ -1,6 +1,5 @@
 import { AppBar, Toolbar, IconButton, Typography, Avatar, Box } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import MenuIcon from "@mui/icons-material/Menu";
 
 
 const Navbar = () => {
