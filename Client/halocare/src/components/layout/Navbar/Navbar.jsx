@@ -9,7 +9,11 @@ const Navbar = () => {
       <Toolbar>
         {/* Logo on the right */}
         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold", color: "#0077C2" }}>
+<<<<<<< HEAD
         <img src={'/Logo (2).jpeg'} alt="Halo Care Logo" style={{ height: '50px', marginRight: '10px' }} />
+=======
+          <img src="aa/logo.jpeg" alt="" />
+>>>>>>> bd71aeaa676f079b505d09af838b855f4ff10ddb
         </Typography>
 
         {/* Icons on the left */}

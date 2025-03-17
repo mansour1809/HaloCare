@@ -104,7 +104,7 @@ namespace halocare.DAL.Repositories
         { "@MobilePhone", employee.MobilePhone },
         { "@Email", employee.Email },
         { "@Password", employee.Password },
-        //{ "@Photo", photoParam }, // Using our prepared parameter
+        //{ "@Photo", photoParam }, 
         { "@LicenseNum", employee.LicenseNum },
         { "@StartDate", employee.StartDate },
         { "@IsActive", employee.IsActive },
