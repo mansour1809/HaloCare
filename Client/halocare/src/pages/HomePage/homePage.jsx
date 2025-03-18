@@ -1,14 +1,11 @@
-import React from 'react';
 import { Box, Typography, Paper, Grid } from '@mui/material';
-import Sidebar from '../components/layout/Sidebar/Sidebar';
-import Calendar from '../pages/calendar/Calendar';
+import Sidebar from '../../components/layout/Sidebar/Sidebar';
+
 
 
 const HomePage = () => {
     return (
         <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#f5f5f5' }}>
-            {/* Sidebar */}
-            <Sidebar />
             
             {/* Main Content */}
             <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -39,14 +36,8 @@ const HomePage = () => {
                     </Grid>
                 </Grid>
 
-                {/* Calendar & Staff Section */}
-                <Box sx={{ display: 'flex', mt: 3, gap: 3 }}>
-                    {/* Calendar */}
-                    <Box sx={{ flex: 1 }}>
-                        <Calendar />
-                    </Box>
                     
-                    {/* Staff & Kids Section */}
+                    Staff & Kids Section
                     <Paper elevation={3} sx={{ p: 2, width: '40%' }}>
                         <Typography variant="h6" fontWeight="bold" gutterBottom>צוות וילדים</Typography>
                         <Grid container spacing={1}>
@@ -59,8 +50,7 @@ const HomePage = () => {
                         </Grid>
                     </Paper>
                 </Box>
-            </Box>
-        </Box>
+            </Box>      
     );
 };
 

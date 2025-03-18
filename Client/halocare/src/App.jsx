@@ -5,6 +5,7 @@ import Calendar from './pages/calendar/Calendar';
 import { Box } from '@mui/material';
 import LoginPage from './components/login/login';
 import { useState, useEffect } from 'react';
+import HomePage from './pages/HomePage/homePage';
 
 function App() {
   // קבועים
@@ -78,7 +79,7 @@ function App() {
               overflow: 'auto'
             }}>
               <Routes>
-                <Route path="/" element={<homePage/>} />
+                <Route path="/" element={<HomePage/>} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/kids" element={<div>עמוד ניהול ילדים</div>} />
                 <Route path="/kids/add" element={<div>עמוד הוספת ילד</div>} />
