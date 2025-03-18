@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 import LoginPage from './components/login/login';
 import { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage/homePage';
+import NewEmployeeForm from './pages/Employees/Employee';
 
 function App() {
   // קבועים
@@ -79,7 +80,7 @@ function App() {
               overflow: 'auto'
             }}>
               <Routes>
-                <Route path="/" element={<HomePage/>} />
+                <Route path="/" element={<NewEmployeeForm/>} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/kids" element={<div>עמוד ניהול ילדים</div>} />
                 <Route path="/kids/add" element={<div>עמוד הוספת ילד</div>} />
@@ -94,7 +95,7 @@ function App() {
       ) : (
         // מסך התחברות
         <Routes>
-          <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/login" element={<NewEmployeeForm setIsAuthenticated={setIsAuthenticated} />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       )}
