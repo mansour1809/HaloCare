@@ -78,7 +78,7 @@ function App() {
               overflow: 'auto'
             }}>
               <Routes>
-                <Route path="/" element={<Navigate to="/calendar" replace />} />
+                <Route path="/" element={<homePage/>} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/kids" element={<div>עמוד ניהול ילדים</div>} />
                 <Route path="/kids/add" element={<div>עמוד הוספת ילד</div>} />
