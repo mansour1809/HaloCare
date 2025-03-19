@@ -10,6 +10,12 @@ import createCache from '@emotion/cache';
 // קומפוננטות של הפריימוורק
 import Navbar from './components/layout/Navbar/Navbar';
 import Sidebar from './components/layout/Sidebar/Sidebar';
+import Calendar from './pages/calendar/Calendar';
+import { Box } from '@mui/material';
+import LoginPage from './components/login/login';
+import { useState, useEffect } from 'react';
+import HomePage from './pages/HomePage/homePage';
+import NewEmployeeForm from './pages/Employees/Employee';
 
 
 // קומפוננטות של העמודים
@@ -108,6 +114,7 @@ const App = () => {
                 <Route path="/" element={<Calendar />} />
                 {/* <Route path="/kids" element={<KidsManagement />} />
                 <Route path="/kids/:id" element={<KidDetails />} />
+                <Route path="/" element={<NewEmployeeForm/>} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/classes" element={<ClassesManagement />} />
                 <Route path="/treatments" element={<Treatments />} />
@@ -123,6 +130,14 @@ const App = () => {
         </Router>
       </ThemeProvider>
     </CacheProvider>
+      ) : (
+        // מסך התחברות
+        <Routes>
+          <Route path="/login" element={<NewEmployeeForm setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      )}
+    </BrowserRouter>
   );
 };
 
