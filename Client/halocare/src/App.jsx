@@ -11,6 +11,7 @@ import ProSidebar from './components/layout/Sidebar/Sidebar';
 // דפים
 import Calendar from './pages/calendar/Calendar';
 import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
+import EmployeesManagement from './pages/Employees/EmployeesManagement';
 // import Dashboard from './pages/Dashboard';
 // import KidsManagement from './pages/KidsManagement';
 // import EmployeesManagement from './pages/EmployeesManagement';
@@ -105,9 +106,12 @@ function App() {
                     {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
                     <Route path="/kids/list" element={"kids list"} />
                     <Route path="/kids/add" element={"kids add"} />
+                    
+
+
 
                     {/* ניהול צוות <EmployeesManagement /><EmployeesManagement />*/}
-                    <Route path="/employees/list" element={"employees list"} />
+                    <Route path="/employees/list" element={<EmployeesManagement/>} />
                     <Route
                       path="/employees/add"
                       element={<NewEmployeeForm />}
