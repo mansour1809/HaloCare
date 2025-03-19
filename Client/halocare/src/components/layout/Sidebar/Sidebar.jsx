@@ -1,157 +1,217 @@
-import React from 'react';
-import { 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemIcon, 
-  ListItemText, 
-  Divider, 
-  Box,
-  Button,
-  styled
-} from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import PeopleIcon from '@mui/icons-material/People';
-import SchoolIcon from '@mui/icons-material/School';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import PersonIcon from '@mui/icons-material/Person';
-import EditIcon from '@mui/icons-material/Edit';
+import { 
+  Sidebar, 
+  Menu, 
+  MenuItem, 
+  SubMenu,
+  menuClasses,
 
-// קבוע רוחב ה-Sidebar
+} from 'react-pro-sidebar';
+import { Box, Typography, Avatar } from '@mui/material';
+import EventIcon from '@mui/icons-material/Event';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+// אייקונים
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import ChildCareIcon from '@mui/icons-material/ChildCare';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import GroupIcon from '@mui/icons-material/Group';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+
+// רוחב הסרגל הצדדי
 const DRAWER_WIDTH = 240;
 
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  width: DRAWER_WIDTH,
-  flexShrink: 0,
-  '& .MuiDrawer-paper': {
-    marginTop: '64px', // גובה ה-Navbar
-    width: DRAWER_WIDTH,
-    boxSizing: 'border-box',
-    border: 'none',
-    backgroundColor: '#f8f9fa',
-  },
-}));
-
-const MainButton = styled(Button)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
-  color: 'white',
-  borderRadius: '20px',
-  padding: '10px 20px',
-  margin: '16px auto',
-  display: 'block',
-  '&:hover': {
-    backgroundColor: theme.palette.primary.dark,
-  },
-  width: '80%',
-}));
-
-const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
-  borderRadius: '8px',
-  margin: '4px 8px',
-  backgroundColor: active ? 'rgba(0, 150, 136, 0.08)' : 'transparent',
-  '&:hover': {
-    backgroundColor: active ? 'rgba(0, 150, 136, 0.12)' : 'rgba(0, 0, 0, 0.04)',
-  },
-  '& .MuiListItemIcon-root': {
-    color: active ? theme.palette.primary.main : '#666',
-  },
-  '& .MuiListItemText-primary': {
-    color: active ? theme.palette.primary.main : '#333',
-    fontWeight: active ? '600' : '400',
-  },
-}));
-
-const menuItems = [
-  { text: 'ניהול ילדים', icon: <PeopleIcon />, path: '/kids' },
-  { text: 'ניהול כיתה', icon: <SchoolIcon />, path: '/classes' },
-  { text: 'יומן', icon: <CalendarMonthIcon />, path: '/calendar' },
-  { text: 'לוח מודעות', icon: <NotificationsIcon />, path: '/notices' },
-  { text: 'ניהול', icon: <PersonIcon />, path: '/profile' },
-];
-
-const Sidebar = ({ open, handleDrawerToggle, permanentDrawer = true }) => {
+const ProSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const handleNavigate = (path) => {
-    navigate(path);
-    if (!permanentDrawer) {
-      handleDrawerToggle();
-    }
+  // עיצוב לפריטי התפריט
+  const menuItemStyles = {
+    root: {
+      fontSize: '0.9rem',
+      fontWeight: 400,
+    },
+    icon: {
+      color: '#607489',
+      [`&.${menuClasses.disabled}`]: {
+        color: '#9fb6cf',
+      },
+    },
+    button: {
+      [`&.${menuClasses.disabled}`]: {
+        color: '#9fb6cf',
+      },
+      '&:hover': {
+        backgroundColor: 'rgba(79, 195, 247, 0.08)',
+        color: '#4fc3f7',
+      },
+    },
+    label: ({ open }) => ({
+      fontWeight: open ? 600 : undefined,
+    }),
   };
-
-  const drawerContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <MainButton 
-        variant="contained" 
-        startIcon={<AddCircleOutlineIcon />}
-        onClick={() => handleNavigate('/new-kid')}
+  
+  // עיצוב פריט פעיל
+  const activeMenuItemStyles = {
+    backgroundColor: 'rgba(79, 195, 247, 0.08)',
+    color: '#4fc3f7',
+    fontWeight: 600,
+  };
+  
+  // כותרת קטגוריה
+  const CategoryLabel = ({ children }) => (
+    <Box
+      sx={{
+        padding: '0 24px',
+        marginTop: '16px',
+        marginBottom: '8px',
+      }}
+    >
+      <Typography
+        variant="body2"
+        fontWeight={600}
+        style={{
+          opacity: 0.7,
+          letterSpacing: '0.5px',
+          fontSize: '0.75rem',
+          textTransform: 'uppercase',
+        }}
       >
-        הוספה
-      </MainButton>
-      
-      <Divider sx={{ mx: 2 }} />
-      
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <StyledListItemButton
-              active={location.pathname === item.path ? 1 : 0}
-              onClick={() => handleNavigate(item.path)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} sx={{ textAlign: 'right' }} />
-              {item.text === 'ניהול' && (
-                <EditIcon sx={{ fontSize: 18, ml: 1, color: '#666' }} />
-              )}
-            </StyledListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      
-      <Box sx={{ flexGrow: 1 }} />
-      
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Button
-          variant="outlined"
-          color="primary"
-          sx={{ borderRadius: '20px', width: '80%' }}
-        >
-          כל ההודעות
-        </Button>
-      </Box>
+        {children}
+      </Typography>
     </Box>
   );
-
+  
   return (
-    <>
-      {/* תצוגת מסך גדול - קבוע */}
-      {permanentDrawer && (
-        <StyledDrawer
-          variant="permanent"
-          open
-          sx={{ display: { xs: 'none', md: 'block' } }}
-        >
-          {drawerContent}
-        </StyledDrawer>
-      )}
-      
-      {/* תצוגת מסך קטן - נפתח וסוגר */}
-      {!permanentDrawer && (
-        <StyledDrawer
-          variant="temporary"
-          open={open}
-          onClose={handleDrawerToggle}
-          sx={{ display: { xs: 'block', md: 'none' } }}
-        >
-          {drawerContent}
-        </StyledDrawer>
-      )}
-    </>
+    <Sidebar
+      rtl
+      width={`${DRAWER_WIDTH}px`}
+      style={{ 
+        height: 'calc(100% - 64px)',
+        position: 'fixed',
+        top: 64, // לאחר ה-navbar
+        right: 0,
+        border: 'none',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+      }}
+      rootStyles={{
+        backgroundColor: 'white',
+        borderLeft: 'none',
+      }}
+    >
+      <Box sx={{ marginTop: '16px' }}>
+        <Menu menuItemStyles={menuItemStyles}>
+          <MenuItem 
+            icon={<DashboardIcon />} 
+            onClick={() => navigate('/')}
+            style={location.pathname === '/' ? activeMenuItemStyles : {}}
+          >
+            דשבורד
+          </MenuItem>
+          
+          <CategoryLabel>ניהול ילדים</CategoryLabel>
+          
+          <SubMenu 
+            label="ניהול ילדים" 
+            icon={<ChildCareIcon />}
+            defaultOpen={true}
+          >
+            <MenuItem 
+              icon={<GroupIcon />}
+              onClick={() => navigate('/kids/list')}
+              style={location.pathname === '/kids/list' ? activeMenuItemStyles : {}}
+            >
+              רשימת ילדים
+            </MenuItem>
+            <MenuItem 
+              icon={<PersonAddIcon />}
+              onClick={() => navigate('/kids/add')}
+              style={location.pathname === '/kids/add' ? activeMenuItemStyles : {}}
+            >
+              הוספת ילד
+            </MenuItem>
+          </SubMenu>
+          
+          <CategoryLabel>ניהול צוות</CategoryLabel>
+          
+          <SubMenu 
+            label="ניהול צוות" 
+            icon={<PeopleAltIcon />}
+          >
+            <MenuItem 
+              icon={<GroupIcon />}
+              onClick={() => navigate('/employees/list')}
+              style={location.pathname === '/employees/list' ? activeMenuItemStyles : {}}
+            >
+              רשימת אנשי צוות
+            </MenuItem>
+            <MenuItem 
+              icon={<PersonAddIcon />}
+              onClick={() => navigate('/employees/add')}
+              style={location.pathname === '/employees/add' ? activeMenuItemStyles : {}}
+            >
+              הוספת איש צוות
+            </MenuItem>
+          </SubMenu>
+          
+          <CategoryLabel>אחר</CategoryLabel>
+          
+          <SubMenu 
+  label="יומן" 
+  icon={<CalendarMonthIcon />}
+>
+  <MenuItem 
+    icon={<EventIcon />}
+    onClick={() => navigate('/calendar/schedule')}
+    style={location.pathname === '/calendar/schedule' ? activeMenuItemStyles : {}}
+  >
+    לוח שנה
+  </MenuItem>
+  <MenuItem 
+    icon={<MeetingRoomIcon />}
+    onClick={() => navigate('/calendar/meetings')}
+    style={location.pathname === '/calendar/meetings' ? activeMenuItemStyles : {}}
+  >
+    לוח פגישות
+  </MenuItem>
+</SubMenu>
+
+          
+          <MenuItem 
+            icon={<FormatListBulletedIcon />}
+            onClick={() => navigate('/tasks')}
+            style={location.pathname === '/tasks' ? activeMenuItemStyles : {}}
+          >
+            לוח משימות
+          </MenuItem>
+          
+          <SubMenu 
+            label="דוחות" 
+            icon={<AssessmentIcon />}
+          >
+            <MenuItem 
+              icon={<AutoStoriesIcon />}
+              onClick={() => navigate('/reports/attendance')}
+              style={location.pathname === '/reports/attendance' ? activeMenuItemStyles : {}}
+            >
+              דוחות נוכחות
+            </MenuItem>
+            <MenuItem 
+              icon={<EditNoteIcon />}
+              onClick={() => navigate('/reports/treatments')}
+              style={location.pathname === '/reports/treatments' ? activeMenuItemStyles : {}}
+            >
+              דוחות טיפולים
+            </MenuItem>
+          </SubMenu>
+        </Menu>
+      </Box>
+    </Sidebar>
   );
 };
 
-export default Sidebar;
+export default ProSidebar;
