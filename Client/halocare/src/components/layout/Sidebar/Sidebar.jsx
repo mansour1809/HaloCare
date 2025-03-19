@@ -1,161 +1,157 @@
-import { useNavigate } from "react-router-dom";
-import {
-    Drawer,
-    List,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Collapse,
-    Box,
-    // Typography,
-    Button,
-  } from "@mui/material";
-  import {
-    ExpandLess,
-    ExpandMore,
-    Dashboard,
-    People,
-    CalendarMonth,
-    ExitToApp,
-    Edit,
-  } from "@mui/icons-material";
-import { useState } from "react";
+import React from 'react';
+import { 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider, 
+  Box,
+  Button,
+  styled
+} from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
+import PeopleIcon from '@mui/icons-material/People';
+import SchoolIcon from '@mui/icons-material/School';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PersonIcon from '@mui/icons-material/Person';
+import EditIcon from '@mui/icons-material/Edit';
 
+// קבוע רוחב ה-Sidebar
+const DRAWER_WIDTH = 240;
 
-const Sidebar = () => {
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  width: DRAWER_WIDTH,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    marginTop: '64px', // גובה ה-Navbar
+    width: DRAWER_WIDTH,
+    boxSizing: 'border-box',
+    border: 'none',
+    backgroundColor: '#f8f9fa',
+  },
+}));
+
+const MainButton = styled(Button)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  color: 'white',
+  borderRadius: '20px',
+  padding: '10px 20px',
+  margin: '16px auto',
+  display: 'block',
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
+  width: '80%',
+}));
+
+const StyledListItemButton = styled(ListItemButton)(({ theme, active }) => ({
+  borderRadius: '8px',
+  margin: '4px 8px',
+  backgroundColor: active ? 'rgba(0, 150, 136, 0.08)' : 'transparent',
+  '&:hover': {
+    backgroundColor: active ? 'rgba(0, 150, 136, 0.12)' : 'rgba(0, 0, 0, 0.04)',
+  },
+  '& .MuiListItemIcon-root': {
+    color: active ? theme.palette.primary.main : '#666',
+  },
+  '& .MuiListItemText-primary': {
+    color: active ? theme.palette.primary.main : '#333',
+    fontWeight: active ? '600' : '400',
+  },
+}));
+
+const menuItems = [
+  { text: 'ניהול ילדים', icon: <PeopleIcon />, path: '/kids' },
+  { text: 'ניהול כיתה', icon: <SchoolIcon />, path: '/classes' },
+  { text: 'יומן', icon: <CalendarMonthIcon />, path: '/calendar' },
+  { text: 'לוח מודעות', icon: <NotificationsIcon />, path: '/notices' },
+  { text: 'ניהול', icon: <PersonIcon />, path: '/profile' },
+];
+
+const Sidebar = ({ open, handleDrawerToggle, permanentDrawer = true }) => {
   const navigate = useNavigate();
-  const [openMenu, setOpenMenu] = useState(null);
-
-  const handleClick = (menu) => {
-    setOpenMenu(openMenu === menu ? null : menu);
+  const location = useLocation();
+  
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (!permanentDrawer) {
+      handleDrawerToggle();
+    }
   };
 
-  const menuItems = [
-    { 
-      title: "ניהול ילדים", 
-      icon: <People />, 
-      path: "/kids",
-      submenu: [
-        { title: "רשימת ילדים", path: "/kids" },
-        { title: "הוספת ילד", path: "/kids/add" }
-      ]
-    },
-    { 
-      title: "ניהול צוות", 
-      icon: <People />, 
-      path: "/employees",
-      submenu: [
-        { title: "רשימת צוות", path: "/employees" },
-        { title: "הוספת איש צוות", path: "/employees/add" }
-      ]
-    },
-    { 
-      title: "יומן", 
-      icon: <CalendarMonth />, 
-      path: "/calendar",
-      submenu: [
-        { title: "לוח שנה", path: "/calendar" }
-      ]
-    },
-    { 
-      title: "ניהול", 
-      icon: <Edit />, 
-      path: "/admin",
-      submenu: [] 
-    }
-  ];
-
-  return (
-    <Drawer
-      variant="permanent"
-      anchor="right"
-      sx={{
-        width: 250,
-        "& .MuiDrawer-paper": {
-          width: 250,
-          backgroundColor: "#F8FAFC",
-        },
-      }}
-    >
-      {/* Clickable Dashboard */}
-      <Box sx={{ p: 1 }}>
-        <ListItemButton onClick={() => navigate('/')}>
-          <ListItemText primary="עמוד הבית" sx={{ textAlign: "right", fontWeight: "bold", color: "#0077C2" }} />
-          <ListItemIcon sx={{ minWidth: 36, padding: 1 }}>
-            <Dashboard />
-          </ListItemIcon>
-        </ListItemButton>
-      </Box>
-
-      {/* Menu Items */}
+  const drawerContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <MainButton 
+        variant="contained" 
+        startIcon={<AddCircleOutlineIcon />}
+        onClick={() => handleNavigate('/new-kid')}
+      >
+        הוספה
+      </MainButton>
+      
+      <Divider sx={{ mx: 2 }} />
+      
       <List>
         {menuItems.map((item) => (
-          <div key={item.title}>
-            <ListItemButton
-              onClick={() => {
-                handleClick(item.title);
-                if (item.path) navigate(item.path);
-              }}
-              sx={{
-                px: 2,
-                p: 1.5,
-                display: "flex",
-                flexDirection: "row-reverse",
-              }}
+          <ListItem key={item.text} disablePadding>
+            <StyledListItemButton
+              active={location.pathname === item.path ? 1 : 0}
+              onClick={() => handleNavigate(item.path)}
             >
-              <ListItemIcon sx={{ minWidth: 36, justifyContent: "flex-end" }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.title} sx={{ textAlign: "right" }} />
-              {item.submenu.length > 0 &&
-                (openMenu === item.title ? <ExpandLess /> : <ExpandMore />)}
-            </ListItemButton>
-
-            <Collapse in={openMenu === item.title} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                {item.submenu.map((subItem) => (
-                  <ListItemButton
-                    key={subItem.title}
-                    onClick={() => navigate(subItem.path)}
-                    sx={{
-                      pr: 6,
-                      display: "flex",
-                      flexDirection: "row-reverse",
-                    }}
-                  >
-                    <ListItemText primary={subItem.title} sx={{ textAlign: "right" }} />
-                  </ListItemButton>
-                ))}
-              </List>
-            </Collapse>
-          </div>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} sx={{ textAlign: 'right' }} />
+              {item.text === 'ניהול' && (
+                <EditIcon sx={{ fontSize: 18, ml: 1, color: '#666' }} />
+              )}
+            </StyledListItemButton>
+          </ListItem>
         ))}
       </List>
-
-      {/* Logout Button */}
-      <Box sx={{ mt: "auto", p: 2, textAlign: "center" }}>
+      
+      <Box sx={{ flexGrow: 1 }} />
+      
+      <Box sx={{ p: 2, textAlign: 'center' }}>
         <Button
-          variant="contained"
-          color="inherit"
-          fullWidth
-          startIcon={<ExitToApp />}
-          onClick={() => {
-            // לוגיקת התנתקות כאן
-            navigate('/login');
-          }}
-          sx={{
-            bgcolor: "#E5E7EB",
-            color: "#6B7280",
-            "&:hover": { bgcolor: "#D1D5DB" },
-            display: "flex",
-            flexDirection: "row-reverse",
-          }}
+          variant="outlined"
+          color="primary"
+          sx={{ borderRadius: '20px', width: '80%' }}
         >
-          התנתקות
+          כל ההודעות
         </Button>
       </Box>
-    </Drawer>
+    </Box>
+  );
+
+  return (
+    <>
+      {/* תצוגת מסך גדול - קבוע */}
+      {permanentDrawer && (
+        <StyledDrawer
+          variant="permanent"
+          open
+          sx={{ display: { xs: 'none', md: 'block' } }}
+        >
+          {drawerContent}
+        </StyledDrawer>
+      )}
+      
+      {/* תצוגת מסך קטן - נפתח וסוגר */}
+      {!permanentDrawer && (
+        <StyledDrawer
+          variant="temporary"
+          open={open}
+          onClose={handleDrawerToggle}
+          sx={{ display: { xs: 'block', md: 'none' } }}
+        >
+          {drawerContent}
+        </StyledDrawer>
+      )}
+    </>
   );
 };
 
-export default Sidebar
+export default Sidebar;

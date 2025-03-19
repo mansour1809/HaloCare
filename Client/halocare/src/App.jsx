@@ -1,105 +1,129 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Box, CssBaseline, Toolbar, useTheme, useMediaQuery } from '@mui/material';
+import { ThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/styles';
+import rtlPlugin from 'stylis-plugin-rtl';
+import { prefixer } from 'stylis';
+import { CacheProvider } from '@emotion/react';
+import createCache from '@emotion/cache';
+
+// קומפוננטות של הפריימוורק
 import Navbar from './components/layout/Navbar/Navbar';
 import Sidebar from './components/layout/Sidebar/Sidebar';
-import Calendar from './pages/calendar/Calendar';
-import { Box } from '@mui/material';
-import LoginPage from './components/login/login';
-import { useState, useEffect } from 'react';
-import HomePage from './pages/HomePage/homePage';
 
-function App() {
-  // קבועים
-  const SIDEBAR_WIDTH = 250;
-  const NAVBAR_HEIGHT = 64;
 
-  // מצב האימות - זמני
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+// קומפוננטות של העמודים
+// import Dashboard from './pages/Dashboard';
+// import KidsManagement from './pages/KidsManagement';
+// import KidDetails from './pages/KidDetails';
+ import Calendar from './pages/calendar/Calendar';
+// import ClassesManagement from './pages/ClassesManagement';
+// import Treatments from './pages/Treatments';
+// import TreatmentReports from './pages/TreatmentReports';
+// import TSHA from './pages/TSHA';
+// import Attendance from './pages/Attendance';
+// import UserManagement from './pages/UserManagement';
+// import Settings from './pages/Settings';
+// import NotFound from './pages/NotFound';
 
-  // בדיקת מצב האימות בטעינה ראשונית - זמני
-  useEffect(() => {
-    const auth = localStorage.getItem('isAuthenticated');
-    if (auth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
+// יצירת ערכת עיצוב מותאמת
+let theme = createTheme({
+  direction: 'rtl',
+  palette: {
+    primary: {
+      main: '#3bafc3', // הצבע העיקרי שראיתי בתמונה
+      light: '#65dfee',
+      dark: '#008193',
+    },
+    secondary: {
+      main: '#f48fb1',
+      light: '#ffc1e3',
+      dark: '#bf5f82',
+    },
+    background: {
+      default: '#f5f5f5',
+    },
+  },
+  typography: {
+    fontFamily: '"Heebo", "Roboto", "Arial", sans-serif',
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+  },
+});
 
-  // יציאה מהמערכת - זמני
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
+// עדכון הפונטים להיות רספונסיביים
+theme = responsiveFontSizes(theme);
+
+// יצירת קאש לתמיכה ב-RTL
+const cacheRtl = createCache({
+  key: 'muirtl',
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
+const App = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <BrowserRouter>
-      {isAuthenticated ? (
-        // מבנה המערכת כשהמשתמש מחובר
-        <Box >
-          {/* סייד-בר בצד ימין - קבוע */}
-          <Box sx={{ 
-            width: SIDEBAR_WIDTH,
-            flexShrink: 0,
-            // position: 'fixed',
-            // top: 0,
-            // right: 0,
-            // bottom: 0,
-            zIndex: 1300,
-            bgcolor: '#F8FAFC',
-            boxShadow: '0px 0px 10px rgba(0,0,0,0.1)'
-          }}>
-            <Sidebar onLogout={handleLogout} />
-          </Box>
-
-          {/* מכל לנאב-בר והתוכן - עם מרווח מימין */}
-          <Box sx={{ 
-            marginRight: SIDEBAR_WIDTH, 
-            width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',  
-            minHeight: '100vh',
-          }}>
-            {/* נאב-בר עליון - קבוע */}
-            <Box sx={{ 
-              position: 'sticky',
-              top: 0,
-              zIndex: 1200,
-              height: NAVBAR_HEIGHT,
-              bgcolor: '#f5f5f5',
-              boxShadow: '0px 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              <Navbar onLogout={handleLogout} />
-            </Box>
-
-            {/* אזור התוכן - עם גלילה עצמאית */}
-            <Box sx={{ 
-              flexGrow: 1,
-              p: 2,
-              bgcolor: '#f5f5f5',
-              overflow: 'auto'
-            }}>
+    <CacheProvider value={cacheRtl}>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <Box sx={{ display: 'flex', direction: 'rtl' }}>
+            <CssBaseline />
+            
+            {/* Navbar קבוע בחלק העליון */}
+            <Navbar toggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
+            
+            {/* Sidebar */}
+            <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            
+            {/* תוכן המערכת - מסך ראשי */}
+            <Box
+              component="main"
+              sx={{
+                flexGrow: 1,
+                p: 3,
+                width: { sm: `calc(100% - ${isMobile ? 0 : 240}px)` },
+                marginRight: { sm: isMobile ? 0 : '240px' },
+                marginTop: '64px', // הזזה מתחת ל-Navbar
+                transition: theme.transitions.create(['margin', 'width'], {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.leavingScreen,
+                }),
+              }}
+            >
               <Routes>
-                <Route path="/" element={<HomePage/>} />
+                <Route path="/" element={<Calendar />} />
+                {/* <Route path="/kids" element={<KidsManagement />} />
+                <Route path="/kids/:id" element={<KidDetails />} />
                 <Route path="/calendar" element={<Calendar />} />
-                <Route path="/kids" element={<div>עמוד ניהול ילדים</div>} />
-                <Route path="/kids/add" element={<div>עמוד הוספת ילד</div>} />
-                <Route path="/employees" element={<div>עמוד ניהול צוות</div>} />
-                <Route path="/employees/add" element={<div>עמוד הוספת איש צוות</div>} />
-                <Route path="/admin" element={<div>עמוד ניהול</div>} />
-                <Route path="*" element={<div>דף לא נמצא</div>} />
+                <Route path="/classes" element={<ClassesManagement />} />
+                <Route path="/treatments" element={<Treatments />} />
+                <Route path="/treatment-reports" element={<TreatmentReports />} />
+                <Route path="/tsha" element={<TSHA />} />
+                <Route path="/attendance" element={<Attendance />} />
+                <Route path="/users" element={<UserManagement />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} /> */}
               </Routes>
             </Box>
           </Box>
-        </Box>
-      ) : (
-        // מסך התחברות
-        <Routes>
-          <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      )}
-    </BrowserRouter>
+        </Router>
+      </ThemeProvider>
+    </CacheProvider>
   );
-}
+};
 
 export default App;

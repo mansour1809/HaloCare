@@ -1,84 +1,81 @@
-import { AppBar, Toolbar, IconButton, Typography, Avatar, Box, Menu, MenuItem } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import { useState, useEffect } from "react";
+import React from 'react';
+import { AppBar, Toolbar, IconButton, Typography, Box, Avatar } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import MenuIcon from '@mui/icons-material/Menu';
+import ChatIcon from '@mui/icons-material/Chat';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import SearchIcon from '@mui/icons-material/Search';
 
-// eslint-disable-next-line react/prop-types
-const Navbar = ({ onLogout }) => {
-  const [user, setUser] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  
-  useEffect(() => {
-    // קריאת פרטי המשתמש מהלוקל סטורג'
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      setUser(JSON.parse(userStr));
-    }
-  }, []);
+const NavbarRoot = styled(AppBar)(({ theme }) => ({
+  backgroundColor: 'white',
+  boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.1)',
+  zIndex: theme.zIndex.drawer + 1,
+  position: 'fixed',
+  width: '100%',
+  height: '64px'
+}));
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+const LogoContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginLeft: 'auto',
+  marginRight: '16px'
+});
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+const Logo = styled('img')({
+  height: '30px',
+  objectFit: 'contain',
+});
 
-  const handleLogout = () => {
-    handleMenuClose();
-    onLogout();
-  };
+const LogoText = styled(Typography)({
+  fontWeight: 'bold',
+  color: '#333',
+  marginLeft: '8px',
+});
 
+const Navbar = ({ handleDrawerToggle }) => {
   return (
-    <AppBar position="static" sx={{ 
-      backgroundColor: "#f5f5f5", 
-      color: "#333", 
-      direction: "rtl",
-      height: '%',
-      boxShadow: 2
-    }}>
+    <NavbarRoot>
       <Toolbar>
-        {/* לוגו */}
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold", color: "#0077C2" }}>
-          HALO CARE
-        </Typography>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{ color: '#666', display: { md: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
 
-        {/* אייקונים ופרופיל */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton color="inherit">
-            <NotificationsIcon />
-          </IconButton>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={handleMenuOpen}>
-            <Typography variant="body2" sx={{ mr: 1 }}>
-              {user?.name || 'משתמש'}
-            </Typography>
-            <Avatar 
-              alt={user?.name || 'User Avatar'} 
-              src="/static/images/avatar.jpg" 
-              sx={{ width: 36, height: 36 }}
-            />
-          </Box>
-          
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-          >
-            <MenuItem onClick={handleMenuClose}>הפרופיל שלי</MenuItem>
-            <MenuItem onClick={handleMenuClose}>הגדרות</MenuItem>
-            <MenuItem onClick={handleLogout}>התנתקות</MenuItem>
-          </Menu>
-        </Box>
+        <Box sx={{ flexGrow: 1 }} />
+
+        <LogoContainer>
+          <Logo src={'/logo.jpeg'} alt="Halo Care Logo" />
+          <LogoText variant="h6">HALO CARE</LogoText>
+        </LogoContainer>
+
+        <Box sx={{ flexGrow: 1 }} />
+
+        <IconButton sx={{ color: '#666' }}>
+          <SearchIcon />
+        </IconButton>
+        
+        <IconButton sx={{ color: '#666' }}>
+          <NotificationsIcon />
+        </IconButton>
+        
+        <IconButton sx={{ color: '#666' }}>
+          <ChatIcon />
+        </IconButton>
+        
+        <Avatar
+          alt="User Profile"
+          src="/static/images/avatar/1.jpg"
+          sx={{ width: 32, height: 32, ml: 1 }}
+        />
       </Toolbar>
-    </AppBar>
+    </NavbarRoot>
   );
 };
 
