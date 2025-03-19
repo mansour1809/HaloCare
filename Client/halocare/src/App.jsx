@@ -10,6 +10,7 @@ import ProSidebar from './components/layout/Sidebar/Sidebar';
 
 // דפים
 import Calendar from './pages/calendar/Calendar';
+import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 // import Dashboard from './pages/Dashboard';
 // import KidsManagement from './pages/KidsManagement';
 // import EmployeesManagement from './pages/EmployeesManagement';
@@ -109,7 +110,7 @@ function App() {
                     <Route path="/employees/list" element={"employees list"} />
                     <Route
                       path="/employees/add"
-                      element={"<Employees add />"}
+                      element={<NewEmployeeForm />}
                     />
 
                     {/* יומן */}

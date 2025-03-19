@@ -18,7 +18,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import RTL from '../../components/RTL'; // שנה את הנתיב בהתאם
 
 // יצירת תמה מותאמת עם תמיכה בעברית
 const theme = createTheme({
@@ -33,7 +32,7 @@ const theme = createTheme({
   },
 });
 
-const NewEmployeeForm = ({ setIsAuthenticated }) => {
+const NewEmployeeForm = () => {
   // מצב טופס התחלתי
   const [formData, setFormData] = useState({
     firstName: '',
@@ -73,17 +72,16 @@ const NewEmployeeForm = ({ setIsAuthenticated }) => {
     console.log('נתוני הטופס:', formData);
     
     // אם הפונקציה קיימת (כמו במקרה של מסך ההתחברות), נפעיל אותה
-    if (setIsAuthenticated) {
-      localStorage.setItem('isAuthenticated', 'true');
-      setIsAuthenticated(true);
-    }
+    // if (setIsAuthenticated) {
+    //   localStorage.setItem('isAuthenticated', 'true');
+    //   setIsAuthenticated(true);
+    // }
     
     // כאן בעתיד תהיה שליחה לדאטאבייס
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <RTL>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
           <Container maxWidth="md" dir="rtl">
             <Paper elevation={3} sx={{ padding: 3, marginTop: 4, marginBottom: 4 }}>
@@ -290,7 +288,6 @@ const NewEmployeeForm = ({ setIsAuthenticated }) => {
             </Paper>
           </Container>
         </LocalizationProvider>
-      </RTL>
     </ThemeProvider>
   );
 };
