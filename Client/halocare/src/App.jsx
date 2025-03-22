@@ -71,6 +71,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <ProSidebarProvider>
           <CssBaseline />
+          <CalendarProvider>
           <Router>
             <Box
               sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
@@ -119,7 +120,6 @@ function App() {
                       element={<NewEmployeeForm />}
                     />
 
-                    {/* יומן */}
                     <Route path="/calendar" element={<Calendar />} />
 
                     {/* משימות <Tasks />*/}
@@ -133,6 +133,7 @@ function App() {
               </Box>
             </Box>
           </Router>
+          </CalendarProvider>
         </ProSidebarProvider>
       </ThemeProvider>
     </CacheProvider>

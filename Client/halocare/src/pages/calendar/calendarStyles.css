@@ -1,0 +1,188 @@
+/* עיצובים עבור לוח השנה */
+
+/* תאי היומן */
+.fc-day {
+    background-color: #fff;
+    transition: background-color 0.2s;
+  }
+  
+  .fc-day:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* עיצוב כותרות ימים */
+  .fc-day-header {
+    font-weight: 700;
+    color: #495057;
+    padding: 10px 0 !important;
+    border-width: 0 !important;
+    background-color: #f8f9fa;
+  }
+  
+  /* עיצוב אירועים */
+  .fc-event-custom {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin: 2px 0;
+  }
+  
+  .fc-event-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  /* תוכן האירוע */
+  .fc-event-title {
+    font-weight: 600;
+    padding: 2px 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .fc-event-time {
+    font-size: 0.85em;
+    opacity: 0.8;
+    padding: 0 4px;
+  }
+  
+  .fc-event-location {
+    font-size: 0.75em;
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 4px;
+  }
+  
+  /* כפתורים בלוח השנה */
+  .fc-button {
+    border-radius: 8px !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    transition: all 0.2s !important;
+  }
+  
+  .fc-button:hover {
+    background-color: rgba(79, 195, 247, 0.1) !important;
+    border-color: #4fc3f7 !important;
+  }
+  
+  .fc-button-active {
+    background-color: #4fc3f7 !important;
+    border-color: #4fc3f7 !important;
+  }
+  
+  /* תאריך היום */
+  .fc-day-today {
+    background-color: rgba(79, 195, 247, 0.05) !important;
+    border: 1px solid rgba(79, 195, 247, 0.3) !important;
+  }
+  
+  /* כותרת היומן */
+  .fc-toolbar-title {
+    font-size: 1.5em !important;
+    font-weight: 700 !important;
+    color: #2c3e50 !important;
+  }
+  
+  /* חלק התצוגה היומית */
+  .fc-timegrid-slot {
+    height: 45px !important; /* גובה שורות הזמן */
+    border-bottom: 1px dashed #eaecef !important;
+  }
+  
+  /* תוויות זמן */
+  .fc-timegrid-slot-label {
+    color: #666;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  
+  /* שורות זמנים בשבוע */
+  .fc-timegrid-slot-minor {
+    border-color: rgba(0, 0, 0, 0.05) !important;
+  }
+  
+  /* תצוגת חודשית */
+  .fc-daygrid-day-number {
+    padding: 8px !important;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* כשאין אירועים */
+  .empty-calendar-message {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    color: #6c757d;
+  }
+  
+  /* אנימציה בטעינת לוח השנה */
+  .calendar-loading {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* מצב טעינה */
+  .calendar-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  
+  /* עיצוב התאמת זמן (Resizing) */
+  .fc-event-resizing {
+    opacity: 0.8;
+    border: 2px dashed #4fc3f7 !important;
+  }
+  
+  /* עיצוב גרירה */
+  .fc-event-dragging {
+    opacity: 0.8;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  /* כותרת יום בתצוגה חודשית */
+  .fc-col-header-cell {
+    background-color: #f8f9fa;
+    font-weight: 700;
+    padding: 10px 0;
+  }
+  
+  /* עיצוב סקרולבר */
+  .fc-scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .fc-scroller::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  .fc-scroller::-webkit-scrollbar-thumb {
+    background: #c5c5c5;
+    border-radius: 10px;
+  }
+  
+  .fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: #a3a3a3;
+  }
