@@ -13,7 +13,7 @@ import CalendarView from './CalendarView';
 import EventDialog from './EventDialog';
 
 // שימוש בקונטקסט
-import { useCalendar } from '../context/CalendarContext';
+import { useCalendar } from './CalendarContext';
 
 const Calendar = () => {
   // קבלת ערכים ופונקציות מהקונטקסט

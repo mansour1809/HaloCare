@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { eventColors } from '../utils/calendarUtils';
+import { eventColors } from './calendarUtils';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';

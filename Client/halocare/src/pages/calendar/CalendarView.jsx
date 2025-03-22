@@ -7,7 +7,7 @@ import heLocale from '@fullcalendar/core/locales/he';
 import { Box, Skeleton, Typography } from '@mui/material';
 
 // שימוש בקונטקסט
-import { useCalendar } from '../context/CalendarContext';
+import { useCalendar } from './CalendarContext';
 
 const CalendarView = ({
   calendarRef,
@@ -62,7 +62,7 @@ const CalendarView = ({
       locale={heLocale}
       direction="rtl"
       headerToolbar={{
-        right: 'prev,next',
+        right: '',
         center: 'title',
         left: ''
       }}
