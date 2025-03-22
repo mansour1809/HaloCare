@@ -12,6 +12,7 @@ import ProSidebar from './components/layout/Sidebar/Sidebar';
 import Calendar from './pages/calendar/Calendar';
 import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
+import { CalendarProvider } from './pages/calendar/CalendarContext';
 // import Dashboard from './pages/Dashboard';
 // import KidsManagement from './pages/KidsManagement';
 // import EmployeesManagement from './pages/EmployeesManagement';

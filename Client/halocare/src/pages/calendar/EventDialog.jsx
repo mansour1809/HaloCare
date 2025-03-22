@@ -30,10 +30,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 
 // יבוא צבעים לסוגי אירועים
-import { eventColors } from '../utils/calendarUtils';
+import { eventColors } from './calendarUtils';
 
 // שימוש בקונטקסט
-import { useCalendar } from '../context/CalendarContext';
+import { useCalendar } from './CalendarContext';
 
 const EventDialog = () => {
   // קבלת ערכים ופונקציות מהקונטקסט

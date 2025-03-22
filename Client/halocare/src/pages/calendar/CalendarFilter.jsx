@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { 
   Paper, 
   Box, 
@@ -16,15 +15,21 @@ import {
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 
-const CalendarFilter = ({ 
-  filterOptions, 
-  handleFilterChange, 
-  resetFilters,
-  kids = [],
-  employees = [],
-  eventTypes = [],
-  isLoading = false
-}) => {
+// שימוש בקונטקסט
+import { useCalendar } from './CalendarContext';
+
+const CalendarFilter = () => {
+  // קבלת ערכים ופונקציות מהקונטקסט
+  const {
+    filterOptions,
+    handleFilterChange,
+    resetFilters,
+    kids,
+    employees,
+    eventTypes,
+    isLoadingReferenceData
+  } = useCalendar();
+  
   // בדיקה אם יש מסננים פעילים
   const hasActiveFilters = 
     filterOptions.kidId || 
@@ -91,7 +96,7 @@ const CalendarFilter = ({
                 value={filterOptions.kidId}
                 onChange={handleFilterChange}
                 label="ילד"
-                disabled={isLoading || kids.length === 0}
+                disabled={isLoadingReferenceData || kids.length === 0}
               >
                 <MenuItem value="">
                   <em>הכל</em>
@@ -113,7 +118,7 @@ const CalendarFilter = ({
                 value={filterOptions.employeeId}
                 onChange={handleFilterChange}
                 label="איש צוות"
-                disabled={isLoading || employees.length === 0}
+                disabled={isLoadingReferenceData || employees.length === 0}
               >
                 <MenuItem value="">
                   <em>הכל</em>
@@ -136,7 +141,7 @@ const CalendarFilter = ({
                 value={filterOptions.eventType}
                 onChange={handleFilterChange}
                 label="סוג אירוע"
-                disabled={isLoading || eventTypes.length === 0}
+                disabled={isLoadingReferenceData || eventTypes.length === 0}
               >
                 <MenuItem value="">
                   <em>הכל</em>
@@ -151,7 +156,7 @@ const CalendarFilter = ({
           </Grid>
         </Grid>
         
-        {isLoading && (
+        {isLoadingReferenceData && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <CircularProgress size={20} />
             <Typography variant="body2" sx={{ ml: 1 }}>
