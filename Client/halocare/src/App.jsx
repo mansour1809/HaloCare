@@ -118,7 +118,7 @@ function App() {
                       element={<NewEmployeeForm />}
                     />
 
-                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/calendar" element={<Calendar/>} />
 
                     {/* משימות <Tasks />*/}
                     <Route path="/tasks" element={"tasks"} />
