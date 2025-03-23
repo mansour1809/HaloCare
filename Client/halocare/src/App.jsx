@@ -14,6 +14,7 @@ import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
 import KidsManagment from './pages/kids/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
+import AttendanceTable from './pages/Kids/KidsAttendance';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -125,7 +126,7 @@ function App() {
                     <Route path="/tasks" element={"tasks"} />
 
                     {/* דוחות <Reports /> <Reports />*/}
-                    <Route path="/reports/attendance" element={"attendance"} />
+                    <Route path="/reports/attendance" element={<AttendanceTable/>} />
                     <Route path="/reports/treatments" element={"treatments"} />
                   </Routes>
                 </Box>
