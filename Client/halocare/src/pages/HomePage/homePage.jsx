@@ -1,5 +1,4 @@
 import { Box, Typography, Paper, Grid } from '@mui/material';
-import Sidebar from '../../components/layout/Sidebar/Sidebar';
 
 
 

@@ -96,13 +96,13 @@ export const CalendarProvider = ({ children }) => {
       console.error('Error fetching events:', error);
       setError('אירעה שגיאה בטעינת האירועים');
       
-      // נתוני הדגמה למקרה שהשרת לא זמין
+      // demo data in case the server is not available
       const demoEvents = [
         {
           id: 1,
           title: 'טיפול פיזיותרפיה - יוסי',
-          start: '2024-03-14T09:00:00',
-          end: '2024-03-14T10:00:00',
+          start: '2025-03-14T09:00:00',
+          end: '2025-03-14T10:00:00',
           backgroundColor: eventColors['טיפול פיזיותרפיה'],
           borderColor: eventColors['טיפול פיזיותרפיה'],
           extendedProps: {
@@ -117,8 +117,8 @@ export const CalendarProvider = ({ children }) => {
         {
           id: 2,
           title: 'פגישת הורים - משפחת כהן',
-          start: '2024-03-14T11:00:00',
-          end: '2024-03-14T12:00:00',
+          start: '2025-03-14T11:00:00',
+          end: '2025-03-14T12:00:00',
           backgroundColor: eventColors['פגישת הורים'],
           borderColor: eventColors['פגישת הורים'],
           extendedProps: {
@@ -133,8 +133,8 @@ export const CalendarProvider = ({ children }) => {
         {
           id: 3,
           title: 'טיפול רגשי - נועה',
-          start: '2024-03-15T10:00:00',
-          end: '2024-03-15T11:00:00',
+          start: '2025-03-15T10:00:00',
+          end: '2025-03-15T11:00:00',
           backgroundColor: eventColors['טיפול רגשי'],
           borderColor: eventColors['טיפול רגשי'],
           extendedProps: {
@@ -149,8 +149,8 @@ export const CalendarProvider = ({ children }) => {
         {
           id: 4,
           title: 'מפגש קבוצתי',
-          start: '2024-03-16T09:30:00',
-          end: '2024-03-16T11:00:00',
+          start: '2025-03-16T09:30:00',
+          end: '2025-03-16T11:00:00',
           backgroundColor: eventColors['מפגש קבוצתי'],
           borderColor: eventColors['מפגש קבוצתי'],
           extendedProps: {

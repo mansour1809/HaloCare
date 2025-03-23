@@ -21,18 +21,18 @@ const Calendar = () => {
     events,
     filteredEvents,
     isLoading,
-    isLoadingReferenceData,
+    //isLoadingReferenceData,
     calendarView,
     showFilterForm,
     filterOptions,
     
     fetchEvents,
-    handleDateClick,
-    handleEventClick,
+    //handleDateClick,
+    //handleEventClick,
     handleViewChange,
     createNewEvent,
     setShowFilterForm,
-    resetFilters
+    //resetFilters
   } = useCalendar();
   
   // רפרנס ל-FullCalendar

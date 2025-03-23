@@ -174,7 +174,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
             src={'/logo.jpeg'} 
             alt="Halo Care Logo" 
             style={{ 
-              height: '450px',
+              height: '250px',
               borderRadius: '10px',
             //   boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
             }} 

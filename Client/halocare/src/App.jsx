@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, Toolbar, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { rtlCache } from './common/rtlCache';
 import { CacheProvider } from '@emotion/react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
@@ -14,6 +14,8 @@ import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
 import KidsManagment from './pages/kids/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
+import HomePage from './pages/HomePage/homePage';
+import LoginPage from './components/login/login';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -71,6 +73,7 @@ function App() {
         <ProSidebarProvider>
           <CssBaseline />
           <CalendarProvider>
+
           <Router>
             <Box
               sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
@@ -103,15 +106,12 @@ function App() {
                 >
                   <Routes>
                     {/* דף הבית - דשבורד */}
-                    <Route path="/" element={<Calendar />} />
+
+                    <Route path="/" element={<HomePage />} />
 
                     {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
                     <Route path="/kids/list" element={<KidsManagment/>} />
                     <Route path="/kids/add" element={"kids add"} />
-                    
-
-
-
                     {/* ניהול צוות <EmployeesManagement /><EmployeesManagement />*/}
                     <Route path="/employees/list" element={<EmployeesManagement/>} />
                     <Route
@@ -122,7 +122,7 @@ function App() {
                     <Route path="/calendar" element={<Calendar/>} />
 
                     {/* משימות <Tasks />*/}
-                    <Route path="/tasks" element={"tasks"} />
+                    <Route path="/tasks" element={<LoginPage/>} />
 
                     {/* דוחות <Reports /> <Reports />*/}
                     <Route path="/reports/attendance" element={"attendance"} />

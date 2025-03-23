@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,8 @@ const KidsManagement = () => {
   const [kids, setKids] = useState(initialKids);
   const [open, setOpen] = useState(false);
   const [selectedKid, setSelectedKid] = useState(null);
+
+
 
   const handleEdit = (kid) => {
     setSelectedKid(kid);
