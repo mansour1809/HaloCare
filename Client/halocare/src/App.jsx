@@ -12,8 +12,9 @@ import ProSidebar from './components/layout/Sidebar/Sidebar';
 import Calendar from './pages/calendar/Calendar';
 import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
+import KidsManagment from './pages/kids/KidsManagement';
+import { CalendarProvider } from './pages/calendar/CalendarContext';
 // import Dashboard from './pages/Dashboard';
-// import KidsManagement from './pages/KidsManagement';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
 // import Reports from './pages/Reports';
@@ -105,7 +106,7 @@ function App() {
                     <Route path="/" element={<Calendar />} />
 
                     {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
-                    <Route path="/kids/list" element={<KidsManagement/>} />
+                    <Route path="/kids/list" element={<KidsManagment/>} />
                     <Route path="/kids/add" element={"kids add"} />
                     
 
