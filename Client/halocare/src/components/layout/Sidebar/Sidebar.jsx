@@ -110,7 +110,7 @@ const ProSidebar = () => {
             onClick={() => navigate('/')}
             style={location.pathname === '/' ? activeMenuItemStyles : {}}
           >
-            דשבורד
+            דף הבית
           </MenuItem>
           
           <CategoryLabel>ניהול ילדים</CategoryLabel>
