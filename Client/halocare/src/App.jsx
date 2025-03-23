@@ -12,7 +12,6 @@ import ProSidebar from './components/layout/Sidebar/Sidebar';
 import Calendar from './pages/calendar/Calendar';
 import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
-import { CalendarProvider } from './pages/calendar/CalendarContext';
 // import Dashboard from './pages/Dashboard';
 // import KidsManagement from './pages/KidsManagement';
 // import EmployeesManagement from './pages/EmployeesManagement';
@@ -106,7 +105,7 @@ function App() {
                     <Route path="/" element={<Calendar />} />
 
                     {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
-                    <Route path="/kids/list" element={"kids list"} />
+                    <Route path="/kids/list" element={<KidsManagement/>} />
                     <Route path="/kids/add" element={"kids add"} />
                     
 
@@ -119,7 +118,7 @@ function App() {
                       element={<NewEmployeeForm />}
                     />
 
-                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/calendar" element={<Calendar/>} />
 
                     {/* משימות <Tasks />*/}
                     <Route path="/tasks" element={"tasks"} />
