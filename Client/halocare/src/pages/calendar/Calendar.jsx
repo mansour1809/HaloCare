@@ -22,50 +22,50 @@ const Calendar = () => {
     filteredEvents,
     isLoading,
     //isLoadingReferenceData,
-    calendarView,
+    // calendarView,
     showFilterForm,
     filterOptions,
     
     fetchEvents,
     //handleDateClick,
     //handleEventClick,
-    handleViewChange,
+    // handleViewChange,
     createNewEvent,
     setShowFilterForm,
     //resetFilters
   } = useCalendar();
   
-  // רפרנס ל-FullCalendar
+  // reference to fullCalendar
   const calendarRef = useRef(null);
   
-  // פעולות ניווט ביומן
-  const goToToday = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getApi().today();
-    }
-  };
+  // // פעולות ניווט ביומן
+  // const goToToday = () => {
+  //   if (calendarRef.current) {
+  //     calendarRef.current.getApi().today();
+  //   }
+  // };
   
-  // מעבר לחודש קודם
-  const goToPrevious = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getApi().prev();
-    }
-  };
+  // // מעבר לחודש קודם
+  // const goToPrevious = () => {
+  //   if (calendarRef.current) {
+  //     calendarRef.current.getApi().prev();
+  //   }
+  // };
   
-  // מעבר לחודש הבא
-  const goToNext = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getApi().next();
-    }
-  };
+  // // מעבר לחודש הבא
+  // const goToNext = () => {
+  //   if (calendarRef.current) {
+  //     calendarRef.current.getApi().next();
+  //   }
+  // };
   
-  // עדכון תצוגת היומן
-  const changeView = (view) => {
-    handleViewChange(view);
-    if (calendarRef.current) {
-      calendarRef.current.getApi().changeView(view);
-    }
-  };
+  // // עדכון תצוגת היומן
+  // const changeView = (view) => {
+  //   handleViewChange(view);
+  //   if (calendarRef.current) {
+  //     calendarRef.current.getApi().changeView(view);
+  //   }
+  // };
 
   return (
     <Box sx={{ p: 2, direction: 'rtl' }}>
@@ -142,7 +142,7 @@ const Calendar = () => {
       )}
       
       {/* בקרי תצוגת יומן */}
-      <Paper 
+      {/* <Paper 
         elevation={2} 
         sx={{ 
           p: 2, 
@@ -207,7 +207,7 @@ const Calendar = () => {
             </Tooltip>
           </Box>
         </Box>
-      </Paper>
+      </Paper> */}
       
       {/* מציג לוח השנה */}
       <Paper 

@@ -67,6 +67,10 @@
   font-weight: 500 !important;
   padding: 6px 12px !important;
   transition: all 0.2s !important;
+  -webkit-border-radius: 8px !important;
+  -moz-border-radius: 8px !important;
+  -ms-border-radius: 8px !important;
+  -o-border-radius: 8px !important;
 }
 
 .fc-button:hover {
@@ -94,7 +98,7 @@
 
 /* חלק התצוגה היומית */
 .fc-timegrid-slot {
-  height: 45px !important; /* גובה שורות הזמן */
+  height: 25px !important; /* גובה שורות הזמן */
   border-bottom: 1px dashed #eaecef !important;
 }
 
@@ -189,4 +193,54 @@
 
 .fc-scroller::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
+}
+
+/* buttons */
+/* עיצוב כפתורי FullCalendar */
+/* סגנונות כלליים לכפתורים בסרגל הכלים */
+.fc-button-primary {
+  border-radius: 8px !important;
+  margin-left: 4px !important;
+  transition: all 0.2s !important;
+}
+
+/* כפתור פעיל (contained) */
+.fc-button-active {
+  background: #1976d2 !important;
+  border-color: #1976d2 !important;
+}
+
+/* כפתור לא פעיל (outlined) */
+.fc-button-primary:not(.fc-button-active) {
+  background: transparent !important;
+  color: #1976d2 !important;
+  border-color: #1976d2 !important;
+}
+
+/* הובר על כפתורים */
+.fc-button-primary:hover {
+  background-color: rgba(79, 195, 247, 0.15) !important;
+  transform: scale(1.05) !important;
+}
+
+
+
+/* כפתורי ניווט - חודש קודם/הבא */
+.fc-prev-button, .fc-next-button {
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none;
+}
+
+/* רקע כללי לסרגל הכלים */
+.fc-toolbar {
+  padding: 16px !important;
+  margin-bottom: 16px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(to left, #ffffff, #f7faff) !important;
+  box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12) !important;
 }

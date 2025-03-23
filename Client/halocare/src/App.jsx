@@ -120,7 +120,8 @@ function App() {
                       element={<NewEmployeeForm />}
                     />
 
-                    <Route path="/calendar" element={<Calendar/>} />
+                    <Route path="/calendar/schedule" element={<Calendar/>} />
+                    <Route path="/calendar/meetings" element={"eventtttttttttttts"} />
 
                     {/* משימות <Tasks />*/}
                     <Route path="/tasks" element={<LoginPage/>} />

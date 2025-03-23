@@ -1,10 +1,12 @@
-import React from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import heLocale from '@fullcalendar/core/locales/he';
-import { Box, Skeleton, Typography } from '@mui/material';
+import { Box, Skeleton} from '@mui/material';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+
+import './calendarStyles.css'
 
 // שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
@@ -14,14 +16,14 @@ const CalendarView = ({
   events,
   isLoading
 }) => {
-  // קבלת ערכים ופונקציות מהקונטקסט
+  // get values and functions from context
   const {
     calendarView,
     handleDateClick,
     handleEventClick
   } = useCalendar();
 
-  // אם בטעינה, מציג סקלטון
+  // if loading events show skeleton 
   if (isLoading) {
     return (
       <Box sx={{ p: 4, height: '600px' }}>
@@ -31,28 +33,28 @@ const CalendarView = ({
     );
   }
 
-  // אם אין אירועים
-  if (events.length === 0) {
-    return (
-      <Box 
-        sx={{ 
-          p: 4, 
-          height: '600px', 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center' 
-        }}
-      >
-        <Typography variant="h6" color="text.secondary">
-          אין אירועים להצגה
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          לחץ על התאריך ביומן להוספת אירוע חדש
-        </Typography>
-      </Box>
-    );
-  }
+  // if no events to show
+  // if (events.length === 0) {
+  //   return (
+  //     <Box 
+  //       sx={{ 
+  //         p: 4, 
+  //         height: '600px', 
+  //         display: 'flex', 
+  //         flexDirection: 'column',
+  //         justifyContent: 'center', 
+  //         alignItems: 'center' 
+  //       }}
+  //     >
+  //       <Typography variant="h6" color="text.secondary">
+  //         אין אירועים להצגה
+  //       </Typography>
+  //       <Typography variant="body2" color="text.secondary">
+  //         לחץ על התאריך ביומן להוספת אירוע חדש
+  //       </Typography>
+  //     </Box>
+  //   );
+  // }
 
   return (
     <FullCalendar
@@ -62,10 +64,11 @@ const CalendarView = ({
       locale={heLocale}
       direction="rtl"
       headerToolbar={{
-        right: '',
+        right: 'prev today next',
         center: 'title',
-        left: ''
+        left: 'timeGridDay timeGridWeek dayGridMonth'
       }}
+
       events={events}
       dateClick={handleDateClick}
       eventClick={handleEventClick}
@@ -95,7 +98,7 @@ const CalendarView = ({
       }}
       // טקסט כפתורים
       buttonText={{
-        today: 'היום',
+        today: '<CalendarTodayIcon />',
         month: 'חודש',
         week: 'שבוע',
         day: 'יום'
