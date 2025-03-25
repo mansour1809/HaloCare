@@ -18,6 +18,7 @@ import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
+import KidFile from './pages/Kids/KidFile';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -129,7 +130,7 @@ function App() {
 
                     {/* דוחות <Reports /> <Reports />*/}
                     <Route path="/reports/attendance" element={<AttendanceTable/>} />
-                    <Route path="/reports/treatments" element={"treatments"} />
+                    <Route path="/reports/treatments" element={<KidFile/>}/>
                   </Routes>
                 </Box>
               </Box>
