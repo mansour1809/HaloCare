@@ -19,19 +19,19 @@ namespace halocare.DAL.Repositories
             {
                 Employee employee = new Employee
                 {
-                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                    FirstName = row["FirstName"].ToString(),
-                    LastName = row["LastName"].ToString(),
-                    BirthDate = Convert.ToDateTime(row["BirthDate"]),
-                    MobilePhone = row["MobilePhone"].ToString(),
-                    Email = row["Email"].ToString(),
-                    Password = row["Password"].ToString(),
-                    Photo = row["Photo"].ToString(),
-                    LicenseNum = row["LicenseNum"].ToString(),
-                    StartDate = Convert.ToDateTime(row["StartDate"]),
-                    IsActive = Convert.ToBoolean(row["IsActive"]),
-                    ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
-                    RoleName = row["RoleName"].ToString()
+                    EmployeeId = Convert.ToInt32(row["employeeId"]),
+                    FirstName = row["firstName"].ToString(),
+                    LastName = row["lastName"].ToString(),
+                    BirthDate = row["birthDate"] != DBNull.Value ? Convert.ToDateTime(row["birthDate"]) : (DateTime?)null,
+                    MobilePhone = row["mobilePhone"].ToString(),
+                    Email = row["email"].ToString(),
+                    Password = row["password"].ToString(),
+                    Photo = row["photo"].ToString(),
+                    LicenseNum = row["licenseNum"].ToString(),
+                    StartDate = row["startDate"] != DBNull.Value ? Convert.ToDateTime(row["startDate"]) : (DateTime?)null,
+                    IsActive = Convert.ToBoolean(row["isActive"]),
+                    ClassId = row["classId"] != DBNull.Value ? Convert.ToInt32(row["classId"]) : null,
+                    RoleName = row["roleName"].ToString()
                 };
 
                 employees.Add(employee);

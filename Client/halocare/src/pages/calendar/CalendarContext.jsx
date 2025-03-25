@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { eventColors, toISOStringWithoutTimezone } from './calendarUtils';
+import { set } from 'lodash';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
@@ -36,7 +37,7 @@ export const CalendarProvider = ({ children }) => {
     description: '',
     createdBy: 1,
     type: '',
-    kidId: '',
+    kidId: [],
     employeeIds: []
   });
 
@@ -66,11 +67,29 @@ export const CalendarProvider = ({ children }) => {
         description: event.description,
         type: event.type,
         createdBy: event.createdBy,
-        kidId: event.kidId,
+        kidIds: event.kidIds || [],
         employeeIds: event.employeeIds || []
       }
     };
   };
+
+    // טעינת סוגי טיפולים מהשרת
+    const fetchTreatmentTypes = useCallback(async () => {
+      try {
+        const response = await axios.get(TREATMENT_TYPES_ENDPOINT);
+        
+        // הנחה שהשרת מחזיר מערך עם שדה 'name' או 'type' שמכיל את סוג הטיפול
+        const types = response.data.map(type => type.name || type.type);
+        setEventTypes([...types, 'פגישת הורים', 'מפגש קבוצתי', 'ביקור בית', 'אחר']);
+        return types;
+      } catch (error) {
+        console.error('Error fetching treatment types:', error);
+        // אין יותר נתוני דמו - במקרה של שגיאה, נגדיר מינימום סוגי אירועים
+        const fallbackTypes = ['פגישת הורים', 'מפגש קבוצתי', 'ביקור בית', 'אחר'];
+        setEventTypes(fallbackTypes);
+        return fallbackTypes;
+      }
+    }, []);
 
   // טעינת אירועים
   const fetchEvents = useCallback(async () => {
@@ -85,7 +104,8 @@ export const CalendarProvider = ({ children }) => {
     } catch (error) {
       console.error('Error fetching events:', error);
       setError('אירעה שגיאה בטעינת האירועים');
-
+      setEvents([]);
+      return [];
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +117,7 @@ export const CalendarProvider = ({ children }) => {
     setError(null);
     
     try {
+      console.log('eventData:', eventData);
       const response = await axios.post(EVENTS_ENDPOINT, eventData);
       const newEvent = formatEventForCalendar(response.data);
       
@@ -105,22 +126,11 @@ export const CalendarProvider = ({ children }) => {
     } catch (error) {
       console.error('Error adding event:', error);
       setError('אירעה שגיאה בהוספת האירוע');
-      
-      // במקרה של שגיאה, מוסיף אירוע בלוקאלי עם ID מספרי חדש
-      const newId = Math.max(...events.map(e => parseInt(e.id)), 0) + 1;
-      const newEvent = {
-        ...formatEventForCalendar({
-          ...eventData,
-          id: newId
-        })
-      };
-      
-      setEvents(prevEvents => [...prevEvents, newEvent]);
-      return newEvent;
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [events]);
+  }, []);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
@@ -139,19 +149,9 @@ export const CalendarProvider = ({ children }) => {
       
       return updatedEvent;
     } catch (error) {
-      console.error('Error updating event:', error);
-      setError('אירעה שגיאה בעדכון האירוע');
-      
-      // במקרה של שגיאה, מעדכן אירוע בלוקאלי
-      const updatedEvent = formatEventForCalendar(eventData);
-      
-      setEvents(prevEvents => 
-        prevEvents.map(event => 
-          event.id === updatedEvent.id ? updatedEvent : event
-        )
-      );
-      
-      return updatedEvent;
+      console.error("Error updating event:", error);
+      setError("אירעה שגיאה בעדכון האירוע");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -164,45 +164,19 @@ export const CalendarProvider = ({ children }) => {
     
     try {
       await axios.delete(`${EVENTS_ENDPOINT}/${eventId}`);
-      
       setEvents(prevEvents => 
         prevEvents.filter(event => event.id !== eventId)
       );
-      
       return { success: true };
     } catch (error) {
       console.error('Error deleting event:', error);
       setError('אירעה שגיאה במחיקת האירוע');
-      
-      // במקרה של שגיאה, מוחק אירוע בלוקאלי
-      setEvents(prevEvents => 
-        prevEvents.filter(event => event.id !== eventId)
-      );
-      
-      return { success: true };
+     throw error;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // טעינת נתוני עזר
-  const fetchReferenceData = useCallback(async () => {
-    setIsLoadingReferenceData(true);
-    setError(null);
-    
-    try {
-      await Promise.all([
-        fetchKids(),
-        fetchEmployees()
-      ]);
-    } catch (error) {
-      console.error('Error fetching reference data:', error);
-      setError('אירעה שגיאה בטעינת נתוני עזר');
-    } finally {
-      setIsLoadingReferenceData(false);
-    }
-  }, []);
-  
   // טעינת רשימת ילדים
   const fetchKids = useCallback(async () => {
     try {
@@ -211,18 +185,8 @@ export const CalendarProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching kids:', error);
-      
-      // נתוני הדגמה במקרה שהשרת לא זמין
-      const demoKids = [
-        { id: 1, firstName: 'יוסי', lastName: 'כהן' },
-        { id: 2, firstName: 'נועה', lastName: 'לוי' },
-        { id: 3, firstName: 'דני', lastName: 'גולן' },
-        { id: 4, firstName: 'מיכל', lastName: 'אברהם' },
-        { id: 5, firstName: 'רון', lastName: 'שלום' },
-      ];
-      
-      setKids(demoKids);
-      return demoKids;
+      setKids([]);
+      return [];
     }
   }, []);
 
@@ -234,18 +198,8 @@ export const CalendarProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Error fetching employees:', error);
-      
-      // נתוני הדגמה במקרה שהשרת לא זמין
-      const demoEmployees = [
-        { id: 1, firstName: 'טלי', lastName: 'ישראלי', role: 'מנהלת' },
-        { id: 2, firstName: 'יעל', lastName: 'כהן', role: 'פיזיותרפיסטית' },
-        { id: 3, firstName: 'דן', lastName: 'לוי', role: 'מטפל רגשי' },
-        { id: 4, firstName: 'מירה', lastName: 'שגב', role: 'מרפאה בעיסוק' },
-        { id: 5, firstName: 'אורן', lastName: 'דוד', role: 'פסיכולוג' },
-      ];
-      
-      setEmployees(demoEmployees);
-      return demoEmployees;
+      setEmployees([]);
+      return [];
     }
   }, []);
 
@@ -255,7 +209,8 @@ export const CalendarProvider = ({ children }) => {
     
     if (filterOptions.kidId) {
       filtered = filtered.filter(event => 
-        event.extendedProps.kidId === parseInt(filterOptions.kidId)
+        event.extendedProps.kidIds && 
+        event.extendedProps.kidIds.includes(parseInt(filterOptions.kidId))
       );
     }
     
@@ -307,6 +262,27 @@ export const CalendarProvider = ({ children }) => {
     filterEvents();
   }, [events, filterOptions, filterEvents]);
 
+  
+  // טעינת נתוני עזר
+  const fetchReferenceData = useCallback(async () => {
+    setIsLoadingReferenceData(true);
+    setError(null);
+    
+    try {
+      await Promise.all([
+        fetchKids(),
+        fetchEmployees(),        
+        fetchTreatmentTypes()
+      ]);
+    } catch (error) {
+      console.error('Error fetching reference data:', error);
+      setError('אירעה שגיאה בטעינת נתוני עזר');
+    } finally {
+      setIsLoadingReferenceData(false);
+    }
+  }, [fetchTreatmentTypes, fetchKids, fetchEmployees]);
+  
+
   // טעינת נתונים ראשונית
   useEffect(() => {
     fetchEvents();
@@ -332,7 +308,7 @@ export const CalendarProvider = ({ children }) => {
       description: '',
       createdBy: 1,
       type: eventTypes.length > 0 ? eventTypes[0] : '',
-      kidId: '',
+      kidIds: [],
       employeeIds: []
     });
     setOpenDialog(true);
@@ -343,8 +319,8 @@ export const CalendarProvider = ({ children }) => {
     const event = info.event;
     
     // המר תאריכים לפורמט HTML datetime-local
-    const startStr = new Date(event.start).toISOString().slice(0, 16);
-    const endStr = event.end ? new Date(event.end).toISOString().slice(0, 16) : startStr;
+    const startStr = toISOStringWithoutTimezone(new Date(event.start))
+    const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
     
     setSelectedEvent(event);
     setNewEvent({
@@ -356,7 +332,7 @@ export const CalendarProvider = ({ children }) => {
       description: event.extendedProps.description || '',
       createdBy: event.extendedProps.createdBy || 1,
       type: event.extendedProps.type || '',
-      kidId: event.extendedProps.kidId || '',
+      kidIds: event.extendedProps.kidIds || [],
       employeeIds: event.extendedProps.employeeIds || []
     });
     setOpenDialog(true);
@@ -376,16 +352,18 @@ export const CalendarProvider = ({ children }) => {
     }
     
     const eventData = {
-      id: selectedEvent ? selectedEvent.id : undefined,
-      title: newEvent.title,
-      startTime: newEvent.start,
-      endTime: newEvent.end,
-      location: newEvent.location,
-      description: newEvent.description,
-      createdBy: newEvent.createdBy,
-      type: newEvent.type,
-      kidId: newEvent.kidId || null,
-      employeeIds: newEvent.employeeIds || []
+      event: {
+        id: selectedEvent ? selectedEvent.id : 0,
+        title: newEvent.title,
+        startTime: newEvent.start,
+        endTime: newEvent.end,
+        location: newEvent.location,
+        description: newEvent.description,
+        createdBy: newEvent.createdBy,
+        type: newEvent.type
+      },
+      kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds : [],
+      employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds : []
     };
     
     try {
@@ -434,13 +412,17 @@ export const CalendarProvider = ({ children }) => {
       end: toISOStringWithoutTimezone(later),
       location: "",
       description: "",
-      createdBy: 1,
+      createdBy: 3,
       type: eventTypes.length > 0 ? eventTypes[0] : "",
-      kidId: "",
-      employeeIds: [],
+      kidIds: [],
+      employeeIds: []
     });
     setOpenDialog(true);
   }, [eventTypes]);
+
+
+  //add new event
+  
 
   // ערך הקונטקסט - כל מה שנרצה לחשוף
   const contextValue = {
