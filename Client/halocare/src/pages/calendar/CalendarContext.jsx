@@ -1,23 +1,13 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { eventColors } from './calendarUtils';
+import { eventColors, toISOStringWithoutTimezone } from './calendarUtils';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
 const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
 const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
 const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
-
-// רשימת סוגי אירועים מוגדרים מראש
-const DEFAULT_EVENT_TYPES = [
-  'טיפול פיזיותרפיה',
-  'טיפול רגשי',
-  'טיפול בעיסוק',
-  'פגישת הורים',
-  'מפגש קבוצתי',
-  'ביקור בית',
-  'אחר'
-];
+const TREATMENT_TYPES_ENDPOINT = `${API_BASE_URL}/TreatmentTypes`; // נוסף - טבלת סוגי טיפולים
 
 // יצירת הקונטקסט
 const CalendarContext = createContext();
@@ -33,7 +23,7 @@ export const CalendarProvider = ({ children }) => {
   // מצבים - נתוני עזר
   const [kids, setKids] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [eventTypes, setEventTypes] = useState(DEFAULT_EVENT_TYPES);
+  const [eventTypes, setEventTypes] = useState([]);
   const [isLoadingReferenceData, setIsLoadingReferenceData] = useState(false);
 
   // מצבים - עריכה/יצירת אירוע
@@ -91,80 +81,11 @@ export const CalendarProvider = ({ children }) => {
       const response = await axios.get(EVENTS_ENDPOINT);
       const formattedEvents = response.data.map(formatEventForCalendar);
       setEvents(formattedEvents);
-      return formattedEvents;
+      // return formattedEvents;//123
     } catch (error) {
       console.error('Error fetching events:', error);
       setError('אירעה שגיאה בטעינת האירועים');
-      
-      // demo data in case the server is not available
-      const demoEvents = [
-        {
-          id: 1,
-          title: 'טיפול פיזיותרפיה - יוסי',
-          start: '2025-03-14T09:00:00',
-          end: '2025-03-14T10:00:00',
-          backgroundColor: eventColors['טיפול פיזיותרפיה'],
-          borderColor: eventColors['טיפול פיזיותרפיה'],
-          extendedProps: {
-            location: 'חדר טיפולים 1',
-            description: 'טיפול שבועי',
-            type: 'טיפול פיזיותרפיה',
-            createdBy: 1,
-            kidId: 1,
-            employeeIds: [2]
-          }
-        },
-        {
-          id: 2,
-          title: 'פגישת הורים - משפחת כהן',
-          start: '2025-03-14T11:00:00',
-          end: '2025-03-14T12:00:00',
-          backgroundColor: eventColors['פגישת הורים'],
-          borderColor: eventColors['פגישת הורים'],
-          extendedProps: {
-            location: 'חדר ישיבות',
-            description: 'פגישה עם הורי יוסי',
-            type: 'פגישת הורים',
-            createdBy: 1,
-            kidId: 1,
-            employeeIds: [1, 3]
-          }
-        },
-        {
-          id: 3,
-          title: 'טיפול רגשי - נועה',
-          start: '2025-03-15T10:00:00',
-          end: '2025-03-15T11:00:00',
-          backgroundColor: eventColors['טיפול רגשי'],
-          borderColor: eventColors['טיפול רגשי'],
-          extendedProps: {
-            location: 'חדר טיפולים 2',
-            description: 'טיפול רגשי שבועי',
-            type: 'טיפול רגשי',
-            createdBy: 1,
-            kidId: 2,
-            employeeIds: [3]
-          }
-        },
-        {
-          id: 4,
-          title: 'מפגש קבוצתי',
-          start: '2025-03-16T09:30:00',
-          end: '2025-03-16T11:00:00',
-          backgroundColor: eventColors['מפגש קבוצתי'],
-          borderColor: eventColors['מפגש קבוצתי'],
-          extendedProps: {
-            location: 'חדר פעילות',
-            description: 'מפגש קבוצתי שבועי',
-            type: 'מפגש קבוצתי',
-            createdBy: 1,
-            employeeIds: [1, 2, 3, 5]
-          }
-        }
-      ];
-      
-      setEvents(demoEvents);
-      return demoEvents;
+
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +101,7 @@ export const CalendarProvider = ({ children }) => {
       const newEvent = formatEventForCalendar(response.data);
       
       setEvents(prevEvents => [...prevEvents, newEvent]);
-      return newEvent;
+      // return newEvent;//123
     } catch (error) {
       console.error('Error adding event:', error);
       setError('אירעה שגיאה בהוספת האירוע');
@@ -396,12 +317,12 @@ export const CalendarProvider = ({ children }) => {
   const handleDateClick = useCallback((info) => {
     const startTime = new Date(info.date);
     const endTime = new Date(info.date);
-    endTime.setHours(startTime.getHours() + 1);
-    
+    endTime.setMinutes(startTime.getMinutes() + 30);
+
     // פורמט ISO למחרוזת
-    const startStr = startTime.toISOString().slice(0, 16);
-    const endStr = endTime.toISOString().slice(0, 16);
-    
+    const startStr = toISOStringWithoutTimezone(startTime);
+    const endStr = toISOStringWithoutTimezone(endTime);
+
     setSelectedEvent(null);
     setNewEvent({
       title: '',
@@ -504,18 +425,19 @@ export const CalendarProvider = ({ children }) => {
     const now = new Date();
     const later = new Date(now);
     later.setHours(later.getHours() + 1);
+
     
     setSelectedEvent(null);
     setNewEvent({
-      title: '',
-      start: now.toISOString().slice(0, 16),
-      end: later.toISOString().slice(0, 16),
-      location: '',
-      description: '',
+      title: "",
+      start: toISOStringWithoutTimezone(now),
+      end: toISOStringWithoutTimezone(later),
+      location: "",
+      description: "",
       createdBy: 1,
-      type: eventTypes.length > 0 ? eventTypes[0] : '',
-      kidId: '',
-      employeeIds: []
+      type: eventTypes.length > 0 ? eventTypes[0] : "",
+      kidId: "",
+      employeeIds: [],
     });
     setOpenDialog(true);
   }, [eventTypes]);

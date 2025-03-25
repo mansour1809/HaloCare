@@ -15,12 +15,11 @@ import {
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 
-// שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
 
 const CalendarFilter = () => {
-  // קבלת ערכים ופונקציות מהקונטקסט
-  const {
+  // get values and functions from context
+    const {
     filterOptions,
     handleFilterChange,
     resetFilters,
@@ -30,13 +29,13 @@ const CalendarFilter = () => {
     isLoadingReferenceData
   } = useCalendar();
   
-  // בדיקה אם יש מסננים פעילים
+// check if any filters are active
   const hasActiveFilters = 
     filterOptions.kidId || 
     filterOptions.employeeId || 
     filterOptions.eventType;
   
-  // מחשב מספר המסננים הפעילים
+  // count active filters
   const activeFilterCount = Object.values(filterOptions)
     .filter(value => value !== '').length;
   

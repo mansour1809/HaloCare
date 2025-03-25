@@ -17,6 +17,7 @@ import { CalendarProvider } from './pages/calendar/CalendarContext';
 import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
+import EventsList from './pages/calendar/EventsList';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -121,7 +122,7 @@ function App() {
                     />
 
                     <Route path="/calendar/schedule" element={<Calendar/>} />
-                    <Route path="/calendar/meetings" element={"eventtttttttttttts"} />
+                    <Route path="/calendar/meetings" element={<EventsList/>} />
 
                     {/* משימות <Tasks />*/}
                     <Route path="/tasks" element={<LoginPage/>} />
