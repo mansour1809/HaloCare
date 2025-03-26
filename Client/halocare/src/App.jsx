@@ -178,7 +178,7 @@ function App() {
                         } />
                         <Route path="/reports/treatments" element={
                           <PrivateRoute>
-                            <KidFile />
+                            <FlowerApp />
                           </PrivateRoute>
                         } />
                         
