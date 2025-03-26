@@ -118,11 +118,13 @@ export const CalendarProvider = ({ children }) => {
     
     try {
       console.log('eventData:', eventData);
+      console.log(events)
+
       const response = await axios.post(EVENTS_ENDPOINT, eventData);
       const newEvent = formatEventForCalendar(response.data);
       
       setEvents(prevEvents => [...prevEvents, newEvent]);
-      // return newEvent;//123
+      return newEvent;//123
     } catch (error) {
       console.error('Error adding event:', error);
       setError('אירעה שגיאה בהוספת האירוע');
@@ -130,7 +132,7 @@ export const CalendarProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [ events ]);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
@@ -353,14 +355,14 @@ export const CalendarProvider = ({ children }) => {
     
     const eventData = {
       event: {
-        id: selectedEvent ? selectedEvent.id : 0,
+        eventId: selectedEvent ? selectedEvent.id : 0,
         title: newEvent.title,
         startTime: newEvent.start,
         endTime: newEvent.end,
         location: newEvent.location,
         description: newEvent.description,
-        createdBy: newEvent.createdBy,
-        type: newEvent.type
+        createdBy: 3,//newEvent.createdBy,
+        eventType: newEvent.type
       },
       kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds : [],
       employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds : []
@@ -374,8 +376,8 @@ export const CalendarProvider = ({ children }) => {
       }
       setOpenDialog(false);
     } catch (error) {
-      console.error('שגיאה בשמירת האירוע:', error);
-      alert('אירעה שגיאה בשמירת האירוע');
+      console.error('Error adding event:', error.response ? error.response.data : error);
+      alert('asdasdאירעה שגיאה בשמירת האירוע');
     }
   }, [newEvent, selectedEvent, updateEvent, addEvent]);
 
