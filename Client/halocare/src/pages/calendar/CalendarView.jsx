@@ -33,28 +33,7 @@ const CalendarView = ({
     );
   }
 
-  // if no events to show
-  // if (events.length === 0) {
-  //   return (
-  //     <Box 
-  //       sx={{ 
-  //         p: 4, 
-  //         height: '600px', 
-  //         display: 'flex', 
-  //         flexDirection: 'column',
-  //         justifyContent: 'center', 
-  //         alignItems: 'center' 
-  //       }}
-  //     >
-  //       <Typography variant="h6" color="text.secondary">
-  //         אין אירועים להצגה
-  //       </Typography>
-  //       <Typography variant="body2" color="text.secondary">
-  //         לחץ על התאריך ביומן להוספת אירוע חדש
-  //       </Typography>
-  //     </Box>
-  //   );
-  // }
+
 
   return (
     <FullCalendar
@@ -64,7 +43,7 @@ const CalendarView = ({
       locale={heLocale}
       direction="rtl"
       headerToolbar={{
-        right: 'prev today next',
+        right: 'next today prev',
         center: 'title',
         left: 'timeGridDay timeGridWeek dayGridMonth'
       }}
@@ -98,7 +77,7 @@ const CalendarView = ({
       }}
       // טקסט כפתורים
       buttonText={{
-        today: '<CalendarTodayIcon />',
+        today: '📅',
         month: 'חודש',
         week: 'שבוע',
         day: 'יום'

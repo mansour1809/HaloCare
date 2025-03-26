@@ -21,6 +21,8 @@ import KidFile from './pages/Kids/KidsFiles/FlowerApp';
 import MessageBoard from './pages/Kids/KidsFiles/messageBoard';
 import FlowerPetalLayout from './pages/Kids/KidsFiles/FlowerApp';
 import FlowerApp from './pages/Kids/KidsFiles/FlowerApp';
+import EventsList from './pages/calendar/EventsList';
+import KidFile from './pages/Kids/KidsFiles/KidFile';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';

@@ -204,9 +204,23 @@ const EventDialog = () => {
               <InputLabel>ילד</InputLabel>
               <Select
                 name="kidId"
-                value={newEvent.kidId}
+                value={newEvent.kidIds || []}
                 onChange={handleEventChange}
                 label="ילד"
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => {
+                      const kid = kids.find(k => k.id === value);
+                      return (
+                        <Chip 
+                          key={value} 
+                          label={kid ? `${kid.firstName} ${kid.lastName}` : value}
+                          size="small"
+                        />
+                      );
+                    })}
+                  </Box>
+                )}
                 MenuProps={{
                   PaperProps: {
                     style: { maxHeight: 250 },

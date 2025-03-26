@@ -1,3 +1,5 @@
+
+
 // הגדרת צבעים לסוגי אירועים שונים
 export const eventColors = {
   'טיפול פיזיותרפיה': '#F4A261', // כתום
@@ -8,6 +10,7 @@ export const eventColors = {
   'ביקור בית': '#9E86C8', // סגול
   'אחר': '#6C757D' // אפור
 };
+
 
 // פורמט תאריך עברי
 export const formatHebrewDate = (date) => {
