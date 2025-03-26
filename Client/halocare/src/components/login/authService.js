@@ -1,12 +1,13 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api'; // כתובת השרת שלכם - יש להתאים לפי הצורך
+const API_URL = 'https://localhost:7225/api'; // כתובת השרת שלכם - יש להתאים לפי הצורך
 
 const authService = {
   // פונקציה להתחברות
   login: async (email, password) => {
+    // eslint-disable-next-line no-useless-catch
     try {
-      const response = await axios.post(`${API_URL}/Auth/login`, { email, password });
+      const response = await axios.post(`${API_URL}/login`, { email, password });
       if (response.data.token) {
         // שמירת הטוקן ופרטי המשתמש ב-localStorage
         localStorage.setItem('token', response.data.token);
