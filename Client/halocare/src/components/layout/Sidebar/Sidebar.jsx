@@ -10,6 +10,7 @@ import {
 import { Box, Typography, Avatar } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import authService from '../../login/authService';
 // אייקונים
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -85,7 +86,22 @@ const ProSidebar = () => {
       </Typography>
     </Box>
   );
+
+
+
+// פונקציה לטיפול בהתנתקות
+const handleLogout = () => {
+  authService.logout();
+  setIsAuthenticated(false); // פונקציה שתקבלו כפרופ או באמצעות קונטקסט
+  navigate('/login');
+};
+
+
   
+
+
+
+
   return (
     <Sidebar
       rtl

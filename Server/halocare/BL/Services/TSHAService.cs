@@ -17,7 +17,6 @@ namespace halocare.BL.Services
         private readonly KidRepository _kidRepository;
         private readonly TreatmentRepository _treatmentRepository;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<TSHAService> _logger;
         private readonly HttpClient _httpClient;
 
         public TSHAService(IConfiguration configuration)
@@ -157,7 +156,6 @@ namespace halocare.BL.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"AI generation error: {ex.Message}");
 
                 // אם יש תקלה עם ה-AI, ניצור תוכנית בסיסית
                 var fallbackGoals = new StringBuilder();
@@ -229,13 +227,11 @@ namespace halocare.BL.Services
                 else
                 {
                     string errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError($"AI API error: {response.StatusCode}, Content: {errorContent}");
                     throw new Exception($"תקלה בפנייה לשירות ה-AI: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"AI generation exception: {ex.Message}");
                 throw new Exception($"תקלה בהפקת תוכן עם AI: {ex.Message}");
             }
         }

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
-using Microsoft.AspNetCore.Authentication;
+using halocare.DAL.Models;
 
 namespace halocare.Controllers
 {
@@ -8,26 +10,47 @@ namespace halocare.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authenticationService;
+        private readonly AuthenticationService _authService;
 
-        public AuthController(AuthService authenticationService)
+        public AuthController(IConfiguration configuration)
         {
-            _authenticationService = authenticationService;
+            _authService = new AuthenticationService(configuration);
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest model)
+        public IActionResult Login([FromBody] LoginModel model)
         {
-            var response = _authenticationService.Authenticate(model.Email, model.Password);
+            try
+            {
+                // אימות המשתמש
+                var employee = _authService.Authenticate(model.Email, model.Password);
 
-            if (response == null)
-                return Unauthorized(new { message = "שם משתמש או סיסמה שגויים" });
+                if (employee == null)
+                {
+                    return Unauthorized("אימייל או סיסמה לא נכונים");
+                }
 
-            return Ok(response);
+                // יצירת טוקן JWT
+                var token = _authService.GenerateJwtToken(employee);
+
+                // החזרת הטוקן למשתמש יחד עם מידע בסיסי על העובד
+                return Ok(new
+                {
+                    token,
+                    id = employee.EmployeeId,
+                    name = $"{employee.FirstName} {employee.LastName}",
+                    role = employee.RoleName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאת שרת: {ex.Message}");
+            }
         }
     }
 
-    public class LoginRequest
+    // מודל הכניסה למערכת
+    public class LoginModel
     {
         public string Email { get; set; }
         public string Password { get; set; }

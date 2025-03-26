@@ -15,7 +15,6 @@ namespace halocare.BL.Services
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly Dictionary<string, Dictionary<string, string>> _specialTerms;
-        private readonly ILogger<TranslationService> _logger;
 
         public TranslationService(IConfiguration configuration)
         {
@@ -139,12 +138,10 @@ namespace halocare.BL.Services
                     }
                 }
 
-                _logger.LogError($"Translation error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
                 throw new Exception($"שגיאה בתרגום: {response.StatusCode}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Translation exception: {ex.Message}");
                 throw new Exception($"שגיאה בתרגום: {ex.Message}");
             }
         }

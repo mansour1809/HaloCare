@@ -1,62 +1,59 @@
+// services/authService.js
 import axios from 'axios';
 
-const API_URL = 'https://localhost:7225/api'; // כתובת השרת שלכם - יש להתאים לפי הצורך
+// כתובת בסיס לשרת - יש להתאים למיקום השרת שלך
+const API_URL = 'https://localhost:7225/api';
 
 const authService = {
-  // פונקציה להתחברות
+  // התחברות למערכת
   login: async (email, password) => {
-    // eslint-disable-next-line no-useless-catch
     try {
-      const response = await axios.post(`${API_URL}/login`, { email, password });
-      if (response.data.token) {
-        // שמירת הטוקן ופרטי המשתמש ב-localStorage
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      
+      // שמירת הטוקן וכניסה למערכת
+      if (response.data && response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify({
           id: response.data.id,
-          email: response.data.email,
-          firstName: response.data.firstName,
-          lastName: response.data.lastName,
+          name: response.data.name,
           role: response.data.role
         }));
-        
-        // הגדרת הטוקן כברירת מחדל לבקשות הבאות
-        setAuthHeader(response.data.token);
       }
+      
       return response.data;
     } catch (error) {
+      console.error('שגיאת התחברות:', error);
       throw error;
     }
   },
 
-  // פונקציה להתנתקות
+  // התנתקות מהמערכת
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setAuthHeader(null);
   },
 
-  // קבלת המשתמש הנוכחי
-  getCurrentUser: () => {
-    return JSON.parse(localStorage.getItem('user'));
-  },
-
-  // קבלת הטוקן
-  getToken: () => {
-    return localStorage.getItem('token');
-  },
-
-  // בדיקה אם המשתמש מחובר
+  // בדיקה האם המשתמש מחובר
   isAuthenticated: () => {
-    return localStorage.getItem('token') !== null;
-  }
-};
+    return localStorage.getItem('token') ? true : false;
+  },
 
-// פונקציה להגדרת הדר אימות עבור כל הבקשות
-export const setAuthHeader = (token) => {
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
+  // קבלת פרטי המשתמש המחובר
+  getCurrentUser: () => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // קבלת הטוקן עבור בקשות אחרות
+  getAuthHeader: () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 };
 

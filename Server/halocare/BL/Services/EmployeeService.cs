@@ -92,14 +92,14 @@ namespace halocare.BL.Services
             Employee employee = employees.Find(e => e.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
             if (employee == null)
             {
-                throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים");
+                throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים2222");
             }
 
             // בדיקת סיסמה
             string hashedPassword = HashPassword(password);
             if (!employee.Password.Equals(hashedPassword))
             {
-                throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים");
+                throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים3333");
             }
 
             // וידוא שהעובד פעיל

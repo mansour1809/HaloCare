@@ -1,83 +1,69 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using halocare.DAL.Models;
+using halocare.BL.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace halocare.BL.Services
 {
-    public class AuthService
+    public class AuthenticationService
     {
-        private readonly IConfiguration _configuration;
         private readonly EmployeeService _employeeService;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(IConfiguration configuration, EmployeeService employeeService)
+        public AuthenticationService(IConfiguration configuration)
         {
+            _employeeService = new EmployeeService(configuration);
             _configuration = configuration;
-            _employeeService = employeeService;
         }
 
-        public AuthenticationResponse Authenticate(string email, string password)
+        public Employee Authenticate(string email, string password)
         {
             try
             {
-                // אימות המשתמש עם EmployeeService
-                var user = _employeeService.Login(email, password);
-
-                // אם האימות הצליח, מחזירים פרטי אימות עם חתימת JWT
-                string token = GenerateJwtToken(user);
-
-                return new AuthenticationResponse
-                {
-                    Id = user.EmployeeId,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.RoleName,
-                    Token = token
-                };
+                
+                // נשתמש במתודה הקיימת ב-EmployeeService לאימות
+                Employee employee = _employeeService.Login(email, password);
+                return employee;
             }
-            catch (Exception)
+            catch (ArgumentException)
             {
-                // אם האימות נכשל, מחזירים שגיאה
+                // המתודה Login זורקת חריגה אם האימות נכשל
+                // נחזיר null במקום לזרוק חריגה כדי לאפשר טיפול מסודר ב-Controller
                 return null;
             }
         }
 
-        private string GenerateJwtToken(Employee user)
+        public string GenerateJwtToken(Employee employee)
         {
-            // קבלת הגדרות JWT מה-configuration
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.GivenName, user.FirstName),
-                    new Claim(ClaimTypes.Surname, user.LastName),
-                    new Claim(ClaimTypes.Role, user.RoleName)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:DurationInMinutes"])),
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-    }
+            var jwtKey = _configuration["Jwt:Key"];
+            var jwtIssuer = _configuration["Jwt:Issuer"];
+            var jwtAudience = _configuration["Jwt:Audience"];
 
-    public class AuthenticationResponse
-    {
-        public int Id { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Role { get; set; }
-        public string Token { get; set; }
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, employee.EmployeeId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, employee.Email),
+                new Claim(ClaimTypes.Name, $"{employee.FirstName} {employee.LastName}"),
+                new Claim(ClaimTypes.Role, employee.RoleName)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: jwtIssuer,
+                audience: jwtAudience,
+                claims: claims,
+                expires: DateTime.Now.AddHours(24), // תוקף הטוקן - 24 שעות
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }

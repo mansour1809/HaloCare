@@ -1,3 +1,4 @@
+// pages/LoginPage.jsx
 import { useState } from 'react';
 import { 
   TextField, 
@@ -13,21 +14,19 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
-import authService from './authService'; // ייבוא של שירות האימות
-// import { from } from 'stylis';
+import authService from './authService';
 
 const LoginPage = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/'; // נתיב להעברה לאחר התחברות
+  
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
-
-// בתוך LoginPage.jsx
-const location = useLocation();
-const from = location.state?.from || '/'; // אם אין נתיב שמור, נשלח לדף הבית
 
   const handleLogin = async () => {
     // בדיקת אימות בסיסית
@@ -41,7 +40,7 @@ const from = location.state?.from || '/'; // אם אין נתיב שמור, נש
 
     try {
       // שליחת בקשת התחברות לשרת
-      const response = await authService.login(email, password);
+      await authService.login(email, password);
       
       // עדכון סטייט האפליקציה
       setIsAuthenticated(true);
@@ -53,7 +52,7 @@ const from = location.state?.from || '/'; // אם אין נתיב שמור, נש
       }, 1000);
     } catch (err) {
       console.error('התחברות נכשלה:', err);
-      setError(err.response?.data?.message || 'התחברות נכשלה, אנא נסה שוב');
+      setError(err.response?.data || 'התחברות נכשלה, אנא נסה שוב');
     } finally {
       setLoading(false);
     }
@@ -142,6 +141,11 @@ const from = location.state?.from || '/'; // אם אין נתיב שמור, נש
                   </IconButton>
                 </InputAdornment>
               ),
+            }}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleLogin();
+              }
             }}
           />
           

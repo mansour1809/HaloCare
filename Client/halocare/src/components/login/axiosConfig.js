@@ -1,12 +1,16 @@
+// services/axiosConfig.js
 import axios from 'axios';
 import authService from './authService';
 
-// הגדרת ה-interceptor עבור כל הבקשות
+// קבע כתובת בסיס
+axios.defaults.baseURL = 'https://localhost:7092/api';
+
+// הוסף interceptor שיוסיף את הטוקן לכל בקשה
 axios.interceptors.request.use(
   (config) => {
-    const token = authService.getToken();
+    const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -15,12 +19,14 @@ axios.interceptors.request.use(
   }
 );
 
-// טיפול בשגיאות בתשובות מהשרת
+// טיפול בשגיאות כגון תוקף טוקן פג
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
+    // אם יש שגיאת אימות (401), התנתק וחזור לדף התחברות
     if (error.response && error.response.status === 401) {
-      // במקרה של שגיאת אימות, התנתקות וניתוב לדף הכניסה
       authService.logout();
       window.location.href = '/login';
     }

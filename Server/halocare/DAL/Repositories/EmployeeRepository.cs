@@ -150,5 +150,40 @@ namespace halocare.DAL.Repositories
             int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeStatus", parameters);
             return rowsAffected > 0;
         }
+
+        public Employee Login(string email, string password)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@Email", email },
+                { "@Password", password }
+            };
+
+            DataTable dataTable = ExecuteQuery("SP_Login", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            DataRow row = dataTable.Rows[0];
+
+            Employee employee = new Employee
+            {
+                EmployeeId = Convert.ToInt32(row["EmployeeId"]),
+                FirstName = row["FirstName"].ToString(),
+                LastName = row["LastName"].ToString(),
+                BirthDate = Convert.ToDateTime(row["BirthDate"]),
+                MobilePhone = row["MobilePhone"].ToString(),
+                Email = row["Email"].ToString(),
+                Password = row["Password"].ToString(),
+                Photo = row["Photo"].ToString(),
+                LicenseNum = row["LicenseNum"].ToString(),
+                StartDate = Convert.ToDateTime(row["StartDate"]),
+                IsActive = Convert.ToBoolean(row["IsActive"]),
+                ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
+                RoleName = row["RoleName"].ToString()
+            };
+
+            return employee;
+        }
     }
 }
