@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { rtlCache } from './common/rtlCache';
 import { CacheProvider } from '@emotion/react';
@@ -18,6 +18,10 @@ import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
+import KidFile from './pages/Kids/KidFile';
+import PrivateRoute from './components/PrivateRoute';
+import { useState } from 'react';
+// import AuthProvider from './components/AuthProvider'; // הוספת AuthProvider כאן
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -69,60 +73,102 @@ const DRAWER_WIDTH = 240;
 const NAVBAR_HEIGHT = 64;
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(true
+    // localStorage.getItem('token') ? true : false
+  );
+
   return (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={theme}>
         <ProSidebarProvider>
-          <CssBaseline />
-          <CalendarProvider>
-
-          <Router>
-            <Box
-              sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
-            >
-              <Navbar />
-              {/* מיכל לתוכן ולסרגל צדדי */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexGrow: 1,
-                  position: "relative",
-                  pt: `${NAVBAR_HEIGHT}px`, // פדינג למעלה כמו גובה ה-navbar
-                }}
-              >
-                {/* סרגל צדדי */}
-                <ProSidebar />
-                {/* אזור התוכן הראשי */}
+          {/* <AuthProvider> הוספת AuthProvider כאן */}
+            <CssBaseline />
+            <CalendarProvider>
+              <Router>
                 <Box
-                  component="main"
-                  sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    backgroundColor: "#f5f5f5",
-                    ml: `${DRAWER_WIDTH}px !important` , // מרווח משמאל לסרגל הצדדי (זה יהפוך למרווח מימין ב-RTL)
-                    mr: '0 !important',
-                    width: `calc(100% - ${DRAWER_WIDTH}px)`, // רוחב התוכן
-                    minHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`, // גובה מינימלי
-                    overflow: "auto",
-                  }}
+                  sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
                 >
-                  <Routes>
-                    {/* דף הבית - דשבורד */}
+                  {isAuthenticated && <Navbar />} {/* נציג את ה-Navbar רק למשתמשים מחוברים */}
+                  
+                  {/* מיכל לתוכן ולסרגל צדדי */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexGrow: 1,
+                      position: "relative",
+                      pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0, // פדינג למעלה רק אם יש נאבבר
+                    }}
+                  >
+                    {/* סרגל צדדי - רק למשתמשים מחוברים */}
+                    {isAuthenticated && <ProSidebar />}
+                    
+                    {/* אזור התוכן הראשי */}
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        backgroundColor: "#f5f5f5",
+                        ml: isAuthenticated ? `${DRAWER_WIDTH}px !important` : '0 !important', // מרווח משמאל רק אם יש סייד בר
+                        mr: '0 !important',
+                        width: isAuthenticated ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%', // רוחב התוכן
+                        minHeight: isAuthenticated ? `calc(100vh - ${NAVBAR_HEIGHT}px)` : '100vh', // גובה מינימלי
+                        overflow: "auto",
+                      }}
+                    >
+                      <Routes>
+                        {/* דף התחברות - פתוח לכולם */}
+                        <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
+                        
+                        {/* כל השאר - רק למחוברים */}
+                        <Route path="/" element={
+                          <PrivateRoute>
+                            <HomePage />
+                          </PrivateRoute>
+                        } />
 
-                    <Route path="/" element={<HomePage />} />
+                        {/* ניהול ילדים */}
+                        <Route path="/kids/list" element={
+                          <PrivateRoute>
+                            <KidsManagment />
+                          </PrivateRoute>
+                        } />
+                        <Route path="/kids/add" element={
+                          <PrivateRoute>
+                            <div>kids add</div>
+                          </PrivateRoute>
+                        } />
+                        
+                        {/* ניהול צוות */}
+                        <Route path="/employees/list" element={
+                          <PrivateRoute>
+                            <EmployeesManagement />
+                          </PrivateRoute>
+                        } />
+                        <Route path="/employees/add" element={
+                          <PrivateRoute>
+                            <NewEmployeeForm />
+                          </PrivateRoute>
+                        } />
 
-                    {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
-                    <Route path="/kids/list" element={<KidsManagment/>} />
-                    <Route path="/kids/add" element={"kids add"} />
-                    {/* ניהול צוות <EmployeesManagement /><EmployeesManagement />*/}
-                    <Route path="/employees/list" element={<EmployeesManagement/>} />
-                    <Route
-                      path="/employees/add"
-                      element={<NewEmployeeForm />}
-                    />
+                        {/* יומן ופגישות */}
+                        <Route path="/calendar/schedule" element={
+                          <PrivateRoute>
+                            <Calendar />
+                          </PrivateRoute>
+                        } />
+                        <Route path="/calendar/meetings" element={
+                          <PrivateRoute>
+                            <EventsList />
+                          </PrivateRoute>
+                        } />
 
-                    <Route path="/calendar/schedule" element={<Calendar/>} />
-                    <Route path="/calendar/meetings" element={<EventsList/>} />
+                        {/* משימות */}
+                        <Route path="/tasks" element={
+                          <PrivateRoute>
+                            <LoginPage />
+                          </PrivateRoute>
+                        } />
 
                         {/* דוחות */}
                         <Route path="/reports/attendance" element={
@@ -142,14 +188,12 @@ function App() {
                     </Box>
                   </Box>
                 </Box>
-              </Box>
-            </Box>
-          </Router>
-          </CalendarProvider>
+              </Router>
+            </CalendarProvider>
+          {/* </AuthProvider> */}
         </ProSidebarProvider>
       </ThemeProvider>
     </CacheProvider>
-    
   );
 }
 
