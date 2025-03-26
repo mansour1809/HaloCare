@@ -13,6 +13,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
+import authService from '../services/authService'; // ייבוא של שירות האימות
+import { from } from 'stylis';
 
 const LoginPage = ({ setIsAuthenticated }) => {
   const navigate = useNavigate();
@@ -21,31 +23,39 @@ const LoginPage = ({ setIsAuthenticated }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // בדיקת אימות בסיסית (בפרויקט אמיתי, זה יתחבר לשרת)
+// בתוך LoginPage.jsx
+const location = useLocation();
+const from = location.state?.from || '/'; // אם אין נתיב שמור, נשלח לדף הבית
+
+  const handleLogin = async () => {
+    // בדיקת אימות בסיסית
     if (!email || !password) {
       setError('יש להזין אימייל וסיסמה');
       return;
     }
 
-    // אימות למטרות הדגמה (יוחלף בקריאת API אמיתית)
-    if (email === 'admin@example.com' && password === 'password') {
-      // שמירת פרטי ההתחברות בלוקל סטורג'
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({ 
-        email, 
-        name: 'מנהל המערכת',
-        role: 'admin'
-      }));
+    setLoading(true);
+    setError('');
+
+    try {
+      // שליחת בקשת התחברות לשרת
+      const response = await authService.login(email, password);
       
+      // עדכון סטייט האפליקציה
       setIsAuthenticated(true);
       setOpenSnackbar(true);
+      
+      // מעבר לדף היומן אחרי התחברות מוצלחת
       setTimeout(() => {
-        navigate('/calendar');
+        navigate(from);
       }, 1000);
-    } else {
-      setError('פרטי התחברות שגויים');
+    } catch (err) {
+      console.error('התחברות נכשלה:', err);
+      setError(err.response?.data?.message || 'התחברות נכשלה, אנא נסה שוב');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,7 +66,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        // backgroundColor: '#f0f4f8',
         direction: 'rtl'
       }}
     >
@@ -70,7 +79,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
         }}
       >
        
-
         <Paper 
           elevation={3} 
           sx={{ 
@@ -103,7 +111,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
             onChange={(e) => setEmail(e.target.value)}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start"sx={{paddingRight:'14px'}}>
+                <InputAdornment position="start" sx={{paddingRight:'14px'}}>
                   <Email color="action" />
                 </InputAdornment>
               ),
@@ -149,6 +157,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
             color="primary" 
             size="large" 
             onClick={handleLogin}
+            disabled={loading}
             sx={{ 
               mt: 2,
               height: '50px',
@@ -157,12 +166,14 @@ const LoginPage = ({ setIsAuthenticated }) => {
               textTransform: 'none'
             }}
           >
-            התחבר
+            {loading ? 'מתחבר...' : 'התחבר'}
           </Button>
 
-          <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>
-            למטרות הדגמה: admin@example.com / password
-          </Typography>
+          {process.env.NODE_ENV === 'development' && (
+            <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>
+              למטרות הדגמה: admin@example.com / password
+            </Typography>
+          )}
         </Paper>
         <Box
           sx={{
@@ -176,10 +187,8 @@ const LoginPage = ({ setIsAuthenticated }) => {
             style={{ 
               height: '250px',
               borderRadius: '10px',
-            //   boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
             }} 
           />
-
         </Box>
       </Box>
 
@@ -196,6 +205,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
     </Box>
   );
 };
+
 LoginPage.propTypes = {
   setIsAuthenticated: PropTypes.func.isRequired,
 };
