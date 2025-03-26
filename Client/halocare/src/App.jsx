@@ -17,10 +17,6 @@ import { CalendarProvider } from './pages/calendar/CalendarContext';
 import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
-import KidFile from './pages/Kids/KidsFiles/FlowerApp';
-import MessageBoard from './pages/Kids/KidsFiles/messageBoard';
-import FlowerPetalLayout from './pages/Kids/KidsFiles/FlowerApp';
-import FlowerApp from './pages/Kids/KidsFiles/FlowerApp';
 import EventsList from './pages/calendar/EventsList';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
@@ -73,102 +69,60 @@ const DRAWER_WIDTH = 240;
 const NAVBAR_HEIGHT = 64;
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('token') ? true : false
-  );
-
   return (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={theme}>
         <ProSidebarProvider>
-          <AuthProvider> {/* הוספת AuthProvider כאן */}
-            <CssBaseline />
-            <CalendarProvider>
-              <Router>
+          <CssBaseline />
+          <CalendarProvider>
+
+          <Router>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
+            >
+              <Navbar />
+              {/* מיכל לתוכן ולסרגל צדדי */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexGrow: 1,
+                  position: "relative",
+                  pt: `${NAVBAR_HEIGHT}px`, // פדינג למעלה כמו גובה ה-navbar
+                }}
+              >
+                {/* סרגל צדדי */}
+                <ProSidebar />
+                {/* אזור התוכן הראשי */}
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
+                  component="main"
+                  sx={{
+                    flexGrow: 1,
+                    p: 3,
+                    backgroundColor: "#f5f5f5",
+                    ml: `${DRAWER_WIDTH}px !important` , // מרווח משמאל לסרגל הצדדי (זה יהפוך למרווח מימין ב-RTL)
+                    mr: '0 !important',
+                    width: `calc(100% - ${DRAWER_WIDTH}px)`, // רוחב התוכן
+                    minHeight: `calc(100vh - ${NAVBAR_HEIGHT}px)`, // גובה מינימלי
+                    overflow: "auto",
+                  }}
                 >
-                  {isAuthenticated && <Navbar />} {/* נציג את ה-Navbar רק למשתמשים מחוברים */}
-                  
-                  {/* מיכל לתוכן ולסרגל צדדי */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexGrow: 1,
-                      position: "relative",
-                      pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0, // פדינג למעלה רק אם יש נאבבר
-                    }}
-                  >
-                    {/* סרגל צדדי - רק למשתמשים מחוברים */}
-                    {isAuthenticated && <ProSidebar />}
-                    
-                    {/* אזור התוכן הראשי */}
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        backgroundColor: "#f5f5f5",
-                        ml: isAuthenticated ? `${DRAWER_WIDTH}px !important` : '0 !important', // מרווח משמאל רק אם יש סייד בר
-                        mr: '0 !important',
-                        width: isAuthenticated ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%', // רוחב התוכן
-                        minHeight: isAuthenticated ? `calc(100vh - ${NAVBAR_HEIGHT}px)` : '100vh', // גובה מינימלי
-                        overflow: "auto",
-                      }}
-                    >
-                      <Routes>
-                        {/* דף התחברות - פתוח לכולם */}
-                        <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
-                        
-                        {/* כל השאר - רק למחוברים */}
-                        <Route path="/" element={
-                          <PrivateRoute>
-                            <HomePage />
-                          </PrivateRoute>
-                        } />
+                  <Routes>
+                    {/* דף הבית - דשבורד */}
 
-                        {/* ניהול ילדים */}
-                        <Route path="/kids/list" element={
-                          <PrivateRoute>
-                            <KidsManagment />
-                          </PrivateRoute>
-                        } />
-                        <Route path="/kids/add" element={
-                          <PrivateRoute>
-                            <div>kids add</div>
-                          </PrivateRoute>
-                        } />
-                        
-                        {/* ניהול צוות */}
-                        <Route path="/employees/list" element={
-                          <PrivateRoute>
-                            <EmployeesManagement />
-                          </PrivateRoute>
-                        } />
-                        <Route path="/employees/add" element={
-                          <PrivateRoute>
-                            <NewEmployeeForm />
-                          </PrivateRoute>
-                        } />
+                    <Route path="/" element={<HomePage />} />
 
-                        {/* יומן ופגישות */}
-                        <Route path="/calendar/schedule" element={
-                          <PrivateRoute>
-                            <Calendar />
-                          </PrivateRoute>
-                        } />
-                        <Route path="/calendar/meetings" element={
-                          <PrivateRoute>
-                            <EventsList />
-                          </PrivateRoute>
-                        } />
+                    {/* ניהול ילדים <KidsManagement /><KidsManagement />*/}
+                    <Route path="/kids/list" element={<KidsManagment/>} />
+                    <Route path="/kids/add" element={"kids add"} />
+                    {/* ניהול צוות <EmployeesManagement /><EmployeesManagement />*/}
+                    <Route path="/employees/list" element={<EmployeesManagement/>} />
+                    <Route
+                      path="/employees/add"
+                      element={<NewEmployeeForm />}
+                    />
 
-                        {/* משימות */}
-                        <Route path="/tasks" element={
-                          <PrivateRoute>
-                            <LoginPage />
-                          </PrivateRoute>
-                        } />
+                    <Route path="/calendar/schedule" element={<Calendar/>} />
+                    <Route path="/calendar/meetings" element={<EventsList/>} />
 
                         {/* דוחות */}
                         <Route path="/reports/attendance" element={
@@ -188,12 +142,15 @@ function App() {
                     </Box>
                   </Box>
                 </Box>
-              </Router>
-            </CalendarProvider>
-          </AuthProvider>
+              </Box>
+            </Box>
+          </Router>
+          </CalendarProvider>
         </ProSidebarProvider>
       </ThemeProvider>
     </CacheProvider>
+    
   );
 }
+
 export default App;

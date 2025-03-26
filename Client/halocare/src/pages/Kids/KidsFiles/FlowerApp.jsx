@@ -1,3 +1,4 @@
+@ -1,78 +0,0 @@
 import React from 'react';
 import { Box, Typography, Paper, Container } from '@mui/material';
 import { styled } from '@mui/system';
