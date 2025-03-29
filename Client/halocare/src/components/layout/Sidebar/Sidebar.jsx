@@ -7,10 +7,10 @@ import {
   menuClasses,
 
 } from 'react-pro-sidebar';
-import { Box, Typography, Avatar } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import authService from '../../login/authService';
+import LogoutIcon from '@mui/icons-material/Logout';
 // אייקונים
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -22,14 +22,18 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import GroupIcon from '@mui/icons-material/Group';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import { useAuth } from '../../login/AuthContext.jsx';
+import authService from '../../login/authService';
 
 // רוחב הסרגל הצדדי
 const DRAWER_WIDTH = 240;
 
+
 const ProSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const { logout } = useAuth();
+
   // עיצוב לפריטי התפריט
   const menuItemStyles = {
     root: {
@@ -89,18 +93,22 @@ const ProSidebar = () => {
 
 
 
-// פונקציה לטיפול בהתנתקות
-const handleLogout = () => {
-  authService.logout();
-  setIsAuthenticated(false); // פונקציה שתקבלו כפרופ או באמצעות קונטקסט
-  navigate('/login');
-};
 
-
-  
-
-
-
+  const handleLogout = (e) => {
+    e.preventDefault(); // חשוב - מונע התנהגות ברירת מחדל
+    
+    // ראשית, מנקים את ה-localStorage
+    localStorage.clear();
+    
+    // מבצעים את פונקציית ההתנתקות מהקונטקסט אם היא קיימת
+    if (typeof logout === 'function') {
+      logout();
+    }
+    
+    // מעבירים את המשתמש לדף התחברות באמצעות window.location במקום useNavigate
+    // זה יגרום לטעינה מחדש של הדף, מה שיפתור את בעיית הניווט
+    window.location.href = '/login';
+  };
 
   return (
     <Sidebar
@@ -242,7 +250,14 @@ const handleLogout = () => {
               דוחות טיפולים
             </MenuItem>
           </SubMenu>
-        </Menu>
+          <Button 
+        onClick={handleLogout}
+        variant="outlined"
+        startIcon={<LogoutIcon />}
+        sx={{ mt: 2 }}
+      >
+        התנתקות
+      </Button>        </Menu>
       </Box>
     </Sidebar>
   );

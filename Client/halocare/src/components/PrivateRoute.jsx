@@ -1,20 +1,24 @@
-// components/PrivateRoute.jsx
-import { Navigate } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import authService from './login/authService';
+// src/components/ProtectedRoute.jsx
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from './login/AuthContext';
 
-const PrivateRoute = ({ children }) => {
-  // אם המשתמש אינו מחובר, העבר אותו לדף ההתחברות
-  if (!authService.isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  const { isAuthenticated, loading } = useAuth();
+  
+  // בדיקה אם עדיין טוען
+  if (loading) {
+    return <div>טוען...</div>;
   }
-
-  // אם המשתמש מחובר, הראה את התוכן המבוקש
+  
+  // אם המשתמש לא מחובר והוא לא בדף ההתחברות, הפנה לדף התחברות
+  if (!isAuthenticated) {
+    // חשוב: וודא שאתה לא מנסה להפנות למסלול עם / ריק בסוף
+    return <Navigate to="/login" state={{ from: location.pathname !== '/' ? location.pathname : '/' }} />;
+  }
+  
+  // אם המשתמש מחובר, החזר את התוכן המבוקש
   return children;
 };
 
-PrivateRoute.propTypes = {
-  children: PropTypes.node.isRequired
-};
-
-export default PrivateRoute;
+export default ProtectedRoute;

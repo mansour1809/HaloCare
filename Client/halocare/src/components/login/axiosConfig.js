@@ -1,37 +1,37 @@
-// services/axiosConfig.js
-import axios from 'axios';
-import authService from './authService';
+// // src/services/axiosConfig.js
+// import axios from 'axios';
+// import authService from './authService';
 
-// קבע כתובת בסיס
-axios.defaults.baseURL = 'https://localhost:7092/api';
+// // קבע כתובת בסיס
+// axios.defaults.baseURL = 'https://localhost:7225/api';
 
-// הוסף interceptor שיוסיף את הטוקן לכל בקשה
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// // הוסף interceptor שיוסיף את הטוקן לכל בקשה
+// axios.interceptors.request.use(
+//   (config) => {
+//     const token = localStorage.getItem('token');
+//     if (token) {
+//       config.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
 
-// טיפול בשגיאות כגון תוקף טוקן פג
-axios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    // אם יש שגיאת אימות (401), התנתק וחזור לדף התחברות
-    if (error.response && error.response.status === 401) {
-      authService.logout();
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+// // מונע לולאות בעת התנתקות
+// let isLoggingOut = false;
 
-export default axios;
+// axios.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response && error.response.status === 401 && !isLoggingOut) {
+//       isLoggingOut = true;
+//       authService.logout();
+//       window.location.href = '/login';
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
+// export default axios;

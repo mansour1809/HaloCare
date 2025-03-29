@@ -22,6 +22,7 @@ import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
 import PrivateRoute from './components/PrivateRoute';
 import { useState , useEffect } from 'react';
 import authService from './components/login/authService';
+import { AuthProvider } from './components/login/AuthContext';
 // import Dashboard from './pages/Dashboard';
 // import EmployeesManagement from './pages/EmployeesManagement';
 // import Tasks from './pages/Tasks';
@@ -75,27 +76,28 @@ const NAVBAR_HEIGHT = 64;
 
 
 function App() {
-  // בדיקה האם המשתמש מחובר בעת טעינת האפליקציה
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const isAuthenticated = authService.isAuthenticated()
+  console.log(isAuthenticated)
 
-  // בדיקה תקופתית אם הטוקן עדיין תקף
-  useEffect(() => {
-    // בדיקה בעת טעינת האפליקציה
-    checkAuthentication();
+  // // בדיקה תקופתית אם הטוקן עדיין תקף
+  // useEffect(() => {
+  //   // בדיקה בעת טעינת האפליקציה
+  //   checkAuthentication();
 
-    // הגדרת בדיקה תקופתית (כל 5 דקות)
-    const interval = setInterval(checkAuthentication, 5 * 60 * 1000);
+  //   // הגדרת בדיקה תקופתית (כל 5 דקות)
+  //   const interval = setInterval(checkAuthentication, 5 * 60 * 1000);
     
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // פונקציה לבדיקת האימות
-  const checkAuthentication = () => {
-    const isAuth = authService.isAuthenticated();
-    setIsAuthenticated(isAuth);
-  };
+  // const checkAuthentication = () => {
+  //   const isAuth = authService.isAuthenticated();
+  //   setIsAuthenticated(isAuth);
+  // };
 
   return (
+    <AuthProvider>
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={theme}>
         <ProSidebarProvider>
@@ -117,8 +119,9 @@ function App() {
                   }}
                 >
                   {/* סרגל צדדי - רק למשתמשים מחוברים */}
+
                   {isAuthenticated && <ProSidebar />}
-                  
+
                   {/* אזור התוכן הראשי */}
                  {/* אזור התוכן הראשי */}
                  <Box
@@ -137,7 +140,7 @@ function App() {
                     <Routes>
                       {/* דף התחברות - פתוח לכולם */}
                       <Route path="/login" element={
-                        isAuthenticated ? <Navigate to="/" /> : <LoginPage setIsAuthenticated={setIsAuthenticated} />
+                        isAuthenticated ? <Navigate to="/" /> : <LoginPage  />
                       } />
                       
                       {/* כל השאר - רק למחוברים */}
@@ -213,6 +216,7 @@ function App() {
         </ProSidebarProvider>
       </ThemeProvider>
     </CacheProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,57 +1,82 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import authService, { setAuthHeader } from '../services/authService';
+// src/context/AuthContext.jsx
+import {  useState, useEffect, useContext } from 'react';
+import authService from './authService';
+import { AuthContext } from './authContextt';
 
-// יצירת הקונטקסט
-export const AuthContext = createContext();
+import PropTypes from 'prop-types';
 
-// הוק שימושי לגישה לקונטקסט
+
+
 export const useAuth = () => useContext(AuthContext);
+
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  
+  // בדיקת אם המשתמש מחובר בטעינה הראשונית
   useEffect(() => {
-    // בדיקה אם יש משתמש מחובר כשהאפליקציה נטענת
     const initAuth = () => {
-      const user = authService.getCurrentUser();
-      const token = authService.getToken();
-      
-      if (user && token) {
-        setAuthHeader(token);
-        setCurrentUser(user);
-        setIsAuthenticated(true);
+      try {
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        
+        if (token && userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            setCurrentUser(user);
+            setIsAuthenticated(true);
+          } catch (e) {
+            console.error("שגיאה בפענוח המשתמש:", e);
+            // ניקוי במקרה של שגיאה
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        }
+      } catch (error) {
+        console.error("שגיאה בטעינת הפרטים מ-localStorage:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();
   }, []);
 
-  // פונקציה להתחברות
+  // פונקציית התחברות
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
+      
+      // מגדירים את המשתמש המחובר
       setCurrentUser({
         id: response.id,
-        email: response.email,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        role: response.role
+        email: response.email || email,
+        firstName: response.firstName || '',
+        lastName: response.lastName || '',
+        role: response.role || ''
       });
+      
       setIsAuthenticated(true);
       return response;
     } catch (error) {
+      console.error("שגיאת התחברות:", error);
       throw error;
     }
   };
 
-  // פונקציה להתנתקות
+  // פונקציית התנתקות עם פונקציונליות מינימלית
   const logout = () => {
-    authService.logout();
+    // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
+    
+    // ניקוי localStorage - שימוש בניקוי ישיר במקום להסתמך על שירות
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // אין ניווט כאן - נעשה בנפרד בקומפוננטות
   };
 
   const value = {
@@ -60,11 +85,14 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout
-  };
-
+  }
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};  

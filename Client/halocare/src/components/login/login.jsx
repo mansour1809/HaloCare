@@ -1,5 +1,5 @@
-// pages/LoginPage.jsx
-import { useState } from 'react';
+// src/pages/LoginPage.jsx
+import React, { useState } from 'react';
 import { 
   TextField, 
   Button, 
@@ -12,14 +12,16 @@ import {
   Snackbar
 } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import PropTypes from 'prop-types';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
-import authService from './authService';
+import { useAuth } from './AuthContext';
 
-const LoginPage = ({ setIsAuthenticated }) => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || '/'; // נתיב להעברה לאחר התחברות
+  // const from = location.state?.from || '/';
+  
+  // שימוש בקונטקסט
+  const { login } = useAuth();
   
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -28,35 +30,43 @@ const LoginPage = ({ setIsAuthenticated }) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    // בדיקת אימות בסיסית
-    if (!email || !password) {
-      setError('יש להזין אימייל וסיסמה');
-      return;
-    }
+// React.useEffect(() => {
+//   // נמנע ממעבר אוטומטי אם המשתמש הגיע ישירות לדף ההתחברות
+//   if (isAuthenticated && location.pathname === '/login' && from !== '/login') {
+//     navigate(from);
+//   }
+// }, [isAuthenticated, navigate, from, location.pathname]);
 
-    setLoading(true);
-    setError('');
+const handleLogin = async (e) => {
+  if (e) e.preventDefault();
+  
+  // בדיקת אימות בסיסית
+  if (!email || !password) {
+    setError('יש להזין אימייל וסיסמה');
+    return;
+  }
 
-    try {
-      // שליחת בקשת התחברות לשרת
-      await authService.login(email, password);
-      
-      // עדכון סטייט האפליקציה
-      setIsAuthenticated(true);
-      setOpenSnackbar(true);
-      
-      // מעבר לדף היומן אחרי התחברות מוצלחת
-      setTimeout(() => {
-        navigate(from);
-      }, 1000);
-    } catch (err) {
-      console.error('התחברות נכשלה:', err);
-      setError(err.response?.data || 'התחברות נכשלה, אנא נסה שוב');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError('');
+
+  try {
+    // התחברות
+    await login(email, password);
+    
+    // הצגת הודעת הצלחה
+    setOpenSnackbar(true);
+    
+    // ניווט לדף הבית אחרי התחברות מוצלחת
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 1000);
+  } catch (err) {
+    console.error('התחברות נכשלה:', err);
+    setError(err.response?.data?.message || 'התחברות נכשלה, אנא נסה שוב');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Box
@@ -141,7 +151,7 @@ const LoginPage = ({ setIsAuthenticated }) => {
                   </IconButton>
                 </InputAdornment>
               ),
-            }}
+            }}    
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 handleLogin();
@@ -172,12 +182,6 @@ const LoginPage = ({ setIsAuthenticated }) => {
           >
             {loading ? 'מתחבר...' : 'התחבר'}
           </Button>
-
-          {process.env.NODE_ENV === 'development' && (
-            <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary' }}>
-              למטרות הדגמה: admin@example.com / password
-            </Typography>
-          )}
         </Paper>
         <Box
           sx={{
@@ -203,15 +207,11 @@ const LoginPage = ({ setIsAuthenticated }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" sx={{ width: '100%' }}>
-          התחברת בהצלחה! מעביר אותך ליומן...
+          התחברת בהצלחה! מעביר אותך ...
         </Alert>
       </Snackbar>
     </Box>
   );
-};
-
-LoginPage.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
 };
 
 export default LoginPage;
