@@ -34,10 +34,6 @@ const InfoBox = styled(Paper)({
 const FlowerApp = () => {
     return (
         <FlowerContainer>
-            <InfoBox>
-                <Typography variant="h6" fontWeight="bold">לוח הודעות</Typography>
-                <Typography>הודעה חדשה...</Typography>
-            </InfoBox>
             <Box display="flex" flexDirection="column" alignItems="center">
                 <Typography variant="h4" fontWeight="bold">תיק ילד</Typography>
                 <Box position="relative" width={300} height={300} mb={5}>
