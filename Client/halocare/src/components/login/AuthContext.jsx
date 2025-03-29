@@ -71,12 +71,6 @@ export const AuthProvider = ({ children }) => {
     // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-    
-    // ניקוי localStorage - שימוש בניקוי ישיר במקום להסתמך על שירות
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // אין ניווט כאן - נעשה בנפרד בקומפוננטות
   };
 
   const value = {
