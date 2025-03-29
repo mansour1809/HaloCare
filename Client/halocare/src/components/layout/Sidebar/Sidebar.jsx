@@ -106,120 +106,138 @@ const handleLogout = () => {
     <Sidebar
       rtl
       width={`${DRAWER_WIDTH}px`}
-      style={{ 
-        height: 'calc(100% - 64px)',
-        position: 'fixed',
+      style={{
+        height: "calc(100% - 64px)",
+        position: "fixed",
         top: 64, // לאחר ה-navbar
         right: 0,
-        border: 'none',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+        border: "none",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",
       }}
       rootStyles={{
-        backgroundColor: 'white',
-        borderLeft: 'none',
+        backgroundColor: "white",
+        borderLeft: "none",
       }}
     >
-      <Box sx={{ marginTop: '16px' }}>
+      <Box sx={{ marginTop: "16px" }}>
         <Menu menuItemStyles={menuItemStyles}>
-          <MenuItem 
-            icon={<DashboardIcon />} 
-            onClick={() => navigate('/')}
-            style={location.pathname === '/' ? activeMenuItemStyles : {}}
+          <MenuItem
+            icon={<DashboardIcon />}
+            onClick={() => navigate("/")}
+            style={location.pathname === "/" ? activeMenuItemStyles : {}}
           >
             דף הבית
           </MenuItem>
-          
+
           <CategoryLabel>ניהול ילדים</CategoryLabel>
-          
-          <SubMenu 
-            label="ניהול ילדים" 
+
+          <SubMenu
+            label="ניהול ילדים"
             icon={<ChildCareIcon />}
             defaultOpen={true}
           >
-            <MenuItem 
+            <MenuItem
               icon={<GroupIcon />}
-              onClick={() => navigate('/kids/list')}
-              style={location.pathname === '/kids/list' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/kids/list")}
+              style={
+                location.pathname === "/kids/list" ? activeMenuItemStyles : {}
+              }
             >
               רשימת ילדים
             </MenuItem>
-            <MenuItem 
+            <MenuItem
               icon={<PersonAddIcon />}
-              onClick={() => navigate('/kids/add')}
-              style={location.pathname === '/kids/add' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/kids/add")}
+              style={
+                location.pathname === "/kids/add" ? activeMenuItemStyles : {}
+              }
             >
               הוספת ילד
             </MenuItem>
           </SubMenu>
-          
+
           <CategoryLabel>ניהול צוות</CategoryLabel>
-          
-          <SubMenu 
-            label="ניהול צוות" 
-            icon={<PeopleAltIcon />}
-          >
-            <MenuItem 
+
+          <SubMenu label="ניהול צוות" icon={<PeopleAltIcon />}>
+            <MenuItem
               icon={<GroupIcon />}
-              onClick={() => navigate('/employees/list')}
-              style={location.pathname === '/employees/list' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/employees/list")}
+              style={
+                location.pathname === "/employees/list"
+                  ? activeMenuItemStyles
+                  : {}
+              }
             >
               רשימת אנשי צוות
             </MenuItem>
-            <MenuItem 
+            <MenuItem
               icon={<PersonAddIcon />}
-              onClick={() => navigate('/employees/add')}
-              style={location.pathname === '/employees/add' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/employees/add")}
+              style={
+                location.pathname === "/employees/add"
+                  ? activeMenuItemStyles
+                  : {}
+              }
             >
               הוספת איש צוות
             </MenuItem>
           </SubMenu>
-          
-          <CategoryLabel>אחר</CategoryLabel>
-          
-          <SubMenu 
-  label="יומן" 
-  icon={<CalendarMonthIcon />}
->
-  <MenuItem 
-    icon={<EventIcon />}
-    onClick={() => navigate('/calendar/schedule')}
-    style={location.pathname === '/calendar/schedule' ? activeMenuItemStyles : {}}
-  >
-    לוח שנה
-  </MenuItem>
-  <MenuItem 
-    icon={<MeetingRoomIcon />}
-    onClick={() => navigate('/calendar/meetings')}
-    style={location.pathname === '/calendar/meetings' ? activeMenuItemStyles : {}}
-  >
-    לוח פגישות
-  </MenuItem>
-</SubMenu>
 
-          
-          <MenuItem 
+          <CategoryLabel>אחר</CategoryLabel>
+
+          <SubMenu label="יומן" icon={<CalendarMonthIcon />}>
+            <MenuItem
+              icon={<EventIcon />}
+              onClick={() => navigate("/calendar/schedule")}
+              style={
+                location.pathname === "/calendar/schedule"
+                  ? activeMenuItemStyles
+                  : {}
+              }
+            >
+              לוח שנה
+            </MenuItem>
+            <MenuItem
+              icon={<MeetingRoomIcon />}
+              onClick={() => navigate("/calendar/meetings")}
+              style={
+                location.pathname === "/calendar/meetings"
+                  ? activeMenuItemStyles
+                  : {}
+              }
+            >
+              לוח פגישות
+            </MenuItem>
+          </SubMenu>
+
+          <MenuItem
             icon={<FormatListBulletedIcon />}
-            onClick={() => navigate('/tasks')}
-            style={location.pathname === '/tasks' ? activeMenuItemStyles : {}}
+            onClick={() => navigate("/tasks")}
+            style={location.pathname === "/tasks" ? activeMenuItemStyles : {}}
           >
             לוח משימות
           </MenuItem>
-          
-          <SubMenu 
-            label="דוחות" 
-            icon={<AssessmentIcon />}
-          >
-            <MenuItem 
+
+          <SubMenu label="דוחות" icon={<AssessmentIcon />}>
+            <MenuItem
               icon={<AutoStoriesIcon />}
-              onClick={() => navigate('/reports/attendance')}
-              style={location.pathname === '/reports/attendance' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/reports/attendance")}
+              style={
+                location.pathname === "/reports/attendance"
+                  ? activeMenuItemStyles
+                  : {}
+              }
             >
               דוחות נוכחות
             </MenuItem>
-            <MenuItem 
+            <MenuItem
               icon={<EditNoteIcon />}
-              onClick={() => navigate('/reports/treatments')}
-              style={location.pathname === '/reports/treatments' ? activeMenuItemStyles : {}}
+              onClick={() => navigate("/reports/treatments")}
+              style={
+                location.pathname === "/reports/treatments"
+                  ? activeMenuItemStyles
+                  : {}
+              }
             >
               דוחות טיפולים
             </MenuItem>
