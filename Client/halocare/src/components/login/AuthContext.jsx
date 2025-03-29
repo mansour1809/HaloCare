@@ -68,15 +68,9 @@ export const AuthProvider = ({ children }) => {
 
   // פונקציית התנתקות עם פונקציונליות מינימלית
   const logout = () => {
-    // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-    
-    // ניקוי localStorage - שימוש בניקוי ישיר במקום להסתמך על שירות
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // אין ניווט כאן - נעשה בנפרד בקומפוננטות
+    authService.logout();
   };
 
   const value = {

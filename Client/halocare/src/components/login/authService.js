@@ -29,6 +29,7 @@ const authService = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
   },
 
   isAuthenticated: () => {
@@ -38,13 +39,7 @@ const authService = {
   getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
-    
-    try {
-      return JSON.parse(userStr);
-    } catch (e) {
-      console.error('שגיאה בפענוח המשתמש מ-localStorage:', e);
-      return null;
-    }
+    return JSON.parse(userStr);
   },
 
   getToken: () => {

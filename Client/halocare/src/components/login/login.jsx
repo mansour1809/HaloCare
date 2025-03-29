@@ -11,14 +11,13 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import { useAuth } from './AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // const from = location.state?.from || '/';
+
   
   // שימוש בקונטקסט
   const { login } = useAuth();
@@ -30,12 +29,6 @@ const LoginPage = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
 
-// React.useEffect(() => {
-//   // נמנע ממעבר אוטומטי אם המשתמש הגיע ישירות לדף ההתחברות
-//   if (isAuthenticated && location.pathname === '/login' && from !== '/login') {
-//     navigate(from);
-//   }
-// }, [isAuthenticated, navigate, from, location.pathname]);
 
 const handleLogin = async (e) => {
   if (e) e.preventDefault();
