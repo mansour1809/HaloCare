@@ -17,9 +17,6 @@ import { useAuth } from './AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-
-  
-  // שימוש בקונטקסט
   const { login } = useAuth();
   
   const [showPassword, setShowPassword] = useState(false);
@@ -29,37 +26,35 @@ const LoginPage = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
 
-
-const handleLogin = async (e) => {
-  if (e) e.preventDefault();
-  
-  // בדיקת אימות בסיסית
-  if (!email || !password) {
-    setError('יש להזין אימייל וסיסמה');
-    return;
-  }
-
-  setLoading(true);
-  setError('');
-
-  try {
-    // התחברות
-    await login(email, password);
+  const handleLogin = async (e) => {
+    if (e) e.preventDefault();
     
-    // הצגת הודעת הצלחה
-    setOpenSnackbar(true);
-    
-    // ניווט לדף הבית אחרי התחברות מוצלחת
-    setTimeout(() => {
-      navigate('/', { replace: true });
-    }, 1000);
-  } catch (err) {
-    console.error('התחברות נכשלה:', err);
-    setError(err.response?.data?.message || 'התחברות נכשלה, אנא נסה שוב');
-  } finally {
-    setLoading(false);
-  }
-};
+    // בדיקת אימות בסיסית
+    if (!email || !password) {
+      setError('יש להזין אימייל וסיסמה');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // התחברות
+      await login(email, password);
+      
+      // הצגת הודעת הצלחה
+      setOpenSnackbar(true);
+      
+      // ניווט לדף הבית אחרי התחברות מוצלחת
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 1000);
+    } catch (err) {
+      setError('התחברות נכשלה, אנא נסה שוב');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -80,7 +75,6 @@ const handleLogin = async (e) => {
           flexDirection: { xs: 'column', md: 'row' }
         }}
       >
-       
         <Paper 
           elevation={3} 
           sx={{ 
@@ -130,7 +124,7 @@ const handleLogin = async (e) => {
             onChange={(e) => setPassword(e.target.value)}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start" >
+                <InputAdornment position="start">
                   <Lock color="action" />
                 </InputAdornment>
               ),
@@ -152,7 +146,7 @@ const handleLogin = async (e) => {
             }}
           />
           
-          <Box sx={{  justifyContent: 'flex-start', mb: 2 }}>
+          <Box sx={{ justifyContent: 'flex-start', mb: 2 }}>
             <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
               שכחת סיסמה?
             </Typography>
@@ -200,7 +194,7 @@ const handleLogin = async (e) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" sx={{ width: '100%' }}>
-          התחברת בהצלחה! מעביר אותך ...
+          התחברת בהצלחה! מעביר אותך...
         </Alert>
       </Snackbar>
     </Box>

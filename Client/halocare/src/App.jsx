@@ -1,3 +1,4 @@
+// App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { rtlCache } from './common/rtlCache';
@@ -7,6 +8,7 @@ import { ProSidebarProvider } from 'react-pro-sidebar';
 // קומפוננטים
 import Navbar from './components/layout/Navbar/Navbar';
 import ProSidebar from './components/layout/Sidebar/Sidebar';
+import PrivateRoute from './components/PrivateRoute';
 
 // דפים
 import Calendar from './pages/calendar/Calendar';
@@ -19,13 +21,9 @@ import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
-import PrivateRoute from './components/PrivateRoute';
-import { useState , useEffect } from 'react';
-import authService from './components/login/authService';
-// import Dashboard from './pages/Dashboard';
-// import EmployeesManagement from './pages/EmployeesManagement';
-// import Tasks from './pages/Tasks';
-// import Reports from './pages/Reports';
+
+// אותנטיקציה
+import { useAuth, AuthProvider } from './components/login/AuthContext';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -72,145 +70,129 @@ const theme = createTheme({
 const DRAWER_WIDTH = 240;
 const NAVBAR_HEIGHT = 64;
 
+// רכיב פנימי שמשתמש בקונטקסט האותנטיקציה
+const AppContent = () => {
+  const { isAuthenticated } = useAuth();
+  
+  return (
+    <Router>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        {isAuthenticated && <Navbar />}
+        
+        <Box
+          sx={{
+            display: "flex",
+            flexGrow: 1,
+            position: "relative",
+            pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0,
+          }}
+        >
+          {isAuthenticated && <ProSidebar />}
+          
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              backgroundColor: "#f5f5f5",
+              ml: isAuthenticated ? `${DRAWER_WIDTH}px !important` : '0 !important',
+              mr: '0 !important',
+              width: isAuthenticated ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%',
+              minHeight: isAuthenticated ? `calc(100vh - ${NAVBAR_HEIGHT}px)` : '100vh',
+              overflow: "auto",
+            }}
+          >
+            <Routes>
+              {/* דף התחברות - פתוח לכולם */}
+              <Route path="/login" element={
+                isAuthenticated ? <Navigate to="/" /> : <LoginPage />
+              } />
+              
+              {/* כל השאר - רק למחוברים */}
+              <Route path="/" element={
+                <PrivateRoute>
+                  <HomePage />
+                </PrivateRoute>
+              } />
 
+              {/* ניהול ילדים */}
+              <Route path="/kids/list" element={
+                <PrivateRoute>
+                  <KidsManagment />
+                </PrivateRoute>
+              } />
+              <Route path="/kids/add" element={
+                <PrivateRoute>
+                  <div>kids add</div>
+                </PrivateRoute>
+              } />
+              
+              {/* ניהול צוות */}
+              <Route path="/employees/list" element={
+                <PrivateRoute>
+                  <EmployeesManagement />
+                </PrivateRoute>
+              } />
+              <Route path="/employees/add" element={
+                <PrivateRoute>
+                  <NewEmployeeForm />
+                </PrivateRoute>
+              } />
 
+              {/* יומן ופגישות */}
+              <Route path="/calendar/schedule" element={
+                <PrivateRoute>
+                  <Calendar />
+                </PrivateRoute>
+              } />
+              <Route path="/calendar/meetings" element={
+                <PrivateRoute>
+                  <EventsList />
+                </PrivateRoute>
+              } />
+
+              {/* משימות */}
+              <Route path="/tasks" element={
+                <PrivateRoute>
+                  <div>Tasks Page</div>
+                </PrivateRoute>
+              } />
+
+              {/* דוחות */}
+              <Route path="/reports/attendance" element={
+                <PrivateRoute>
+                  <AttendanceTable />
+                </PrivateRoute>
+              } />
+              <Route path="/reports/treatments" element={
+                <PrivateRoute>
+                  <Flowerapp />
+                </PrivateRoute>
+              } />
+              
+              {/* שגיאה 404 */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Box>
+        </Box>
+      </Box>
+    </Router>
+  );
+};
+
+// הרכיב הראשי של האפליקציה
 function App() {
-  // בדיקה האם המשתמש מחובר בעת טעינת האפליקציה
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
-
-  // בדיקה תקופתית אם הטוקן עדיין תקף
-  useEffect(() => {
-    // בדיקה בעת טעינת האפליקציה
-    checkAuthentication();
-
-    // הגדרת בדיקה תקופתית (כל 5 דקות)
-    const interval = setInterval(checkAuthentication, 5 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  // פונקציה לבדיקת האימות
-  const checkAuthentication = () => {
-    const isAuth = authService.isAuthenticated();
-    setIsAuthenticated(isAuth);
-  };
-
   return (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={theme}>
-        <ProSidebarProvider>
-          <CssBaseline />
-          <CalendarProvider>
-            <Router>
-              <Box
-                sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
-              >
-                {isAuthenticated && <Navbar />} {/* הצגת NavBar רק למשתמשים מחוברים */}
-                
-                {/* מיכל לתוכן ולסרגל צדדי */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexGrow: 1,
-                    position: "relative",
-                    pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0, // פדינג למעלה רק אם יש נאבבר
-                  }}
-                >
-                  {/* סרגל צדדי - רק למשתמשים מחוברים */}
-                  {isAuthenticated && <ProSidebar />}
-                  
-                  {/* אזור התוכן הראשי */}
-                 {/* אזור התוכן הראשי */}
-                 <Box
-                    component="main"
-                    sx={{
-                      flexGrow: 1,
-                      p: 3,
-                      backgroundColor: "#f5f5f5",
-                      ml: isAuthenticated ? `${DRAWER_WIDTH}px !important` : '0 !important', // מרווח משמאל רק אם יש סייד בר
-                      mr: '0 !important',
-                      width: isAuthenticated ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%', // רוחב התוכן
-                      minHeight: isAuthenticated ? `calc(100vh - ${NAVBAR_HEIGHT}px)` : '100vh', // גובה מינימלי
-                      overflow: "auto",
-                    }}
-                  >
-                    <Routes>
-                      {/* דף התחברות - פתוח לכולם */}
-                      <Route path="/login" element={
-                        isAuthenticated ? <Navigate to="/" /> : <LoginPage setIsAuthenticated={setIsAuthenticated} />
-                      } />
-                      
-                      {/* כל השאר - רק למחוברים */}
-                      <Route path="/" element={
-                        <PrivateRoute>
-                          <HomePage />
-                        </PrivateRoute>
-                      } />
-
-                      {/* ניהול ילדים */}
-                      <Route path="/kids/list" element={
-                        <PrivateRoute>
-                          <KidsManagment />
-                        </PrivateRoute>
-                      } />
-                      <Route path="/kids/add" element={
-                        <PrivateRoute>
-                          <div>kids add</div>
-                        </PrivateRoute>
-                      } />
-                      
-                      {/* ניהול צוות */}
-                      <Route path="/employees/list" element={
-                        <PrivateRoute>
-                          <EmployeesManagement />
-                        </PrivateRoute>
-                      } />
-                      <Route path="/employees/add" element={
-                        <PrivateRoute>
-                          <NewEmployeeForm />
-                        </PrivateRoute>
-                      } />
-
-                      {/* יומן ופגישות */}
-                      <Route path="/calendar/schedule" element={
-                        <PrivateRoute>
-                          <Calendar />
-                        </PrivateRoute>
-                      } />
-                      <Route path="/calendar/meetings" element={
-                        <PrivateRoute>
-                          <EventsList />
-                        </PrivateRoute>
-                      } />
-
-                      {/* משימות */}
-                      <Route path="/tasks" element={
-                        <PrivateRoute>
-                          <div>Tasks Page</div>
-                        </PrivateRoute>
-                      } />
-
-                      {/* דוחות */}
-                      <Route path="/reports/attendance" element={
-                        <PrivateRoute>
-                          <AttendanceTable />
-                        </PrivateRoute>
-                      } />
-                      <Route path="/reports/treatments" element={
-                        <PrivateRoute>
-                          <Flowerapp />
-                        </PrivateRoute>
-                      } />
-                      
-                      {/* שגיאה 404 */}
-                      <Route path="*" element={<Navigate to="/" />} />
-                    </Routes>
-                  </Box>
-                </Box>
-              </Box>
-            </Router>
-          </CalendarProvider>
-        </ProSidebarProvider>
+        <AuthProvider>
+          <ProSidebarProvider>
+            <CssBaseline />
+            <CalendarProvider>
+              <AppContent />
+            </CalendarProvider>
+          </ProSidebarProvider>
+        </AuthProvider>
       </ThemeProvider>
     </CacheProvider>
   );

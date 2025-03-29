@@ -1,14 +1,15 @@
 // src/context/AuthContext.jsx
-import {  useState, useEffect, useContext } from 'react';
-import authService from './authService';
-import { AuthContext } from './authContextt';
-
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import PropTypes from 'prop-types';
 
+const API_URL = 'https://localhost:7225/api';
 
+// יצירת קונטקסט
+export const AuthContext = createContext(null);
 
+// הוק שימושי לגישה לקונטקסט
 export const useAuth = () => useContext(AuthContext);
-
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -47,39 +48,52 @@ export const AuthProvider = ({ children }) => {
   // פונקציית התחברות
   const login = async (email, password) => {
     try {
-      const response = await authService.login(email, password);
+      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       
-      // מגדירים את המשתמש המחובר
-      setCurrentUser({
-        id: response.id,
-        email: response.email || email,
-        firstName: response.firstName || '',
-        lastName: response.lastName || '',
-        role: response.role || ''
-      });
+      if (response.data && response.data.token) {
+        // שמירה ב-localStorage
+        localStorage.setItem('token', response.data.token);
+        const userData = {
+          id: response.data.id,
+          firstName: response.data.firstName || '',
+          lastName: response.data.lastName || '',
+          email: response.data.email || email,
+          role: response.data.role || ''
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // עדכון המצב
+        setCurrentUser(userData);
+        setIsAuthenticated(true);
+      }
       
-      setIsAuthenticated(true);
-      return response;
+      return response.data;
     } catch (error) {
       console.error("שגיאת התחברות:", error);
       throw error;
     }
   };
 
-  // פונקציית התנתקות עם פונקציונליות מינימלית
+  // פונקציית התנתקות
   const logout = () => {
+    // ניקוי localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
   };
 
+  // נתונים שיהיו זמינים בקונטקסט
   const value = {
     currentUser,
     isAuthenticated,
     loading,
     login,
     logout
-  }
+  };
+  
   return (
     <AuthContext.Provider value={value}>
       {children}
@@ -89,4 +103,6 @@ export const AuthProvider = ({ children }) => {
 
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
-};  
+};
+
+export default AuthProvider;

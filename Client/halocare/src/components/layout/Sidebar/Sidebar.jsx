@@ -23,7 +23,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import { useAuth } from '../../login/AuthContext.jsx';
-import authService from '../../login/authService';
 
 // רוחב הסרגל הצדדי
 const DRAWER_WIDTH = 240;
@@ -94,22 +93,30 @@ const ProSidebar = () => {
 
 
 
-  const handleLogout = (e) => {
-    e.preventDefault(); // חשוב - מונע התנהגות ברירת מחדל
+  // const handleLogout = (e) => {
+  //   e.preventDefault(); // חשוב - מונע התנהגות ברירת מחדל
     
-    // ראשית, מנקים את ה-localStorage
-    localStorage.clear();
+  //   // ראשית, מנקים את ה-localStorage
+  //   localStorage.clear();
     
-    // מבצעים את פונקציית ההתנתקות מהקונטקסט אם היא קיימת
-    if (typeof logout === 'function') {
-      logout();
-    }
+  //   // מבצעים את פונקציית ההתנתקות מהקונטקסט אם היא קיימת
+  //   if (typeof logout === 'function') {
+  //     logout();
+  //   }
     
-    // מעבירים את המשתמש לדף התחברות באמצעות window.location במקום useNavigate
-    // זה יגרום לטעינה מחדש של הדף, מה שיפתור את בעיית הניווט
-    window.location.href = '/login';
+  //   // מעבירים את המשתמש לדף התחברות באמצעות window.location במקום useNavigate
+  //   // זה יגרום לטעינה מחדש של הדף, מה שיפתור את בעיית הניווט
+  //   window.location.href = '/login';
+  // };
+  
+  const handleLogout = () => {
+    // מבצע התנתקות
+    logout();
+    
+    // מנווט לדף התחברות
+    navigate('/login');
   };
-
+  
   return (
     <Sidebar
       rtl
