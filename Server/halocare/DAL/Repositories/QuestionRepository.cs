@@ -26,12 +26,12 @@ namespace halocare.DAL.Repositories
                 {
                     FormId = Convert.ToInt32(row["FormId"]),
                     QuestionNo = Convert.ToInt32(row["QuestionNo"]),
-                    QuestionText = row["QuestionText"].ToString(),
-                    IsMandatory = Convert.ToBoolean(row["IsMandatory"]),
-                    IsOpen = Convert.ToBoolean(row["IsOpen"]),
-                    HowManyVal = Convert.ToInt32(row["HowManyVal"]),
-                    PossibleValues = row["PossibleValues"].ToString(),
-                    HasOther = Convert.ToBoolean(row["HasOther"])
+                    QuestionText = row["QuestionText"] != DBNull.Value ? row["QuestionText"].ToString() : string.Empty,
+                    IsMandatory = row["IsMandatory"] != DBNull.Value ? Convert.ToBoolean(row["IsMandatory"]) : false,
+                    IsOpen = row["IsOpen"] != DBNull.Value ? Convert.ToBoolean(row["IsOpen"]) : false,
+                    HowManyVal = row["HowManyVal"] != DBNull.Value ? Convert.ToInt32(row["HowManyVal"]) : 0,
+                    PossibleValues = row["PossibleValues"] != DBNull.Value ? row["PossibleValues"].ToString() : string.Empty,
+                    HasOther = row["HasOther"] != DBNull.Value ? Convert.ToBoolean(row["HasOther"]) : false
                 };
 
                 questions.Add(question);

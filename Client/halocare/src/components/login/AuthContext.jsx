@@ -68,9 +68,9 @@ export const AuthProvider = ({ children }) => {
 
   // פונקציית התנתקות עם פונקציונליות מינימלית
   const logout = () => {
+    // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-    authService.logout();
   };
 
   const value = {
