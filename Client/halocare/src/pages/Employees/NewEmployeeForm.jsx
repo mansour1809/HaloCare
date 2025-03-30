@@ -96,7 +96,7 @@ const NewEmployeeForm = () => {
         setLoading(true);
         
         // טעינת השאלות מהשרת לפי הנתיב הנכון
-        const questionsResponse = await axios.get(`${API_URL}/form/1/questions`);
+        const questionsResponse = await axios.get(`${API_URL}/Form/1/questions`);
         console.log('נתוני שאלות:', questionsResponse.data);
         
         // טעינת רשימת כיתות
@@ -104,7 +104,7 @@ const NewEmployeeForm = () => {
         console.log('נתוני כיתות:', classesResponse.data);
         
         // טעינת רשימת תפקידים
-        const rolesResponse = await axios.get(`${API_URL}/Roles`);
+        const rolesResponse = await axios.get(`${API_URL}/ReferenceData/roles`);
         console.log('נתוני תפקידים:', rolesResponse.data);
         
         // עדכון המצבים
