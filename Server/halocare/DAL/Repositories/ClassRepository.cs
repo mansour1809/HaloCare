@@ -19,9 +19,9 @@ namespace halocare.DAL.Repositories
             {
                 Class classItem = new Class
                 {
-                    ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : 0, // Default to 0 if null
-                    ClassName = row["ClassName"] != DBNull.Value ? row["ClassName"].ToString() : string.Empty, // Default to empty string if null
-                    TeacherId = row["TeacherId"] != DBNull.Value ? Convert.ToInt32(row["TeacherId"]) : 0 // Default to 0 if null
+                    ClassId = row["classId"] != DBNull.Value ? Convert.ToInt32(row["classId"]) : 0, // Default to 0 if null
+                    ClassName = row["className"] != DBNull.Value ? row["className"].ToString() : string.Empty, // Default to empty string if null
+                    TeacherId = row["teacherId"] != DBNull.Value ? Convert.ToInt32(row["teacherId"]) : 0 // Default to 0 if null
                 };
 
                 classes.Add(classItem);
