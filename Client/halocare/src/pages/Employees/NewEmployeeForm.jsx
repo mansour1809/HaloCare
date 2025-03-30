@@ -56,7 +56,7 @@ const generateRandomPassword = (length = 8) => {
   return password;
 };
 
-const API_URL = 'http://localhost:7225/api'; // עדכון לפורט 7225
+const API_URL = 'https://localhost:7225/api'; // עדכון לפורט 7225
 
 const NewEmployeeForm = () => {
   // מצבים לטעינת נתונים מהשרת
@@ -94,9 +94,9 @@ const NewEmployeeForm = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
         // טעינת השאלות מהשרת לפי הנתיב הנכון
-        const questionsResponse = await axios.get(`${API_URL}/form/1/questions`);
+        const questionsResponse = await axios.get(`${API_URL}/Forms/1/questions`);
+
         console.log('נתוני שאלות:', questionsResponse.data);
         
         // טעינת רשימת כיתות
@@ -104,7 +104,7 @@ const NewEmployeeForm = () => {
         console.log('נתוני כיתות:', classesResponse.data);
         
         // טעינת רשימת תפקידים
-        const rolesResponse = await axios.get(`${API_URL}/Roles`);
+        const rolesResponse = await axios.get(`${API_URL}/ReferenceData/roles`);
         console.log('נתוני תפקידים:', rolesResponse.data);
         
         // עדכון המצבים
@@ -213,8 +213,8 @@ const NewEmployeeForm = () => {
     e.preventDefault();
     
     // בדיקת שדות חובה
-    const requiredFields = formQuestions.filter(question => question.required);
-    const missingFields = requiredFields.filter(field => !formData[field.name]);
+    const isMandatoryFields = formQuestions.filter(question => question.isMandatory);
+    const missingFields = isMandatoryFields.filter(field => !formData[field.name]);
     
     if (missingFields.length > 0) {
       setError(`יש למלא את כל שדות החובה: ${missingFields.map(field => field.label || field.name).join(', ')}`);
@@ -277,10 +277,12 @@ const NewEmployeeForm = () => {
 
   // רנדור שאלה דינמית לפי הסוג שלה
   const renderQuestion = (question) => {
-    if (!question || !question.name) return null;
+    if (!question || !question.questionText) return null;
     
-    const { name, title, type, required, options } = question;
-    
+    const { questionText, title, type, isMandatory, options } = question;
+
+    console.log("guestionnnnnnnnnnn:",questionText,title,type,isMandatory,options)
+
     switch (type) {
       case 'text':
       case 'email':
@@ -290,13 +292,13 @@ const NewEmployeeForm = () => {
         return (
           <TextField
             fullWidth
-            label={`${title || name}${required ? ' *' : ''}`}
+            label={`${title || name}${isMandatory ? ' *' : ''}`}
             name={name}
             type={type}
             value={formData[name] || ''}
             onChange={handleChange}
             variant="outlined"
-            required={required}
+            isMandatory={isMandatory}
             sx={{ marginBottom: 2 }}
           />
         );
@@ -304,13 +306,13 @@ const NewEmployeeForm = () => {
       case 'select':
         return (
           <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }}>
-            <InputLabel>{`${title || name}${required ? ' *' : ''}`}</InputLabel>
+            <InputLabel>{`${title || name}${isMandatory ? ' *' : ''}`}</InputLabel>
             <Select
               name={name}
               value={formData[name] || ''}
               onChange={handleChange}
-              label={`${title || name}${required ? ' *' : ''}`}
-              required={required}
+              label={`${title || name}${isMandatory ? ' *' : ''}`}
+              isMandatory={isMandatory}
             >
               {options?.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -324,14 +326,14 @@ const NewEmployeeForm = () => {
       case 'date':
         return (
           <DatePicker
-            label={`${title || name}${required ? ' *' : ''}`}
+            label={`${title || name}${isMandatory ? ' *' : ''}`}
             value={formData[name] || null}
             onChange={(date) => handleDateChange(name, date)}
             slotProps={{ 
               textField: { 
                 fullWidth: true, 
                 variant: "outlined",
-                required: required
+                isMandatory: isMandatory
               } 
             }}
           />
@@ -373,12 +375,12 @@ const NewEmployeeForm = () => {
             fullWidth
             multiline
             rows={4}
-            label={`${title || name}${required ? ' *' : ''}`}
+            label={`${title || name}${isMandatory ? ' *' : ''}`}
             name={name}
             value={formData[name] || ''}
             onChange={handleChange}
             variant="outlined"
-            required={required}
+            isMandatory={isMandatory}
             sx={{ marginBottom: 2 }}
           />
         );
@@ -387,12 +389,12 @@ const NewEmployeeForm = () => {
         return (
           <TextField
             fullWidth
-            label={`${title || name}${required ? ' *' : ''}`}
+            label={`${title || name}${isMandatory ? ' *' : ''}`}
             name={name}
             value={formData[name] || ''}
             onChange={handleChange}
             variant="outlined"
-            required={required}
+            isMandatory={isMandatory}
             sx={{ marginBottom: 2 }}
           />
         );
@@ -406,9 +408,9 @@ const NewEmployeeForm = () => {
       </Box>
     );
   }
-
   // קבצי שאלות לפי קטגוריות
   const personalQuestions = formQuestions.filter(q => q.section === "personal");
+  
   const employmentQuestions = formQuestions.filter(q => q.section === "employment");
   const otherQuestions = formQuestions.filter(q => !q.section || (q.section !== "personal" && q.section !== "employment"));
 
@@ -435,13 +437,14 @@ const NewEmployeeForm = () => {
                 </Typography>
                 
                 <Grid container spacing={2}>
-                  {personalQuestions.map((question) => (
+                  {formQuestions.map((question) => (
                     <Grid 
                       item 
                       xs={12} 
                       md={question.fullWidth ? 12 : 6} 
-                      key={question.name}
+                      key={question.questionNo}
                     >
+                      {console.log(question)}
                       {renderQuestion(question)}
                     </Grid>
                   ))}
@@ -474,7 +477,7 @@ const NewEmployeeForm = () => {
                         value={formData.roleName || ''}
                         onChange={handleChange}
                         label="תפקיד *"
-                        required
+                        isMandatory
                       >
                         {roles.map((role) => (
                           <MenuItem key={role.id || role.roleName} value={role.roleName}>
@@ -533,7 +536,7 @@ const NewEmployeeForm = () => {
                         item 
                         xs={12} 
                         md={question.fullWidth ? 12 : 6} 
-                        key={question.name}
+                        key={question.questionNo}
                       >
                         {renderQuestion(question)}
                       </Grid>
