@@ -281,7 +281,6 @@ const NewEmployeeForm = () => {
     
     const { questionText, title, type, isMandatory, options } = question;
 
-    console.log("guestionnnnnnnnnnn:",questionText,title,type,isMandatory,options)
 
     switch (type) {
       case 'text':
@@ -410,7 +409,6 @@ const NewEmployeeForm = () => {
   }
   // קבצי שאלות לפי קטגוריות
   const personalQuestions = formQuestions.filter(q => q.section === "personal");
-  
   const employmentQuestions = formQuestions.filter(q => q.section === "employment");
   const otherQuestions = formQuestions.filter(q => !q.section || (q.section !== "personal" && q.section !== "employment"));
 
