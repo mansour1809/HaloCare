@@ -19,7 +19,7 @@ namespace halocare.DAL.Repositories
             {
                 TreatmentType treatmentType = new TreatmentType
                 {
-                    TreatmentTypeName = row["SP_TreatmentTypeName"].ToString()
+                    TreatmentTypeName = row["treatmentTypeName"].ToString()
                 };
 
                 treatmentTypes.Add(treatmentType);

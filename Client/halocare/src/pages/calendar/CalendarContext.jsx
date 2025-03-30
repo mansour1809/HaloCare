@@ -56,16 +56,16 @@ export const CalendarProvider = ({ children }) => {
   // המרת אירוע מהשרת לפורמט המתאים ליומן
   const formatEventForCalendar = (event) => {
     return {
-      id: event.id,
-      title: event.title || `אירוע ${event.type}`,
+      id: event.eventId,
+      // title: event.eventType ,
       start: event.startTime,
       end: event.endTime,
-      backgroundColor: eventColors[event.type] || eventColors['אחר'],
-      borderColor: eventColors[event.type] || eventColors['אחר'],
+      backgroundColor: eventColors[event.eventType] ,
+      borderColor: eventColors[event.eventType] ,
       extendedProps: {
         location: event.location,
         description: event.description,
-        type: event.type,
+        type: event.eventType,
         createdBy: event.createdBy,
         kidIds: event.kidIds || [],
         employeeIds: event.employeeIds || []
@@ -78,9 +78,12 @@ export const CalendarProvider = ({ children }) => {
       try {
         const response = await axios.get(TREATMENT_TYPES_ENDPOINT);
         
+
         // הנחה שהשרת מחזיר מערך עם שדה 'name' או 'type' שמכיל את סוג הטיפול
-        const types = response.data.map(type => type.name || type.type);
-        setEventTypes([...types, 'פגישת הורים', 'מפגש קבוצתי', 'ביקור בית', 'אחר']);
+        const types = response.data.map(type => type.treatmentTypeName );
+        setEventTypes([...types]);
+        console.log(types); // הדפסת התגובה מהשרת
+
         return types;
       } catch (error) {
         console.error('Error fetching treatment types:', error);
@@ -98,6 +101,7 @@ export const CalendarProvider = ({ children }) => {
     
     try {
       const response = await axios.get(EVENTS_ENDPOINT);
+      console.log(response.data); // הדפסת התגובה מהשרת
       const formattedEvents = response.data.map(formatEventForCalendar);
       setEvents(formattedEvents);
       // return formattedEvents;//123
@@ -124,7 +128,7 @@ export const CalendarProvider = ({ children }) => {
       const newEvent = formatEventForCalendar(response.data);
       
       setEvents(prevEvents => [...prevEvents, newEvent]);
-      return newEvent;//123
+      return newEvent;
     } catch (error) {
       console.error('Error adding event:', error);
       setError('אירעה שגיאה בהוספת האירוע');
@@ -161,6 +165,7 @@ export const CalendarProvider = ({ children }) => {
 
   // מחיקת אירוע
   const deleteEvent = useCallback(async (eventId) => {
+    console.log('Deleting event with ID:', eventId);
     setIsLoading(true);
     setError(null);
     
@@ -377,7 +382,7 @@ export const CalendarProvider = ({ children }) => {
       setOpenDialog(false);
     } catch (error) {
       console.error('Error adding event:', error.response ? error.response.data : error);
-      alert('asdasdאירעה שגיאה בשמירת האירוע');
+      alert('אירעה שגיאה בשמירת האירוע');
     }
   }, [newEvent, selectedEvent, updateEvent, addEvent]);
 
