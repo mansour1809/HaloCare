@@ -249,14 +249,14 @@ const EmployeesManagement = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>שם מלא</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תפקיד</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>כיתה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>טלפון</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>דוא"ל</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תאריך התחלה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>סטטוס</TableCell>
-              <TableCell sx={{ width: "10%", fontWeight: '700', fontSize: '1rem' }}>פעולות</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>שם מלא</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>תפקיד</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>כיתה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>טלפון</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>דוא"ל</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>תאריך התחלה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>סטטוס</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           {filteredEmployees.length > 0 ? (
@@ -269,7 +269,7 @@ const EmployeesManagement = () => {
                     borderBottom: '1px solid #eee'
                   }}
                 >
-                  <TableCell align="right">
+                  <TableCell >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {employee.photoPath ? (
                         <Avatar 
@@ -302,7 +302,8 @@ const EmployeesManagement = () => {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="right">
+                  
+                  <TableCell align="center">
                     {employee.roleName ? (
                       <Chip
                         label={employee.roleName}
@@ -317,8 +318,8 @@ const EmployeesManagement = () => {
                       '–'
                     )}
                   </TableCell>
-                  <TableCell align="right">{getClassName(employee.classId)}</TableCell>
-                  <TableCell align="right" dir="ltr">
+                  <TableCell align="center">{getClassName(employee.classId)}</TableCell>
+                  <TableCell align="center" dir="ltr">
                     {employee.mobilePhone ? (
                       <Typography
                         component="a"
@@ -335,7 +336,7 @@ const EmployeesManagement = () => {
                       '–'
                     )}
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">
                     {employee.email ? (
                       <Typography
                         component="a"
@@ -352,8 +353,8 @@ const EmployeesManagement = () => {
                       '–'
                     )}
                   </TableCell>
-                  <TableCell align="right">{formatDate(employee.startDate)}</TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">{formatDate(employee.startDate)}</TableCell>
+                  <TableCell align="center">
                     <Switch
                       checked={Boolean(employee.isActive)}
                       onChange={() => handleToggleActive(employee.employeeId, employee.isActive)}
@@ -368,7 +369,7 @@ const EmployeesManagement = () => {
                       }}
                     />
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="center">
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <IconButton
                         sx={{
