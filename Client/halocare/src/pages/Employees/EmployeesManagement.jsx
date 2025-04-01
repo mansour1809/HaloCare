@@ -1,5 +1,5 @@
-// src/components/EmployeesManagement.jsx
-import React, { useState } from "react";
+// src/components/EmployeesManagement.jsx - גרסה מפושטת
+import React, { useState, useEffect } from "react";
 import { 
   Paper, 
   Button, 
@@ -15,25 +15,52 @@ import {
   Select,
   MenuItem,
   Typography,
-  Chip,
-  CircularProgress
+  IconButton,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  InputAdornment
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { heIL as dataGridHeIL } from '@mui/x-data-grid/locales';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from "@mui/icons-material/Edit";
+import { Link, useNavigate } from "react-router-dom";
 
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
 
 const EmployeesManagement = () => {
+  const navigate = useNavigate();
   
-  // שימוש בקונטקסט במקום בקריאות API ישירות
-  const { employees, roles, loading, error, updateEmployee, toggleEmployeeStatus } = useEmployees();
+  // שימוש בקונטקסט
+  const { 
+    employees, 
+    roles, 
+    classes,
+    loading, 
+    error, 
+    updateEmployee, 
+    toggleEmployeeStatus,
+    refreshEmployees
+  } = useEmployees();
   
+  // מצבים מקומיים
   const [open, setOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedRole, setSelectedRole] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [localError, setLocalError] = useState("");
 
+  // רענון נתונים בעלייה
+  useEffect(() => {
+    refreshEmployees();
+  }, [refreshEmployees]);
+
+  // פונקציות לניהול דיאלוג עריכה
   const handleToggleActive = async (id, currentStatus) => {
     const result = await toggleEmployeeStatus(id, currentStatus);
     if (!result.success) {
@@ -49,6 +76,7 @@ const EmployeesManagement = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedEmployee(null);
+    setLocalError("");
   };
 
   const handleSave = async () => {
@@ -58,6 +86,11 @@ const EmployeesManagement = () => {
     } else {
       setLocalError(result.error);
     }
+  };
+
+  // סינון ממשקי
+  const handleSearchChange = (event) => {
+    setSearchText(event.target.value);
   };
 
   // פורמוט התאריך
@@ -71,66 +104,33 @@ const EmployeesManagement = () => {
     }
   };
 
-  // סינון העובדים לפי תפקיד נבחר
-  const filteredEmployees = selectedRole 
-    ? employees.filter(emp => emp.roleName === selectedRole) 
-    : employees;
+  // סינון העובדים
+  const filteredEmployees = employees.filter(emp => {
+    // סינון לפי תפקיד
+    const roleMatch = selectedRole ? emp.roleName === selectedRole : true;
+    
+    // חיפוש טקסט חופשי
+    if (!searchText) return roleMatch;
+    
+    const searchLower = searchText.toLowerCase();
+    
+    return roleMatch && (
+      (emp.firstName && emp.firstName.toLowerCase().includes(searchLower)) ||
+      (emp.lastName && emp.lastName.toLowerCase().includes(searchLower)) ||
+      (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
+      (emp.mobilePhone && emp.mobilePhone.includes(searchText)) ||
+      (emp.roleName && emp.roleName.toLowerCase().includes(searchLower))
+    );
+  });
 
-  // עמודות הטבלה
-  const columns = [
-    { field: 'employeeId', headerName: 'מזהה', width: 80 },
-    { field: 'firstName', headerName: 'שם פרטי', flex: 1 },
-    { field: 'lastName', headerName: 'שם משפחה', flex: 1 },
-    { 
-      field: 'birthDate', 
-      headerName: 'תאריך לידה', 
-      flex: 1,
-      valueFormatter: (params) => formatDate(params.value)
-    },
-    { field: 'mobilePhone', headerName: 'טלפון', flex: 1 },
-    { field: 'email', headerName: 'דוא"ל', flex: 1.5 },
-    { field: 'licenseNum', headerName: 'מספר רישיון', flex: 1 },
-    { 
-      field: 'startDate', 
-      headerName: 'תאריך התחלה', 
-      flex: 1,
-      valueFormatter: (params) => formatDate(params.value)
-    },
-    { 
-      field: 'roleName', 
-      headerName: 'תפקיד', 
-      flex: 1,
-      renderCell: (params) => params.value || '–'
-    },
-    { 
-      field: 'isActive', 
-      headerName: 'סטטוס', 
-      flex: 0.8,
-      renderCell: (params) => (
-        <Switch
-          checked={Boolean(params.value)}
-          onChange={() => handleToggleActive(params.row.employeeId, params.value)}
-          color="primary"
-        />
-      )
-    },
-    { 
-      field: 'actions', 
-      headerName: 'פעולות', 
-      flex: 0.8,
-      renderCell: (params) => (
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={() => handleEdit(params.row)}
-        >
-          ערוך
-        </Button>
-      )
-    },
-  ];
+  // מציאת שם כיתה לפי מזהה
+  const getClassName = (classId) => {
+    if (!classId) return '–';
+    const foundClass = classes.find(c => c.id === classId);
+    return foundClass ? foundClass.className : classId.toString();
+  };
 
-  if (loading) {
+  if (loading && !employees.length) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
         <CircularProgress />
@@ -146,8 +146,25 @@ const EmployeesManagement = () => {
         </Typography>
         
         <Box sx={{ display: 'flex', gap: 2 }}>
+          {/* חיפוש חופשי */}
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="חיפוש חופשי..."
+            value={searchText}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: 250 }}
+          />
+          
           {/* סינון לפי תפקיד */}
-          <FormControl sx={{ minWidth: 200 }}>
+          <FormControl sx={{ minWidth: 200 }} size="small">
             <InputLabel>סינון לפי תפקיד</InputLabel>
             <Select
               value={selectedRole}
@@ -156,7 +173,7 @@ const EmployeesManagement = () => {
             >
               <MenuItem value="">הכל</MenuItem>
               {roles.map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
+                <MenuItem key={role.roleName} value={role.roleName}>{role.roleName}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -164,22 +181,13 @@ const EmployeesManagement = () => {
           <Button 
             variant="contained" 
             color="primary" 
-            href="/employees/add"
+            component={Link}
+            to="/employees/add"
           >
             הוספת עובד חדש
           </Button>
         </Box>
       </Box>
-      
-      {selectedRole && (
-        <Box sx={{ mb: 2 }}>
-          <Chip 
-            label={`מציג ${filteredEmployees.length} עובדים בתפקיד: ${selectedRole}`}
-            onDelete={() => setSelectedRole('')}
-            color="primary"
-          />
-        </Box>
-      )}
       
       {(error || localError) && (
         <Typography color="error" sx={{ mb: 2 }}>
@@ -187,79 +195,162 @@ const EmployeesManagement = () => {
         </Typography>
       )}
       
-      <Paper sx={{ height: 500, width: '100%' }}>
-        <DataGrid
-          rows={filteredEmployees}
-          columns={columns}
-          getRowId={(row) => row.employeeId}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
-          pageSizeOptions={[10, 25, 50]}
-          localeText={dataGridHeIL.components.MuiDataGrid.defaultProps.localeText}
-          disableRowSelectionOnClick
-        />
-      </Paper>
+      <TableContainer component={Paper} sx={{ maxWidth: "100%", mb: 4 , direction : "ltr" }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell align="center" sx={{ width: "10%" }}>פעולות</TableCell>
+              <TableCell align="center">שם מלא</TableCell>
+              <TableCell align="center">טלפון</TableCell>
+              <TableCell align="center">דוא"ל</TableCell>
+
+              <TableCell align="center">כיתה</TableCell>
+
+              <TableCell align="center">תאריך התחלה</TableCell>
+              <TableCell align="center">תפקיד</TableCell>
+
+              <TableCell align="center">סטטוס</TableCell>
+            </TableRow>
+          </TableHead>
+          {filteredEmployees.length > 0 ? (
+            <TableBody>
+              {filteredEmployees.map((employee) => (
+                <TableRow
+                  key={employee.employeeId}
+                  sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
+                >
+                  <TableCell align="center">
+                    <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                      <IconButton
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          backgroundColor: "primary.main",
+                          "&:hover": { backgroundColor: "primary.dark" },
+                          color: "white",
+                        }}
+                        onClick={() => handleEdit(employee)}
+                      >
+                        <EditIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {employee.photoPath && (
+                        <Avatar 
+                          src={employee.photoPath} 
+                          alt={`${employee.firstName} ${employee.lastName}`}
+                          sx={{ width: 40, height: 40, mr: 1 }}
+                        />
+                      )}
+                      <Typography>{`${employee.firstName} ${employee.lastName}`}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">{employee.mobilePhone || '–'}</TableCell>
+                  <TableCell align="center">{employee.email || '–'}</TableCell>
+                  <TableCell align="center">{getClassName(employee.classId)}</TableCell>
+                  <TableCell align="center">{formatDate(employee.startDate)}</TableCell>
+                  <TableCell align="center">{employee.roleName || '–'}</TableCell>
+                  <TableCell align="center">
+                    <Switch
+                      checked={Boolean(employee.isActive)}
+                      onChange={() => handleToggleActive(employee.employeeId, employee.isActive)}
+                      color="primary"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          ) : (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={8} align="center" sx={{ color: "red" }}>
+                  לא נמצאו עובדים
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          )}
+        </Table>
+      </TableContainer>
 
       {/* דיאלוג עריכת עובד */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" dir="rtl">
         <DialogTitle>עריכת עובד</DialogTitle>
         <DialogContent>
+          {localError && (
+            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+              {localError}
+            </Typography>
+          )}
           <TextField
             fullWidth
             label="שם פרטי"
             value={selectedEmployee?.firstName || ""}
             onChange={(e) => setSelectedEmployee({ ...selectedEmployee, firstName: e.target.value })}
-            margin="dense"
+            margin="normal"
+            required
           />
           <TextField
             fullWidth
             label="שם משפחה"
             value={selectedEmployee?.lastName || ""}
             onChange={(e) => setSelectedEmployee({ ...selectedEmployee, lastName: e.target.value })}
-            margin="dense"
+            margin="normal"
+            required
           />
           <TextField
             fullWidth
             label="דוא״ל"
+            type="email"
             value={selectedEmployee?.email || ""}
             onChange={(e) => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
-            margin="dense"
+            margin="normal"
           />
           <TextField
             fullWidth
             label="טלפון"
             value={selectedEmployee?.mobilePhone || ""}
             onChange={(e) => setSelectedEmployee({ ...selectedEmployee, mobilePhone: e.target.value })}
-            margin="dense"
+            margin="normal"
           />
           <TextField
             fullWidth
             label="מספר רישיון"
             value={selectedEmployee?.licenseNum || ""}
             onChange={(e) => setSelectedEmployee({ ...selectedEmployee, licenseNum: e.target.value })}
-            margin="dense"
+            margin="normal"
           />
-          <FormControl fullWidth margin="dense">
+          <FormControl fullWidth margin="normal">
             <InputLabel>תפקיד</InputLabel>
             <Select
               value={selectedEmployee?.roleName || ""}
               onChange={(e) => setSelectedEmployee({ ...selectedEmployee, roleName: e.target.value })}
               label="תפקיד"
+              required
             >
               {roles.map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
+                <MenuItem key={role.roleName} value={role.roleName}>{role.roleName}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>כיתה</InputLabel>
+            <Select
+              value={selectedEmployee?.classId || ""}
+              onChange={(e) => setSelectedEmployee({ ...selectedEmployee, classId: e.target.value })}
+              label="כיתה"
+            >
+              <MenuItem value="">ללא שיוך</MenuItem>
+              {classes.map((cls) => (
+                <MenuItem key={cls.id} value={cls.id}>{cls.className}</MenuItem>
               ))}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="secondary">ביטול</Button>
-          <Button onClick={handleSave} color="primary">שמור</Button>
+          <Button onClick={handleSave} color="primary" variant="contained">שמור</Button>
         </DialogActions>
       </Dialog>
     </Box>

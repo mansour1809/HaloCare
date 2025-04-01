@@ -1,5 +1,5 @@
-// NewEmployeeForm.jsx
-import  { useState, useEffect } from 'react';
+// src/components/NewEmployeeForm.jsx
+import { useState } from 'react';
 import { 
   Container, Paper, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
@@ -10,9 +10,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
-import { Visibility, VisibilityOff, ContentCopy } from '@mui/icons-material';
+import { Visibility, VisibilityOff, ContentCopy, CloudUpload } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useEmployees } from './EmployeesContext';
 
 // יצירת תמה מותאמת לעברית
 const rtlTheme = createTheme({
@@ -27,93 +28,47 @@ const rtlTheme = createTheme({
   },
 });
 
-// קבוע לכתובת ה-API
-const API_URL = 'https://localhost:7225/api';
-
-// פונקציה ליצירת סיסמה אקראית
-const generateRandomPassword = (length = 10) => {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let password = '';
-  
-  const randomValues = new Uint32Array(length);
-  window.crypto.getRandomValues(randomValues);
-  
-  for (let i = 0; i < length; i++) {
-    password += charset[randomValues[i] % charset.length];
-  }
-  
-  return password;
-};
-
 const NewEmployeeForm = () => {
+  const navigate = useNavigate();
+  
+  // שימוש בקונטקסט
+  const { 
+    addEmployee, 
+    sendWelcomeEmail, 
+    generateRandomPassword, 
+    roles, 
+    classes, 
+    loading 
+  } = useEmployees();
+  
   // מצבי טעינה והודעות
-  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   
-  // נתונים מהשרת
-  const [questions, setQuestions] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [roles, setRoles] = useState([]);
-  
   // נתוני טופס
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobilePhone: '',
+    birthDate: null,
+    licenseNum: '',
+    startDate: new Date(),
+    roleName: '',
+    classId: '',
+    password: '',
+    isActive: true
+  });
   
-  // הגדרות סיסמה
+  // קבצים ותמונה
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  
+  // הגדרות סיסמה וממשק
   const [showPassword, setShowPassword] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
-  
-  // טעינת נתונים בטעינת הדף
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // טעינת שאלות הטופס
-        const questionsResponse = await axios.get(`${API_URL}/Forms/1/questions`);
-        
-        // טעינת כיתות
-        const classesResponse = await axios.get(`${API_URL}/Classes`);
-        
-        // טעינת תפקידים
-        const rolesResponse = await axios.get(`${API_URL}/ReferenceData/roles`);
-        
-
-        console.log(rolesResponse.data)
-        // עדכון הסטייט
-        setQuestions(questionsResponse.data || []);
-        setClasses(classesResponse.data || []);
-        setRoles(rolesResponse.data || []);
-        
-        // יצירת אובייקט התחלתי לפי השאלות
-        const initialFormData = {};
-        
-        // אתחול ערכים ראשוניים
-        questionsResponse.data.forEach(question => {
-          if (question.questionText.includes('פעיל')) {
-            initialFormData[question.questionText] = true;
-          } else {
-            initialFormData[question.questionText] = '';
-          }
-        });
-        
-        // הוספת שדות שלא בשאלות
-        initialFormData.isActive = true;
-        initialFormData.classId = '';
-        initialFormData.roleName = '';
-        
-        setFormData(initialFormData);
-        setLoading(false);
-      } catch (err) {
-        console.error('שגיאה בטעינת נתונים:', err);
-        setError('שגיאה בטעינת נתוני הטופס. אנא נסה שוב מאוחר יותר.');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
   
   // פונקציות טיפול בשינויים
   const handleChange = (e) => {
@@ -128,6 +83,19 @@ const NewEmployeeForm = () => {
   
   const handleDateChange = (name, date) => {
     setFormData(prev => ({ ...prev, [name]: date }));
+  };
+  
+  // טיפול בקבצים
+  const handleProfilePhotoChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfilePhoto(e.target.files[0]);
+    }
+  };
+  
+  const handleDocumentsChange = (e) => {
+    if (e.target.files) {
+      setDocuments(Array.from(e.target.files));
+    }
   };
   
   // יצירת סיסמה אקראית
@@ -145,53 +113,54 @@ const NewEmployeeForm = () => {
     }
   };
   
-  // שליחת אימייל לעובד
-  const sendWelcomeEmail = async (email, password, firstName, lastName) => {
-    try {
-      const response = await axios.post(`${API_URL}/Employees/sendWelcomeEmail`, {
-        email,
-        password,
-        firstName,
-        lastName,
-        loginUrl: window.location.origin + '/login'
-      });
-      
-      return response.data.success;
-    } catch (err) {
-      console.error('שגיאה בשליחת המייל:', err);
+  // וולידציה של הטופס
+  const validateForm = () => {
+    // בדיקת שדות חובה
+    const requiredFields = ['firstName', 'lastName', 'roleName', 'password'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      setError(`יש למלא את כל שדות החובה: ${missingFields.join(', ')}`);
       return false;
     }
+    
+    // וולידציה נוספת כאן, למשל אימייל תקין, פורמט טלפון וכו'
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError('כתובת האימייל אינה תקינה');
+      return false;
+    }
+    
+    return true;
   };
   
   // שליחת הטופס
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // בדיקת שדות חובה
-    const mandatoryQuestions = questions.filter(q => q.isMandatory);
-    const missingFields = mandatoryQuestions.filter(q => !formData[q.questionText]);
-    
-    if (missingFields.length > 0) {
-      setError(`יש למלא את כל שדות החובה: ${missingFields.map(q => q.questionText).join(', ')}`);
+    if (!validateForm()) {
       return;
     }
     
-    // וידוא שיש סיסמה
-    if (!formData.password) {
-      const autoPassword = generateRandomPassword();
-      setFormData(prev => ({ ...prev, password: autoPassword }));
-    }
-    
     try {
-      setLoading(true);
+      setSubmitting(true);
+      setError("");
+      
+      // לעת עתה, מתעלמים מהעלאת קבצים כיוון שטרם מומש בשרת
+      // בעתיד נוסיף קוד להעלאת התמונה והמסמכים
       
       // הכנת הנתונים לשליחה
       const employeeData = {
-        ...formData
+        ...formData,
+        // בינתיים מתעלמים משדות הקבצים
+        photoPath: profilePhoto ? profilePhoto.name : null,
       };
       
-      // שליחת הנתונים לשרת
-      const response = await axios.post(`${API_URL}/Employees`, employeeData);
+      // שליחה דרך הקונטקסט
+      const result = await addEmployee(employeeData);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
       
       // שליחת מייל אם האפשרות מסומנת
       if (sendEmail && formData.email) {
@@ -204,138 +173,36 @@ const NewEmployeeForm = () => {
       }
       
       // איפוס הטופס
-      const resetForm = {};
-      Object.keys(formData).forEach(key => {
-        if (key === 'isActive') {
-          resetForm[key] = true;
-        } else if (key.includes('פעיל')) {
-          resetForm[key] = true;
-        } else {
-          resetForm[key] = '';
-        }
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        mobilePhone: '',
+        birthDate: null,
+        licenseNum: '',
+        startDate: new Date(),
+        roleName: '',
+        classId: '',
+        password: '',
+        isActive: true
       });
+      setProfilePhoto(null);
+      setDocuments([]);
       
-      setFormData(resetForm);
       setSuccess(true);
-      setError("");
       
+      // מעבר לרשימת העובדים אחרי הוספה מוצלחת
       setTimeout(() => {
-        setSuccess(false);
-      }, 5000);
+        navigate('/employees');
+      }, 2000);
       
     } catch (err) {
       console.error('שגיאה בשליחת הטופס:', err);
-      setError(err.response?.data?.message || 'שגיאה בשליחת הטופס. אנא בדוק את הנתונים ונסה שוב.');
+      setError(err.message || 'שגיאה בשליחת הטופס. אנא בדוק את הנתונים ונסה שוב.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-  
-  // פונקציה לרינדור שדה לפי סוג השאלה
-  const renderField = (question) => {
-    const { questionText, isMandatory, isOpen, possibleValues, hasOther } = question;
-    
-    // בדיקה האם השאלה מתייחסת לתאריך
-    const isDateField = questionText.toLowerCase().includes('תאריך');
-    
-    // בדיקה האם השאלה מתייחסת לאימייל
-    const isEmailField = questionText.toLowerCase().includes('מייל') || 
-                          questionText.toLowerCase().includes('אימייל');
-    
-    // בדיקה האם השאלה מתייחסת לטלפון
-    const isPhoneField = questionText.toLowerCase().includes('טלפון');
-    
-    // בדיקה האם השאלה מתייחסת לסטטוס פעיל/לא פעיל
-    const isActiveField = questionText.toLowerCase().includes('פעיל');
-    
-    // בדיקה האם זו שאלה עם אפשרויות בחירה
-    const isSelectField = !isOpen && possibleValues && possibleValues.length > 0;
-    
-    // פיצול אפשרויות בחירה אם יש
-    let options = [];
-    if (isSelectField) {
-      options = possibleValues.split(',').map(option => option.trim());
-    }
-    
-    // רינדור לפי סוג
-    if (isDateField) {
-      return (
-        <DatePicker
-          label={`${questionText}${isMandatory ? ' *' : ''}`}
-          value={formData[questionText] || null}
-          onChange={(date) => handleDateChange(questionText, date)}
-          slotProps={{ 
-            textField: { 
-              fullWidth: true, 
-              variant: "outlined",
-              required: isMandatory
-            } 
-          }}
-        />
-      );
-    } else if (isSelectField) {
-      return (
-        <FormControl fullWidth variant="outlined">
-          <InputLabel>{`${questionText}${isMandatory ? ' *' : ''}`}</InputLabel>
-          <Select
-            name={questionText}
-            value={formData[questionText] || ''}
-            onChange={handleChange}
-            label={`${questionText}${isMandatory ? ' *' : ''}`}
-            required={isMandatory}
-          >
-            {options.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-            {hasOther && <MenuItem value="אחר">אחר</MenuItem>}
-          </Select>
-        </FormControl>
-      );
-    } else if (isActiveField) {
-      return (
-        <FormControlLabel
-          control={
-            <Switch
-              name={questionText}
-              checked={Boolean(formData[questionText])}
-              onChange={handleSwitchChange}
-              color="primary"
-            />
-          }
-          label={questionText}
-        />
-      );
-    } else {
-      return (
-        <TextField
-          fullWidth
-          label={`${questionText}${isMandatory ? ' *' : ''}`}
-          name={questionText}
-          type={isEmailField ? 'email' : isPhoneField ? 'tel' : 'text'}
-          value={formData[questionText] || ''}
-          onChange={handleChange}
-          variant="outlined"
-          required={isMandatory}
-        />
-      );
-    }
-  };
-  
-  // בזמן טעינה
-  if (loading && !questions.length) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
-  // מיון שאלות לפי קטגוריות
-  const personalQuestions = questions.filter(q => q.category === 'personal');
-  const employmentQuestions = questions.filter(q => q.category === 'employment');
-  const otherQuestions = questions.filter(q => q.category !== 'personal' && q.category !== 'employment');
   
   return (
     <ThemeProvider theme={rtlTheme}>
@@ -354,7 +221,7 @@ const NewEmployeeForm = () => {
             
             {success && (
               <Alert severity="success" sx={{ marginBottom: 2 }}>
-                העובד נוסף בהצלחה!
+                העובד נוסף בהצלחה! מעביר לרשימת העובדים...
               </Alert>
             )}
             
@@ -366,11 +233,89 @@ const NewEmployeeForm = () => {
                 </Typography>
                 
                 <Grid container spacing={2}>
-                  {personalQuestions.map((question) => (
-                    <Grid item xs={12} md={6} key={question.questionNo}>
-                      {renderField(question)}
-                    </Grid>
-                  ))}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="שם פרטי *"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      variant="outlined"
+                      required
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="שם משפחה *"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      variant="outlined"
+                      required
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <DatePicker
+                      label="תאריך לידה"
+                      value={formData.birthDate}
+                      onChange={(date) => handleDateChange('birthDate', date)}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true, 
+                          variant: "outlined"
+                        } 
+                      }}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="טלפון נייד"
+                      name="mobilePhone"
+                      type="tel"
+                      value={formData.mobilePhone}
+                      onChange={handleChange}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="דוא״ל"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      startIcon={<CloudUpload />}
+                      sx={{ height: '56px', width: '100%' }}
+                    >
+                      {profilePhoto ? 'תמונה נבחרה' : 'העלאת תמונת פרופיל'}
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleProfilePhotoChange}
+                      />
+                    </Button>
+                    {profilePhoto && (
+                      <Typography variant="caption" display="block">
+                        {profilePhoto.name}
+                      </Typography>
+                    )}
+                  </Grid>
                 </Grid>
               </Box>
               
@@ -381,25 +326,17 @@ const NewEmployeeForm = () => {
                 </Typography>
                 
                 <Grid container spacing={2}>
-                  {employmentQuestions.map((question) => (
-                    <Grid item xs={12} md={6} key={question.questionNo}>
-                      {renderField(question)}
-                    </Grid>
-                  ))}
-                  
-                  {/* שדות קבועים נוספים */}
                   <Grid item xs={12} md={6}>
-                    <FormControl fullWidth variant="outlined">
+                    <FormControl fullWidth variant="outlined" required>
                       <InputLabel>תפקיד *</InputLabel>
                       <Select
                         name="roleName"
-                        value={formData.roleName || ''}
+                        value={formData.roleName}
                         onChange={handleChange}
                         label="תפקיד *"
-                        required
                       >
                         {roles.map((role) => (
-                          <MenuItem key={role.id} value={role.roleName}>
+                          <MenuItem key={role.roleName} value={role.roleName}>
                             {role.roleName}
                           </MenuItem>
                         ))}
@@ -408,11 +345,36 @@ const NewEmployeeForm = () => {
                   </Grid>
                   
                   <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="מספר רישיון"
+                      name="licenseNum"
+                      value={formData.licenseNum}
+                      onChange={handleChange}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <DatePicker
+                      label="תאריך תחילת עבודה"
+                      value={formData.startDate}
+                      onChange={(date) => handleDateChange('startDate', date)}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true, 
+                          variant: "outlined"
+                        } 
+                      }}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
                     <FormControl fullWidth variant="outlined">
                       <InputLabel>שיוך לכיתה</InputLabel>
                       <Select
                         name="classId"
-                        value={formData.classId || ''}
+                        value={formData.classId}
                         onChange={handleChange}
                         label="שיוך לכיתה"
                       >
@@ -431,7 +393,7 @@ const NewEmployeeForm = () => {
                       control={
                         <Switch
                           name="isActive"
-                          checked={Boolean(formData.isActive)}
+                          checked={formData.isActive}
                           onChange={handleSwitchChange}
                           color="primary"
                         />
@@ -439,27 +401,32 @@ const NewEmployeeForm = () => {
                       label="עובד פעיל"
                     />
                   </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      startIcon={<CloudUpload />}
+                      sx={{ height: '56px', width: '100%' }}
+                    >
+                      {documents.length > 0 ? `${documents.length} מסמכים נבחרו` : 'העלאת מסמכים'}
+                      <input
+                        type="file"
+                        hidden
+                        multiple
+                        onChange={handleDocumentsChange}
+                      />
+                    </Button>
+                    {documents.length > 0 && (
+                      <Typography variant="caption" display="block">
+                        {documents.map(doc => doc.name).join(', ')}
+                      </Typography>
+                    )}
+                  </Grid>
                 </Grid>
               </Box>
               
-              {/* שאלות אחרות אם יש */}
-              {otherQuestions.length > 0 && (
-                <Box sx={{ marginBottom: 3 }}>
-                  <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
-                    פרטים נוספים
-                  </Typography>
-                  
-                  <Grid container spacing={2}>
-                    {otherQuestions.map((question) => (
-                      <Grid item xs={12} md={6} key={question.questionNo}>
-                        {renderField(question)}
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Box>
-              )}
-              
-              {/* פרטי התחברות - תמיד מוצג */}
+              {/* פרטי כניסה למערכת */}
               <Box sx={{ marginBottom: 3 }}>
                 <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
                   פרטי כניסה למערכת
@@ -472,7 +439,7 @@ const NewEmployeeForm = () => {
                       label="סיסמה ראשונית *"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      value={formData.password || ''}
+                      value={formData.password}
                       onChange={handleChange}
                       variant="outlined"
                       required
@@ -506,7 +473,7 @@ const NewEmployeeForm = () => {
                     <Button 
                       onClick={handleGeneratePassword}
                       variant="outlined" 
-                      sx={{ mt: 1 }}
+                      sx={{ mt: 1, mb: 2 }}
                     >
                       ייצר סיסמה אקראית
                     </Button>
@@ -519,18 +486,28 @@ const NewEmployeeForm = () => {
                           checked={sendEmail}
                           onChange={(e) => setSendEmail(e.target.checked)}
                           color="primary"
+                          disabled={!formData.email}
                         />
                       }
                       label="שלח אימייל לעובד עם פרטי הכניסה"
                     />
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      אימייל יישלח לעובד עם הסיסמה הראשונית ולינק לכניסה למערכת
-                    </Typography>
+                    {!formData.email && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        יש להזין כתובת אימייל כדי לשלוח פרטי כניסה
+                      </Typography>
+                    )}
                   </Grid>
                 </Grid>
               </Box>
               
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => navigate('/employees')}
+                  disabled={submitting}
+                >
+                  חזרה לרשימה
+                </Button>
                 <Button 
                   type="submit" 
                   variant="contained" 
@@ -541,9 +518,9 @@ const NewEmployeeForm = () => {
                     fontSize: '1rem',
                     borderRadius: 2
                   }}
-                  disabled={loading}
+                  disabled={submitting}
                 >
-                  {loading ? <CircularProgress size={24} /> : 'שמירת עובד חדש'}
+                  {submitting ? <CircularProgress size={24} /> : 'שמירת עובד חדש'}
                 </Button>
               </Box>
             </form>
