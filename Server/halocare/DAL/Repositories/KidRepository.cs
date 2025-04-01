@@ -29,7 +29,7 @@
                         IsActive = Convert.ToBoolean(row["IsActive"]),
                         HName = row["HName"].ToString(),
                         PathToFolder = row["PathToFolder"].ToString(),
-                        Photo = row["Photo"].ToString(),
+                        Photo = row["photoPath"].ToString(),
                         ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
                         ParentId1 = row["ParentId1"] != DBNull.Value ? Convert.ToInt32(row["ParentId1"]) : null,
                         ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null
@@ -67,7 +67,7 @@
                     IsActive = Convert.ToBoolean(row["IsActive"]),
                     HName = row["HName"].ToString(),
                     PathToFolder = row["PathToFolder"].ToString(),
-                    Photo = row["Photo"].ToString(),
+                    Photo = row["photoPath"].ToString(),
                     ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
                     ParentId1 = row["ParentId1"] != DBNull.Value ? Convert.ToInt32(row["ParentId1"]) : null,
                     ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null

@@ -200,7 +200,7 @@ const EmployeesManagement = () => {
             },
           }}
           pageSizeOptions={[10, 25, 50]}
-          // localeText={dataGridHeIL.components.MuiDataGrid.defaultProps.localeText}
+          localeText={dataGridHeIL.components.MuiDataGrid.defaultProps.localeText}
           disableRowSelectionOnClick
         />
       </Paper>

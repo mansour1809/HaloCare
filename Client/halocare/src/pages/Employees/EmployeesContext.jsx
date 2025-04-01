@@ -22,10 +22,11 @@ export const EmployeesProvider = ({ children }) => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        console.log('טוען נתונים...');
         // טעינת רשימת עובדים
         const employeesResponse = await axios.get(`${API_URL}/Employees`);
         setEmployees(employeesResponse.data);
-        
+      console.log('נתוני עובדים:', employeesResponse.data);
         // יצירת רשימת תפקידים ייחודיים
         const uniqueRoles = [...new Set(employeesResponse.data
           .filter(emp => emp.roleName) // מסנן ערכים null או undefined
