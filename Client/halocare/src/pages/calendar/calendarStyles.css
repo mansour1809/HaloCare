@@ -234,8 +234,21 @@
   align-items: center !important;
   justify-content: center !important;
   border: none;
+  -webkit-border-radius: 50% !important;
+  -moz-border-radius: 50% !important;
+  -ms-border-radius: 50% !important;
+  -o-border-radius: 50% !important;
 }
+/* Swap next and prev icons */
+.fc-icon-chevron-right::before {
+    content: "";
 
+  }
+
+.fc-icon-chevron-left::before {
+  content: "";
+
+}
 /* רקע כללי לסרגל הכלים */
 .fc-toolbar {
   padding: 16px !important;
