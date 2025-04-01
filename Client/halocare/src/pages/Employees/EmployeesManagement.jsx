@@ -25,6 +25,7 @@ import { heIL as dataGridHeIL } from '@mui/x-data-grid/locales';
 import { useEmployees } from './EmployeesContext';
 
 const EmployeesManagement = () => {
+  
   // שימוש בקונטקסט במקום בקריאות API ישירות
   const { employees, roles, loading, error, updateEmployee, toggleEmployeeStatus } = useEmployees();
   
@@ -199,7 +200,7 @@ const EmployeesManagement = () => {
             },
           }}
           pageSizeOptions={[10, 25, 50]}
-          localeText={dataGridHeIL.components.MuiDataGrid.defaultProps.localeText}
+          // localeText={dataGridHeIL.components.MuiDataGrid.defaultProps.localeText}
           disableRowSelectionOnClick
         />
       </Paper>

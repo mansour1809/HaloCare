@@ -24,6 +24,7 @@ import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
 
 // אותנטיקציה
 import { useAuth, AuthProvider } from './components/login/AuthContext';
+import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -189,7 +190,9 @@ function App() {
           <ProSidebarProvider>
             <CssBaseline />
             <CalendarProvider>
+              <EmployeesProvider>
               <AppContent />
+              </EmployeesProvider>
             </CalendarProvider>
           </ProSidebarProvider>
         </AuthProvider>
