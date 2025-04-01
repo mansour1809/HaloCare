@@ -20,10 +20,10 @@ import {
 } from "@mui/material";
 
 const initialKids = [
-  { id: 1, name: "דניאל לוי", parentPhone: "0524787890", age: 3, className: "כיתה א" },
-  { id: 2, name: "יואב עברי", parentPhone: "0524787890", age: 2.9, className: "כיתה א" },
-  { id: 3, name: "אילון מנור", parentPhone: "0524787890", age: 2.5, className: "כיתה ב" },
-  { id: 4, name: "יהל אביקר", parentPhone: "0546458380", age: 1.8, className: "כיתה ב" },
+  { id: 1, name: "דניאל לוי", parentPhone: "0524787890", age: 3, className: "כיתה 1" },
+  { id: 2, name: "יואב עברי", parentPhone: "0524787890", age: 2.9, className: "כיתה 1" },
+  { id: 3, name: "אילון מנור", parentPhone: "0524787890", age: 2.5, className: "כיתה 2" },
+  { id: 4, name: "יהל אביקר", parentPhone: "0546458380", age: 1.8, className: "כיתה 2" },
 ];
 
 const KidsManagement = () => {
@@ -47,17 +47,17 @@ const KidsManagement = () => {
   };
 
   // חלוקה לכיתות
-  const classA = kids.filter(kid => kid.className === "כיתה א");
-  const classB = kids.filter(kid => kid.className === "כיתה ב");
+  const classA = kids.filter(kid => kid.className === "כיתה 1");
+  const classB = kids.filter(kid => kid.className === "כיתה 2");
 
   return (
-    <Grid container spacing={3} justifyContent="center" style={{ padding: 20 }}>
+    <Grid container spacing={3} justifyContent="center" style={{ padding: 20, direction : "rtl"  }}>
       {/* כיתה א */}
       <Grid item xs={12} md={6}>
         <Card sx={{ boxShadow: 3 }}>
           <CardContent>
             <Typography variant="h6" align="center" gutterBottom>
-              כיתה א
+              כיתה 1
             </Typography>
             <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
               <Table>
@@ -94,7 +94,7 @@ const KidsManagement = () => {
         <Card sx={{ boxShadow: 3 }}>
           <CardContent>
             <Typography variant="h6" align="center" gutterBottom>
-              כיתה ב
+              כיתה 2
             </Typography>
             <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
               <Table>

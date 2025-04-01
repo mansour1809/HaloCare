@@ -1,4 +1,4 @@
-// src/components/EmployeesManagement.jsx - גרסה מפושטת
+// src/components/EmployeesManagement.jsx - גרסה משודרגת
 import React, { useState, useEffect } from "react";
 import { 
   Paper, 
@@ -24,18 +24,50 @@ import {
   TableHead,
   TableRow,
   Avatar,
-  InputAdornment
+  InputAdornment,
+  Chip
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from "@mui/icons-material/Edit";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
 
-const EmployeesManagement = () => {
-  const navigate = useNavigate();
+// פונקציה להפקת צבע עקבי לפי תפקיד
+const getRoleColor = (roleName) => {
+  if (!roleName) return "#9e9e9e"; // צבע ברירת מחדל לתפקידים ריקים
   
+  // מיפוי תפקידים לצבעים
+  const roleColors = {
+    "גננת": "#4caf50", // ירוק
+    "מטפל רגשי": "#2196f3", // כחול
+    "מנהלת": "#9c27b0", // סגול
+    "פיזיותרפיסט": "#ff9800", // כתום
+    "מרפא בעיסוק": "#e91e63", // ורוד
+    "מזכירה": "#607d8b", // אפור כחול
+    "קלינאי תקשורת": "#009688" // טורקיז
+  };
+  
+  // החזרת צבע מהמיפוי או חישוב צבע אקראי-אך-עקבי לתפקידים חדשים
+  if (roleColors[roleName]) {
+    return roleColors[roleName];
+  } else {
+    // חישוב צבע עקבי לפי טקסט
+    let hash = 0;
+    for (let i = 0; i < roleName.length; i++) {
+      hash = roleName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+    return color;
+  }
+};
+
+const EmployeesManagement = () => {
   // שימוש בקונטקסט
   const { 
     employees, 
@@ -58,7 +90,7 @@ const EmployeesManagement = () => {
   // רענון נתונים בעלייה
   useEffect(() => {
     refreshEmployees();
-  }, [refreshEmployees]);
+  }, []);
 
   // פונקציות לניהול דיאלוג עריכה
   const handleToggleActive = async (id, currentStatus) => {
@@ -139,9 +171,9 @@ const EmployeesManagement = () => {
   }
 
   return (
-    <Box sx={{ height: '100%', width: '100%', padding: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+    <Box sx={{ height: '100%', width: '100%', padding: 2 }} dir="rtl">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
           ניהול עובדים
         </Typography>
         
@@ -173,7 +205,9 @@ const EmployeesManagement = () => {
             >
               <MenuItem value="">הכל</MenuItem>
               {roles.map((role) => (
-                <MenuItem key={role.roleName} value={role.roleName}>{role.roleName}</MenuItem>
+                <MenuItem key={role.roleName} value={role.roleName}>
+                  {role.roleName}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -183,6 +217,13 @@ const EmployeesManagement = () => {
             color="primary" 
             component={Link}
             to="/employees/add"
+            sx={{ 
+              fontWeight: 'medium',
+              backgroundColor: '#4cb5c3',
+              '&:hover': {
+                backgroundColor: '#3da1af',
+              }
+            }}
           >
             הוספת עובד חדש
           </Button>
@@ -195,21 +236,27 @@ const EmployeesManagement = () => {
         </Typography>
       )}
       
-      <TableContainer component={Paper} sx={{ maxWidth: "100%", mb: 4 , direction : "ltr" }}>
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          maxWidth: "100%", 
+          mb: 4,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          borderRadius: '10px',
+          overflow: 'hidden'
+        }}
+      >
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell align="center" sx={{ width: "10%" }}>פעולות</TableCell>
-              <TableCell align="center">שם מלא</TableCell>
-              <TableCell align="center">טלפון</TableCell>
-              <TableCell align="center">דוא"ל</TableCell>
-
-              <TableCell align="center">כיתה</TableCell>
-
-              <TableCell align="center">תאריך התחלה</TableCell>
-              <TableCell align="center">תפקיד</TableCell>
-
-              <TableCell align="center">סטטוס</TableCell>
+            <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>שם מלא</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תפקיד</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>כיתה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>טלפון</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>דוא"ל</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תאריך התחלה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>סטטוס</TableCell>
+              <TableCell sx={{ width: "10%", fontWeight: '700', fontSize: '1rem' }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           {filteredEmployees.length > 0 ? (
@@ -217,47 +264,126 @@ const EmployeesManagement = () => {
               {filteredEmployees.map((employee) => (
                 <TableRow
                   key={employee.employeeId}
-                  sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
+                  sx={{ 
+                    "&:hover": { backgroundColor: "#f5f9fa" },
+                    borderBottom: '1px solid #eee'
+                  }}
                 >
-                  <TableCell align="center">
-                    <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                      <IconButton
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          backgroundColor: "primary.main",
-                          "&:hover": { backgroundColor: "primary.dark" },
-                          color: "white",
-                        }}
-                        onClick={() => handleEdit(employee)}
-                      >
-                        <EditIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {employee.photoPath && (
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {employee.photoPath ? (
                         <Avatar 
                           src={employee.photoPath} 
                           alt={`${employee.firstName} ${employee.lastName}`}
-                          sx={{ width: 40, height: 40, mr: 1 }}
+                          sx={{ 
+                            width: 40, 
+                            height: 40, 
+                            ml: 1,
+                            border: '2px solid #fff',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                          }}
                         />
+                      ) : (
+                        <Avatar
+                          sx={{ 
+                            width: 40, 
+                            height: 40, 
+                            ml: 1,
+                            backgroundColor: '#4cb5c3',
+                            color: 'white'
+                          }}
+                        >
+                          {employee.firstName && employee.firstName[0]}
+                          {employee.lastName && employee.lastName[0]}
+                        </Avatar>
                       )}
-                      <Typography>{`${employee.firstName} ${employee.lastName}`}</Typography>
+                      <Typography sx={{ fontWeight: 'medium' }}>
+                        {`${employee.firstName || ''} ${employee.lastName || ''}`}
+                      </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{employee.mobilePhone || '–'}</TableCell>
-                  <TableCell align="center">{employee.email || '–'}</TableCell>
-                  <TableCell align="center">{getClassName(employee.classId)}</TableCell>
-                  <TableCell align="center">{formatDate(employee.startDate)}</TableCell>
-                  <TableCell align="center">{employee.roleName || '–'}</TableCell>
-                  <TableCell align="center">
+                  <TableCell align="right">
+                    {employee.roleName ? (
+                      <Chip
+                        label={employee.roleName}
+                        sx={{
+                          backgroundColor: getRoleColor(employee.roleName),
+                          color: 'white',
+                          fontWeight: 'medium'
+                        }}
+                        size="small"
+                      />
+                    ) : (
+                      '–'
+                    )}
+                  </TableCell>
+                  <TableCell align="right">{getClassName(employee.classId)}</TableCell>
+                  <TableCell align="right" dir="ltr">
+                    {employee.mobilePhone ? (
+                      <Typography
+                        component="a"
+                        href={`tel:${employee.mobilePhone}`}
+                        sx={{
+                          textDecoration: 'none',
+                          color: 'text.primary',
+                          '&:hover': { color: '#4cb5c3' }
+                        }}
+                      >
+                        {employee.mobilePhone}
+                      </Typography>
+                    ) : (
+                      '–'
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    {employee.email ? (
+                      <Typography
+                        component="a"
+                        href={`mailto:${employee.email}`}
+                        sx={{
+                          textDecoration: 'none',
+                          color: 'text.primary',
+                          '&:hover': { color: '#4cb5c3' }
+                        }}
+                      >
+                        {employee.email}
+                      </Typography>
+                    ) : (
+                      '–'
+                    )}
+                  </TableCell>
+                  <TableCell align="right">{formatDate(employee.startDate)}</TableCell>
+                  <TableCell align="right">
                     <Switch
                       checked={Boolean(employee.isActive)}
                       onChange={() => handleToggleActive(employee.employeeId, employee.isActive)}
                       color="primary"
+                      sx={{
+                        '& .MuiSwitch-switchBase.Mui-checked': {
+                          color: '#4cb5c3',
+                        },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                          backgroundColor: '#4cb5c3',
+                        },
+                      }}
                     />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <IconButton
+                        sx={{
+                          width: 35,
+                          height: 35,
+                          backgroundColor: "#4cb5c3",
+                          "&:hover": { backgroundColor: "#3da1af" },
+                          color: "white",
+                          transition: 'all 0.2s'
+                        }}
+                        onClick={() => handleEdit(employee)}
+                      >
+                        <EditIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -265,8 +391,10 @@ const EmployeesManagement = () => {
           ) : (
             <TableBody>
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ color: "red" }}>
-                  לא נמצאו עובדים
+                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                  <Typography color="text.secondary">
+                    לא נמצאו עובדים
+                  </Typography>
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -275,9 +403,20 @@ const EmployeesManagement = () => {
       </TableContainer>
 
       {/* דיאלוג עריכת עובד */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" dir="rtl">
-        <DialogTitle>עריכת עובד</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={open} 
+        onClose={handleClose} 
+        fullWidth 
+        maxWidth="sm" 
+        dir="rtl"
+        PaperProps={{
+          sx: { borderRadius: '10px' }
+        }}
+      >
+        <DialogTitle sx={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}>
+          עריכת עובד
+        </DialogTitle>
+        <DialogContent dividers>
           {localError && (
             <Typography color="error" variant="body2" sx={{ mb: 2 }}>
               {localError}
@@ -330,7 +469,9 @@ const EmployeesManagement = () => {
               required
             >
               {roles.map((role) => (
-                <MenuItem key={role.roleName} value={role.roleName}>{role.roleName}</MenuItem>
+                <MenuItem key={role.roleName} value={role.roleName}>
+                  {role.roleName}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -348,9 +489,22 @@ const EmployeesManagement = () => {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">ביטול</Button>
-          <Button onClick={handleSave} color="primary" variant="contained">שמור</Button>
+        <DialogActions sx={{ padding: 2 }}>
+          <Button onClick={handleClose} variant="outlined" color="secondary">
+            ביטול
+          </Button>
+          <Button 
+            onClick={handleSave} 
+            variant="contained" 
+            sx={{ 
+              backgroundColor: '#4cb5c3',
+              '&:hover': {
+                backgroundColor: '#3da1af',
+              }
+            }}
+          >
+            שמור
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

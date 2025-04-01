@@ -35,7 +35,7 @@ const AttendanceTable = () => {
   };
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} style={{direction : "rtl"  }}>
       <Table>
         <TableHead>
           <TableRow>
