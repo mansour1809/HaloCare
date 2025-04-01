@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/components/EmployeesManagement.jsx
+import React, { useState } from "react";
 import { 
   Paper, 
   Button, 
@@ -18,59 +19,24 @@ import {
   CircularProgress
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-// תיקון ייבוא לוקליזציה בעברית
 import { heIL as dataGridHeIL } from '@mui/x-data-grid/locales';
-import axios from "axios";
 
-const API_URL = 'https://localhost:7225/api';
+// ייבוא הוק הקונטקסט שיצרנו
+import { useEmployees } from './EmployeesContext';
 
 const EmployeesManagement = () => {
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // שימוש בקונטקסט במקום בקריאות API ישירות
+  const { employees, roles, loading, error, updateEmployee, toggleEmployeeStatus } = useEmployees();
+  
   const [open, setOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState('');
-
-  // טעינת נתונים מהשרת
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // טעינת רשימת עובדים
-        const employeesResponse = await axios.get(`${API_URL}/Employees`);
-        setEmployees(employeesResponse.data);
-        
-        // טעינת רשימת תפקידים ייחודיים לצורך הסינון
-        const uniqueRoles = [...new Set(employeesResponse.data
-          .filter(emp => emp.roleName) // מסנן ערכים null או undefined
-          .map(emp => emp.roleName))];
-        setRoles(uniqueRoles);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('שגיאה בטעינת נתונים:', err);
-        setError('שגיאה בטעינת נתוני העובדים. אנא נסה שוב מאוחר יותר.');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const [localError, setLocalError] = useState("");
 
   const handleToggleActive = async (id, currentStatus) => {
-    try {
-      // עדכון מצב העובד בשרת
-      await axios.patch(`${API_URL}/Employees/${id}/status`, { isActive: !currentStatus });
-      
-      // עדכון מצב העובד במצב המקומי
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.employeeId === id ? { ...emp, isActive: !currentStatus } : emp))
-      );
-    } catch (err) {
-      console.error('שגיאה בעדכון סטטוס העובד:', err);
-      setError('שגיאה בעדכון סטטוס העובד. אנא נסה שוב.');
+    const result = await toggleEmployeeStatus(id, currentStatus);
+    if (!result.success) {
+      setLocalError(result.error);
     }
   };
 
@@ -85,18 +51,11 @@ const EmployeesManagement = () => {
   };
 
   const handleSave = async () => {
-    try {
-      // שליחת עדכון העובד לשרת
-      await axios.put(`${API_URL}/Employees/${selectedEmployee.employeeId}`, selectedEmployee);
-      
-      // עדכון העובד במצב המקומי
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.employeeId === selectedEmployee.employeeId ? selectedEmployee : emp))
-      );
+    const result = await updateEmployee(selectedEmployee);
+    if (result.success) {
       handleClose();
-    } catch (err) {
-      console.error('שגיאה בעדכון פרטי העובד:', err);
-      setError('שגיאה בעדכון פרטי העובד. אנא בדוק את הנתונים ונסה שוב.');
+    } else {
+      setLocalError(result.error);
     }
   };
 
@@ -116,7 +75,7 @@ const EmployeesManagement = () => {
     ? employees.filter(emp => emp.roleName === selectedRole) 
     : employees;
 
-  // עמודות הטבלה - מותאמות לשדות הטבלה שלך
+  // עמודות הטבלה
   const columns = [
     { field: 'employeeId', headerName: 'מזהה', width: 80 },
     { field: 'firstName', headerName: 'שם פרטי', flex: 1 },
@@ -221,9 +180,9 @@ const EmployeesManagement = () => {
         </Box>
       )}
       
-      {error && (
+      {(error || localError) && (
         <Typography color="error" sx={{ mb: 2 }}>
-          {error}
+          {error || localError}
         </Typography>
       )}
       
