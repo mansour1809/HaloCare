@@ -19,7 +19,8 @@ namespace halocare.DAL.Repositories
             {
                 TreatmentType treatmentType = new TreatmentType
                 {
-                    TreatmentTypeName = row["treatmentTypeName"].ToString()
+                    TreatmentTypeName = row["treatmentTypeName"].ToString(),
+                    TreatmentColor = row["treatmentColor"].ToString()
                 };
 
                 treatmentTypes.Add(treatmentType);
@@ -28,7 +29,7 @@ namespace halocare.DAL.Repositories
             return treatmentTypes;
         }
 
-        public TreatmentType GetTreatmentTypeByName(string treatmentTypeName)
+        public TreatmentType GetTreatmentTypeByName(string treatmentTypeName) //מיותר
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {

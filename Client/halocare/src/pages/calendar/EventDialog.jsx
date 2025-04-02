@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Dialog, 
   DialogTitle, 
@@ -15,7 +15,9 @@ import {
   Grid,
   Box,
   Divider,
-  Chip
+  Chip,
+  Avatar,
+  Tooltip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -28,9 +30,10 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CategoryIcon from '@mui/icons-material/Category';
 import PersonIcon from '@mui/icons-material/Person';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 // יבוא צבעים לסוגי אירועים
-import { eventColors } from './calendarUtils';
+// import { eventColors } from './calendarUtils';
 
 // שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
@@ -47,8 +50,60 @@ const EventDialog = () => {
     handleDeleteEvent,
     eventTypes,
     kids,
-    employees
+    employees,
+    eventColors
   } = useCalendar();
+  
+  // שמירת פרטי היוצר
+  const [creator, setCreator] = useState(null);
+  
+  // אפקט לטעינת פרטי היוצר מ-localStorage
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        setCreator(user);
+      }
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+    }
+  }, []);
+  
+  // פונקציה מעודכנת לטיפול בשינויים במשתתפים
+  const handleParticipantsChange = (event) => {
+    const { name, value } = event.target;
+    
+    // אם זה kidIds - צריך להיות מערך גם אם בוחרים ערך אחד
+    if (name === 'kidIds') {
+      const updatedValue = Array.isArray(value) ? value : [value];
+      handleEventChange({
+        target: {
+          name,
+          value: updatedValue
+        }
+      });
+    } else {
+      // טיפול רגיל בשדות אחרים
+      handleEventChange(event);
+    }
+  };
+  
+  // מציאת היוצר המקורי של האירוע (אם קיים)
+  const getCreatorName = () => {
+    if (selectedEvent && selectedEvent.createdBy) {
+      const creatorEmployee = employees.find(emp => emp.id === selectedEvent.createdBy);
+      if (creatorEmployee) {
+        return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
+      }
+      return `משתמש #${selectedEvent.createdBy}`;
+    }
+    
+    if (creator) {
+      return `${creator.firstName} ${creator.lastName}`;
+    }
+    
+    return 'משתמש לא מזוהה';
+  };
   
   // קבלת צבע עבור סוג האירוע הנוכחי
   const currentEventColor = eventColors[newEvent.type] || '#6C757D';
@@ -103,7 +158,7 @@ const EventDialog = () => {
             <TextField
               label="כותרת האירוע"
               name="title"
-              value={newEvent.title}
+              value={newEvent.title || ''}
               onChange={handleEventChange}
               fullWidth
               required
@@ -120,7 +175,7 @@ const EventDialog = () => {
               <InputLabel>סוג אירוע</InputLabel>
               <Select
                 name="type"
-                value={newEvent.type}
+                value={newEvent.type || ''}
                 onChange={handleEventChange}
                 label="סוג אירוע"
                 MenuProps={{
@@ -134,13 +189,13 @@ const EventDialog = () => {
               >
                 {eventTypes.map(type => (
                   <MenuItem 
-                    key={type} 
-                    value={type}
+                    key={type.id || type}
+                    value={type.id || type}
                     sx={{ 
-                      borderRight: `4px solid ${eventColors[type] || '#6C757D'}`
+                      borderRight: `4px solid ${type.color || eventColors[type] || '#6C757D'}`
                     }}
                   >
-                    {type}
+                    {type.name || type}
                   </MenuItem>
                 ))}
               </Select>
@@ -153,7 +208,7 @@ const EventDialog = () => {
               label="תאריך ושעת התחלה"
               name="start"
               type="datetime-local"
-              value={newEvent.start}
+              value={newEvent.start || ''}
               onChange={handleEventChange}
               fullWidth
               required
@@ -170,7 +225,7 @@ const EventDialog = () => {
               label="תאריך ושעת סיום"
               name="end"
               type="datetime-local"
-              value={newEvent.end}
+              value={newEvent.end || ''}
               onChange={handleEventChange}
               fullWidth
               required
@@ -187,7 +242,7 @@ const EventDialog = () => {
             <TextField
               label="מיקום"
               name="location"
-              value={newEvent.location}
+              value={newEvent.location || ''}
               onChange={handleEventChange}
               fullWidth
               variant="outlined"
@@ -198,15 +253,16 @@ const EventDialog = () => {
             />
           </Grid>
           
-          {/* שורה רביעית - קישור לילד ואנשי צוות */}
+          {/* שורה רביעית - קישור לילדים */}
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <InputLabel>ילד</InputLabel>
+              <InputLabel>ילדים</InputLabel>
               <Select
-                name="kidId"
+                name="kidIds"
+                multiple
                 value={newEvent.kidIds || []}
-                onChange={handleEventChange}
-                label="ילד"
+                onChange={handleParticipantsChange}
+                label="ילדים"
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selected.map((value) => {
@@ -216,6 +272,7 @@ const EventDialog = () => {
                           key={value} 
                           label={kid ? `${kid.firstName} ${kid.lastName}` : value}
                           size="small"
+                          avatar={<Avatar><ChildCareIcon fontSize="small" /></Avatar>}
                         />
                       );
                     })}
@@ -228,9 +285,6 @@ const EventDialog = () => {
                 }}
                 startAdornment={<ChildCareIcon color="action" sx={{ mr: 1 }} />}
               >
-                <MenuItem value="">
-                  <em>ללא</em>
-                </MenuItem>
                 {kids.map(kid => (
                   <MenuItem key={kid.id} value={kid.id}>
                     {`${kid.firstName} ${kid.lastName}`}
@@ -240,6 +294,7 @@ const EventDialog = () => {
             </FormControl>
           </Grid>
           
+          {/* קישור לאנשי צוות */}
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>אנשי צוות</InputLabel>
@@ -247,7 +302,7 @@ const EventDialog = () => {
                 name="employeeIds"
                 multiple
                 value={newEvent.employeeIds || []}
-                onChange={handleEventChange}
+                onChange={handleParticipantsChange}
                 label="אנשי צוות"
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -258,6 +313,7 @@ const EventDialog = () => {
                           key={value} 
                           label={employee ? `${employee.firstName} ${employee.lastName}` : value}
                           size="small"
+                          avatar={<Avatar><PersonIcon fontSize="small" /></Avatar>}
                         />
                       );
                     })}
@@ -285,7 +341,7 @@ const EventDialog = () => {
             <TextField
               label="תיאור"
               name="description"
-              value={newEvent.description}
+              value={newEvent.description || ''}
               onChange={handleEventChange}
               fullWidth
               multiline
@@ -306,24 +362,34 @@ const EventDialog = () => {
       
       <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
         {/* כפתור מחיקה - מוצג רק באירוע קיים */}
-        {selectedEvent && (
-          <Button 
-            onClick={handleDeleteEvent} 
-            color="error" 
-            variant="outlined"
-            startIcon={<DeleteIcon />}
-            sx={{ 
-              borderRadius: '8px',
-              '&:hover': {
-                backgroundColor: 'rgba(244, 67, 54, 0.08)'
-              }
-            }}
-          >
-            מחק אירוע
-          </Button>
-        )}
+        <Box>
+          {selectedEvent && (
+            <Button 
+              onClick={handleDeleteEvent} 
+              color="error" 
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              sx={{ 
+                borderRadius: '8px',
+                '&:hover': {
+                  backgroundColor: 'rgba(244, 67, 54, 0.08)'
+                }
+              }}
+            >
+              מחק אירוע
+            </Button>
+          )}
+        </Box>
         
-        <div></div> {/* ספייסר */}
+        {/* מידע על יוצר האירוע */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Tooltip title="יוצר האירוע" arrow>
+            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2, color: 'text.secondary', fontSize: '0.85rem' }}>
+              <AccountCircleIcon fontSize="small" sx={{ mr: 0.5 }} />
+              <Typography variant="caption">{getCreatorName()}</Typography>
+            </Box>
+          </Tooltip>
+        </Box>
         
         <Box>
           <Button 

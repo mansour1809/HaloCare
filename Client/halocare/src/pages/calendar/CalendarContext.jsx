@@ -1,7 +1,6 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { eventColors, toISOStringWithoutTimezone } from './calendarUtils';
-import { set } from 'lodash';
+import {  toISOStringWithoutTimezone } from './calendarUtils';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
@@ -20,6 +19,7 @@ export const CalendarProvider = ({ children }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [eventColors, setEventColors] = useState({});
 
   // מצבים - נתוני עזר
   const [kids, setKids] = useState([]);
@@ -35,7 +35,7 @@ export const CalendarProvider = ({ children }) => {
     end: '',
     location: '',
     description: '',
-    createdBy: 1,
+    createdBy: 0,
     type: '',
     kidId: [],
     employeeIds: []
@@ -77,20 +77,22 @@ export const CalendarProvider = ({ children }) => {
     const fetchTreatmentTypes = useCallback(async () => {
       try {
         const response = await axios.get(TREATMENT_TYPES_ENDPOINT);
-        
-
+console.log(response.data)
         // הנחה שהשרת מחזיר מערך עם שדה 'name' או 'type' שמכיל את סוג הטיפול
         const types = response.data.map(type => type.treatmentTypeName );
         setEventTypes([...types]);
-        console.log(types); // הדפסת התגובה מהשרת
+
+        const colorMapping = response.data.reduce((acc, type) => {
+          acc[type.treatmentTypeName] = type.treatmentColor;  // Assign color to the corresponding type
+        }, {});
+
+        setEventColors(colorMapping); // עדכון צבעים לפי סוגי טיפולים
+        console.log("hehsdbjk",colorMapping)
+        console.log("hehsdsafdsdfbjk",eventColors)
 
         return types;
       } catch (error) {
         console.error('Error fetching treatment types:', error);
-        // אין יותר נתוני דמו - במקרה של שגיאה, נגדיר מינימום סוגי אירועים
-        const fallbackTypes = ['פגישת הורים', 'מפגש קבוצתי', 'ביקור בית', 'אחר'];
-        setEventTypes(fallbackTypes);
-        return fallbackTypes;
       }
     }, []);
 
@@ -448,7 +450,8 @@ export const CalendarProvider = ({ children }) => {
     calendarView,
     showFilterForm,
     filterOptions,
-    
+    eventColors,
+
     // פעולות
     fetchEvents,
     addEvent,
