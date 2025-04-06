@@ -17,7 +17,8 @@ import {
   Divider,
   Chip,
   Avatar,
-  Tooltip
+  Tooltip,
+  FormHelperText
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -31,9 +32,6 @@ import CategoryIcon from '@mui/icons-material/Category';
 import PersonIcon from '@mui/icons-material/Person';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-
-// יבוא צבעים לסוגי אירועים
-// import { eventColors } from './calendarUtils';
 
 // שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
@@ -51,30 +49,39 @@ const EventDialog = () => {
     eventTypes,
     kids,
     employees,
-    eventColors
+    createdByUserId
   } = useCalendar();
   
   // שמירת פרטי היוצר
-  const [creator, setCreator] = useState(null);
+  // const [creator, setCreator] = useState(null);
   
-  // אפקט לטעינת פרטי היוצר מ-localStorage
-  useEffect(() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user) {
-        setCreator(user);
-      }
-    } catch (error) {
-      console.error('Error loading user from localStorage:', error);
-    }
-  }, []);
+  // מצב לשמירת שגיאות ולידציה
+  const [validationErrors, setValidationErrors] = useState({
+    title: false,
+    eventTypeId: false,
+    start: false,
+    end: false
+  });
   
-  // פונקציה מעודכנת לטיפול בשינויים במשתתפים
+  // // אפקט לטעינת פרטי היוצר מ-localStorage
+  // useEffect(() => {
+  //   try {
+  //     const user = JSON.parse(localStorage.getItem('user'));
+  //     if (user) {
+  //       setCreator(user);
+        
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading user from localStorage:', error);
+  //   }
+  // }, []);
+  
+  // פונקציה לטיפול בשינויים במשתתפים
   const handleParticipantsChange = (event) => {
     const { name, value } = event.target;
     
-    // אם זה kidIds - צריך להיות מערך גם אם בוחרים ערך אחד
-    if (name === 'kidIds') {
+    // אם זה מערכים - יש לוודא שזה יישאר מערך גם כשבוחרים ערך יחיד
+    if (name === 'kidIds' || name === 'employeeIds') {
       const updatedValue = Array.isArray(value) ? value : [value];
       handleEventChange({
         target: {
@@ -90,23 +97,70 @@ const EventDialog = () => {
   
   // מציאת היוצר המקורי של האירוע (אם קיים)
   const getCreatorName = () => {
-    if (selectedEvent && selectedEvent.createdBy) {
-      const creatorEmployee = employees.find(emp => emp.id === selectedEvent.createdBy);
+    if (
+      selectedEvent &&
+      selectedEvent.extendedProps &&
+      selectedEvent.extendedProps.createdBy
+    ) {
+      const creatorId = selectedEvent.extendedProps.createdBy;
+      const creatorEmployee = employees.find(
+        (emp) => emp.employeeId === creatorId
+      );
+
       if (creatorEmployee) {
         return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
       }
-      return `משתמש #${selectedEvent.createdBy}`;
+      return `משתמש #${creatorId}`;
     }
-    
-    if (creator) {
-      return `${creator.firstName} ${creator.lastName}`;
+
+    // אם זה אירוע חדש
+    if (newEvent && newEvent.createdBy) {
+      const creatorId = newEvent.createdBy;
+      const creatorEmployee = employees.find(
+        (emp) => emp.employeeId === creatorId
+      );
+
+      if (creatorEmployee) {
+        return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
+      }
     }
+  }
+  
+  // פונקציית בדיקת תקינות הטופס לפני שמירה
+  const validateForm = () => {
+    const errors = {
+      title: !newEvent.title,
+      eventTypeId: !newEvent.eventTypeId,
+      start: !newEvent.start,
+      end: !newEvent.end || new Date(newEvent.end) <= new Date(newEvent.start)
+    };
     
-    return 'משתמש לא מזוהה';
+    setValidationErrors(errors);
+    
+    // הטופס תקין אם אין שגיאות
+    return !Object.values(errors).some(hasError => hasError);
+  };
+  
+  // טיפול משופר בשמירת האירוע
+  const handleSaveEventWithValidation = () => {
+    if (validateForm()) {
+      handleSaveEvent();
+    }
   };
   
   // קבלת צבע עבור סוג האירוע הנוכחי
-  const currentEventColor = eventColors[newEvent.type] || '#6C757D';
+  const getCurrentEventColor = () => {
+    if (!newEvent.eventTypeId) return '#1976d2';
+    
+    const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
+    return selectedType ? selectedType.color : '#1976d2';
+  };
+  
+  // בדיקה אם הטופס תקף
+  // const isFormValid = !Object.values(validationErrors).some(hasError => hasError);
+  
+  // הצבע הנוכחי
+  const currentEventColor = getCurrentEventColor();
   
   return (
     <Dialog 
@@ -163,6 +217,8 @@ const EventDialog = () => {
               fullWidth
               required
               variant="outlined"
+              error={validationErrors.title}
+              helperText={validationErrors.title ? "נדרשת כותרת לאירוע" : ""}
               InputProps={{
                 startAdornment: <TitleIcon color="action" sx={{ mr: 1 }} />
               }}
@@ -171,11 +227,11 @@ const EventDialog = () => {
           </Grid>
           
           <Grid item xs={12} sm={5}>
-            <FormControl fullWidth required variant="outlined">
+            <FormControl fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
               <InputLabel>סוג אירוע</InputLabel>
               <Select
-                name="type"
-                value={newEvent.type || ''}
+                name="eventTypeId"
+                value={newEvent.eventTypeId || ''}
                 onChange={handleEventChange}
                 label="סוג אירוע"
                 MenuProps={{
@@ -189,16 +245,19 @@ const EventDialog = () => {
               >
                 {eventTypes.map(type => (
                   <MenuItem 
-                    key={type.id || type}
-                    value={type.id || type}
+                    key={type.eventTypeId} 
+                    value={type.eventTypeId}
                     sx={{ 
-                      borderRight: `4px solid ${type.color || eventColors[type] || '#6C757D'}`
+                      borderRight: `4px solid ${type.color || '#1976d2'}`
                     }}
                   >
-                    {type.name || type}
+                    {type.eventType}
                   </MenuItem>
                 ))}
               </Select>
+              {validationErrors.eventTypeId && (
+                <FormHelperText>יש לבחור סוג אירוע</FormHelperText>
+              )}
             </FormControl>
           </Grid>
           
@@ -213,6 +272,8 @@ const EventDialog = () => {
               fullWidth
               required
               variant="outlined"
+              error={validationErrors.start}
+              helperText={validationErrors.start ? "יש להזין תאריך ושעת התחלה" : ""}
               InputLabelProps={{ shrink: true }}
               InputProps={{
                 startAdornment: <AccessTimeIcon color="action" sx={{ mr: 1 }} />
@@ -230,6 +291,8 @@ const EventDialog = () => {
               fullWidth
               required
               variant="outlined"
+              error={validationErrors.end}
+              helperText={validationErrors.end ? "שעת הסיום חייבת להיות מאוחרת משעת ההתחלה" : ""}
               InputLabelProps={{ shrink: true }}
               InputProps={{
                 startAdornment: <AccessTimeIcon color="action" sx={{ mr: 1 }} />
@@ -405,7 +468,7 @@ const EventDialog = () => {
           </Button>
           
           <Button 
-            onClick={handleSaveEvent} 
+            onClick={handleSaveEventWithValidation} 
             color="primary" 
             variant="contained"
             startIcon={<SaveIcon />}

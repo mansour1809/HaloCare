@@ -10,16 +10,19 @@ import {
   Typography,
   CircularProgress,
   Chip,
-  Fade
+  Fade,
+  Tooltip,
+  FormHelperText
 } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import InfoIcon from '@mui/icons-material/Info';
 
 import { useCalendar } from './CalendarContext';
 
 const CalendarFilter = () => {
-  // get values and functions from context
-    const {
+  // קבלת ערכים ופונקציות מהקונטקסט
+  const {
     filterOptions,
     handleFilterChange,
     resetFilters,
@@ -29,13 +32,13 @@ const CalendarFilter = () => {
     isLoadingReferenceData
   } = useCalendar();
   
-// check if any filters are active
+  // בדיקה אם יש מסננים פעילים
   const hasActiveFilters = 
     filterOptions.kidId || 
     filterOptions.employeeId || 
-    filterOptions.eventType;
+    filterOptions.eventTypeId;
   
-  // count active filters
+  // ספירת מסננים פעילים
   const activeFilterCount = Object.values(filterOptions)
     .filter(value => value !== '').length;
   
@@ -106,6 +109,10 @@ const CalendarFilter = () => {
                   </MenuItem>
                 ))}
               </Select>
+              <FormHelperText sx={{ display: 'flex', alignItems: 'center' }}>
+                <InfoIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.6 }} />
+                סנן אירועים לפי ילד ספציפי
+              </FormHelperText>
             </FormControl>
           </Grid>
           
@@ -129,6 +136,10 @@ const CalendarFilter = () => {
                   </MenuItem>
                 ))}
               </Select>
+              <FormHelperText sx={{ display: 'flex', alignItems: 'center' }}>
+                <InfoIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.6 }} />
+                סנן אירועים לפי איש צוות
+              </FormHelperText>
             </FormControl>
           </Grid>
           
@@ -136,8 +147,8 @@ const CalendarFilter = () => {
             <FormControl fullWidth variant="outlined" size="small">
               <InputLabel>סוג אירוע</InputLabel>
               <Select
-                name="eventType"
-                value={filterOptions.eventType}
+                name="eventTypeId"
+                value={filterOptions.eventTypeId}
                 onChange={handleFilterChange}
                 label="סוג אירוע"
                 disabled={isLoadingReferenceData || eventTypes.length === 0}
@@ -146,11 +157,21 @@ const CalendarFilter = () => {
                   <em>הכל</em>
                 </MenuItem>
                 {eventTypes.map(type => (
-                  <MenuItem key={type} value={type}>
-                    {type}
+                  <MenuItem 
+                    key={type.eventTypeId} 
+                    value={type.eventTypeId}
+                    sx={{ 
+                      borderRight: `4px solid ${type.color || '#1976d2'}`
+                    }}
+                  >
+                    {type.eventType}
                   </MenuItem>
                 ))}
               </Select>
+              <FormHelperText sx={{ display: 'flex', alignItems: 'center' }}>
+                <InfoIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.6 }} />
+                סנן אירועים לפי סוג
+              </FormHelperText>
             </FormControl>
           </Grid>
         </Grid>

@@ -54,18 +54,18 @@ namespace halocare.Controllers
         }
 
         // GET: api/Events/range?startDate=2023-05-01&endDate=2023-05-31
-        [HttpGet("range")]
-        public ActionResult<IEnumerable<Event>> GetEventsByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                return Ok(_eventService.GetEventsByDateRange(startDate, endDate));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-            }
-        }
+        //[HttpGet("range")]
+        //public ActionResult<IEnumerable<Event>> GetEventsByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        //{
+        //    try
+        //    {
+        //        return Ok(_eventService.GetEventsByDateRange(startDate, endDate));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+        //    }
+        //}
 
         // GET: api/Events/5/kids
         [HttpGet("{id}/kids")]

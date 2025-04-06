@@ -1,259 +1,226 @@
-/* עיצובים עבור לוח השנה */
 
-/* תאי היומן */
-.fc-day {
-  background-color: #fff;
+      /* Swap next and prev icons */
+      .fc-icon-chevron-right::before {
+          content: "";
+
+        }
+
+      .fc-icon-chevron-left::before {
+        content: "";
+
+      }
+      /* רקע כללי לסרגל הכלים */
+      .fc-toolbar {
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(to left, #ffffff, #f7faff) !important;
+        box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12) !important;
+      } */
+
+
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* version 2  */
+/* 
+  עיצוב כללי ליומן 
+  מותאם לתצוגה עברית וצבעים מותאמים
+*/
+/* כללי */
+.fc {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Rubik', 'Assistant', sans-serif;
+}
+
+/* כותרת */
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin: 0 0.5rem;
+}
+
+/* כפתורים */
+.fc .fc-button {
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  text-transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.fc .fc-button:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.fc .fc-button-primary {
+  background-color: #1976d2;
+  border-color: #1976d2;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #1565c0;
+  border-color: #1565c0;
+}
+
+.fc .fc-today-button {
+  font-weight: bold;
+}
+
+/* כפתור היום */
+.fc .fc-today-button:not(:disabled) {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+.fc .fc-today-button:not(:disabled):hover {
+  background-color: #43a047;
+  border-color: #43a047;
+}
+
+/* כותרות ימים */
+.fc-day-header {
+  font-weight: 600 !important;
+  padding: 10px 0 !important;
+  background-color: #f5f9ff;
+  border-radius: 5px;
+  margin: 2px;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #2c3e50;
+  text-decoration: none !important;
+  padding: 5px 0;
+}
+
+/* תאים של היומן */
+.fc .fc-daygrid-day {
   transition: background-color 0.2s;
 }
 
-.fc-day:hover {
+.fc .fc-daygrid-day:hover {
   background-color: #f8f9fa;
 }
 
-/* עיצוב כותרות ימים */
-.fc-day-header {
-  font-weight: 700;
-  color: #495057;
-  padding: 10px 0 !important;
-  border-width: 0 !important;
-  background-color: #f8f9fa;
+/* סגנון היום הנוכחי */
+.fc .fc-day-today {
+  background-color: rgba(76, 175, 80, 0.1) !important;
 }
 
-/* עיצוב אירועים */
+/* שעות היומן */
+.fc .fc-timegrid-slot {
+  height: 48px;
+}
+
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  font-weight: 500;
+  color: #546e7a;
+}
+
+/* אירועים */
 .fc-event-custom {
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  transition: all 0.2s ease;
+  border-radius: 6px;
+  border-right-width: 4px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  margin: 2px 0;
+  transition: all 0.2s;
+  margin-bottom: 2px;
 }
 
 .fc-event-custom:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  -webkit-transform: translateY(-1px);
-  -moz-transform: translateY(-1px);
-  -ms-transform: translateY(-1px);
-  -o-transform: translateY(-1px);
 }
 
-/* תוכן האירוע */
-.fc-event-title {
-  font-weight: 600;
-  padding: 2px 4px;
+.fc-event-custom .fc-event-title {
+  font-weight: 500;
+  padding: 2px 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.fc-event-time {
+.fc-event-custom .fc-event-time {
+  font-weight: 500;
+  padding: 2px 4px;
   font-size: 0.85em;
+  opacity: 0.9;
+}
+
+.fc-event-custom .fc-event-location {
+  font-size: 0.8em;
   opacity: 0.8;
-  padding: 0 4px;
+  padding: 0 4px 2px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* אינדיקטור זמן נוכחי */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: #e91e63;
+  border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: #e91e63;
+  border-width: 5px;
+}
+
+/* התאמה למסכים קטנים */
+@media screen and (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1.2rem;
+  }
+  
+  .fc .fc-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .fc-event-custom .fc-event-title {
+    font-size: 0.9em;
+  }
+}
+
+.fc-event-participants {
+  font-size: 0.75em;
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+
+.fc-event-participants .kids-count,
+.fc-event-participants .employees-count {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1px 4px;
 }
 
 .fc-event-location {
   font-size: 0.75em;
-  opacity: 0.7;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 4px;
-}
-
-/* כפתורים בלוח השנה */
-.fc-button {
-  border-radius: 8px !important;
-  text-transform: none !important;
-  font-weight: 500 !important;
-  padding: 6px 12px !important;
-  transition: all 0.2s !important;
-  -webkit-border-radius: 8px !important;
-  -moz-border-radius: 8px !important;
-  -ms-border-radius: 8px !important;
-  -o-border-radius: 8px !important;
-}
-
-.fc-button:hover {
-  background-color: rgba(79, 195, 247, 0.1) !important;
-  border-color: #4fc3f7 !important;
-}
-
-.fc-button-active {
-  background-color: #4fc3f7 !important;
-  border-color: #4fc3f7 !important;
-}
-
-/* תאריך היום */
-.fc-day-today {
-  background-color: rgba(79, 195, 247, 0.05) !important;
-  border: 1px solid rgba(79, 195, 247, 0.3) !important;
-}
-
-/* כותרת היומן */
-.fc-toolbar-title {
-  font-size: 1.5em !important;
-  font-weight: 700 !important;
-  color: #2c3e50 !important;
-}
-
-/* חלק התצוגה היומית */
-.fc-timegrid-slot {
-  height: 25px !important; /* גובה שורות הזמן */
-  border-bottom: 1px dashed #eaecef !important;
-}
-
-/* תוויות זמן */
-.fc-timegrid-slot-label {
-  color: #666;
-  font-size: 0.85em;
-  font-weight: 600;
-}
-
-/* שורות זמנים בשבוע */
-.fc-timegrid-slot-minor {
-  border-color: rgba(0, 0, 0, 0.05) !important;
-}
-
-/* תצוגת חודשית */
-.fc-daygrid-day-number {
-  padding: 8px !important;
-  font-weight: 600;
-  color: #333;
-}
-
-/* כשאין אירועים */
-.empty-calendar-message {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 300px;
-  color: #6c757d;
+  margin-top: 2px;
+  opacity: 0.85;
 }
 
-/* אנימציה בטעינת לוח השנה */
-.calendar-loading {
-  opacity: 0;
-  animation: fadeIn 0.3s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* מצב טעינה */
-.calendar-loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-
-/* עיצוב התאמת זמן (Resizing) */
-.fc-event-resizing {
-  opacity: 0.8;
-  border: 2px dashed #4fc3f7 !important;
-}
-
-/* עיצוב גרירה */
-.fc-event-dragging {
-  opacity: 0.8;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* כותרת יום בתצוגה חודשית */
-.fc-col-header-cell {
-  background-color: #f8f9fa;
-  font-weight: 700;
-  padding: 10px 0;
-}
-
-/* עיצוב סקרולבר */
-.fc-scroller::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.fc-scroller::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.fc-scroller::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
-  border-radius: 10px;
-}
-
-.fc-scroller::-webkit-scrollbar-thumb:hover {
-  background: #a3a3a3;
-}
-
-/* buttons */
-/* עיצוב כפתורי FullCalendar */
-/* סגנונות כלליים לכפתורים בסרגל הכלים */
-.fc-button-primary {
-  border-radius: 8px !important;
-  margin-left: 4px !important;
-  transition: all 0.2s !important;
-}
-
-/* כפתור פעיל (contained) */
-.fc-button-active {
-  background: #1976d2 !important;
-  border-color: #1976d2 !important;
-}
-
-/* כפתור לא פעיל (outlined) */
-.fc-button-primary:not(.fc-button-active) {
-  background: transparent !important;
-  color: #1976d2 !important;
-  border-color: #1976d2 !important;
-}
-
-/* הובר על כפתורים */
-.fc-button-primary:hover {
-  background-color: rgba(79, 195, 247, 0.15) !important;
-  transform: scale(1.05) !important;
-}
-
-
-
-/* כפתורי ניווט - חודש קודם/הבא */
-.fc-prev-button, .fc-next-button {
-  border-radius: 50% !important;
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: none;
-  -webkit-border-radius: 50% !important;
-  -moz-border-radius: 50% !important;
-  -ms-border-radius: 50% !important;
-  -o-border-radius: 50% !important;
-}
-/* Swap next and prev icons */
-.fc-icon-chevron-right::before {
-    content: "";
-
-  }
-
-.fc-icon-chevron-left::before {
-  content: "";
-
-}
-/* רקע כללי לסרגל הכלים */
-.fc-toolbar {
-  padding: 16px !important;
-  margin-bottom: 16px !important;
-  border-radius: 12px !important;
-  background: linear-gradient(to left, #ffffff, #f7faff) !important;
-  box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12) !important;
+.fc-event-location .location-icon {
+  margin-left: 2px;
 }

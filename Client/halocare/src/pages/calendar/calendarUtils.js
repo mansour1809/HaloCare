@@ -1,17 +1,3 @@
-
-
-// // הגדרת צבעים לסוגי אירועים שונים
-// export const eventColors = {
-//   'טיפול פיזיותרפיה': '#F4A261', // כתום
-//   'טיפול רגשי': '#E76F51', // אדום-כתום
-//   'טיפול בעיסוק': '#2A9D8F', // טורקיז
-//   'פגישת הורים': '#E9C46A', // צהוב
-//   'מפגש קבוצתי': '#8AB17D', // ירוק
-//   'ביקור בית': '#9E86C8', // סגול
-//   'אחר': '#6C757D' // אפור
-// };
-
-
 // פורמט תאריך עברי
 export const formatHebrewDate = (date) => {
   if (!date) return '';
@@ -27,7 +13,7 @@ export const formatHebrewDate = (date) => {
   return new Date(date).toLocaleDateString('he-IL', options);
 };
 
-// המרת תאריך ל-ISO string ללא ה-timezone
+// המרת תאריך ל-ISO string ללא ה-timezone (לשימוש בשדות input מסוג datetime-local)
 export const toISOStringWithoutTimezone = (date) => {
   if (!date) return '';
   
@@ -83,4 +69,79 @@ export const calculateEndTime = (startDate, durationMinutes) => {
   end.setMinutes(end.getMinutes() + durationMinutes);
   
   return end.toISOString();
+};
+
+// פורמט שעה בלבד (HH:MM)
+export const formatTimeOnly = (date) => {
+  if (!date) return '';
+  
+  const d = new Date(date);
+  return d.toLocaleTimeString('he-IL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
+
+// קבלת מחרוזת תאריך בפורמט יום, תאריך חודש
+export const formatDateShort = (date) => {
+  if (!date) return '';
+  
+  const d = new Date(date);
+  
+  // שמות ימים בעברית
+  const dayNames = ['יום א\'', 'יום ב\'', 'יום ג\'', 'יום ד\'', 'יום ה\'', 'יום ו\'', 'שבת'];
+  
+  return `${dayNames[d.getDay()]}, ${d.getDate()} ב${d.toLocaleString('he-IL', { month: 'long' })}`;
+};
+
+// חישוב תאריך יחסי (היום, מחר, אתמול או תאריך מלא)
+export const getRelativeDate = (date) => {
+  if (!date) return '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+  
+  const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'היום';
+  if (diffDays === 1) return 'מחר';
+  if (diffDays === -1) return 'אתמול';
+  
+  return formatDateShort(date);
+};
+
+// שינוי צבע לפי בהירות (כדי לבחור צבע טקסט שיתאים לרקע)
+export const getContrastColor = (hexColor) => {
+  // ברירת מחדל אם אין צבע
+  if (!hexColor) return '#ffffff';
+  
+  // הסרת ה-# אם קיים
+  const color = hexColor.replace('#', '');
+  
+  // המרה מהקס לערכי RGB
+  const r = parseInt(color.substr(0, 2), 16);
+  const g = parseInt(color.substr(2, 2), 16);
+  const b = parseInt(color.substr(4, 2), 16);
+  
+  // חישוב בהירות (לפי נוסחת YIQ)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  
+  // החזרת צבע לבן או שחור בהתאם לבהירות הרקע
+  return (yiq >= 128) ? '#000000' : '#ffffff';
+};
+
+// יצירת צבע אקראי לשימוש בממשק
+export const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  
+  return color;
 };

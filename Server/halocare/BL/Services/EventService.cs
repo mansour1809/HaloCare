@@ -9,6 +9,7 @@ namespace halocare.BL.Services
     public class EventService
     {
         private readonly EventRepository _eventRepository;
+        private readonly EventTypeRepository _eventTypeRepository;
         private readonly EventKidRepository _eventKidRepository;
         private readonly EventEmployeeRepository _eventEmployeeRepository;
         private readonly KidRepository _kidRepository;
@@ -17,10 +18,17 @@ namespace halocare.BL.Services
         public EventService(IConfiguration configuration)
         {
             _eventRepository = new EventRepository(configuration);
+            _eventTypeRepository = new EventTypeRepository(configuration);
             _eventKidRepository = new EventKidRepository(configuration);
             _eventEmployeeRepository = new EventEmployeeRepository(configuration);
             _kidRepository = new KidRepository(configuration);
             _employeeRepository = new EmployeeRepository(configuration);
+        }
+
+        // רשימת סוגי אירועים - הוספה של פונקציה חדשה
+        public List<EventTypes> GetAllEventTypes()
+        {
+            return _eventTypeRepository.GetAllEventTypes();
         }
 
         public List<Event> GetAllEvents()
@@ -33,10 +41,10 @@ namespace halocare.BL.Services
             return _eventRepository.GetEventById(id);
         }
 
-        public List<Event> GetEventsByDateRange(DateTime startDate, DateTime endDate)
-        {
-            return _eventRepository.GetEventsByDateRange(startDate, endDate);
-        }
+        //public List<Event> GetEventsByDateRange(DateTime startDate, DateTime endDate)
+        //{
+        //    return _eventRepository.GetEventsByDateRange(startDate, endDate);
+        //}
 
         public int AddEvent(Event eventItem, List<int> kidIds = null, List<int> employeeIds = null)
         {
@@ -282,5 +290,93 @@ namespace halocare.BL.Services
 
             return employees;
         }
+        //for the events types
+
+        public EventTypes GetEventTypeById(int id)
+        {
+            return _eventTypeRepository.GetEventTypeById(id);
+        }
+
+        public int AddEventType(EventTypes eventType)
+        {
+            // בדיקה שהשם אינו ריק
+            if (string.IsNullOrWhiteSpace(eventType.EventType))
+            {
+                throw new ArgumentException("שם סוג האירוע לא יכול להיות ריק");
+            }
+
+            // בדיקה שאין כבר סוג אירוע עם אותו שם
+            List<EventTypes> existingTypes = _eventTypeRepository.GetAllEventTypes();
+            if (existingTypes.Any(et => et.EventType.Equals(eventType.EventType, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException($"סוג אירוע בשם '{eventType.EventType}' כבר קיים");
+            }
+
+            // אם לא הוגדר צבע, הגדרת צבע ברירת מחדל
+            if (string.IsNullOrWhiteSpace(eventType.Color))
+            {
+                eventType.Color = "#3788d8"; // כחול בסיסי
+            }
+
+            return _eventTypeRepository.AddEventType(eventType);
+        }
+
+        public bool UpdateEventType(EventTypes eventType)
+        {
+            // בדיקה שהשם אינו ריק
+            if (string.IsNullOrWhiteSpace(eventType.EventType))
+            {
+                throw new ArgumentException("שם סוג האירוע לא יכול להיות ריק");
+            }
+
+            // בדיקה שסוג האירוע קיים
+            EventTypes existingType = _eventTypeRepository.GetEventTypeById(eventType.EventTypeId);
+            if (existingType == null)
+            {
+                throw new ArgumentException("סוג האירוע לא נמצא");
+            }
+
+            // בדיקה שאין כבר סוג אירוע אחר עם אותו שם
+            List<EventTypes> allTypes = _eventTypeRepository.GetAllEventTypes();
+            if (allTypes.Any(et => et.EventType.Equals(eventType.EventType, StringComparison.OrdinalIgnoreCase) && et.EventTypeId != eventType.EventTypeId))
+            {
+                throw new ArgumentException($"סוג אירוע בשם '{eventType.EventType}' כבר קיים");
+            }
+
+            // אם לא הוגדר צבע, שימור הצבע הקיים
+            if (string.IsNullOrWhiteSpace(eventType.Color))
+            {
+                eventType.Color = existingType.Color;
+            }
+
+            return _eventTypeRepository.UpdateEventType(eventType);
+        }
+
+        public bool DeleteEventType(int id)
+        {
+            // בדיקה אם סוג האירוע קיים
+            EventTypes existingType = _eventTypeRepository.GetEventTypeById(id);
+            if (existingType == null)
+            {
+                throw new ArgumentException("סוג האירוע לא נמצא");
+            }
+
+            // בדיקה אם יש אירועים מסוג זה
+            List<Event> events = _eventRepository.GetAllEvents();
+            if (events.Any(e => e.EventTypeId == id))
+            {
+                throw new ArgumentException("לא ניתן למחוק סוג אירוע זה כי קיימים אירועים המשתמשים בו");
+            }
+
+            return _eventTypeRepository.DeleteEventType(id);
+        }
+
+        public EventTypes GetEventTypeByName(string name)
+        {
+            List<EventTypes> allTypes = _eventTypeRepository.GetAllEventTypes();
+            return allTypes.FirstOrDefault(et => et.EventType.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+     
     }
 }

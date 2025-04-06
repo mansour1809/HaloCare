@@ -1,13 +1,13 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import {  toISOStringWithoutTimezone } from './calendarUtils';
+import { toISOStringWithoutTimezone } from './calendarUtils';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
 const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
 const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
 const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
-const TREATMENT_TYPES_ENDPOINT = `${API_BASE_URL}/TreatmentTypes`; // נוסף - טבלת סוגי טיפולים
+const EVENT_TYPES_ENDPOINT = `${API_BASE_URL}/EventTypes`; // שינוי - נקודת קצה לטבלת סוגי אירועים
 
 // יצירת הקונטקסט
 const CalendarContext = createContext();
@@ -19,13 +19,13 @@ export const CalendarProvider = ({ children }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [eventColors, setEventColors] = useState({});
-
+  
   // מצבים - נתוני עזר
   const [kids, setKids] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [isLoadingReferenceData, setIsLoadingReferenceData] = useState(false);
+  const [createdByUserId, setCreatedByUserId] = useState(0); // מזהה יוצר האירוע - ברירת מחדל
 
   // מצבים - עריכה/יצירת אירוע
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -36,8 +36,10 @@ export const CalendarProvider = ({ children }) => {
     location: '',
     description: '',
     createdBy: 0,
-    type: '',
-    kidId: [],
+    eventTypeId: 0, // שינוי - שימוש במזהה סוג אירוע במקום מחרוזת
+    type: '', // שמירה לנוחות ממשק המשתמש
+    color: '', // צבע האירוע - חדש
+    kidIds: [],
     employeeIds: []
   });
 
@@ -50,22 +52,24 @@ export const CalendarProvider = ({ children }) => {
   const [filterOptions, setFilterOptions] = useState({
     kidId: '',
     employeeId: '',
-    eventType: ''
+    eventTypeId: '' // שינוי - סינון לפי מזהה סוג אירוע
   });
 
   // המרת אירוע מהשרת לפורמט המתאים ליומן
   const formatEventForCalendar = (event) => {
     return {
       id: event.eventId,
-      // title: event.eventType ,
+      title: event.eventTitle || event.eventType, // שימוש בכותרת החדשה אם קיימת
       start: event.startTime,
       end: event.endTime,
-      backgroundColor: eventColors[event.eventType] ,
-      borderColor: eventColors[event.eventType] ,
+      backgroundColor: event.color || '#1976d2', // שימוש בצבע שהגיע מהשרת
+      borderColor: event.color || '#1976d2',
       extendedProps: {
         location: event.location,
         description: event.description,
-        type: event.eventType,
+        eventTypeId: event.eventTypeId, // שמירת המזהה של סוג האירוע
+        type: event.eventType, // שמירת המחרוזת של סוג האירוע
+        color: event.color, // שמירת הצבע
         createdBy: event.createdBy,
         kidIds: event.kidIds || [],
         employeeIds: event.employeeIds || []
@@ -73,40 +77,43 @@ export const CalendarProvider = ({ children }) => {
     };
   };
 
-    // טעינת סוגי טיפולים מהשרת
-    const fetchTreatmentTypes = useCallback(async () => {
-      try {
-        const response = await axios.get(TREATMENT_TYPES_ENDPOINT);
-console.log(response.data)
-        // הנחה שהשרת מחזיר מערך עם שדה 'name' או 'type' שמכיל את סוג הטיפול
-        const types = response.data.map(type => type.treatmentTypeName );
-        setEventTypes([...types]);
-
-        const colorMapping = response.data.reduce((acc, type) => {
-          acc[type.treatmentTypeName] = type.treatmentColor;  // Assign color to the corresponding type
-        }, {});
-
-        setEventColors(colorMapping); // עדכון צבעים לפי סוגי טיפולים
-        console.log("hehsdbjk",colorMapping)
-        console.log("hehsdsafdsdfbjk",eventColors)
-
-        return types;
-      } catch (error) {
-        console.error('Error fetching treatment types:', error);
-      }
-    }, []);
+  // טעינת סוגי אירועים מהשרת
+  const fetchEventTypes = useCallback(async () => {
+    try {
+      const response = await axios.get(EVENT_TYPES_ENDPOINT);
+      console.log('Event Types:', response.data);
+      
+      // שמירת סוגי האירועים המלאים עם כל המידע
+      setEventTypes(response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching event types:', error);
+      return [];
+    }
+  }, []);
 
   // טעינת אירועים
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.id) {
+        setCreatedByUserId(user.id); // הגדרת מזהה יוצר האירוע
+      }
+    } catch (error) {
+      console.error('Error reading user from localStorage:', error);
+    }
+  
     try {
       const response = await axios.get(EVENTS_ENDPOINT);
-      console.log(response.data); // הדפסת התגובה מהשרת
+      console.log('Events from server:', response.data); 
+      
       const formattedEvents = response.data.map(formatEventForCalendar);
       setEvents(formattedEvents);
-      // return formattedEvents;//123
+      return formattedEvents;
     } catch (error) {
       console.error('Error fetching events:', error);
       setError('אירעה שגיאה בטעינת האירועים');
@@ -122,15 +129,35 @@ console.log(response.data)
     setIsLoading(true);
     setError(null);
     
+   
     try {
-      console.log('eventData:', eventData);
-      console.log(events)
-
-      const response = await axios.post(EVENTS_ENDPOINT, eventData);
-      const newEvent = formatEventForCalendar(response.data);
+      // המרת נתוני האירוע לפורמט שהשרת מצפה לו
+      const serverEventData = {
+        event: {
+          eventId: 0, // אירוע חדש
+          eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
+          startTime: eventData.start,
+          endTime: eventData.end,
+          color:eventData.color,
+          location: eventData.location || '',
+          description: eventData.description || '',
+          eventTitle: eventData.title || '',
+          createdBy: createdByUserId
+        },
+        kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
+        employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
+      };
       
-      setEvents(prevEvents => [...prevEvents, newEvent]);
-      return newEvent;
+      console.log('Adding event:', serverEventData);
+      
+      const response = await axios.post(EVENTS_ENDPOINT, serverEventData);
+      console.log('Server response after add:', response.data);
+      
+      // רענון הנתונים במקום לעשות פורמט מקומי 
+      // (מכיוון שהשרת עשוי להוסיף מידע נוסף)
+      await fetchEvents();
+      
+      return response.data;
     } catch (error) {
       console.error('Error adding event:', error);
       setError('אירעה שגיאה בהוספת האירוע');
@@ -138,7 +165,7 @@ console.log(response.data)
     } finally {
       setIsLoading(false);
     }
-  }, [ events ]);
+  }, [fetchEvents,createdByUserId]);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
@@ -146,24 +173,40 @@ console.log(response.data)
     setError(null);
     
     try {
-      const response = await axios.put(`${EVENTS_ENDPOINT}/${eventData.id}`, eventData);
-      const updatedEvent = formatEventForCalendar(response.data);
+      // המרת נתוני האירוע לפורמט שהשרת מצפה לו
+      const serverEventData = {
+        event: {
+          eventId: parseInt(eventData.id),
+          eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
+          startTime: eventData.start,
+          endTime: eventData.end,
+          color: eventData.color,
+          location: eventData.location || '',
+          description: eventData.description || '',
+          eventTitle: eventData.title || '',
+          createdBy: eventData.createdBy 
+        },
+        kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
+        employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
+      };
       
-      setEvents(prevEvents => 
-        prevEvents.map(event => 
-          event.id === updatedEvent.id ? updatedEvent : event
-        )
-      );
+      console.log('Updating event:', serverEventData);
       
-      return updatedEvent;
+      const response = await axios.put(`${EVENTS_ENDPOINT}/${eventData.id}`, serverEventData);
+      console.log('Server response after update:', response);
+      
+      // רענון הנתונים
+      await fetchEvents();
+      
+      return response.data;
     } catch (error) {
-      console.error("Error updating event:", error);
-      setError("אירעה שגיאה בעדכון האירוע");
+      console.error('Error updating event:', error);
+      setError('אירעה שגיאה בעדכון האירוע');
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchEvents]);
 
   // מחיקת אירוע
   const deleteEvent = useCallback(async (eventId) => {
@@ -173,14 +216,15 @@ console.log(response.data)
     
     try {
       await axios.delete(`${EVENTS_ENDPOINT}/${eventId}`);
-      setEvents(prevEvents => 
-        prevEvents.filter(event => event.id !== eventId)
-      );
+      
+      // עדכון החזותי יהיה מהיר יותר מאשר לחכות לתשובה מהשרת
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+      
       return { success: true };
     } catch (error) {
       console.error('Error deleting event:', error);
       setError('אירעה שגיאה במחיקת האירוע');
-     throw error;
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -230,9 +274,9 @@ console.log(response.data)
       );
     }
     
-    if (filterOptions.eventType) {
+    if (filterOptions.eventTypeId) {
       filtered = filtered.filter(event => 
-        event.extendedProps.type === filterOptions.eventType
+        event.extendedProps.eventTypeId === parseInt(filterOptions.eventTypeId)
       );
     }
     
@@ -244,7 +288,7 @@ console.log(response.data)
     setFilterOptions({
       kidId: '',
       employeeId: '',
-      eventType: ''
+      eventTypeId: ''
     });
   }, []);
 
@@ -257,21 +301,35 @@ console.log(response.data)
     }));
   }, []);
   
-  // הטיפול בסיכום טופס האירוע
+  // טיפול בשינוי ערכי האירוע
   const handleEventChange = useCallback((e) => {
     const { name, value } = e.target;
-    setNewEvent(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  }, []);
+    
+    setNewEvent(prev => {
+      // אם שינינו את סוג האירוע, עלינו גם לעדכן את הצבע
+      if (name === 'eventTypeId') {
+        const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(value));
+        
+        return {
+          ...prev,
+          [name]: value,
+          type: selectedType ? selectedType.eventType : '', // שמירת המחרוזת של סוג האירוע
+          color: selectedType ? selectedType.color : '', // עדכון הצבע
+        };
+      }
+      
+      return {
+        ...prev,
+        [name]: value
+      };
+    });
+  }, [eventTypes]);
 
   // הפעלת הסינון בעת שינוי במסנן או באירועים
   useEffect(() => {
     filterEvents();
   }, [events, filterOptions, filterEvents]);
 
-  
   // טעינת נתוני עזר
   const fetchReferenceData = useCallback(async () => {
     setIsLoadingReferenceData(true);
@@ -280,8 +338,8 @@ console.log(response.data)
     try {
       await Promise.all([
         fetchKids(),
-        fetchEmployees(),        
-        fetchTreatmentTypes()
+        fetchEmployees(),
+        fetchEventTypes()
       ]);
     } catch (error) {
       console.error('Error fetching reference data:', error);
@@ -289,9 +347,8 @@ console.log(response.data)
     } finally {
       setIsLoadingReferenceData(false);
     }
-  }, [fetchTreatmentTypes, fetchKids, fetchEmployees]);
+  }, [fetchKids, fetchEmployees, fetchEventTypes]);
   
-
   // טעינת נתונים ראשונית
   useEffect(() => {
     fetchEvents();
@@ -308,49 +365,59 @@ console.log(response.data)
     const startStr = toISOStringWithoutTimezone(startTime);
     const endStr = toISOStringWithoutTimezone(endTime);
 
+    // איפוס הערכים
     setSelectedEvent(null);
+    
+    // הגדרת אירוע חדש עם ערכי ברירת מחדל
     setNewEvent({
       title: '',
       start: startStr,
       end: endStr,
       location: '',
       description: '',
-      createdBy: 1,
-      type: eventTypes.length > 0 ? eventTypes[0] : '',
+      createdBy: createdByUserId,
+      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '', // שימוש במזהה
+      type: eventTypes.length > 0 ? eventTypes[0].eventType : '', // שמירת המחרוזת
+      color: eventTypes.length > 0 ? eventTypes[0].color : '', // שמירת הצבע
       kidIds: [],
       employeeIds: []
     });
+    
     setOpenDialog(true);
-  }, [eventTypes]);
+  }, [eventTypes, createdByUserId]);
   
   // טיפול בלחיצה על אירוע קיים
   const handleEventClick = useCallback((info) => {
     const event = info.event;
     
     // המר תאריכים לפורמט HTML datetime-local
-    const startStr = toISOStringWithoutTimezone(new Date(event.start))
+    const startStr = toISOStringWithoutTimezone(new Date(event.start));
     const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
     
     setSelectedEvent(event);
+    
     setNewEvent({
       id: event.id,
-      title: event.title,
+      title: event.title || '',
       start: startStr,
       end: endStr,
       location: event.extendedProps.location || '',
       description: event.extendedProps.description || '',
-      createdBy: event.extendedProps.createdBy || 1,
-      type: event.extendedProps.type || '',
+      createdBy: event.extendedProps.createdBy,
+      eventTypeId: event.extendedProps.eventTypeId || '', // שמירת המזהה
+      type: event.extendedProps.type || '', // שמירת המחרוזת
+      color: event.extendedProps.color || '', // שמירת הצבע
       kidIds: event.extendedProps.kidIds || [],
       employeeIds: event.extendedProps.employeeIds || []
     });
+    
     setOpenDialog(true);
   }, []);
 
   // שמירת אירוע
   const handleSaveEvent = useCallback(async () => {
     // בדיקות תקינות
-    if (!newEvent.title || !newEvent.start || !newEvent.end || !newEvent.type) {
+    if (!newEvent.title || !newEvent.start || !newEvent.end || !newEvent.eventTypeId) {
       alert('נא למלא את כל השדות הנדרשים');
       return;
     }
@@ -360,19 +427,28 @@ console.log(response.data)
       return;
     }
     
+    // מציאת סוג האירוע לפי המזהה
+    const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
+    
+    if (!selectedType) {
+      alert('נא לבחור סוג אירוע תקין');
+      return;
+    }
+    
+    // בניית אובייקט הנתונים לשליחה
     const eventData = {
-      event: {
-        eventId: selectedEvent ? selectedEvent.id : 0,
-        title: newEvent.title,
-        startTime: newEvent.start,
-        endTime: newEvent.end,
-        location: newEvent.location,
-        description: newEvent.description,
-        createdBy: 3,//newEvent.createdBy,
-        eventType: newEvent.type
-      },
-      kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds : [],
-      employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds : []
+      id: selectedEvent ? selectedEvent.id : 0,
+      title: newEvent.title,
+      start: newEvent.start,
+      end: newEvent.end,
+      location: newEvent.location || '',
+      description: newEvent.description || '',
+      createdBy: newEvent.createdBy || 1,
+      color: selectedType.color || '', // שמירת הצבע שנבחר
+      eventType: selectedType.eventType, // שליחת שם סוג האירוע
+      eventTypeId: parseInt(newEvent.eventTypeId), // מזהה סוג האירוע
+      kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds.map(id => parseInt(id)) : [],
+      employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds.map(id => parseInt(id)) : []
     };
     
     try {
@@ -383,19 +459,26 @@ console.log(response.data)
       }
       setOpenDialog(false);
     } catch (error) {
-      console.error('Error adding event:', error.response ? error.response.data : error);
+      console.error('Error saving event:', error.response ? error.response.data : error);
       alert('אירעה שגיאה בשמירת האירוע');
     }
-  }, [newEvent, selectedEvent, updateEvent, addEvent]);
+  }, [newEvent, selectedEvent, updateEvent, addEvent, eventTypes]);
 
   // מחיקת אירוע
   const handleDeleteEvent = useCallback(async () => {
-    if (selectedEvent) {
+    if (!selectedEvent || !selectedEvent.id) {
+      alert('לא נבחר אירוע למחיקה');
+      return;
+    }
+    
+    const confirmDelete = window.confirm('האם אתה בטוח שברצונך למחוק אירוע זה?');
+    
+    if (confirmDelete) {
       try {
         await deleteEvent(selectedEvent.id);
         setOpenDialog(false);
       } catch (error) {
-        console.error('שגיאה במחיקת האירוע:', error);
+        console.error('Error deleting event:', error);
         alert('אירעה שגיאה במחיקת האירוע');
       }
     }
@@ -412,26 +495,27 @@ console.log(response.data)
     const now = new Date();
     const later = new Date(now);
     later.setHours(later.getHours() + 1);
-
     
+    // איפוס הנתונים הקודמים
     setSelectedEvent(null);
+    
+    // הגדרת אירוע ברירת מחדל
     setNewEvent({
       title: "",
       start: toISOStringWithoutTimezone(now),
       end: toISOStringWithoutTimezone(later),
       location: "",
       description: "",
-      createdBy: 3,
-      type: eventTypes.length > 0 ? eventTypes[0] : "",
+      createdBy: createdByUserId,
+      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '', // שימוש במזהה
+      type: eventTypes.length > 0 ? eventTypes[0].eventType : '', // שמירת המחרוזת
+      color: eventTypes.length > 0 ? eventTypes[0].color : '', // שמירת הצבע
       kidIds: [],
       employeeIds: []
     });
+    
     setOpenDialog(true);
-  }, [eventTypes]);
-
-
-  //add new event
-  
+  }, [eventTypes, createdByUserId]);
 
   // ערך הקונטקסט - כל מה שנרצה לחשוף
   const contextValue = {
@@ -450,7 +534,7 @@ console.log(response.data)
     calendarView,
     showFilterForm,
     filterOptions,
-    eventColors,
+    createdByUserId,
 
     // פעולות
     fetchEvents,
@@ -482,7 +566,7 @@ console.log(response.data)
   );
 };
 
-// Hook שימושי לשימוש בקונטקסט
+// הוק שימושי לשימוש בקונטקסט
 export const useCalendar = () => {
   const context = useContext(CalendarContext);
   

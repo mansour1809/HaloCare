@@ -19,11 +19,14 @@ namespace halocare.DAL.Repositories
                 Event eventItem = new Event
                 {
                     EventId = Convert.ToInt32(row["EventId"]),
+                    EventTypeId = Convert.ToInt32(row["EventTypeId"]),
                     EventType = row["EventType"].ToString(),
+                    Color = row["Color"].ToString(),
                     StartTime = Convert.ToDateTime(row["StartTime"]),
                     EndTime = Convert.ToDateTime(row["EndTime"]),
                     Location = row["Location"].ToString(),
                     Description = row["Description"].ToString(),
+                    EventTitle = row["EventTitle"]?.ToString(),
                     CreatedBy = Convert.ToInt32(row["CreatedBy"])
                 };
 
@@ -50,46 +53,20 @@ namespace halocare.DAL.Repositories
             Event eventItem = new Event
             {
                 EventId = Convert.ToInt32(row["EventId"]),
+                EventTypeId = Convert.ToInt32(row["EventTypeId"]),
                 EventType = row["EventType"].ToString(),
+                Color = row["Color"].ToString(),
                 StartTime = Convert.ToDateTime(row["StartTime"]),
                 EndTime = Convert.ToDateTime(row["EndTime"]),
                 Location = row["Location"].ToString(),
                 Description = row["Description"].ToString(),
+                EventTitle = row["EventTitle"]?.ToString(),
                 CreatedBy = Convert.ToInt32(row["CreatedBy"])
             };
 
             return eventItem;
         }
 
-        public List<Event> GetEventsByDateRange(DateTime startDate, DateTime endDate)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>
-            {
-                { "@StartDate", startDate },
-                { "@EndDate", endDate }
-            };
-
-            List<Event> events = new List<Event>();
-            DataTable dataTable = ExecuteQuery("SP_GetEventsByDateRange", parameters);
-
-            foreach (DataRow row in dataTable.Rows)
-            {
-                Event eventItem = new Event
-                {
-                    EventId = Convert.ToInt32(row["EventId"]),
-                    EventType = row["EventType"].ToString(),
-                    StartTime = Convert.ToDateTime(row["StartTime"]),
-                    EndTime = Convert.ToDateTime(row["EndTime"]),
-                    Location = row["Location"].ToString(),
-                    Description = row["Description"].ToString(),
-                    CreatedBy = Convert.ToInt32(row["CreatedBy"])
-                };
-
-                events.Add(eventItem);
-            }
-
-            return events;
-        }
 
         public int AddEvent(Event eventItem)
         {
@@ -100,6 +77,7 @@ namespace halocare.DAL.Repositories
                 { "@EndTime", eventItem.EndTime },
                 { "@Location", eventItem.Location },
                 { "@Description", eventItem.Description },
+                { "@EventTitle", eventItem.EventTitle },
                 { "@CreatedBy", eventItem.CreatedBy }
             };
 
@@ -116,12 +94,14 @@ namespace halocare.DAL.Repositories
                 { "@EndTime", eventItem.EndTime },
                 { "@Location", eventItem.Location },
                 { "@Description", eventItem.Description },
+                { "@EventTitle", eventItem.EventTitle },
                 { "@CreatedBy", eventItem.CreatedBy }
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateEvent", parameters);
             return rowsAffected > 0;
         }
+
 
         public bool DeleteEvent(int id)
         {

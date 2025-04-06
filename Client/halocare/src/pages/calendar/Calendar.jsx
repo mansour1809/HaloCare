@@ -1,19 +1,31 @@
 import  { useRef } from 'react';
-import { Box, Paper, Typography, Button, IconButton, Tooltip, CircularProgress } from '@mui/material';
+import { 
+  Box, 
+  Paper, 
+  Typography, 
+  Button, 
+  IconButton, 
+  Tooltip, 
+  CircularProgress,
+  ButtonGroup
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ViewDayIcon from '@mui/icons-material/ViewDay';
+import ViewWeekIcon from '@mui/icons-material/ViewWeek';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-// 2nd level components
+// קומפוננטות משנה
 import CalendarFilter from './CalendarFilter';
 import CalendarView from './CalendarView';
 import EventDialog from './EventDialog';
 
-// use context
+// שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
 
 const Calendar = () => {
-  // using context values and functions
+  // שימוש בערכים ופונקציות מהקונטקסט
   const {
     events,
     filteredEvents,
@@ -23,14 +35,32 @@ const Calendar = () => {
     fetchEvents,
     createNewEvent,
     setShowFilterForm,
+    calendarView,
+    setCalendarView
   } = useCalendar();
   
-  // reference to fullCalendar
+  // הפניה ל-fullCalendar
   const calendarRef = useRef(null);
-
+  
+  // פונקציה שמעדכנת את התצוגה עם אפשרות הנפשה
+  const changeView = (view) => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView(view);
+      setCalendarView(view);
+    }
+  };
+  
+  // קביעת האירועים המוצגים - מסוננים או הכל
+  const displayEvents = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId 
+    ? filteredEvents 
+    : events;
+  
+  // בדיקה אם יש מסננים פעילים
+  const hasActiveFilters = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId;
+  
   return (
     <Box sx={{ p: 2, direction: 'rtl' }}>
-      {/* title and buttons */}
+      {/* כותרת וכפתורים */}
       <Paper 
         elevation={2} 
         sx={{ 
@@ -40,12 +70,45 @@ const Calendar = () => {
           background: 'linear-gradient(to left, #ffffff, #f5f9ff)'
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#2c3e50' }}>
-            יומן
+            יומן {hasActiveFilters ? '(מסונן)' : ''}
           </Typography>
           
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {/* כפתורי מעבר בין תצוגות */}
+            <ButtonGroup 
+              variant="outlined" 
+              color="primary" 
+              size="small"
+              sx={{ mr: 1, display: { xs: 'none', sm: 'flex' } }}
+            >
+              <Tooltip title="תצוגת יום">
+                <Button 
+                  onClick={() => changeView('timeGridDay')}
+                  variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
+                >
+                  <ViewDayIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip title="תצוגת שבוע">
+                <Button 
+                  onClick={() => changeView('timeGridWeek')}
+                  variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
+                >
+                  <ViewWeekIcon />
+                </Button>
+              </Tooltip>
+              <Tooltip title="תצוגת חודש">
+                <Button 
+                  onClick={() => changeView('dayGridMonth')}
+                  variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
+                >
+                  <CalendarMonthIcon />
+                </Button>
+              </Tooltip>
+            </ButtonGroup>
+            
             <Button 
               variant="contained" 
               color="primary" 
@@ -79,7 +142,7 @@ const Calendar = () => {
             >
               {showFilterForm ? "הסתר סינון" : "סינון"}
             </Button>
-
+            
             <Tooltip title="רענן יומן">
               <IconButton 
                 onClick={fetchEvents}
@@ -97,14 +160,37 @@ const Calendar = () => {
         </Box>
       </Paper>
       
-      {/* filter form */}
+      {/* טופס סינון */}
       {showFilterForm && (
         <CalendarFilter />
       )}
-
-
       
-      {/* showing the calendar */}
+      {/* סיכום מספר האירועים */}
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="subtitle1" color="textSecondary" fontWeight="500">
+          סה"כ {displayEvents.length} אירועים {hasActiveFilters ? '(מסונן)' : ''}
+        </Typography>
+        
+        {/* כפתורי תצוגה למובייל */}
+        <ButtonGroup 
+          variant="outlined" 
+          color="primary" 
+          size="small"
+          sx={{ display: { xs: 'flex', sm: 'none' } }}
+        >
+          <Button onClick={() => changeView('timeGridDay')} sx={{ minWidth: 'auto', p: 0.5 }}>
+            <ViewDayIcon />
+          </Button>
+          <Button onClick={() => changeView('timeGridWeek')} sx={{ minWidth: 'auto', p: 0.5 }}>
+            <ViewWeekIcon />
+          </Button>
+          <Button onClick={() => changeView('dayGridMonth')} sx={{ minWidth: 'auto', p: 0.5 }}>
+            <CalendarMonthIcon />
+          </Button>
+        </ButtonGroup>
+      </Box>
+      
+      {/* היומן עצמו */}
       <Paper 
         elevation={3} 
         sx={{ 
@@ -116,15 +202,13 @@ const Calendar = () => {
         <Box sx={{ p: 0, bgcolor: 'white' }}>
           <CalendarView 
             calendarRef={calendarRef}
-            events={filterOptions.kidId || filterOptions.employeeId || filterOptions.eventType 
-              ? filteredEvents 
-              : events}
+            events={displayEvents}
             isLoading={isLoading}
           />
         </Box>
       </Paper>
       
-      {/* adding event dialog */}
+      {/* דיאלוג עריכה/יצירה של אירוע */}
       <EventDialog />
     </Box>
   );
