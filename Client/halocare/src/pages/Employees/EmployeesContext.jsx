@@ -81,6 +81,7 @@ export const EmployeesProvider = ({ children }) => {
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
+
       // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`${API_URL}/Employees`, employeeData);
       

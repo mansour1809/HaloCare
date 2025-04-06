@@ -52,6 +52,7 @@ const NewEmployeeForm = () => {
     lastName: '',
     email: '',
     mobilePhone: '',
+    photo:'',
     birthDate: null,
     licenseNum: '',
     startDate: new Date(),
@@ -152,9 +153,10 @@ const NewEmployeeForm = () => {
       const employeeData = {
         ...formData,
         // בינתיים מתעלמים משדות הקבצים
-        photoPath: profilePhoto ? profilePhoto.name : null,
+        photo: profilePhoto ? profilePhoto.name : null,
+        employeeId:0,
+        classId:1
       };
-      
       // שליחה דרך הקונטקסט
       const result = await addEmployee(employeeData);
       
@@ -174,6 +176,7 @@ const NewEmployeeForm = () => {
       
       // איפוס הטופס
       setFormData({
+        employeeId:0,
         firstName: '',
         lastName: '',
         email: '',
