@@ -150,7 +150,17 @@ namespace halocare.DAL.Repositories
             int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeStatus", parameters);
             return rowsAffected > 0;
         }
+        public bool UpdatePassword(int employeeId, string hashedPassword)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+    {
+        { "@EmployeeId", employeeId },
+        { "@Password", hashedPassword }
+    };
 
+            int rowsAffected = ExecuteNonQuery("UpdateEmployeePassword", parameters);
+            return rowsAffected > 0;
+        } 
         public Employee Login(string email, string password)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
