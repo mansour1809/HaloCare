@@ -47,6 +47,48 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאת שרת: {ex.Message}");
             }
         }
+        // איפוס סיסמה (שכחתי סיסמה)
+        [HttpPost("reset-password")]
+        public IActionResult ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            try
+            {
+                // בדיקה אם המייל קיים במערכת
+                bool isSuccess = _authService.ResetPassword(model.Email);
+
+                if (!isSuccess)
+                {
+                    return NotFound("כתובת האימייל לא נמצאה במערכת");
+                }
+
+                return Ok(new { message = "נשלח אימייל עם סיסמה חדשה" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאת שרת: {ex.Message}");
+            }
+        }
+
+        // עדכון סיסמה (למשתמש מחובר)
+        [HttpPost("change-password")]
+        public IActionResult ChangePassword([FromBody] ChangePasswordModel model)
+        {
+            try
+            {
+                bool isSuccess = _authService.ChangePassword(model.EmployeeId, model.CurrentPassword, model.NewPassword);
+
+                if (!isSuccess)
+                {
+                    return BadRequest("הסיסמה הנוכחית אינה נכונה");
+                }
+
+                return Ok(new { message = "הסיסמה עודכנה בהצלחה" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאת שרת: {ex.Message}");
+            }
+        }
     }
 
     // מודל הכניסה למערכת
@@ -54,5 +96,16 @@ namespace halocare.Controllers
     {
         public string Email { get; set; }
         public string Password { get; set; }
+    }
+    public class ResetPasswordModel
+    {
+        public string Email { get; set; }
+    }
+
+    public class ChangePasswordModel
+    {
+        public int EmployeeId { get; set; }
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
     }
 }

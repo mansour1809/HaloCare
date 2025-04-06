@@ -84,6 +84,16 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
     setIsAuthenticated(false);
   };
+  // AuthContext.js - הוסף את הפונקציה הזו
+const sendPasswordResetEmail = async (email) => {
+  try {
+    // כאן צריך להיות הקוד לשליחת בקשת איפוס סיסמה לשרת
+    const response = await axios.post('/api/auth/reset-password', { email });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'שגיאה בבקשת איפוס סיסמה');
+  }
+};
 
   // נתונים שיהיו זמינים בקונטקסט
   const value = {
@@ -91,7 +101,8 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     loading,
     login,
-    logout
+    logout,
+  sendPasswordResetEmail
   };
   
   return (
