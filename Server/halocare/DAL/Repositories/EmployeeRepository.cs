@@ -150,17 +150,7 @@ namespace halocare.DAL.Repositories
             int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeStatus", parameters);
             return rowsAffected > 0;
         }
-        public bool UpdatePassword(int employeeId, string hashedPassword)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>
-    {
-        { "@EmployeeId", employeeId },
-        { "@Password", hashedPassword }
-    };
-
-            int rowsAffected = ExecuteNonQuery("UpdateEmployeePassword", parameters);
-            return rowsAffected > 0;
-        } 
+     
         public Employee Login(string email, string password)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -194,6 +184,55 @@ namespace halocare.DAL.Repositories
             };
 
             return employee;
+        }
+        public Employee GetEmployeeByEmail(string email)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@Email", email }
+            };
+
+            DataTable dataTable = ExecuteQuery("GetEmployeeByEmail", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            return MapToEmployee(dataTable.Rows[0]);
+        }
+
+
+        // הוספנו מתודה לעדכון סיסמה
+        public bool UpdatePassword(int employeeId, string hashedPassword)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@EmployeeId", employeeId },
+                { "@Password", hashedPassword }
+            };
+
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeePassword", parameters);
+            return rowsAffected > 0;
+        }
+
+        // פונקציית עזר למיפוי תוצאות שאילתה לאובייקט Employee
+        private Employee MapToEmployee(DataRow row)
+        {
+            return new Employee
+            {
+                EmployeeId = Convert.ToInt32(row["EmployeeId"]),
+                FirstName = row["FirstName"].ToString(),
+                LastName = row["LastName"].ToString(),
+                BirthDate = Convert.ToDateTime(row["BirthDate"]),
+                MobilePhone = row["MobilePhone"].ToString(),
+                Email = row["Email"].ToString(),
+                Password = row["Password"].ToString(),
+                Photo = row["photoPath"].ToString(),
+                LicenseNum = row["LicenseNum"].ToString(),
+                StartDate = Convert.ToDateTime(row["StartDate"]),
+                IsActive = Convert.ToBoolean(row["IsActive"]),
+                ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
+                RoleName = row["RoleName"].ToString()
+            };
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -8,6 +9,8 @@ using halocare.BL.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using halocare.DAL.Repositories;
+using System.Net.Mail;
+using System.Net;
 
 namespace halocare.BL.Services
 {
@@ -21,6 +24,8 @@ namespace halocare.BL.Services
         {
             _employeeService = new EmployeeService(configuration);
             _configuration = configuration;
+            _employeeRepository = new EmployeeRepository(configuration);
+
         }
 
         public Employee Authenticate(string email, string password)
@@ -78,12 +83,16 @@ namespace halocare.BL.Services
             string newPassword = GenerateRandomPassword();
 
             // 3. עדכון הסיסמה במסד הנתונים
-            _employeeRepository.UpdatePassword(employee.EmployeeId, HashPassword(newPassword));
+            string hashedPassword = HashPassword(newPassword);
+            bool updated = _employeeRepository.UpdatePassword(employee.EmployeeId, hashedPassword);
+
+            if (!updated)
+                return false;
 
             // 4. שליחת אימייל עם הסיסמה החדשה
-            SendPasswordResetEmail(email, newPassword, employee.FirstName);
+            bool emailSent = SendPasswordResetEmail(email, newPassword, employee.FirstName);
 
-            return true;
+            return emailSent;
         }
 
         public bool ChangePassword(int employeeId, string currentPassword, string newPassword)
@@ -94,13 +103,13 @@ namespace halocare.BL.Services
                 return false;
 
             // 2. אימות הסיסמה הנוכחית
-            if (!VerifyPassword(currentPassword, employee.Password))
+            string hashedCurrentPassword = HashPassword(currentPassword);
+            if (employee.Password != hashedCurrentPassword)
                 return false;
 
             // 3. עדכון הסיסמה החדשה
-            _employeeRepository.UpdatePassword(employeeId, HashPassword(newPassword));
-
-            return true;
+            string hashedNewPassword = HashPassword(newPassword);
+            return _employeeRepository.UpdatePassword(employeeId, hashedNewPassword);
         }
 
         // פונקציות עזר
@@ -112,10 +121,64 @@ namespace halocare.BL.Services
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        private void SendPasswordResetEmail(string email, string newPassword, string firstName)
+        private bool SendPasswordResetEmail(string email, string newPassword, string firstName)
         {
-            // כאן יש להוסיף קוד לשליחת אימייל עם הסיסמה החדשה
-            // לדוגמה, אפשר להשתמש ב-MailKit או בספריית SMTP אחרת
+            try
+            {
+                // קבלת הגדרות SMTP מה-configuration
+                string smtpServer = _configuration["EmailSettings:SmtpServer"];
+                int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                string smtpUsername = _configuration["EmailSettings:Username"];
+                string smtpPassword = _configuration["EmailSettings:Password"];
+                string senderEmail = _configuration["EmailSettings:SenderEmail"];
+                string senderName = _configuration["EmailSettings:SenderName"];
+
+                using (var client = new SmtpClient(smtpServer, smtpPort))
+                {
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+                    client.EnableSsl = true;
+
+                    MailMessage message = new MailMessage();
+                    message.From = new MailAddress(senderEmail, senderName);
+                    message.To.Add(email);
+                    message.Subject = "איפוס סיסמה - Halo Care";
+                    message.Body = $@"
+                        <html>
+                        <body dir='rtl'>
+                            <h2>שלום {firstName},</h2>
+                            <p>קיבלנו בקשה לאיפוס הסיסמה שלך במערכת.</p>
+                            <p>הסיסמה החדשה שלך היא: <strong>{newPassword}</strong></p>
+                            <p>מומלץ לשנות את הסיסמה מיד לאחר ההתחברות הראשונה.</p>
+                            <p>בברכה,<br>צוות Halo Care</p>
+                        </body>
+                        </html>";
+                    message.IsBodyHtml = true;
+
+                    client.Send(message);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
+                return false;
+            }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
     }
 }
