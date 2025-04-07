@@ -205,10 +205,10 @@ const EventDialog = () => {
         </Box>
       </DialogTitle>
       
-      <DialogContent sx={{ p: 3, mt: 1 }}>
+      <DialogContent sx={{ p: 3, mt: 1 ,marginTop:3}}>
         <Grid container spacing={3}>
           {/* שורה ראשונה - כותרת וסוג אירוע */}
-          <Grid item xs={12} sm={7}>
+          <Grid item xs={12} sm={7} >
             <TextField
               label="כותרת האירוע"
               name="title"

@@ -1,4 +1,4 @@
-// src/pages/LoginPage.jsx - שינויים
+// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { 
   TextField, 
@@ -9,18 +9,11 @@ import {
   InputAdornment, 
   IconButton,
   Alert,
-  Snackbar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+  Snackbar
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import { useAuth } from './AuthContext';
-import axios from 'axios';
-
-const API_URL = 'https://localhost:7225/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -31,14 +24,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [loading, setLoading] = useState(false);
-  
-  // משתנים לדיאלוג שכחתי סיסמה
-  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
@@ -57,8 +43,6 @@ const LoginPage = () => {
       await login(email, password);
       
       // הצגת הודעת הצלחה
-      setSnackbarMessage('התחברת בהצלחה! מעביר אותך...');
-      setSnackbarSeverity('success');
       setOpenSnackbar(true);
       
       // ניווט לדף הבית אחרי התחברות מוצלחת
@@ -69,49 +53,6 @@ const LoginPage = () => {
       setError('התחברות נכשלה, אנא נסה שוב');
     } finally {
       setLoading(false);
-    }
-  };
-  
-  // פתיחת דיאלוג שכחתי סיסמה
-  const handleOpenForgotPassword = () => {
-    setForgotPasswordOpen(true);
-    setResetEmail(email); // נשתמש באימייל שכבר הוזן אם קיים
-  };
-  
-  // סגירת דיאלוג שכחתי סיסמה
-  const handleCloseForgotPassword = () => {
-    setForgotPasswordOpen(false);
-    setResetEmail('');
-  };
-  
-  // שליחת בקשה לאיפוס סיסמה
-  const handleResetPassword = async () => {
-    if (!resetEmail) {
-      setError('יש להזין כתובת אימייל');
-      return;
-    }
-    
-    setResetLoading(true);
-    
-    try {
-      await axios.post(`${API_URL}/Auth/reset-password`, { email: resetEmail });
-      
-      // הצגת הודעת הצלחה
-      setSnackbarMessage('נשלח אימייל עם סיסמה חדשה');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-      
-      // סגירת הדיאלוג
-      handleCloseForgotPassword();
-    } catch (err) {
-      // טיפול בשגיאות ספציפיות
-      if (err.response && err.response.status === 404) {
-        setError('כתובת האימייל לא נמצאה במערכת');
-      } else {
-        setError('אירעה שגיאה. אנא נסה שוב מאוחר יותר');
-      }
-    } finally {
-      setResetLoading(false);
     }
   };
 
@@ -206,12 +147,7 @@ const LoginPage = () => {
           />
           
           <Box sx={{ justifyContent: 'flex-start', mb: 2 }}>
-            <Typography 
-              variant="body2" 
-              color="primary" 
-              sx={{ cursor: 'pointer' }}
-              onClick={handleOpenForgotPassword}
-            >
+            <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
               שכחת סיסמה?
             </Typography>
           </Box>
@@ -251,47 +187,14 @@ const LoginPage = () => {
         </Box>
       </Box>
 
-      {/* דיאלוג שכחתי סיסמה */}
-      <Dialog open={forgotPasswordOpen} onClose={handleCloseForgotPassword} dir="rtl">
-        <DialogTitle>איפוס סיסמה</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            הזן את כתובת האימייל שלך ואנו נשלח לך סיסמה חדשה.
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="אימייל"
-            type="email"
-            fullWidth
-            variant="outlined"
-            value={resetEmail}
-            onChange={(e) => setResetEmail(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseForgotPassword} color="inherit">
-            ביטול
-          </Button>
-          <Button 
-            onClick={handleResetPassword} 
-            variant="contained" 
-            color="primary"
-            disabled={resetLoading}
-          >
-            {resetLoading ? 'שולח...' : 'שלח'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={3000}
+        autoHideDuration={2000}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
+        <Alert severity="success" sx={{ width: '100%' }}>
+          התחברת בהצלחה! מעביר אותך...
         </Alert>
       </Snackbar>
     </Box>

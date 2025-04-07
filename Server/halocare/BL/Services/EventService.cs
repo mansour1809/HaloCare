@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using halocare.DAL.Models;
 using halocare.DAL.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace halocare.BL.Services
 {
@@ -33,7 +34,17 @@ namespace halocare.BL.Services
 
         public List<Event> GetAllEvents()
         {
-            return _eventRepository.GetAllEvents();
+            List<Event> events = _eventRepository.GetAllEvents();
+
+            foreach (Event ev in events)
+            {
+                List<EventKid> kids = _eventKidRepository.GetEventKidsByEventId(ev.EventId);
+                ev.KidIds = kids.Select(k => k.KidId).ToList();
+
+                List<EventEmployee> employees = _eventEmployeeRepository.GetEventEmployeesByEventId(ev.EventId);
+                ev.EmployeeIds = employees.Select(e => e.EmployeeId).ToList();
+            }
+            return events;
         }
 
         public Event GetEventById(int id)

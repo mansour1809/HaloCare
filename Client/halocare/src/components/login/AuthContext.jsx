@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }) => {
       if (response.data && response.data.token) {
         // שמירה ב-localStorage
         localStorage.setItem('token', response.data.token);
+        console.log("dwfsdfafsd:", response.data);
         const userData = {
           id: response.data.id,
           firstName: response.data.firstName || '',

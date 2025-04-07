@@ -75,7 +75,7 @@ namespace halocare.BL.Services
         public bool ResetPassword(string email)
         {
             // 1. בדיקה אם האימייל קיים במערכת
-            var employee = _employeeRepository.GetEmployeeByEmail(email);
+            Employee employee = _employeeRepository.GetEmployeeByEmail(email);
             if (employee == null)
                 return false;
 

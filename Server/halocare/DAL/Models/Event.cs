@@ -12,5 +12,10 @@
         public string Description { get; set; }
         public string EventTitle { get; set; }    // מאפיין חדש שנוסף לפי ה-SP
         public int CreatedBy { get; set; }
+
+
+        public List<int> KidIds { get; set; } = new List<int>();
+        public List<int> EmployeeIds { get; set; } = new List<int>();
+
     }
 }

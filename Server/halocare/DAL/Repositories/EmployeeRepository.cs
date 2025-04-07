@@ -126,7 +126,7 @@ namespace halocare.DAL.Repositories
                 { "@MobilePhone", employee.MobilePhone },
                 { "@Email", employee.Email },
                 { "@Password", employee.Password },
-                { "@Photo", employee.Photo },
+                { "@PhotoPath", employee.Photo },
                 { "@LicenseNum", employee.LicenseNum },
                 { "@StartDate", employee.StartDate },
                 { "@IsActive", employee.IsActive },
@@ -192,7 +192,7 @@ namespace halocare.DAL.Repositories
                 { "@Email", email }
             };
 
-            DataTable dataTable = ExecuteQuery("GetEmployeeByEmail", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetEmployeeByEmail", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;

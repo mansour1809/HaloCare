@@ -133,7 +133,6 @@ export const CalendarProvider = ({ children }) => {
     try {
       // המרת נתוני האירוע לפורמט שהשרת מצפה לו
       const serverEventData = {
-        event: {
           eventId: 0, // אירוע חדש
           eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
           startTime: eventData.start,
@@ -142,8 +141,7 @@ export const CalendarProvider = ({ children }) => {
           location: eventData.location || '',
           description: eventData.description || '',
           eventTitle: eventData.title || '',
-          createdBy: createdByUserId
-        },
+          createdBy: createdByUserId,
         kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
         employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
       };
@@ -175,7 +173,6 @@ export const CalendarProvider = ({ children }) => {
     try {
       // המרת נתוני האירוע לפורמט שהשרת מצפה לו
       const serverEventData = {
-        event: {
           eventId: parseInt(eventData.id),
           eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
           startTime: eventData.start,
@@ -184,8 +181,7 @@ export const CalendarProvider = ({ children }) => {
           location: eventData.location || '',
           description: eventData.description || '',
           eventTitle: eventData.title || '',
-          createdBy: eventData.createdBy 
-        },
+          createdBy: eventData.createdBy ,
         kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
         employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
       };

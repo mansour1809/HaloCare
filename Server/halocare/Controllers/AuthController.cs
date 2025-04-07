@@ -26,7 +26,7 @@ namespace halocare.Controllers
             try
             {
                 // אימות המשתמש
-                var employee = _authService.Authenticate(model.Email, model.Password);
+                Employee employee = _authService.Authenticate(model.Email, model.Password);
 
                 if (employee == null)
                 {
@@ -41,7 +41,8 @@ namespace halocare.Controllers
                 {
                     token,
                     id = employee.EmployeeId,
-                    name = $"{employee.FirstName} {employee.LastName}",
+                    firstName = $"{employee.FirstName} ",
+                    lastName = $"{employee.LastName}",
                     role = employee.RoleName
                 });
             }

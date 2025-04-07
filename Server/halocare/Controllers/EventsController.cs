@@ -99,14 +99,14 @@ namespace halocare.Controllers
 
         // POST: api/Events
         [HttpPost]
-        public ActionResult<Event> PostEvent([FromBody] EventCreateModel model)
+        public ActionResult<Event> PostEvent([FromBody] Event eventItem)
         {
             try
             {
-                int eventId = _eventService.AddEvent(model.Event, model.KidIds, model.EmployeeIds);
-                model.Event.EventId = eventId;
+                int eventId = _eventService.AddEvent(eventItem, eventItem.KidIds, eventItem.EmployeeIds);
+                eventItem.EventId = eventId;
 
-                return CreatedAtAction(nameof(GetEvent), new { id = eventId }, model.Event);
+                return CreatedAtAction(nameof(GetEvent), new { id = eventId }, eventItem);
             }
             catch (ArgumentException ex)
             {
@@ -120,16 +120,16 @@ namespace halocare.Controllers
 
         // PUT: api/Events/5
         [HttpPut("{id}")]
-        public IActionResult PutEvent(int id, [FromBody] EventCreateModel model)
+        public IActionResult PutEvent(int id, [FromBody] Event eventItem)
         {
-            if (id != model.Event.EventId)
+            if (id != eventItem.EventId)
             {
                 return BadRequest("מזהה האירוע בנתיב אינו תואם למזהה בגוף הבקשה");
             }
 
             try
             {
-                bool updated = _eventService.UpdateEvent(model.Event, model.KidIds, model.EmployeeIds);
+                bool updated = _eventService.UpdateEvent(eventItem, eventItem.KidIds, eventItem.EmployeeIds);
 
                 if (updated)
                 {
@@ -178,10 +178,10 @@ namespace halocare.Controllers
         }
     }
 
-    public class EventCreateModel
-    {
-        public Event Event { get; set; }
-        public List<int> KidIds { get; set; }
-        public List<int> EmployeeIds { get; set; }
-    }
+    //public class EventCreateModel
+    //{
+    //    public Event Event { get; set; }
+    //    public List<int> KidIds { get; set; }
+    //    public List<int> EmployeeIds { get; set; }
+    //}
 }

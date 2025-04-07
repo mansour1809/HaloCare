@@ -21,7 +21,7 @@ import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
-import ResetPasswordPage from './components/login/ResetPasswordPage';
+// import ResetPasswordPage from './components/login/ResetPasswordPage';
 
 // אותנטיקציה
 import { useAuth, AuthProvider } from './components/login/AuthContext';
@@ -109,7 +109,7 @@ const AppContent = () => {
               <Route path="/login" element={
                 isAuthenticated ? <Navigate to="/" /> : <LoginPage />
               } />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              {/* <Route path="/reset-password" element={<ResetPasswordPage />} /> */}
               
               {/* כל השאר - רק למחוברים */}
               <Route path="/" element={
