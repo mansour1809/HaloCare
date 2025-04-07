@@ -89,7 +89,7 @@ const AppContent = () => {
             pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0,
           }}
         >
-          {isAuthenticated && <ProSidebar />}
+          {isAuthenticated && <ProSidebar  />}
           
           <Box
             component="main"

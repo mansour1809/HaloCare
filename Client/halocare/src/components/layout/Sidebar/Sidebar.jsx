@@ -90,24 +90,6 @@ const ProSidebar = () => {
     </Box>
   );
 
-
-
-
-  // const handleLogout = (e) => {
-  //   e.preventDefault(); // חשוב - מונע התנהגות ברירת מחדל
-    
-  //   // ראשית, מנקים את ה-localStorage
-  //   localStorage.clear();
-    
-  //   // מבצעים את פונקציית ההתנתקות מהקונטקסט אם היא קיימת
-  //   if (typeof logout === 'function') {
-  //     logout();
-  //   }
-    
-  //   // מעבירים את המשתמש לדף התחברות באמצעות window.location במקום useNavigate
-  //   // זה יגרום לטעינה מחדש של הדף, מה שיפתור את בעיית הניווט
-  //   window.location.href = '/login';
-  // };
   
   const handleLogout = () => {
     // מבצע התנתקות
@@ -126,6 +108,7 @@ const ProSidebar = () => {
         position: "fixed",
         top: 64, // לאחר ה-navbar
         right: 0,
+        // zoom: 0.7,
         border: "none",
         boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",
       }}

@@ -41,15 +41,7 @@ const Calendar = () => {
   
   // הפניה ל-fullCalendar
   const calendarRef = useRef(null);
-  
-  // פונקציה שמעדכנת את התצוגה עם אפשרות הנפשה
-  const changeView = (view) => {
-    if (calendarRef.current) {
-      calendarRef.current.getApi().changeView(view);
-      setCalendarView(view);
-    }
-  };
-  
+
   // קביעת האירועים המוצגים - מסוננים או הכל
   const displayEvents = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId 
     ? filteredEvents 
@@ -59,7 +51,7 @@ const Calendar = () => {
   const hasActiveFilters = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId;
   
   return (
-    <Box sx={{ p: 2, direction: 'rtl' }}>
+    <Box sx={{ p: 2, direction: 'rtl'  }}>
       {/* כותרת וכפתורים */}
       <Paper 
         elevation={2} 
@@ -76,39 +68,7 @@ const Calendar = () => {
           </Typography>
           
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {/* כפתורי מעבר בין תצוגות */}
-            <ButtonGroup 
-              variant="outlined" 
-              color="primary" 
-              size="small"
-              sx={{ mr: 1, display: { xs: 'none', sm: 'flex' } }}
-            >
-              <Tooltip title="תצוגת יום">
-                <Button 
-                  onClick={() => changeView('timeGridDay')}
-                  variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
-                >
-                  <ViewDayIcon />
-                </Button>
-              </Tooltip>
-              <Tooltip title="תצוגת שבוע">
-                <Button 
-                  onClick={() => changeView('timeGridWeek')}
-                  variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
-                >
-                  <ViewWeekIcon />
-                </Button>
-              </Tooltip>
-              <Tooltip title="תצוגת חודש">
-                <Button 
-                  onClick={() => changeView('dayGridMonth')}
-                  variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
-                >
-                  <CalendarMonthIcon />
-                </Button>
-              </Tooltip>
-            </ButtonGroup>
-            
+
             <Button 
               variant="contained" 
               color="primary" 
@@ -171,23 +131,7 @@ const Calendar = () => {
           סה"כ {displayEvents.length} אירועים {hasActiveFilters ? '(מסונן)' : ''}
         </Typography>
         
-        {/* כפתורי תצוגה למובייל */}
-        <ButtonGroup 
-          variant="outlined" 
-          color="primary" 
-          size="small"
-          sx={{ display: { xs: 'flex', sm: 'none' } }}
-        >
-          <Button onClick={() => changeView('timeGridDay')} sx={{ minWidth: 'auto', p: 0.5 }}>
-            <ViewDayIcon />
-          </Button>
-          <Button onClick={() => changeView('timeGridWeek')} sx={{ minWidth: 'auto', p: 0.5 }}>
-            <ViewWeekIcon />
-          </Button>
-          <Button onClick={() => changeView('dayGridMonth')} sx={{ minWidth: 'auto', p: 0.5 }}>
-            <CalendarMonthIcon />
-          </Button>
-        </ButtonGroup>
+       
       </Box>
       
       {/* היומן עצמו */}
@@ -196,7 +140,8 @@ const Calendar = () => {
         sx={{ 
           borderRadius: '12px', 
           overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+
         }}
       >
         <Box sx={{ p: 0, bgcolor: 'white' }}>

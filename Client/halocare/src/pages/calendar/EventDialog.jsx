@@ -79,7 +79,6 @@ const EventDialog = () => {
   // פונקציה לטיפול בשינויים במשתתפים
   const handleParticipantsChange = (event) => {
     const { name, value } = event.target;
-    
     // אם זה מערכים - יש לוודא שזה יישאר מערך גם כשבוחרים ערך יחיד
     if (name === 'kidIds' || name === 'employeeIds') {
       const updatedValue = Array.isArray(value) ? value : [value];
@@ -94,7 +93,7 @@ const EventDialog = () => {
       handleEventChange(event);
     }
   };
-  
+
   // מציאת היוצר המקורי של האירוע (אם קיים)
   const getCreatorName = () => {
     if (
@@ -156,9 +155,6 @@ const EventDialog = () => {
     return selectedType ? selectedType.color : '#1976d2';
   };
   
-  // בדיקה אם הטופס תקף
-  // const isFormValid = !Object.values(validationErrors).some(hasError => hasError);
-  
   // הצבע הנוכחי
   const currentEventColor = getCurrentEventColor();
   
@@ -205,17 +201,17 @@ const EventDialog = () => {
         </Box>
       </DialogTitle>
       
-      <DialogContent sx={{ p: 3, mt: 1 ,marginTop:3}}>
+      <DialogContent sx={{ p: 3, mt: 1 }}>
         <Grid container spacing={3}>
           {/* שורה ראשונה - כותרת וסוג אירוע */}
           <Grid item xs={12} sm={7} >
-            <TextField
+            <TextField sx={{ marginTop: 2 }}
               label="כותרת האירוע"
               name="title"
               value={newEvent.title || ''}
               onChange={handleEventChange}
               fullWidth
-              required
+              required 
               variant="outlined"
               error={validationErrors.title}
               helperText={validationErrors.title ? "נדרשת כותרת לאירוע" : ""}
@@ -227,8 +223,8 @@ const EventDialog = () => {
           </Grid>
           
           <Grid item xs={12} sm={5}>
-            <FormControl fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
-              <InputLabel>סוג אירוע</InputLabel>
+            <FormControl sx={{ marginTop: 2 }} fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
+              <InputLabel >סוג אירוע</InputLabel>
               <Select
                 name="eventTypeId"
                 value={newEvent.eventTypeId || ''}
@@ -319,7 +315,7 @@ const EventDialog = () => {
           {/* שורה רביעית - קישור לילדים */}
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth variant="outlined">
-              <InputLabel>ילדים</InputLabel>
+              <InputLabel>ילדים</InputLabel>              
               <Select
                 name="kidIds"
                 multiple
@@ -370,7 +366,7 @@ const EventDialog = () => {
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selected.map((value) => {
-                      const employee = employees.find(emp => emp.id === value);
+                      const employee = employees.find(emp => emp.employeeId === value);
                       return (
                         <Chip 
                           key={value} 
@@ -390,9 +386,9 @@ const EventDialog = () => {
                 startAdornment={<PersonIcon color="action" sx={{ mr: 1 }} />}
               >
                 {employees.map(emp => (
-                  <MenuItem key={emp.id} value={emp.id}>
+                  <MenuItem key={emp.employeeId} value={emp.employeeId}>
                     {`${emp.firstName} ${emp.lastName}`}
-                    {emp.role && ` (${emp.role})`}
+                    {/* {emp.role && ` (${emp.role})`} */}
                   </MenuItem>
                 ))}
               </Select>
