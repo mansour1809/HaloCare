@@ -11,7 +11,6 @@ import {
   CircularProgress,
   Chip,
   Fade,
-  Tooltip,
   FormHelperText
 } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';

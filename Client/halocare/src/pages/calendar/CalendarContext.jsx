@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toISOStringWithoutTimezone } from './calendarUtils';
+import Swal from 'sweetalert2';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
@@ -19,7 +20,7 @@ export const CalendarProvider = ({ children }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // מצבים - נתוני עזר
   const [kids, setKids] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -47,16 +48,67 @@ export const CalendarProvider = ({ children }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [calendarView, setCalendarView] = useState('timeGridWeek');
   const [showFilterForm, setShowFilterForm] = useState(false);
-  
+
   // סינון
   const [filterOptions, setFilterOptions] = useState({
     kidId: '',
     employeeId: '',
-    eventTypeId: '' // שינוי - סינון לפי מזהה סוג אירוע
+    eventTypeId: '' 
   });
 
+  useEffect(() => { // setup createdByUserId from localStorage
+
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.id) {
+        setCreatedByUserId(user.id); // הגדרת מזהה יוצר האירוע
+      }
+    } catch (error) {
+      console.error('Error reading user from localStorage:', error);
+    }
+  }, [])
+
+  const getDefaultEventValues = useCallback((startTime = new Date(), endTime = null) => {
+    if (!endTime) {
+      endTime = new Date(startTime);
+      endTime.setMinutes(startTime.getHours() + 1);
+    }
+    
+    return {
+      title: '',
+      start: toISOStringWithoutTimezone(startTime),
+      end: toISOStringWithoutTimezone(endTime),
+      location: '',
+      description: '',
+      createdBy: createdByUserId,
+      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '',
+      type: eventTypes.length > 0 ? eventTypes[0].eventType : '',
+      color: eventTypes.length > 0 ? eventTypes[0].color : '',
+      kidIds: [],
+      employeeIds: []
+    };
+  }, [eventTypes, createdByUserId]);
+
+
+  const prepareEventData = useCallback((eventData) => {
+    return {
+      eventId: eventData.id ? parseInt(eventData.id) : 0,
+      eventType: eventData.eventType,
+      startTime: eventData.start,
+      endTime: eventData.end,
+      color: eventData.color,
+      location: eventData.location || '',
+      description: eventData.description || '',
+      eventTitle: eventData.title || '',
+      createdBy: eventData.createdBy || createdByUserId,
+      kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds.map(id => parseInt(id)) : [],
+      employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds.map(id => parseInt(id)) : []
+    };
+  }, [createdByUserId]);
+
+  
   // המרת אירוע מהשרת לפורמט המתאים ליומן
-  const formatEventForCalendar = (event) => {
+  const formatEventForCalendar = useCallback((event) => {
     return {
       id: event.eventId,
       title: event.eventTitle || event.eventType, // שימוש בכותרת החדשה אם קיימת
@@ -75,17 +127,13 @@ export const CalendarProvider = ({ children }) => {
         employeeIds: event.employeeIds || []
       }
     };
-  };
+  },[]);
 
   // טעינת סוגי אירועים מהשרת
   const fetchEventTypes = useCallback(async () => {
     try {
       const response = await axios.get(EVENT_TYPES_ENDPOINT);
-      console.log('Event Types:', response.data);
-      
-      // שמירת סוגי האירועים המלאים עם כל המידע
       setEventTypes(response.data);
-      
       return response.data;
     } catch (error) {
       console.error('Error fetching event types:', error);
@@ -98,63 +146,34 @@ export const CalendarProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user && user.id) {
-        setCreatedByUserId(user.id); // הגדרת מזהה יוצר האירוע
-      }
-    } catch (error) {
-      console.error('Error reading user from localStorage:', error);
-    }
-  
+
     try {
       const response = await axios.get(EVENTS_ENDPOINT);
-      console.log('Events from server:', response.data); 
-      
       const formattedEvents = response.data.map(formatEventForCalendar);
       setEvents(formattedEvents);
       return formattedEvents;
     } catch (error) {
-      console.error('Error fetching events:', error);
+      console.error('Error adding event:', error);
       setError('אירעה שגיאה בטעינת האירועים');
       setEvents([]);
       return [];
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [formatEventForCalendar]);
 
   // הוספת אירוע חדש
   const addEvent = useCallback(async (eventData) => {
     setIsLoading(true);
     setError(null);
-    
-   
+
+
     try {
       // המרת נתוני האירוע לפורמט שהשרת מצפה לו
-      const serverEventData = {
-          eventId: 0, // אירוע חדש
-          eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
-          startTime: eventData.start,
-          endTime: eventData.end,
-          color:eventData.color,
-          location: eventData.location || '',
-          description: eventData.description || '',
-          eventTitle: eventData.title || '',
-          createdBy: createdByUserId,
-        kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
-        employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
-      };
-      
-      console.log('Adding event:', serverEventData);
-      
+      const serverEventData = prepareEventData(eventData);
       const response = await axios.post(EVENTS_ENDPOINT, serverEventData);
-      console.log('Server response after add:', response.data);
-      
-      // רענון הנתונים במקום לעשות פורמט מקומי 
-      // (מכיוון שהשרת עשוי להוסיף מידע נוסף)
-      await fetchEvents();
-      
+      const newFormattedEvent = formatEventForCalendar(response.data);
+      setEvents(prevEvents => [...prevEvents, newFormattedEvent]);
       return response.data;
     } catch (error) {
       console.error('Error adding event:', error);
@@ -163,37 +182,18 @@ export const CalendarProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchEvents,createdByUserId]);
+  }, [prepareEventData, formatEventForCalendar]);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      // המרת נתוני האירוע לפורמט שהשרת מצפה לו
-      const serverEventData = {
-          eventId: parseInt(eventData.id),
-          eventType: eventData.eventType, // שם סוג האירוע שיומר למזהה בשרת
-          startTime: eventData.start,
-          endTime: eventData.end,
-          color: eventData.color,
-          location: eventData.location || '',
-          description: eventData.description || '',
-          eventTitle: eventData.title || '',
-          createdBy: eventData.createdBy ,
-        kidIds: Array.isArray(eventData.kidIds) ? eventData.kidIds : [],
-        employeeIds: Array.isArray(eventData.employeeIds) ? eventData.employeeIds : []
-      };
-      
-      console.log('Updating event:', serverEventData);
-      
+      // converting the event calendar for the server
+      const serverEventData = prepareEventData(eventData);
       const response = await axios.put(`${EVENTS_ENDPOINT}/${eventData.id}`, serverEventData);
-      console.log('Server response after update:', response);
-      
-      // רענון הנתונים
-      await fetchEvents();
-      
+      await fetchEvents();//refreshing the events list
       return response.data;
     } catch (error) {
       console.error('Error updating event:', error);
@@ -202,20 +202,19 @@ export const CalendarProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchEvents]);
+  }, [prepareEventData, fetchEvents]);
 
   // מחיקת אירוע
   const deleteEvent = useCallback(async (eventId) => {
-    console.log('Deleting event with ID:', eventId);
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await axios.delete(`${EVENTS_ENDPOINT}/${eventId}`);
-      
-      // עדכון החזותי יהיה מהיר יותר מאשר לחכות לתשובה מהשרת
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
-      
+
+      // רענון הנתונים
+      await fetchEvents();
+
       return { success: true };
     } catch (error) {
       console.error('Error deleting event:', error);
@@ -224,7 +223,7 @@ export const CalendarProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  },[fetchEvents]);
 
   // טעינת רשימת ילדים
   const fetchKids = useCallback(async () => {
@@ -255,27 +254,27 @@ export const CalendarProvider = ({ children }) => {
   // פונקציית סינון אירועים
   const filterEvents = useCallback(() => {
     let filtered = [...events];
-    
+
     if (filterOptions.kidId) {
-      filtered = filtered.filter(event => 
-        event.extendedProps.kidIds && 
+      filtered = filtered.filter(event =>
+        event.extendedProps.kidIds &&
         event.extendedProps.kidIds.includes(parseInt(filterOptions.kidId))
       );
     }
-    
+
     if (filterOptions.employeeId) {
-      filtered = filtered.filter(event => 
-        event.extendedProps.employeeIds && 
+      filtered = filtered.filter(event =>
+        event.extendedProps.employeeIds &&
         event.extendedProps.employeeIds.includes(parseInt(filterOptions.employeeId))
       );
     }
-    
+
     if (filterOptions.eventTypeId) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.extendedProps.eventTypeId === parseInt(filterOptions.eventTypeId)
       );
     }
-    
+
     setFilteredEvents(filtered);
   }, [events, filterOptions]);
 
@@ -296,16 +295,16 @@ export const CalendarProvider = ({ children }) => {
       [name]: value
     }));
   }, []);
-  
+
   // טיפול בשינוי ערכי האירוע
   const handleEventChange = useCallback((e) => {
     const { name, value } = e.target;
-    
+
     setNewEvent(prev => {
-      // אם שינינו את סוג האירוע, עלינו גם לעדכן את הצבע
+      // update the color if eventType updated
       if (name === 'eventTypeId') {
         const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(value));
-        
+
         return {
           ...prev,
           [name]: value,
@@ -313,7 +312,7 @@ export const CalendarProvider = ({ children }) => {
           color: selectedType ? selectedType.color : '', // עדכון הצבע
         };
       }
-      
+
       return {
         ...prev,
         [name]: value
@@ -330,7 +329,7 @@ export const CalendarProvider = ({ children }) => {
   const fetchReferenceData = useCallback(async () => {
     setIsLoadingReferenceData(true);
     setError(null);
-    
+
     try {
       await Promise.all([
         fetchKids(),
@@ -344,54 +343,34 @@ export const CalendarProvider = ({ children }) => {
       setIsLoadingReferenceData(false);
     }
   }, [fetchKids, fetchEmployees, fetchEventTypes]);
-  
+
   // טעינת נתונים ראשונית
   useEffect(() => {
     fetchEvents();
     fetchReferenceData();
   }, [fetchEvents, fetchReferenceData]);
+
+
+
   
   // טיפול בלחיצה על תאריך ביומן
   const handleDateClick = useCallback((info) => {
-    const startTime = new Date(info.date);
-    const endTime = new Date(info.date);
-    endTime.setMinutes(startTime.getMinutes() + 30);
-
-    // פורמט ISO למחרוזת
-    const startStr = toISOStringWithoutTimezone(startTime);
-    const endStr = toISOStringWithoutTimezone(endTime);
-
-    // איפוס הערכים
+    const defaultVal= getDefaultEventValues(info.date, null);
     setSelectedEvent(null);
-    
-    // הגדרת אירוע חדש עם ערכי ברירת מחדל
-    setNewEvent({
-      title: '',
-      start: startStr,
-      end: endStr,
-      location: '',
-      description: '',
-      createdBy: createdByUserId,
-      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '', // שימוש במזהה
-      type: eventTypes.length > 0 ? eventTypes[0].eventType : '', // שמירת המחרוזת
-      color: eventTypes.length > 0 ? eventTypes[0].color : '', // שמירת הצבע
-      kidIds: [],
-      employeeIds: []
-    });
-    
+    setNewEvent(defaultVal);
     setOpenDialog(true);
-  }, [eventTypes, createdByUserId]);
-  
+  }, [getDefaultEventValues]);
+
   // טיפול בלחיצה על אירוע קיים
   const handleEventClick = useCallback((info) => {
     const event = info.event;
-    
+
     // המר תאריכים לפורמט HTML datetime-local
     const startStr = toISOStringWithoutTimezone(new Date(event.start));
     const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
-    
+
     setSelectedEvent(event);
-    
+
     setNewEvent({
       id: event.id,
       title: event.title || '',
@@ -406,31 +385,14 @@ export const CalendarProvider = ({ children }) => {
       kidIds: event.extendedProps.kidIds || [],
       employeeIds: event.extendedProps.employeeIds || []
     });
-    
+
     setOpenDialog(true);
   }, []);
 
   // שמירת אירוע
   const handleSaveEvent = useCallback(async () => {
-    // בדיקות תקינות
-    if (!newEvent.title || !newEvent.start || !newEvent.end || !newEvent.eventTypeId) {
-      alert('נא למלא את כל השדות הנדרשים');
-      return;
-    }
-    
-    if (new Date(newEvent.end) <= new Date(newEvent.start)) {
-      alert('זמן הסיום חייב להיות אחרי זמן ההתחלה');
-      return;
-    }
-    
     // מציאת סוג האירוע לפי המזהה
     const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
-    
-    if (!selectedType) {
-      alert('נא לבחור סוג אירוע תקין');
-      return;
-    }
-    
     // בניית אובייקט הנתונים לשליחה
     const eventData = {
       id: selectedEvent ? selectedEvent.id : 0,
@@ -446,7 +408,7 @@ export const CalendarProvider = ({ children }) => {
       kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds.map(id => parseInt(id)) : [],
       employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds.map(id => parseInt(id)) : []
     };
-    
+
     try {
       if (selectedEvent) {
         await updateEvent(eventData);
@@ -460,58 +422,71 @@ export const CalendarProvider = ({ children }) => {
     }
   }, [newEvent, selectedEvent, updateEvent, addEvent, eventTypes]);
 
-  // מחיקת אירוע
+
   const handleDeleteEvent = useCallback(async () => {
     if (!selectedEvent || !selectedEvent.id) {
-      alert('לא נבחר אירוע למחיקה');
+      Swal.fire({
+        icon: 'warning',
+        title: 'שגיאה',
+        text: 'לא נבחר אירוע למחיקה',
+      });
       return;
     }
-    
-    const confirmDelete = window.confirm('האם אתה בטוח שברצונך למחוק אירוע זה?');
-    
-    if (confirmDelete) {
-      try {
-        await deleteEvent(selectedEvent.id);
-        setOpenDialog(false);
-      } catch (error) {
-        console.error('Error deleting event:', error);
-        alert('אירעה שגיאה במחיקת האירוע');
-      }
-    }
+
+    setOpenDialog(false);
+
+    // Wait to ensure the dialog closed
+    setTimeout(() => {
+      Swal.fire({
+        title: '? האם אתה בטוח',
+        text: '? האם אתה בטוח שברצונך למחוק אירוע זה',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'כן, מחק!',
+        cancelButtonText: 'בטל'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteEvent(selectedEvent.id);
+            Swal.fire({
+              icon: 'success',
+              title: 'נמחק בהצלחה',
+              text: 'האירוע נמחק בהצלחה',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          } catch (error) {
+            console.error('Error deleting event:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'שגיאה',
+              text: 'אירעה שגיאה במחיקת האירוע',
+            });
+          }
+        }
+      });
+    }, 100); // Slight delay to ensure dialog closes first
+
   }, [selectedEvent, deleteEvent]);
 
-  // שינוי תצוגת יומן
+
+  // changing calendar view
   const handleViewChange = useCallback((view) => {
     setCalendarView(view);
   }, []);
 
-  // יצירת אירוע חדש
+  // creating new event
   const createNewEvent = useCallback(() => {
-    // יצירת אירוע בזמן נוכחי עם שעה עתידית
     const now = new Date();
     const later = new Date(now);
     later.setHours(later.getHours() + 1);
-    
-    // איפוס הנתונים הקודמים
     setSelectedEvent(null);
-    
-    // הגדרת אירוע ברירת מחדל
-    setNewEvent({
-      title: "",
-      start: toISOStringWithoutTimezone(now),
-      end: toISOStringWithoutTimezone(later),
-      location: "",
-      description: "",
-      createdBy: createdByUserId,
-      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '', // שימוש במזהה
-      type: eventTypes.length > 0 ? eventTypes[0].eventType : '', // שמירת המחרוזת
-      color: eventTypes.length > 0 ? eventTypes[0].color : '', // שמירת הצבע
-      kidIds: [],
-      employeeIds: []
-    });
-    
+    const defaultVal= getDefaultEventValues(now,later);
+    setNewEvent(defaultVal);
     setOpenDialog(true);
-  }, [eventTypes, createdByUserId]);
+  }, [getDefaultEventValues]);
 
   // ערך הקונטקסט - כל מה שנרצה לחשוף
   const contextValue = {
@@ -565,11 +540,11 @@ export const CalendarProvider = ({ children }) => {
 // הוק שימושי לשימוש בקונטקסט
 export const useCalendar = () => {
   const context = useContext(CalendarContext);
-  
+
   if (!context) {
     throw new Error('useCalendar must be used within a CalendarProvider');
   }
-  
+
   return context;
 };
 

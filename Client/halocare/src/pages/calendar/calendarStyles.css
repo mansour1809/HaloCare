@@ -227,3 +227,7 @@
 .muirtl-1qw2a80-MuiGrid-root>.MuiGrid-item {
   padding-top: 30px;
 }
+
+.my-zindex-fix {
+  z-index: 2000 !important; /* Or whatever is higher than your dialog */
+}

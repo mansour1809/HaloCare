@@ -62,20 +62,7 @@ const EventDialog = () => {
     start: false,
     end: false
   });
-  
-  // // אפקט לטעינת פרטי היוצר מ-localStorage
-  // useEffect(() => {
-  //   try {
-  //     const user = JSON.parse(localStorage.getItem('user'));
-  //     if (user) {
-  //       setCreator(user);
-        
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading user from localStorage:', error);
-  //   }
-  // }, []);
-  
+
   // פונקציה לטיפול בשינויים במשתתפים
   const handleParticipantsChange = (event) => {
     const { name, value } = event.target;
@@ -105,23 +92,16 @@ const EventDialog = () => {
       const creatorEmployee = employees.find(
         (emp) => emp.employeeId === creatorId
       );
-
-      if (creatorEmployee) {
+      if (creatorEmployee) 
         return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
-      }
       return `משתמש #${creatorId}`;
     }
 
     // אם זה אירוע חדש
     if (newEvent && newEvent.createdBy) {
-      const creatorId = newEvent.createdBy;
-      const creatorEmployee = employees.find(
-        (emp) => emp.employeeId === creatorId
-      );
+      const user = JSON.parse(localStorage.getItem('user'));
+      return `${user.firstName} ${user.lastName}`;
 
-      if (creatorEmployee) {
-        return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
-      }
     }
   }
   
@@ -155,7 +135,7 @@ const EventDialog = () => {
     return selectedType ? selectedType.color : '#1976d2';
   };
   
-  // הצבע הנוכחי
+  // current color
   const currentEventColor = getCurrentEventColor();
   
   return (
@@ -169,7 +149,8 @@ const EventDialog = () => {
         sx: { 
           borderRadius: '12px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          zIndex: 1300
         }
       }}
     >
