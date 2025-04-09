@@ -1,6 +1,7 @@
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+
 using halocare.BL.Services;
 
 
@@ -11,6 +12,7 @@ namespace halocare
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddScoped<EmailService>();
 
 
             var configuration = builder.Configuration;
@@ -49,6 +51,7 @@ namespace halocare
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
 
             app.UseHttpsRedirection();
             app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());

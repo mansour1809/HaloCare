@@ -61,12 +61,12 @@ namespace halocare.BL.Services
 
             int employeeId = _employeeRepository.AddEmployee(employee);
 
-            // אם העובד נוצר בהצלחה והוגדרה סיסמה, שלח מייל ברוכים הבאים
-            if (employeeId > 0 && !string.IsNullOrEmpty(employee.Password))
-            {
-                // שליחת אימייל ברוכים הבאים עם פרטי התחברות
-                SendWelcomeEmail(employee.Email, employee.Password, employee.FirstName, employee.LastName);
-            }
+            //// אם העובד נוצר בהצלחה והוגדרה סיסמה, שלח מייל ברוכים הבאים
+            //if (employeeId > 0 && !string.IsNullOrEmpty(employee.Password))
+            //{
+            //    // שליחת אימייל ברוכים הבאים עם פרטי התחברות
+            //    SendWelcomeEmail(employee.Email, employee.Password, employee.FirstName, employee.LastName);
+            //}
 
             return employeeId;
         }
@@ -101,10 +101,10 @@ namespace halocare.BL.Services
             return _employeeRepository.DeactivateEmployee(id);
         }
 
-        public bool UpdatePassword(int employeeId, string hashedPassword)
-        {
-            return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
-        }
+        //public bool UpdatePassword(int employeeId, string hashedPassword)
+        //{
+        //    return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
+        //}
 
         public Employee Login(string email, string password)
         {
@@ -132,61 +132,61 @@ namespace halocare.BL.Services
         }
 
         // פונקציית שליחת אימייל ברוכים הבאים
-        public bool SendWelcomeEmail(string email, string password, string firstName, string lastName, string loginUrl = null)
-        {
-            try
-            {
-                // קבלת הגדרות SMTP מה-configuration
-                string smtpServer = _configuration["EmailSettings:SmtpServer"];
-                int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-                string smtpUsername = _configuration["EmailSettings:Username"];
-                string smtpPassword = _configuration["EmailSettings:Password"];
-                string senderEmail = _configuration["EmailSettings:SenderEmail"];
-                string senderName = _configuration["EmailSettings:SenderName"];
+        //public bool SendWelcomeEmail(string email, string password, string firstName, string lastName, string loginUrl = null)
+        //{
+        //    try
+        //    {
+        //        // קבלת הגדרות SMTP מה-configuration
+        //        string smtpServer = _configuration["EmailSettings:SmtpServer"];
+        //        int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+        //        string smtpUsername = _configuration["EmailSettings:Username"];
+        //        string smtpPassword = _configuration["EmailSettings:Password"];
+        //        string senderEmail = _configuration["EmailSettings:SenderEmail"];
+        //        string senderName = _configuration["EmailSettings:SenderName"];
 
-                // אם לא הועבר URL התחברות, השתמש בכתובת ברירת מחדל
-                if (string.IsNullOrEmpty(loginUrl))
-                {
-                    loginUrl = _configuration["AppSettings:DefaultLoginUrl"];
-                }
+        //        // אם לא הועבר URL התחברות, השתמש בכתובת ברירת מחדל
+        //        if (string.IsNullOrEmpty(loginUrl))
+        //        {
+        //            loginUrl = _configuration["AppSettings:DefaultLoginUrl"];
+        //        }
 
-                using (var client = new SmtpClient(smtpServer, smtpPort))
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-                    client.EnableSsl = true;
+        //        using (var client = new SmtpClient(smtpServer, smtpPort))
+        //        {
+        //            client.UseDefaultCredentials = false;
+        //            client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+        //            client.EnableSsl = true;
 
-                    MailMessage message = new MailMessage();
-                    message.From = new MailAddress(senderEmail, senderName);
-                    message.To.Add(email);
-                    message.Subject = "ברוכים הבאים למערכת Halo Care";
-                    message.Body = $@"
-                        <html>
-                        <body dir='rtl'>
-                            <h2>שלום {firstName} {lastName},</h2>
-                            <p>ברוכים הבאים למערכת Halo Care!</p>
-                            <p>להלן פרטי ההתחברות שלך למערכת:</p>
-                            <ul>
-                                <li><strong>שם משתמש:</strong> {email}</li>
-                                <li><strong>סיסמה:</strong> {password}</li>
-                            </ul>
-                            <p>לכניסה למערכת <a href='{loginUrl}'>לחץ כאן</a>.</p>
-                            <p>בברכה,<br>צוות Halo Care</p>
-                        </body>
-                        </html>";
-                    message.IsBodyHtml = true;
+        //            MailMessage message = new MailMessage();
+        //            message.From = new MailAddress(senderEmail, senderName);
+        //            message.To.Add(email);
+        //            message.Subject = "ברוכים הבאים למערכת Halo Care";
+        //            message.Body = $@"
+        //                <html>
+        //                <body dir='rtl'>
+        //                    <h2>שלום {firstName} {lastName},</h2>
+        //                    <p>ברוכים הבאים למערכת Halo Care!</p>
+        //                    <p>להלן פרטי ההתחברות שלך למערכת:</p>
+        //                    <ul>
+        //                        <li><strong>שם משתמש:</strong> {email}</li>
+        //                        <li><strong>סיסמה:</strong> {password}</li>
+        //                    </ul>
+        //                    <p>לכניסה למערכת <a href='{loginUrl}'>לחץ כאן</a>.</p>
+        //                    <p>בברכה,<br>צוות Halo Care</p>
+        //                </body>
+        //                </html>";
+        //            message.IsBodyHtml = true;
 
-                    client.Send(message);
-                }
+        //            client.Send(message);
+        //        }
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
-                return false;
-            }
-        }
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
+        //        return false;
+        //    }
+        //}
 
         private string HashPassword(string password)
         {

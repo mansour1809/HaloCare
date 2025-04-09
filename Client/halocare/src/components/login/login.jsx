@@ -1,5 +1,5 @@
 // src/pages/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   TextField, 
   Button, 
@@ -18,13 +18,27 @@ import { useAuth } from './AuthContext';
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+  const passwordRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
+
+
+
+  useEffect(() => {
+    // Clear localStorage when user navigates to the login page
+    localStorage.clear();
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get('email');
+    
+    if (emailParam) {
+      setEmail(emailParam);
+      passwordRef.current?.focus();
+      }
+  }, []);
 
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
@@ -122,6 +136,7 @@ const LoginPage = () => {
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            inputRef={passwordRef} //  focuses the input
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

@@ -17,23 +17,7 @@ namespace halocare.DAL.Repositories
 
             foreach (DataRow row in dataTable.Rows)
             {
-                Employee employee = new Employee
-                {
-                    EmployeeId = Convert.ToInt32(row["employeeId"]),
-                    FirstName = row["firstName"].ToString(),
-                    LastName = row["lastName"].ToString(),
-                    BirthDate = row["birthDate"] != DBNull.Value ? Convert.ToDateTime(row["birthDate"]) : (DateTime?)null,
-                    MobilePhone = row["mobilePhone"].ToString(),
-                    Email = row["email"].ToString(),
-                    Password = row["password"].ToString(),
-                    Photo = row["photoPath"].ToString(),
-                    LicenseNum = row["licenseNum"].ToString(),
-                    StartDate = row["startDate"] != DBNull.Value ? Convert.ToDateTime(row["startDate"]) : (DateTime?)null,
-                    IsActive = Convert.ToBoolean(row["isActive"]),
-                    ClassId = row["classId"] != DBNull.Value ? Convert.ToInt32(row["classId"]) : null,
-                    RoleName = row["roleName"].ToString()
-                };
-
+                Employee employee = MapToEmployee(row);
                 employees.Add(employee);
             }
 
@@ -54,22 +38,8 @@ namespace halocare.DAL.Repositories
 
             DataRow row = dataTable.Rows[0];
 
-            Employee employee = new Employee
-            {
-                EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                FirstName = row["FirstName"].ToString(),
-                LastName = row["LastName"].ToString(),
-                BirthDate = Convert.ToDateTime(row["BirthDate"]),
-                MobilePhone = row["MobilePhone"].ToString(),
-                Email = row["Email"].ToString(),
-                Password = row["Password"].ToString(),
-                Photo = row["photoPath"].ToString(),
-                LicenseNum = row["LicenseNum"].ToString(),
-                StartDate = Convert.ToDateTime(row["StartDate"]),
-                IsActive = Convert.ToBoolean(row["IsActive"]),
-                ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
-                RoleName = row["RoleName"].ToString()
-            };
+            Employee employee = MapToEmployee(row);
+
 
             return employee;
         }
@@ -166,22 +136,7 @@ namespace halocare.DAL.Repositories
 
             DataRow row = dataTable.Rows[0];
 
-            Employee employee = new Employee
-            {
-                EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                FirstName = row["FirstName"].ToString(),
-                LastName = row["LastName"].ToString(),
-                BirthDate = Convert.ToDateTime(row["BirthDate"]),
-                MobilePhone = row["MobilePhone"].ToString(),
-                Email = row["Email"].ToString(),
-                Password = row["Password"].ToString(),
-                Photo = row["photoPath"].ToString(),
-                LicenseNum = row["LicenseNum"].ToString(),
-                StartDate = Convert.ToDateTime(row["StartDate"]),
-                IsActive = Convert.ToBoolean(row["IsActive"]),
-                ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
-                RoleName = row["RoleName"].ToString()
-            };
+            Employee employee = MapToEmployee(row);
 
             return employee;
         }
@@ -201,18 +156,18 @@ namespace halocare.DAL.Repositories
         }
 
 
-        // הוספנו מתודה לעדכון סיסמה
-        public bool UpdatePassword(int employeeId, string hashedPassword)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>
-            {
-                { "@EmployeeId", employeeId },
-                { "@Password", hashedPassword }
-            };
+        //// הוספנו מתודה לעדכון סיסמה
+        //public bool UpdatePassword(int employeeId, string hashedPassword)
+        //{
+        //    Dictionary<string, object> parameters = new Dictionary<string, object>
+        //    {
+        //        { "@EmployeeId", employeeId },
+        //        { "@Password", hashedPassword }
+        //    };
 
-            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeePassword", parameters);
-            return rowsAffected > 0;
-        }
+        //    int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeePassword", parameters);
+        //    return rowsAffected > 0;
+        //}
 
         // פונקציית עזר למיפוי תוצאות שאילתה לאובייקט Employee
         private Employee MapToEmployee(DataRow row)

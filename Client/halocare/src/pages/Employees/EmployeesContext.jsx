@@ -81,7 +81,7 @@ export const EmployeesProvider = ({ children }) => {
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
-
+console.log('נתוני העובד:', employeeData);
       // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`${API_URL}/Employees`, employeeData);
       
@@ -156,7 +156,7 @@ export const EmployeesProvider = ({ children }) => {
     }
   };
 
-  // פונקציה לשליחת מייל לעובד
+ 
   const sendWelcomeEmail = async (email, password, firstName, lastName) => {
     try {
       const response = await axios.post(`${API_URL}/Employees/sendWelcomeEmail`, {
@@ -172,11 +172,10 @@ export const EmployeesProvider = ({ children }) => {
       console.error('שגיאה בשליחת המייל:', err);
       return { 
         success: false, 
-        error: 'שגיאה בשליחת אימייל ברוכים הבאים. אנא נסה שוב.'
+        error: err.response?.data?.message || 'שגיאה בשליחת אימייל ברוכים הבאים.' 
       };
     }
   };
-
   // פונקציה ליצירת סיסמה אקראית
   const generateRandomPassword = (length = 10) => {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -199,10 +198,10 @@ export const EmployeesProvider = ({ children }) => {
     classes,
     loading,
     error,
+    sendWelcomeEmail,
     addEmployee,
     updateEmployee,
     toggleEmployeeStatus,
-    sendWelcomeEmail,
     generateRandomPassword,
     refreshEmployees: fetchEmployees,
   };

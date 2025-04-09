@@ -12,10 +12,12 @@ namespace halocare.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly EmployeeService _employeeService;
+        private readonly EmailService _emailService;
 
         public EmployeesController(IConfiguration configuration)
         {
             _employeeService = new EmployeeService(configuration);
+            _emailService = new EmailService(configuration);
         }
 
         // GET: api/Employees
@@ -131,25 +133,45 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+        [HttpPost("sendWelcomeEmail")]
+        public async Task<ActionResult> SendWelcomeEmail([FromBody] WelcomeEmailDto emailData)
+        {
+            try
+            {
+                // Await the async email service
+                bool result = await _emailService.SendWelcomeEmail(
+                    emailData.Email,
+                    emailData.Password,
+                    emailData.FirstName,
+                    emailData.LastName,
+                    emailData.LoginUrl
+                );
 
-        //// POST: api/Employees/login
-        //[HttpPost("login")]
-        //public ActionResult<Employee> Login([FromBody] LoginModel loginModel)
-        //{
-        //    try
-        //    {
-        //        var employee = _employeeService.Login(loginModel.Email, loginModel.Password);
-        //        return Ok(employee);
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-        //    }
-        //}
+                if (result)
+                {
+                    return Ok(new { success = true });
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "שגיאה בשליחת המייל" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"שגיאה: {ex.Message}" });
+            }
+        }
+
+
+        // מחלקה להעברת נתונים
+        public class WelcomeEmailDto
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string LoginUrl { get; set; }
+        }
     }
 
     

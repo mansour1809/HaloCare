@@ -72,113 +72,113 @@ namespace halocare.BL.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        public bool ResetPassword(string email)
-        {
-            // 1. בדיקה אם האימייל קיים במערכת
-            Employee employee = _employeeRepository.GetEmployeeByEmail(email);
-            if (employee == null)
-                return false;
+        //public bool ResetPassword(string email)
+        //{
+        //    // 1. בדיקה אם האימייל קיים במערכת
+        //    Employee employee = _employeeRepository.GetEmployeeByEmail(email);
+        //    if (employee == null)
+        //        return false;
 
-            // 2. יצירת סיסמה אקראית חדשה
-            string newPassword = GenerateRandomPassword();
+        //    // 2. יצירת סיסמה אקראית חדשה
+        //    string newPassword = GenerateRandomPassword();
 
-            // 3. עדכון הסיסמה במסד הנתונים
-            string hashedPassword = HashPassword(newPassword);
-            bool updated = _employeeRepository.UpdatePassword(employee.EmployeeId, hashedPassword);
+        //    // 3. עדכון הסיסמה במסד הנתונים
+        //    string hashedPassword = HashPassword(newPassword);
+        //    bool updated = _employeeRepository.UpdatePassword(employee.EmployeeId, hashedPassword);
 
-            if (!updated)
-                return false;
+        //    if (!updated)
+        //        return false;
 
-            // 4. שליחת אימייל עם הסיסמה החדשה
-            bool emailSent = SendPasswordResetEmail(email, newPassword, employee.FirstName);
+        //    // 4. שליחת אימייל עם הסיסמה החדשה
+        //    bool emailSent = SendPasswordResetEmail(email, newPassword, employee.FirstName);
 
-            return emailSent;
-        }
+        //    return emailSent;
+        //}
 
-        public bool ChangePassword(int employeeId, string currentPassword, string newPassword)
-        {
-            // 1. בדיקה אם המשתמש קיים
-            var employee = _employeeRepository.GetEmployeeById(employeeId);
-            if (employee == null)
-                return false;
+        //public bool ChangePassword(int employeeId, string currentPassword, string newPassword)
+        //{
+        //    // 1. בדיקה אם המשתמש קיים
+        //    var employee = _employeeRepository.GetEmployeeById(employeeId);
+        //    if (employee == null)
+        //        return false;
 
-            // 2. אימות הסיסמה הנוכחית
-            string hashedCurrentPassword = HashPassword(currentPassword);
-            if (employee.Password != hashedCurrentPassword)
-                return false;
+        //    // 2. אימות הסיסמה הנוכחית
+        //    string hashedCurrentPassword = HashPassword(currentPassword);
+        //    if (employee.Password != hashedCurrentPassword)
+        //        return false;
 
-            // 3. עדכון הסיסמה החדשה
-            string hashedNewPassword = HashPassword(newPassword);
-            return _employeeRepository.UpdatePassword(employeeId, hashedNewPassword);
-        }
+        //    // 3. עדכון הסיסמה החדשה
+        //    string hashedNewPassword = HashPassword(newPassword);
+        //    return _employeeRepository.UpdatePassword(employeeId, hashedNewPassword);
+        //}
 
-        // פונקציות עזר
-        private string GenerateRandomPassword(int length = 8)
-        {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
+        //// פונקציות עזר
+        //private string GenerateRandomPassword(int length = 8)
+        //{
+        //    const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        //    var random = new Random();
+        //    return new string(Enumerable.Repeat(chars, length)
+        //        .Select(s => s[random.Next(s.Length)]).ToArray());
+        //}
 
-        private bool SendPasswordResetEmail(string email, string newPassword, string firstName)
-        {
-            try
-            {
-                // קבלת הגדרות SMTP מה-configuration
-                string smtpServer = _configuration["EmailSettings:SmtpServer"];
-                int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-                string smtpUsername = _configuration["EmailSettings:Username"];
-                string smtpPassword = _configuration["EmailSettings:Password"];
-                string senderEmail = _configuration["EmailSettings:SenderEmail"];
-                string senderName = _configuration["EmailSettings:SenderName"];
+        //private bool SendPasswordResetEmail(string email, string newPassword, string firstName)
+        //{
+        //    try
+        //    {
+        //        // קבלת הגדרות SMTP מה-configuration
+        //        string smtpServer = _configuration["EmailSettings:SmtpServer"];
+        //        int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+        //        string smtpUsername = _configuration["EmailSettings:Username"];
+        //        string smtpPassword = _configuration["EmailSettings:Password"];
+        //        string senderEmail = _configuration["EmailSettings:SenderEmail"];
+        //        string senderName = _configuration["EmailSettings:SenderName"];
 
-                using (var client = new SmtpClient(smtpServer, smtpPort))
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-                    client.EnableSsl = true;
+        //        using (var client = new SmtpClient(smtpServer, smtpPort))
+        //        {
+        //            client.UseDefaultCredentials = false;
+        //            client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+        //            client.EnableSsl = true;
 
-                    MailMessage message = new MailMessage();
-                    message.From = new MailAddress(senderEmail, senderName);
-                    message.To.Add(email);
-                    message.Subject = "איפוס סיסמה - Halo Care";
-                    message.Body = $@"
-                        <html>
-                        <body dir='rtl'>
-                            <h2>שלום {firstName},</h2>
-                            <p>קיבלנו בקשה לאיפוס הסיסמה שלך במערכת.</p>
-                            <p>הסיסמה החדשה שלך היא: <strong>{newPassword}</strong></p>
-                            <p>מומלץ לשנות את הסיסמה מיד לאחר ההתחברות הראשונה.</p>
-                            <p>בברכה,<br>צוות Halo Care</p>
-                        </body>
-                        </html>";
-                    message.IsBodyHtml = true;
+        //            MailMessage message = new MailMessage();
+        //            message.From = new MailAddress(senderEmail, senderName);
+        //            message.To.Add(email);
+        //            message.Subject = "איפוס סיסמה - Halo Care";
+        //            message.Body = $@"
+        //                <html>
+        //                <body dir='rtl'>
+        //                    <h2>שלום {firstName},</h2>
+        //                    <p>קיבלנו בקשה לאיפוס הסיסמה שלך במערכת.</p>
+        //                    <p>הסיסמה החדשה שלך היא: <strong>{newPassword}</strong></p>
+        //                    <p>מומלץ לשנות את הסיסמה מיד לאחר ההתחברות הראשונה.</p>
+        //                    <p>בברכה,<br>צוות Halo Care</p>
+        //                </body>
+        //                </html>";
+        //            message.IsBodyHtml = true;
 
-                    client.Send(message);
-                }
+        //            client.Send(message);
+        //        }
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
-                return false;
-            }
-        }
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
+        //        return false;
+        //    }
+        //}
 
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
+        //private string HashPassword(string password)
+        //{
+        //    using (SHA256 sha256 = SHA256.Create())
+        //    {
+        //        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        //        StringBuilder builder = new StringBuilder();
+        //        for (int i = 0; i < bytes.Length; i++)
+        //        {
+        //            builder.Append(bytes[i].ToString("x2"));
+        //        }
+        //        return builder.ToString();
+        //    }
+        //}
     }
 }
