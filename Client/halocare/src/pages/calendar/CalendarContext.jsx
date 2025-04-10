@@ -71,7 +71,7 @@ export const CalendarProvider = ({ children }) => {
   const getDefaultEventValues = useCallback((startTime = new Date(), endTime = null) => {
     if (!endTime) {
       endTime = new Date(startTime);
-      endTime.setMinutes(startTime.getHours() + 1);
+      endTime.setHours(startTime.getHours() + 1);
     }
     
     return {

@@ -46,25 +46,6 @@ namespace halocare.DAL.Repositories
 
         public int AddEmployee(Employee employee)
         {
-            //object photoParam;
-
-            //if (string.IsNullOrEmpty(employee.Photo))
-            //{
-            //    // If photo is empty or null, use DBNull.Value
-            //    photoParam = DBNull.Value;
-            //}
-            //else
-            //{
-            //    try
-            //    {
-            //        // Try to convert from Base64
-            //        photoParam = Convert.FromBase64String(employee.Photo);
-            //    }
-            //    catch (FormatException)
-            //    {
-            //        throw new ArgumentException("Invalid photo format. Photo should be a valid Base64 string.");
-            //    }
-            //}
 
             Dictionary<string, object> parameters = new Dictionary<string, object>
     {
@@ -79,7 +60,8 @@ namespace halocare.DAL.Repositories
         { "@StartDate", employee.StartDate },
         { "@IsActive", employee.IsActive },
         { "@ClassId", employee.ClassId ?? (object)DBNull.Value },
-        { "@RoleName", employee.RoleName }
+        { "@RoleName", employee.RoleName },
+        { "@CityName", employee.CityName }
     };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddEmployee", parameters));
@@ -101,7 +83,9 @@ namespace halocare.DAL.Repositories
                 { "@StartDate", employee.StartDate },
                 { "@IsActive", employee.IsActive },
                 { "@ClassId", employee.ClassId },
-                { "@RoleName", employee.RoleName }
+                { "@RoleName", employee.RoleName },
+                { "@CityName", employee.CityName }
+
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateEmployee", parameters);
@@ -186,7 +170,8 @@ namespace halocare.DAL.Repositories
                 StartDate = Convert.ToDateTime(row["StartDate"]),
                 IsActive = Convert.ToBoolean(row["IsActive"]),
                 ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
-                RoleName = row["RoleName"].ToString()
+                RoleName = row["RoleName"].ToString(),
+                CityName = row["city"].ToString()
             };
         }
     }

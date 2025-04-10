@@ -17,5 +17,6 @@ namespace halocare.DAL.Models
         public bool IsActive { get; set; }
         public int? ClassId { get; set; }
         public string RoleName { get; set; }
+        public string CityName { get; set; }
     }
 }
