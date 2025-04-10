@@ -1,5 +1,5 @@
-// src/components/NewEmployeeForm.jsx
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { 
   Container, Paper, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
@@ -14,6 +14,7 @@ import { Visibility, VisibilityOff, ContentCopy, CloudUpload } from '@mui/icons-
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
+import { validateForm, employeeValidationRules } from './validations';
 
 // יצירת תמה מותאמת לעברית
 const rtlTheme = createTheme({
@@ -43,7 +44,8 @@ const NewEmployeeForm = () => {
   
   // מצבי טעינה והודעות
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
   const [success, setSuccess] = useState(false);
   
   // נתוני טופס
@@ -71,10 +73,32 @@ const NewEmployeeForm = () => {
   const [passwordCopied, setPasswordCopied] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
   
+  // ולידציה בעת שינוי שדה
+  const validateField = (name, value) => {
+    if (employeeValidationRules[name]) {
+      const fieldErrors = {};
+      for (const rule of employeeValidationRules[name]) {
+        const { type, message, options } = rule;
+        const isValid = validateForm({ [name]: value }, { [name]: [rule] });
+        
+        if (Object.keys(isValid).length > 0) {
+          fieldErrors[name] = message;
+          break;
+        }
+      }
+      
+      setErrors(prev => ({
+        ...prev,
+        ...fieldErrors
+      }));
+    }
+  };
+
   // פונקציות טיפול בשינויים
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    validateField(name, value);
   };
   
   const handleSwitchChange = (e) => {
@@ -103,6 +127,8 @@ const NewEmployeeForm = () => {
   const handleGeneratePassword = () => {
     const newPassword = generateRandomPassword();
     setFormData(prev => ({ ...prev, password: newPassword }));
+    // בדיקת ולידציה על השדה החדש
+    validateField('password', newPassword);
   };
   
   // העתקת סיסמה ללוח
@@ -114,37 +140,26 @@ const NewEmployeeForm = () => {
     }
   };
   
-  // וולידציה של הטופס
-  const validateForm = () => {
-    // בדיקת שדות חובה
-    const requiredFields = ['firstName', 'lastName', 'roleName', 'password'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
-    if (missingFields.length > 0) {
-      setError(`יש למלא את כל שדות החובה: ${missingFields.join(', ')}`);
-      return false;
-    }
-    
-    // וולידציה נוספת כאן, למשל אימייל תקין, פורמט טלפון וכו'
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('כתובת האימייל אינה תקינה');
-      return false;
-    }
-    
-    return true;
+  // וולידציה של הטופס כולו
+  const validateEntireForm = () => {
+    const formErrors = validateForm(formData, employeeValidationRules);
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
   };
   
   // שליחת הטופס
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    // בדיקת ולידציה מלאה
+    if (!validateEntireForm()) {
+      setGeneralError("יש לתקן את השגיאות בטופס לפני שליחה");
       return;
     }
     
     try {
       setSubmitting(true);
-      setError("");
+      setGeneralError("");
       
       // לעת עתה, מתעלמים מהעלאת קבצים כיוון שטרם מומש בשרת
       // בעתיד נוסיף קוד להעלאת התמונה והמסמכים
@@ -154,8 +169,8 @@ const NewEmployeeForm = () => {
         ...formData,
         // בינתיים מתעלמים משדות הקבצים
         photo: profilePhoto ? profilePhoto.name : null,
-        employeeId:0,
-        classId:1
+        employeeId: 0,
+        classId: formData.classId || 1
       };
       // שליחה דרך הקונטקסט
       const result = await addEmployee(employeeData);
@@ -176,7 +191,7 @@ const NewEmployeeForm = () => {
       
       // איפוס הטופס
       setFormData({
-        employeeId:0,
+        employeeId: 0,
         firstName: '',
         lastName: '',
         email: '',
@@ -191,6 +206,7 @@ const NewEmployeeForm = () => {
       });
       setProfilePhoto(null);
       setDocuments([]);
+      setErrors({});
       
       setSuccess(true);
       
@@ -201,10 +217,20 @@ const NewEmployeeForm = () => {
       
     } catch (err) {
       console.error('שגיאה בשליחת הטופס:', err);
-      setError(err.message || 'שגיאה בשליחת הטופס. אנא בדוק את הנתונים ונסה שוב.');
+      setGeneralError(err.message || 'שגיאה בשליחת הטופס. אנא בדוק את הנתונים ונסה שוב.');
     } finally {
       setSubmitting(false);
     }
+  };
+  
+  // פונקציית עזר להצגת שגיאות בשדות
+  const getFieldError = (fieldName) => {
+    return errors[fieldName] || '';
+  };
+
+  // פונקציית עזר לבדיקה אם בשדה יש שגיאה
+  const hasFieldError = (fieldName) => {
+    return Boolean(errors[fieldName]);
   };
   
   return (
@@ -216,9 +242,9 @@ const NewEmployeeForm = () => {
               קליטת עובד חדש
             </Typography>
             
-            {error && (
+            {generalError && (
               <Alert severity="error" sx={{ marginBottom: 2 }}>
-                {error}
+                {generalError}
               </Alert>
             )}
             
@@ -245,6 +271,8 @@ const NewEmployeeForm = () => {
                       onChange={handleChange}
                       variant="outlined"
                       required
+                      error={hasFieldError('firstName')}
+                      helperText={getFieldError('firstName')}
                     />
                   </Grid>
                   
@@ -257,6 +285,8 @@ const NewEmployeeForm = () => {
                       onChange={handleChange}
                       variant="outlined"
                       required
+                      error={hasFieldError('lastName')}
+                      helperText={getFieldError('lastName')}
                     />
                   </Grid>
                   
@@ -283,6 +313,8 @@ const NewEmployeeForm = () => {
                       value={formData.mobilePhone}
                       onChange={handleChange}
                       variant="outlined"
+                      error={hasFieldError('mobilePhone')}
+                      helperText={getFieldError('mobilePhone')}
                     />
                   </Grid>
                   
@@ -295,6 +327,8 @@ const NewEmployeeForm = () => {
                       value={formData.email}
                       onChange={handleChange}
                       variant="outlined"
+                      error={hasFieldError('email')}
+                      helperText={getFieldError('email')}
                     />
                   </Grid>
                   
@@ -330,7 +364,7 @@ const NewEmployeeForm = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
-                    <FormControl fullWidth variant="outlined" required>
+                    <FormControl fullWidth variant="outlined" required error={hasFieldError('roleName')}>
                       <InputLabel>תפקיד *</InputLabel>
                       <Select
                         name="roleName"
@@ -344,6 +378,11 @@ const NewEmployeeForm = () => {
                           </MenuItem>
                         ))}
                       </Select>
+                      {hasFieldError('roleName') && (
+                        <Typography variant="caption" color="error">
+                          {getFieldError('roleName')}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
                   
@@ -355,6 +394,8 @@ const NewEmployeeForm = () => {
                       value={formData.licenseNum}
                       onChange={handleChange}
                       variant="outlined"
+                      error={hasFieldError('licenseNum')}
+                      helperText={getFieldError('licenseNum')}
                     />
                   </Grid>
                   
@@ -446,6 +487,8 @@ const NewEmployeeForm = () => {
                       onChange={handleChange}
                       variant="outlined"
                       required
+                      error={hasFieldError('password')}
+                      helperText={getFieldError('password')}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">

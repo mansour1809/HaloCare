@@ -30,6 +30,12 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from "@mui/icons-material/Edit";
 import { Link } from "react-router-dom";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
+import { Alert, Grid } from '@mui/material';
+
 
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
@@ -171,12 +177,13 @@ const EmployeesManagement = () => {
   }
 
   return (
-    <Box sx={{ height: '100%', width: '100%', padding: 2 }} dir="rtl">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
-          ניהול עובדים
-        </Typography>
-        
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+      <Box sx={{ height: '100%', width: '100%', padding: 2 }} dir="rtl">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
+            ניהול עובדים
+          </Typography>
+          
         <Box sx={{ display: 'flex', gap: 2 }}>
           {/* חיפוש חופשי */}
           <TextField
@@ -408,90 +415,143 @@ const EmployeesManagement = () => {
         open={open} 
         onClose={handleClose} 
         fullWidth 
-        maxWidth="sm" 
+        maxWidth="md" // הגדלנו את הדיאלוג לגודל בינוני
         dir="rtl"
         PaperProps={{
           sx: { borderRadius: '10px' }
         }}
       >
-        <DialogTitle sx={{ backgroundColor: '#f8f9fa', fontWeight: 'bold' }}>
-          עריכת עובד
+        <DialogTitle sx={{ 
+          backgroundColor: '#f8f9fa', 
+          fontWeight: 'bold',
+          borderBottom: '1px solid #eee',
+          fontSize: '1.5rem',
+          color: '#4cb5c3'
+        }}>
+          עריכת פרטי עובד
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{ padding: 3, paddingTop: 3 }}>
           {localError && (
-            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 3 }}>
               {localError}
-            </Typography>
+            </Alert>
           )}
-          <TextField
-            fullWidth
-            label="שם פרטי"
-            value={selectedEmployee?.firstName || ""}
-            onChange={(e) => setSelectedEmployee({ ...selectedEmployee, firstName: e.target.value })}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="שם משפחה"
-            value={selectedEmployee?.lastName || ""}
-            onChange={(e) => setSelectedEmployee({ ...selectedEmployee, lastName: e.target.value })}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="דוא״ל"
-            type="email"
-            value={selectedEmployee?.email || ""}
-            onChange={(e) => setSelectedEmployee({ ...selectedEmployee, email: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="טלפון"
-            value={selectedEmployee?.mobilePhone || ""}
-            onChange={(e) => setSelectedEmployee({ ...selectedEmployee, mobilePhone: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="מספר רישיון"
-            value={selectedEmployee?.licenseNum || ""}
-            onChange={(e) => setSelectedEmployee({ ...selectedEmployee, licenseNum: e.target.value })}
-            margin="normal"
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>תפקיד</InputLabel>
-            <Select
-              value={selectedEmployee?.roleName || ""}
-              onChange={(e) => setSelectedEmployee({ ...selectedEmployee, roleName: e.target.value })}
-              label="תפקיד"
-              required
-            >
-              {roles.map((role) => (
-                <MenuItem key={role.roleName} value={role.roleName}>
-                  {role.roleName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>כיתה</InputLabel>
-            <Select
-              value={selectedEmployee?.classId || ""}
-              onChange={(e) => setSelectedEmployee({ ...selectedEmployee, classId: e.target.value })}
-              label="כיתה"
-            >
-              <MenuItem value="">ללא שיוך</MenuItem>
-              {classes.map((cls) => (
-                <MenuItem key={cls.id} value={cls.id}>{cls.className}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          
+          {/* פרטים אישיים */}
+          <Box sx={{ marginBottom: 3 }}>
+            <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
+              פרטים אישיים
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="שם פרטי"
+                  value={selectedEmployee?.firstName || ""}
+                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, firstName: e.target.value })}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="שם משפחה"
+                  value={selectedEmployee?.lastName || ""}
+                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, lastName: e.target.value })}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <DatePicker
+                  label="תאריך לידה"
+                  value={selectedEmployee?.birthDate ? new Date(selectedEmployee.birthDate) : null}
+                  onChange={(date) => setSelectedEmployee({ ...selectedEmployee, birthDate: date })}
+                  slotProps={{ 
+                    textField: { 
+                      fullWidth: true, 
+                      variant: "outlined" 
+                    } 
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="טלפון נייד"
+                  value={selectedEmployee?.mobilePhone || ""}
+                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, mobilePhone: e.target.value })}
+                  variant="outlined"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+          
+          {/* פרטי תפקיד */}
+          <Box>
+            <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
+              פרטי תפקיד
+            </Typography>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>תפקיד</InputLabel>
+                  <Select
+                    value={selectedEmployee?.roleName || ""}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, roleName: e.target.value })}
+                    label="תפקיד"
+                    required
+                  >
+                    {roles.map((role) => (
+                      <MenuItem key={role.roleName} value={role.roleName}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box 
+                            sx={{ 
+                              width: 12, 
+                              height: 12, 
+                              borderRadius: '50%', 
+                              bgcolor: getRoleColor(role.roleName),
+                              mr: 1
+                            }} 
+                          />
+                          {role.roleName}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>שיוך לכיתה</InputLabel>
+                  <Select
+                    value={selectedEmployee?.classId || ""}
+                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, classId: e.target.value })}
+                    label="שיוך לכיתה"
+                  >
+                    <MenuItem value="">ללא שיוך</MenuItem>
+                    {classes.map((cls) => (
+                      <MenuItem key={cls.id} value={cls.id}>{cls.className}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ padding: 2 }}>
-          <Button onClick={handleClose} variant="outlined" color="secondary">
+        <DialogActions sx={{ padding: 2, borderTop: '1px solid #eee' }}>
+          <Button 
+            onClick={handleClose} 
+            variant="outlined" 
+            sx={{ borderRadius: 2 }}
+          >
             ביטול
           </Button>
           <Button 
@@ -501,14 +561,16 @@ const EmployeesManagement = () => {
               backgroundColor: '#4cb5c3',
               '&:hover': {
                 backgroundColor: '#3da1af',
-              }
+              },
+              borderRadius: 2
             }}
           >
-            שמור
+            שמור שינויים
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
+    </LocalizationProvider>
   );
 };
 
