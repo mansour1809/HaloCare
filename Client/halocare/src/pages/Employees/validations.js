@@ -17,7 +17,6 @@ export const VALIDATION_TYPES = {
     MIN_LENGTH: 'minLength',
     MAX_LENGTH: 'maxLength',
     ID_NUMBER: 'idNumber',
-    LICENSE_NUM: 'licenseNum',
     MATCH_FIELD: 'matchField',
   };
   
