@@ -203,9 +203,9 @@ const NewEmployeeForm = () => {
       // הכנת הנתונים לשליחה
       const employeeData = {
         ...formData,
-        photo: profilePhoto ? profilePhoto.name : null,
+        photo: profilePhoto ? profilePhoto.name : "",
         employeeId: 0,
-        classId: formData.classId || null
+        classId: formData.classId || 1002
       };
       
       // שליחה דרך הקונטקסט
@@ -235,13 +235,11 @@ const NewEmployeeForm = () => {
       });
       
       // מעבר לרשימת העובדים אחרי הוספה מוצלחת
-      setTimeout(() => {
-        navigate('/employees');
-      }, 2000);
+      // setTimeout(() => {
+      //   navigate('/employees');
+      // }, 2000);
       
-    } catch (err) {
-      console.error('שגיאה בשליחת הטופס:', err);
-      
+    } catch (err) {      
       Swal.fire({
         title: 'שגיאה בשליחת הטופס',
         text: err.message || 'אנא בדוק את הנתונים ונסה שוב',
@@ -343,20 +341,6 @@ const NewEmployeeForm = () => {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="דוא״ל"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      variant="outlined"
-                      error={hasFieldError("email")}
-                      helperText={getFieldError("email")}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
                     <FormControl
                       fullWidth
                       variant="outlined"
@@ -433,12 +417,12 @@ const NewEmployeeForm = () => {
                       required
                       error={hasFieldError("roleName")}
                     >
-                      <InputLabel>תפקיד *</InputLabel>
+                      <InputLabel>תפקיד</InputLabel>
                       <Select
                         name="roleName"
                         value={formData.roleName}
                         onChange={handleChange}
-                        label="תפקיד *"
+                        label="תפקיד"
                       >
                         {roles.map((role) => (
                           <MenuItem key={role.roleName} value={role.roleName}>
@@ -549,10 +533,24 @@ const NewEmployeeForm = () => {
                 </Typography>
 
                 <Grid container spacing={2}>
+                <Grid item xs={12} >
+                    <TextField
+                      fullWidth
+                      label="דוא״ל"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      variant="outlined"
+                      error={hasFieldError("email")}
+                      helperText={getFieldError("email")}
+                    />
+                  </Grid>
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="סיסמה ראשונית *"
+                      label="סיסמה ראשונית"
                       name="password"
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
@@ -574,13 +572,13 @@ const NewEmployeeForm = () => {
                                 <Visibility />
                               )}
                             </IconButton>
-                            <IconButton
+                            {/* <IconButton
                               onClick={handleCopyPassword}
                               disabled={!formData.password}
                               edge="end"
                             >
                               <ContentCopy />
-                            </IconButton>
+                            </IconButton> */}
                           </InputAdornment>
                         ),
                       }}

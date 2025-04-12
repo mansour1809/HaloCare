@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class DocumentsController : ControllerBase
     {
         private readonly DocumentService _documentService;

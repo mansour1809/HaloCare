@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using halocare.DAL.Models;
 using halocare.BL.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class ParentsController : ControllerBase
     {
         private readonly ParentService _parentService;

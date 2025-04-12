@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class TSHAController : ControllerBase
     {
         private readonly TSHAService _tshaService;

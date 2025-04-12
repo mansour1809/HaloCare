@@ -3,20 +3,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class AuthController : ControllerBase
     {
         private readonly AuthenticationService _authService;
-        private readonly EmployeeService _employeeService;
+        //private readonly EmployeeService _employeeService;
 
         public AuthController(IConfiguration configuration)
         {
             _authService = new AuthenticationService(configuration);
-            _employeeService = new EmployeeService(configuration);
+            //_employeeService = new EmployeeService(configuration);
 
         }
 

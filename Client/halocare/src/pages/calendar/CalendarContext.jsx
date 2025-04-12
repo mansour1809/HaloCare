@@ -5,11 +5,17 @@ import Swal from 'sweetalert2';
 
 // API Endpoints
 const API_BASE_URL = 'https://localhost:7225/api';
-const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
-const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
-const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
-const EVENT_TYPES_ENDPOINT = `${API_BASE_URL}/EventTypes`; // שינוי - נקודת קצה לטבלת סוגי אירועים
-
+// const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
+// const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
+// const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
+// const EVENT_TYPES_ENDPOINT = `${API_BASE_URL}/EventTypes`; // שינוי - נקודת קצה לטבלת סוגי אירועים
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+     Authorization: `Bearer ${localStorage.getItem('token')}`
+  }
+});
 // יצירת הקונטקסט
 const CalendarContext = createContext();
 
@@ -132,7 +138,12 @@ export const CalendarProvider = ({ children }) => {
   // טעינת סוגי אירועים מהשרת
   const fetchEventTypes = useCallback(async () => {
     try {
-      const response = await axios.get(EVENT_TYPES_ENDPOINT);
+      const response = await api.get('/EventTypes');
+        
+        
+      //   EVENT_TYPES_ENDPOINT, { headers: {
+      //   Authorization: `Bearer ${localStorage.getItem('token')}`
+      // }});
       setEventTypes(response.data);
       return response.data;
     } catch (error) {
@@ -148,7 +159,7 @@ export const CalendarProvider = ({ children }) => {
 
 
     try {
-      const response = await axios.get(EVENTS_ENDPOINT);
+      const response = await api.get(`/Events` );
       const formattedEvents = response.data.map(formatEventForCalendar);
       setEvents(formattedEvents);
       return formattedEvents;
@@ -171,9 +182,8 @@ export const CalendarProvider = ({ children }) => {
     try {
       // המרת נתוני האירוע לפורמט שהשרת מצפה לו
       const serverEventData = prepareEventData(eventData);
-      const response = await axios.post(EVENTS_ENDPOINT, serverEventData);
-      const newFormattedEvent = formatEventForCalendar(response.data);
-      setEvents(prevEvents => [...prevEvents, newFormattedEvent]);
+      const response = await api.post('/Events', serverEventData);
+    await fetchEvents();
       return response.data;
     } catch (error) {
       console.error('Error adding event:', error);
@@ -182,7 +192,7 @@ export const CalendarProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [prepareEventData, formatEventForCalendar]);
+  }, [prepareEventData, fetchEvents]);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
@@ -192,7 +202,7 @@ export const CalendarProvider = ({ children }) => {
     try {
       // converting the event calendar for the server
       const serverEventData = prepareEventData(eventData);
-      const response = await axios.put(`${EVENTS_ENDPOINT}/${eventData.id}`, serverEventData);
+      const response = await api.put(`/Events/${eventData.id}`, serverEventData);
       await fetchEvents();//refreshing the events list
       return response.data;
     } catch (error) {
@@ -210,7 +220,7 @@ export const CalendarProvider = ({ children }) => {
     setError(null);
 
     try {
-      await axios.delete(`${EVENTS_ENDPOINT}/${eventId}`);
+      await api.delete(`Events/${eventId}`);
 
       // רענון הנתונים
       await fetchEvents();
@@ -228,7 +238,7 @@ export const CalendarProvider = ({ children }) => {
   // טעינת רשימת ילדים
   const fetchKids = useCallback(async () => {
     try {
-      const response = await axios.get(KIDS_ENDPOINT);
+      const response = await api.get('/Kids');
       setKids(response.data);
       return response.data;
     } catch (error) {
@@ -241,7 +251,7 @@ export const CalendarProvider = ({ children }) => {
   // טעינת רשימת עובדים
   const fetchEmployees = useCallback(async () => {
     try {
-      const response = await axios.get(EMPLOYEES_ENDPOINT);
+      const response = await api.get('/Employees');
       setEmployees(response.data);
       return response.data;
     } catch (error) {

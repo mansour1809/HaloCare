@@ -9,6 +9,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class AlertsController : ControllerBase
     {
         private readonly AlertService _alertService;

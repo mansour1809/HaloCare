@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly EventService _eventService;
@@ -24,6 +26,8 @@ namespace halocare.Controllers
         {
             try
             {
+                Console.WriteLine ($"משתמש מזוהה: {User.Identity.Name}");
+                //Console.WriteLine(Authorization);
                 return Ok(_eventService.GetAllEvents());
             }
             catch (Exception ex)

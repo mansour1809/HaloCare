@@ -3,7 +3,13 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
 const API_URL = 'https://localhost:7225/api';
-
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+     Authorization: `Bearer ${localStorage.getItem('token')}`
+  }
+});
 // יצירת הקונטקסט
 const EmployeesContext = createContext();
 
@@ -23,7 +29,7 @@ export const EmployeesProvider = ({ children }) => {
     try {
       setLoading(true);
       // טעינת רשימת עובדים
-      const employeesResponse = await axios.get(`${API_URL}/Employees`);
+      const employeesResponse = await api.get(`/Employees`);
       setEmployees(employeesResponse.data);
       setLoading(false);
     } catch (err) {
@@ -36,7 +42,7 @@ export const EmployeesProvider = ({ children }) => {
   // טעינת תפקידים מהשרת
   const fetchRoles = async () => {
     try {
-      const rolesResponse = await axios.get(`${API_URL}/ReferenceData/roles`);
+      const rolesResponse = await api.get(`/ReferenceData/roles`);
       setRoles(rolesResponse.data || []);
     } catch (err) {
       console.error('שגיאה בטעינת תפקידים:', err);
@@ -47,7 +53,7 @@ export const EmployeesProvider = ({ children }) => {
   // טעינת כיתות מהשרת
   const fetchClasses = async () => {
     try {
-      const classesResponse = await axios.get(`${API_URL}/Classes`);
+      const classesResponse = await api.get(`/Classes`);
       setClasses(classesResponse.data || []);
     } catch (err) {
       console.error('שגיאה בטעינת כיתות:', err);
@@ -83,7 +89,7 @@ export const EmployeesProvider = ({ children }) => {
       setLoading(true);
 console.log('נתוני העובד:', employeeData);
       // שליחת נתוני העובד החדש לשרת
-      const response = await axios.post(`${API_URL}/Employees`, employeeData);
+      const response = await api.post(`/Employees`, employeeData);
       
       // עדכון רשימת העובדים במצב המקומי
       if (response.data) {
@@ -111,7 +117,7 @@ console.log('נתוני העובד:', employeeData);
     try {
       setLoading(true);
       // שליחת עדכון העובד לשרת
-      await axios.put(`${API_URL}/Employees/${updatedEmployee.employeeId}`, updatedEmployee);
+      await api.put(`/Employees/${updatedEmployee.employeeId}`, updatedEmployee);
       
       // עדכון העובד במצב המקומי
       setEmployees(prevEmployees => 
@@ -137,7 +143,7 @@ console.log('נתוני העובד:', employeeData);
     try {
       setLoading(true);
       // עדכון מצב העובד בשרת
-      await axios.patch(`${API_URL}/Employees/${id}/status`, { isActive: !currentStatus });
+      await api.patch(`/Employees/${id}/status`, { isActive: !currentStatus });
       
       // עדכון מצב העובד במצב המקומי
       setEmployees(prevEmployees =>
@@ -159,7 +165,7 @@ console.log('נתוני העובד:', employeeData);
  
   const sendWelcomeEmail = async (email, password, firstName, lastName) => {
     try {
-      const response = await axios.post(`${API_URL}/Employees/sendWelcomeEmail`, {
+      const response = await api.post(`/Employees/sendWelcomeEmail`, {
         email,
         password,
         firstName,

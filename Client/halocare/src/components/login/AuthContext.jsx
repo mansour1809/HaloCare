@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
@@ -53,7 +53,6 @@ export const AuthProvider = ({ children }) => {
       if (response.data && response.data.token) {
         // שמירה ב-localStorage
         localStorage.setItem('token', response.data.token);
-        console.log("dwfsdfafsd:", response.data);
         const userData = {
           id: response.data.id,
           firstName: response.data.firstName || '',

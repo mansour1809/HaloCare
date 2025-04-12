@@ -7,14 +7,14 @@ import {
   IconButton, 
   Tooltip, 
   CircularProgress,
-  ButtonGroup
+  // ButtonGroup
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ViewDayIcon from '@mui/icons-material/ViewDay';
-import ViewWeekIcon from '@mui/icons-material/ViewWeek';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+// import ViewDayIcon from '@mui/icons-material/ViewDay';
+// import ViewWeekIcon from '@mui/icons-material/ViewWeek';
+// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 // קומפוננטות משנה
 import CalendarFilter from './CalendarFilter';
@@ -35,8 +35,8 @@ const Calendar = () => {
     fetchEvents,
     createNewEvent,
     setShowFilterForm,
-    calendarView,
-    setCalendarView
+    // calendarView,
+    // setCalendarView
   } = useCalendar();
   
   // הפניה ל-fullCalendar
