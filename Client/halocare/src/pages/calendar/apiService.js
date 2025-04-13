@@ -1,35 +1,12 @@
 // import axios from 'axios';
 
-// // הגדרת כתובת הבסיס לשרת
-// const API_BASE_URL = 'https://localhost:7225/api';
-// const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
-// const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
-// const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
-// const EVENT_TYPES_ENDPOINT = `${API_BASE_URL}/EventTypes`;
-// // יצירת מופע axios עם הגדרות בסיס
-// const api = axios.create({
-//   baseURL: API_BASE_URL,
-//   headers: {
-//     'Content-Type': 'application/json',
-//      Authorization: `Bearer ${localStorage.getItem('token')}`
-//   }
-// });
-
-// // לוכד שגיאות גלובלי
-// api.interceptors.response.use(
-//   response => response,
-//   error => {
-//     console.error('שגיאת API:', error.response?.data || error.message);
-//     return Promise.reject(error);
-//   }
-// );
 
 // // ===== שירותי סוגי אירועים =====
 // export const eventTypeService = {
 //   // קבלת כל סוגי האירועים
 //   async getAllEventTypes() {
 //     try {
-//       const response = await api.get('/api/EventTypes');
+//       const response = await axios.get('/EventTypes');
 //       return Array.isArray(response.data) ? response.data : [];
 //     } catch (error) {
 //       console.error('שגיאה בטעינת סוגי אירועים:', error);

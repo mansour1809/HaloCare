@@ -21,6 +21,14 @@ namespace halocare.Controllers
             _referenceDataService = new ReferenceDataService(configuration);
         }
 
+
+        [HttpGet("test-error")]
+        public IActionResult TestError()
+        {
+            // Deliberately throw an exception to test middleware
+            throw new Exception("This is a test exception to verify middleware is working");
+        }
+
         // GET: api/ReferenceData/cities
         [HttpGet("cities")]
         public ActionResult<IEnumerable<City>> GetCities()

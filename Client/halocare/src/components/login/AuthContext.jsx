@@ -1,9 +1,8 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import axios from '../../common/axiosConfig';
 import PropTypes from 'prop-types';
 
-const API_URL = 'https://localhost:7225/api';
 
 // יצירת קונטקסט
 export const AuthContext = createContext(null);
@@ -18,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   
   // בדיקת אם המשתמש מחובר בטעינה הראשונית
   useEffect(() => {
+   
     const initAuth = () => {
       try {
         const token = localStorage.getItem('token');
@@ -48,7 +48,8 @@ export const AuthProvider = ({ children }) => {
   // פונקציית התחברות
   const login = async (email, password) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      
+      const response = await axios.post(`/auth/login`, { email, password });
       
       if (response.data && response.data.token) {
         // שמירה ב-localStorage
@@ -79,11 +80,11 @@ export const AuthProvider = ({ children }) => {
     // ניקוי localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
     // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-  };
+   window.location.href = '/login';
+    };
   // AuthContext.js - הוסף את הפונקציה הזו
 const sendPasswordResetEmail = async (email) => {
   try {

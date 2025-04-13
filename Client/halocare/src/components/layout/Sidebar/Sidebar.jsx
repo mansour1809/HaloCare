@@ -247,7 +247,8 @@ const ProSidebar = () => {
         sx={{ mt: 2 }}
       >
         התנתקות
-      </Button>        </Menu>
+      </Button>        
+      </Menu>
       </Box>
     </Sidebar>
   );

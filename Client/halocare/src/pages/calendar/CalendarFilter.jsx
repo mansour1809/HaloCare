@@ -1,3 +1,4 @@
+// Component: CalendarFilter.jsx
 import { 
   Paper, 
   Box, 
@@ -129,7 +130,7 @@ const CalendarFilter = () => {
                   <em>הכל</em>
                 </MenuItem>
                 {employees.map(employee => (
-                  <MenuItem key={employee.id} value={employee.id}>
+                  <MenuItem key={employee.employeeId} value={employee.employeeId}>
                     {`${employee.firstName} ${employee.lastName}`}
                     {employee.role && ` (${employee.role})`}
                   </MenuItem>

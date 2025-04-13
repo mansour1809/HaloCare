@@ -10,12 +10,10 @@ namespace halocare.Middleware
     public class ErrorHandlingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ErrorHandlingMiddleware> _logger;
 
         public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
         {
             _next = next;
-            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -26,7 +24,6 @@ namespace halocare.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "not handled exception");
                 await HandleExceptionAsync(context, ex);
             }
         }

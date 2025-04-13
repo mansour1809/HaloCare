@@ -58,7 +58,6 @@ const LoginPage = () => {
       
       // הצגת הודעת הצלחה
       setOpenSnackbar(true);
-      
       // ניווט לדף הבית אחרי התחברות מוצלחת
       setTimeout(() => {
         navigate('/', { replace: true });
@@ -89,6 +88,21 @@ const LoginPage = () => {
           flexDirection: { xs: 'column', md: 'row' }
         }}
       >
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: '20px'
+          }}
+        >
+          <img 
+            src={'/logo.jpeg'} 
+            alt="Halo Care Logo" 
+            style={{ 
+              height: '250px',
+              borderRadius: '10px',
+            }} 
+          />
+        </Box>
         <Paper 
           elevation={3} 
           sx={{ 
@@ -185,21 +199,7 @@ const LoginPage = () => {
             {loading ? 'מתחבר...' : 'התחבר'}
           </Button>
         </Paper>
-        <Box
-          sx={{
-            textAlign: 'center',
-            padding: '20px'
-          }}
-        >
-          <img 
-            src={'/logo.jpeg'} 
-            alt="Halo Care Logo" 
-            style={{ 
-              height: '250px',
-              borderRadius: '10px',
-            }} 
-          />
-        </Box>
+        
       </Box>
 
       <Snackbar

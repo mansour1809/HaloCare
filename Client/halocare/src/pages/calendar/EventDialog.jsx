@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useState } from 'react';
 import { 
   Dialog, 
   DialogTitle, 
@@ -35,6 +35,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 // שימוש בקונטקסט
 import { useCalendar } from './CalendarContext';
+import { useSelector } from 'react-redux';
 
 const EventDialog = () => {
   // קבלת ערכים ופונקציות מהקונטקסט
@@ -46,14 +47,14 @@ const EventDialog = () => {
     handleEventChange,
     handleSaveEvent,
     handleDeleteEvent,
-    eventTypes,
-    kids,
-    employees,
-    createdByUserId
+    // eventTypes,
+    // kids,
+    // employees,
   } = useCalendar();
   
-  // שמירת פרטי היוצר
-  // const [creator, setCreator] = useState(null);
+  const { eventTypes } = useSelector(state => state.eventTypes);
+  const { kids  } = useSelector(state => state.kids);
+  const { employees  } = useSelector(state => state.employees);
   
   // מצב לשמירת שגיאות ולידציה
   const [validationErrors, setValidationErrors] = useState({

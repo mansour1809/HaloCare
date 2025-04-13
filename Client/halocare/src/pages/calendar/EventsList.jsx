@@ -1,3 +1,4 @@
+//COMPONENT: EventsList.jsx
 import React, { useState, useEffect } from 'react';
 import { useCalendar } from './CalendarContext';
 import { 

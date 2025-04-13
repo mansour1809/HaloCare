@@ -533,12 +533,13 @@ const EmployeesManagement = () => {
                   <InputLabel>שיוך לכיתה</InputLabel>
                   <Select
                     value={selectedEmployee?.classId || ""}
+                    key={selectedEmployee?.classId}
                     onChange={(e) => setSelectedEmployee({ ...selectedEmployee, classId: e.target.value })}
                     label="שיוך לכיתה"
                   >
                     <MenuItem value="">ללא שיוך</MenuItem>
                     {classes.map((cls) => (
-                      <MenuItem key={cls.id} value={cls.id}>{cls.className}</MenuItem>
+                      <MenuItem key={cls.classId} value={cls.classId}>{cls.className}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>

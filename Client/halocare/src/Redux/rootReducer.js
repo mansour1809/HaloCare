@@ -1,10 +1,24 @@
-// src/redux/rootReducer.js
+// src/Redux/rootReducer.js
 import { combineReducers } from '@reduxjs/toolkit';
-import citiesReducer from './features/citiesSlice';
 
+// reducers
+import citiesReducer from './features/citiesSlice';
+import kidsReducer from './features/kidsSlice';
+import employeesReducer from './features/employeesSlice';
+import classesReducer from './features/classesSlice';
+import eventTypesReducer from './features/eventTypesSlice';
+import eventsReducer from './features/eventsSlice';
+import rolesReducer from './features/rolesSlice';
+
+// Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
   cities: citiesReducer,
-  // כאן נוסיף עוד reducers בעתיד
+  kids: kidsReducer,
+  employees: employeesReducer,
+  classes: classesReducer,
+  eventTypes: eventTypesReducer,
+  roles: rolesReducer,
+  events: eventsReducer
 });
 
 export default rootReducer;

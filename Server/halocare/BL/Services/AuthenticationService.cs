@@ -66,7 +66,8 @@ namespace halocare.BL.Services
                 issuer: jwtIssuer,
                 audience: jwtAudience,
                 claims: claims,
-                expires: DateTime.Now.AddHours(24), // תוקף הטוקן - 24 שעות
+                //expires: DateTime.Now.AddHours(24), // תוקף הטוקן - 24 שעות
+                expires: DateTime.Now.AddMinutes(5), // תוקף הטוקן - 24 שעות
                 signingCredentials: credentials
             );
 

@@ -1,39 +1,49 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import axios from '../../common/axiosConfig';
 import { toISOStringWithoutTimezone } from './calendarUtils';
 import Swal from 'sweetalert2';
+import { useDispatch } from 'react-redux';
+import { fetchKids } from '../../Redux/features/kidsSlice';
+import { fetchEmployees } from '../../Redux/features/employeesSlice';
+import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
+import { fetchEvents } from '../../Redux/features/eventsSlice';
+import { useSelector } from 'react-redux';
 
-// API Endpoints
-const API_BASE_URL = 'https://localhost:7225/api';
-// const EVENTS_ENDPOINT = `${API_BASE_URL}/Events`;
-// const KIDS_ENDPOINT = `${API_BASE_URL}/Kids`;
-// const EMPLOYEES_ENDPOINT = `${API_BASE_URL}/Employees`;
-// const EVENT_TYPES_ENDPOINT = `${API_BASE_URL}/EventTypes`; // שינוי - נקודת קצה לטבלת סוגי אירועים
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-     Authorization: `Bearer ${localStorage.getItem('token')}`
-  }
-});
 // יצירת הקונטקסט
 const CalendarContext = createContext();
 
 // פרובידר לקונטקסט
 export const CalendarProvider = ({ children }) => {
+
+  const dispatch = useDispatch();
+  //data from redux store
+  const { events, status: eventsStatus } = useSelector(state => state.events);
+  const { kids, status: kidsStatus } = useSelector(state => state.kids);
+  const { employees, status: employeesStatus } = useSelector(state => state.employees);
+  const { eventTypes, status: eventTypesStatus } = useSelector(state => state.eventTypes);
+
+  useEffect(() => {
+    if (kidsStatus === 'idle') {
+      dispatch(fetchKids());
+    }
+    if (employeesStatus === 'idle') {
+      dispatch(fetchEmployees());
+    }
+    if (eventTypesStatus === 'idle') {
+      dispatch(fetchEventTypes());
+    }
+    if (eventsStatus === 'idle') {
+      dispatch(fetchEvents());
+    }
+  }, [dispatch, kidsStatus, employeesStatus, eventTypesStatus, eventsStatus]);
+  
+
   // מצבים - אירועים
-  const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // מצבים - נתוני עזר
-  const [kids, setKids] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const [eventTypes, setEventTypes] = useState([]);
-  const [isLoadingReferenceData, setIsLoadingReferenceData] = useState(false);
+  // const [error, setError] = useState(null);
+  const isLoadingFromRedux = (eventsStatus === 'loading');
+// console.log('errorsadasdas',error);
   const [createdByUserId, setCreatedByUserId] = useState(0); // מזהה יוצר האירוע - ברירת מחדל
-
   // מצבים - עריכה/יצירת אירוע
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({
@@ -112,154 +122,36 @@ export const CalendarProvider = ({ children }) => {
     };
   }, [createdByUserId]);
 
-  
-  // המרת אירוע מהשרת לפורמט המתאים ליומן
-  const formatEventForCalendar = useCallback((event) => {
-    return {
-      id: event.eventId,
-      title: event.eventTitle || event.eventType, // שימוש בכותרת החדשה אם קיימת
-      start: event.startTime,
-      end: event.endTime,
-      backgroundColor: event.color || '#1976d2', // שימוש בצבע שהגיע מהשרת
-      borderColor: event.color || '#1976d2',
-      extendedProps: {
-        location: event.location,
-        description: event.description,
-        eventTypeId: event.eventTypeId, // שמירת המזהה של סוג האירוע
-        type: event.eventType, // שמירת המחרוזת של סוג האירוע
-        color: event.color, // שמירת הצבע
-        createdBy: event.createdBy,
-        kidIds: event.kidIds || [],
-        employeeIds: event.employeeIds || []
-      }
-    };
-  },[]);
-
-  // טעינת סוגי אירועים מהשרת
-  const fetchEventTypes = useCallback(async () => {
-    try {
-      const response = await api.get('/EventTypes');
-        
-        
-      //   EVENT_TYPES_ENDPOINT, { headers: {
-      //   Authorization: `Bearer ${localStorage.getItem('token')}`
-      // }});
-      setEventTypes(response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching event types:', error);
-      return [];
-    }
-  }, []);
-
-  // טעינת אירועים
-  const fetchEvents = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-
-    try {
-      const response = await api.get(`/Events` );
-      const formattedEvents = response.data.map(formatEventForCalendar);
-      setEvents(formattedEvents);
-      return formattedEvents;
-    } catch (error) {
-      console.error('Error adding event:', error);
-      setError('אירעה שגיאה בטעינת האירועים');
-      setEvents([]);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  }, [formatEventForCalendar]);
 
   // הוספת אירוע חדש
   const addEvent = useCallback(async (eventData) => {
-    setIsLoading(true);
-    setError(null);
-
-
-    try {
-      // המרת נתוני האירוע לפורמט שהשרת מצפה לו
+    // setIsLoading(true);
+    // setError(null);
       const serverEventData = prepareEventData(eventData);
-      const response = await api.post('/Events', serverEventData);
-    await fetchEvents();
+      const response = await axios.post('/Events', serverEventData);
+      dispatch(fetchEvents());//refreshing the events list
       return response.data;
-    } catch (error) {
-      console.error('Error adding event:', error);
-      setError('אירעה שגיאה בהוספת האירוע');
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [prepareEventData, fetchEvents]);
+
+  }, [prepareEventData, dispatch]);
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // converting the event calendar for the server
-      const serverEventData = prepareEventData(eventData);
-      const response = await api.put(`/Events/${eventData.id}`, serverEventData);
-      await fetchEvents();//refreshing the events list
+    // setIsLoading(true);
+    // setError(null);
+    const serverEventData = prepareEventData(eventData);
+      const response = await axios.put(`/Events/${eventData.id}`, serverEventData);
+      dispatch(fetchEvents());//refreshing the events list
       return response.data;
-    } catch (error) {
-      console.error('Error updating event:', error);
-      setError('אירעה שגיאה בעדכון האירוע');
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [prepareEventData, fetchEvents]);
+  }, [prepareEventData,dispatch]);
 
   // מחיקת אירוע
   const deleteEvent = useCallback(async (eventId) => {
-    setIsLoading(true);
-    setError(null);
+    // setIsLoading(true);
+    // setError(null);
+    await axios.delete(`Events/${eventId}`);
+    dispatch(fetchEvents());//refreshing the events list
+  },[dispatch]);
 
-    try {
-      await api.delete(`Events/${eventId}`);
-
-      // רענון הנתונים
-      await fetchEvents();
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      setError('אירעה שגיאה במחיקת האירוע');
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  },[fetchEvents]);
-
-  // טעינת רשימת ילדים
-  const fetchKids = useCallback(async () => {
-    try {
-      const response = await api.get('/Kids');
-      setKids(response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching kids:', error);
-      setKids([]);
-      return [];
-    }
-  }, []);
-
-  // טעינת רשימת עובדים
-  const fetchEmployees = useCallback(async () => {
-    try {
-      const response = await api.get('/Employees');
-      setEmployees(response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      setEmployees([]);
-      return [];
-    }
-  }, []);
 
   // פונקציית סינון אירועים
   const filterEvents = useCallback(() => {
@@ -335,34 +227,12 @@ export const CalendarProvider = ({ children }) => {
     filterEvents();
   }, [events, filterOptions, filterEvents]);
 
-  // טעינת נתוני עזר
-  const fetchReferenceData = useCallback(async () => {
-    setIsLoadingReferenceData(true);
-    setError(null);
-
-    try {
-      await Promise.all([
-        fetchKids(),
-        fetchEmployees(),
-        fetchEventTypes()
-      ]);
-    } catch (error) {
-      console.error('Error fetching reference data:', error);
-      setError('אירעה שגיאה בטעינת נתוני עזר');
-    } finally {
-      setIsLoadingReferenceData(false);
-    }
-  }, [fetchKids, fetchEmployees, fetchEventTypes]);
-
-  // טעינת נתונים ראשונית
+  // loading the events on component mount
   useEffect(() => {
-    fetchEvents();
-    fetchReferenceData();
-  }, [fetchEvents, fetchReferenceData]);
+     dispatch(fetchEvents());
+  }, [dispatch]);
 
 
-
-  
   // טיפול בלחיצה על תאריך ביומן
   const handleDateClick = useCallback((info) => {
     const defaultVal= getDefaultEventValues(info.date, null);
@@ -420,16 +290,50 @@ export const CalendarProvider = ({ children }) => {
     };
 
     try {
+      // setIsLoading(true);
       if (selectedEvent) {
+        setOpenDialog(false);
+        Swal.fire({
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          text: 'מעדכן את האירוע',
+          showConfirmButton: false,
+        });
         await updateEvent(eventData);
+        Swal.fire({
+          icon: 'success',
+          title: 'עודכן בהצלחה',
+          text: 'האירוע עודכן בהצלחה',
+          timer: 2000,
+          showConfirmButton: false
+        });
       } else {
+        setOpenDialog(false);
+        Swal.fire({
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          text: 'ממתין להוספת האירוע',
+          showConfirmButton: false,
+        });
         await addEvent(eventData);
+        Swal.fire({
+          icon: 'success',
+          title: 'נוסף בהצלחה',
+          text: 'האירוע נוסף בהצלחה',
+          timer: 2000,
+          showConfirmButton: false
+        });
       }
-      setOpenDialog(false);
     } catch (error) {
       console.error('Error saving event:', error.response ? error.response.data : error);
-      alert('אירעה שגיאה בשמירת האירוע');
-    }
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה',
+        text: 'איsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssרעה שגיאה בשמירת האירוע',
+      });
+    } 
   }, [newEvent, selectedEvent, updateEvent, addEvent, eventTypes]);
 
 
@@ -442,14 +346,13 @@ export const CalendarProvider = ({ children }) => {
       });
       return;
     }
-
+    
     setOpenDialog(false);
-
-    // Wait to ensure the dialog closed
+    
     setTimeout(() => {
       Swal.fire({
-        title: '? האם אתה בטוח',
-        text: '? האם אתה בטוח שברצונך למחוק אירוע זה',
+        title: 'האם אתה בטוח?',
+        text: 'האם אתה בטוח שברצונך למחוק אירוע זה?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -477,8 +380,7 @@ export const CalendarProvider = ({ children }) => {
           }
         }
       });
-    }, 100); // Slight delay to ensure dialog closes first
-
+    }, 100);
   }, [selectedEvent, deleteEvent]);
 
 
@@ -498,17 +400,18 @@ export const CalendarProvider = ({ children }) => {
     setOpenDialog(true);
   }, [getDefaultEventValues]);
 
-  // ערך הקונטקסט - כל מה שנרצה לחשוף
+
+
+
+  //what we want to expose to the components that use this context
   const contextValue = {
-    // נתונים
     events,
     filteredEvents,
-    isLoading,
-    error,
+    isLoadingFromRedux,
+    // error,
     kids,
     employees,
     eventTypes,
-    isLoadingReferenceData,
     selectedEvent,
     newEvent,
     openDialog,
@@ -517,12 +420,12 @@ export const CalendarProvider = ({ children }) => {
     filterOptions,
     createdByUserId,
 
-    // פעולות
-    fetchEvents,
+//actions
+    fetchEvents: () => dispatch(fetchEvents()),
     addEvent,
     updateEvent,
     deleteEvent,
-    fetchReferenceData,
+    // fetchReferenceData,
     filterEvents,
     resetFilters,
     handleFilterChange,
@@ -537,7 +440,7 @@ export const CalendarProvider = ({ children }) => {
     setNewEvent,
     setOpenDialog,
     setCalendarView,
-    setShowFilterForm
+    setShowFilterForm,
   };
 
   return (
@@ -546,6 +449,16 @@ export const CalendarProvider = ({ children }) => {
     </CalendarContext.Provider>
   );
 };
+
+
+
+
+
+
+
+
+
+
 
 // הוק שימושי לשימוש בקונטקסט
 export const useCalendar = () => {

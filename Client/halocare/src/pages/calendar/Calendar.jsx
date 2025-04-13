@@ -1,3 +1,4 @@
+
 import  { useRef } from 'react';
 import { 
   Box, 
@@ -12,9 +13,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
-// import ViewDayIcon from '@mui/icons-material/ViewDay';
-// import ViewWeekIcon from '@mui/icons-material/ViewWeek';
-// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+
 
 // קומפוננטות משנה
 import CalendarFilter from './CalendarFilter';
@@ -30,13 +29,12 @@ const Calendar = () => {
     events,
     filteredEvents,
     isLoading,
+    isLoadingFromRedux,
     showFilterForm,
     filterOptions, 
     fetchEvents,
     createNewEvent,
     setShowFilterForm,
-    // calendarView,
-    // setCalendarView
   } = useCalendar();
   
   // הפניה ל-fullCalendar
@@ -47,6 +45,8 @@ const Calendar = () => {
     ? filteredEvents 
     : events;
   
+
+    
   // בדיקה אם יש מסננים פעילים
   const hasActiveFilters = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId;
   
@@ -148,7 +148,7 @@ const Calendar = () => {
           <CalendarView 
             calendarRef={calendarRef}
             events={displayEvents}
-            isLoading={isLoading}
+            isLoadingFromRedux={isLoadingFromRedux}
           />
         </Box>
       </Paper>

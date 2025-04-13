@@ -4,7 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import heLocale from '@fullcalendar/core/locales/he';
 import { Box, Skeleton } from '@mui/material';
-import './calendarStyles.css';
+import '../../assets/styles/calendarStyles.css';
 import PropTypes from 'prop-types';
 
 // שימוש בקונטקסט
@@ -13,7 +13,7 @@ import { useCalendar } from './CalendarContext';
 const CalendarView = ({
   calendarRef,
   events,
-  isLoading
+  isLoadingFromRedux
 }) => {
   // קבלת ערכים ופונקציות מהקונטקסט
   const {
@@ -21,10 +21,10 @@ const CalendarView = ({
     handleDateClick,
     handleEventClick
   } = useCalendar();
-  
+
   // אם טוען אירועים, הצג skeleton 
-  if (isLoading) {
-    return (
+    if (isLoadingFromRedux ) {
+      return (
       <Box sx={{ p: 4, height: '600px' }}>
         <Skeleton variant="rectangular" height={40} sx={{ mb: 2 }} />
         <Skeleton variant="rectangular" height={560} animation="wave" />
@@ -162,6 +162,6 @@ const renderEventContent = (eventInfo) => {
 CalendarView.propTypes = {
   calendarRef: PropTypes.object,
   events: PropTypes.array.isRequired,
-  isLoading: PropTypes.bool.isRequired,
+  isLoadingFromRedux: PropTypes.bool.isRequired,
 };
 export default CalendarView;

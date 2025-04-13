@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 
 using halocare.BL.Services;
+using halocare.Middleware;
 
 
 namespace halocare
@@ -52,7 +53,7 @@ namespace halocare
                 app.UseSwaggerUI();
             }
 
-
+            app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseHttpsRedirection();
             app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             app.UseAuthentication();

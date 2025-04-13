@@ -133,24 +133,32 @@ const AppContent = () => {
               {/* ניהול צוות */}
               <Route path="/employees/list" element={
                 <PrivateRoute>
+                  <EmployeesProvider>
                   <EmployeesManagement />
+                  </EmployeesProvider>
                 </PrivateRoute>
               } />
               <Route path="/employees/add" element={
                 <PrivateRoute>
+                  <EmployeesProvider>
                   <NewEmployeeForm />
+                  </EmployeesProvider>
                 </PrivateRoute>
               } />
 
               {/* יומן ופגישות */}
               <Route path="/calendar/schedule" element={
                 <PrivateRoute>
+                  <CalendarProvider>
                   <Calendar />
+                  </CalendarProvider>
                 </PrivateRoute>
               } />
               <Route path="/calendar/meetings" element={
                 <PrivateRoute>
+                  <CalendarProvider>
                   <EventsList />
+                  </CalendarProvider>
                 </PrivateRoute>
               } />
 
@@ -191,11 +199,11 @@ function App() {
         <AuthProvider>
           <ProSidebarProvider>
             <CssBaseline />
-            <CalendarProvider>
-              <EmployeesProvider>
+            {/* <CalendarProvider> */}
+              {/* <EmployeesProvider> */}
               <AppContent />
-              </EmployeesProvider>
-            </CalendarProvider>
+              {/* </EmployeesProvider> */}
+            {/* </CalendarProvider> */}
           </ProSidebarProvider>
         </AuthProvider>
       </ThemeProvider>
