@@ -1,6 +1,6 @@
 // src/contexts/EmployeesContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from '../../axiosConfig';
+import axios from '../../common/axiosConfig';
 
 
 // יצירת הקונטקסט
@@ -80,7 +80,7 @@ export const EmployeesProvider = ({ children }) => {
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
-console.log('נתוני העובד:', employeeData);
+      console.log('נתוני העובד:', employeeData);
       // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`/Employees`, employeeData);
       
@@ -157,6 +157,8 @@ console.log('נתוני העובד:', employeeData);
 
  
   const sendWelcomeEmail = async (email, password, firstName, lastName) => {
+
+    console.log('שליחת מייל ברוכים הבאים ל:', email, password, firstName, lastName);
     try {
       const response = await axios.post(`/Employees/sendWelcomeEmail`, {
         email,

@@ -25,7 +25,7 @@ namespace halocare.Controllers
         [HttpGet("test-error")]
         public IActionResult TestError()
         {
-            // Deliberately throw an exception to test middleware
+            // throw an exception to test middleware
             throw new Exception("This is a test exception to verify middleware is working");
         }
 

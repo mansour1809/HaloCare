@@ -141,17 +141,17 @@ namespace halocare.DAL.Repositories
 
 
         //// הוספנו מתודה לעדכון סיסמה
-        //public bool UpdatePassword(int employeeId, string hashedPassword)
-        //{
-        //    Dictionary<string, object> parameters = new Dictionary<string, object>
-        //    {
-        //        { "@EmployeeId", employeeId },
-        //        { "@Password", hashedPassword }
-        //    };
+        public bool UpdatePassword(int employeeId, string hashedPassword)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@EmployeeId", employeeId },
+                { "@Password", hashedPassword }
+            };
 
-        //    int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeePassword", parameters);
-        //    return rowsAffected > 0;
-        //}
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeePassword", parameters);
+            return rowsAffected > 0;
+        }
 
         // פונקציית עזר למיפוי תוצאות שאילתה לאובייקט Employee
         private Employee MapToEmployee(DataRow row)

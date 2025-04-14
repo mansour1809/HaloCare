@@ -331,7 +331,7 @@ export const CalendarProvider = ({ children }) => {
       Swal.fire({
         icon: 'error',
         title: 'שגיאה',
-        text: 'איsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssרעה שגיאה בשמירת האירוע',
+        text: 'שגיאה בשמירת האירוע',
       });
     } 
   }, [newEvent, selectedEvent, updateEvent, addEvent, eventTypes]);

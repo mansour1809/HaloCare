@@ -3,7 +3,6 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import axios from '../../common/axiosConfig';
 import PropTypes from 'prop-types';
 
-
 // יצירת קונטקסט
 export const AuthContext = createContext(null);
 
@@ -11,13 +10,19 @@ export const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  // משתני מצב להתחברות
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  // משתני מצב לאיפוס סיסמה
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+
   // בדיקת אם המשתמש מחובר בטעינה הראשונית
   useEffect(() => {
-   
     const initAuth = () => {
       try {
         const token = localStorage.getItem('token');
@@ -48,7 +53,6 @@ export const AuthProvider = ({ children }) => {
   // פונקציית התחברות
   const login = async (email, password) => {
     try {
-      
       const response = await axios.post(`/auth/login`, { email, password });
       
       if (response.data && response.data.token) {
@@ -83,28 +87,83 @@ export const AuthProvider = ({ children }) => {
     // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-   window.location.href = '/login';
-    };
+    window.location.href = '/login';
+  };
 
+  // פונקציה לבקשת איפוס סיסמה
+  const handleRequestPasswordReset = async (emailToReset) => {
+    // השתמש באימייל שהועבר כפרמטר, אם לא קיים השתמש במצב האימייל הפנימי
+    const emailToUse = emailToReset || email;
+    
+    if (!emailToUse) {
+      setMessage('אנא הכנס כתובת מייל');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setMessage('');
+    
+    try {
+      // קריאה לשרת לבקשת איפוס סיסמה
+      const response = await axios.post('/Auth/request-password-reset',{ email: emailToUse });
+      
+      // הצגת הודעת הצלחה
+      setMessage(response.data.message || 'קישור לאיפוס סיסמה נשלח למייל');
+      
+      // סגירת הדיאלוג אחרי השהייה
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setMessage('');
+      }, 3000);
+    } catch (error) {
+      // הצגת הודעת שגיאה
+      setMessage(
+        error.response?.data?.message || 
+        'אירעה שגיאה בשליחת בקשת איפוס סיסמה'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-const sendPasswordResetEmail = async (email) => {
-  try {
-    // כאן צריך להיות הקוד לשליחת בקשת איפוס סיסמה לשרת
-    const response = await axios.post('/api/auth/reset-password', { email });
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'שגיאה בבקשת איפוס סיסמה');
-  }
-};
+  // פונקציה לאיפוס הסיסמה עצמה (תשומש בעמוד איפוס הסיסמה)
+  const resetPassword = async (email, token, newPassword) => {
+    try {
+      const response = await axios.post('/Auth/reset-password', {
+        email,
+        token,
+        newPassword
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error("שגיאה באיפוס סיסמה:", error);
+      throw error;
+    }
+  };
 
   // נתונים שיהיו זמינים בקונטקסט
   const value = {
+    // מצב התחברות
     currentUser,
     isAuthenticated,
     loading,
+    
+    // פונקציות התחברות/התנתקות
     login,
     logout,
-  sendPasswordResetEmail
+    
+    // מצב איפוס סיסמה
+    email,
+    setEmail,
+    isSubmitting,
+    message,
+    showForgotPassword,
+    setShowForgotPassword,
+    
+    // פונקציות איפוס סיסמה
+    handleRequestPasswordReset,
+    resetPassword
   };
   
   return (
@@ -114,6 +173,7 @@ const sendPasswordResetEmail = async (email) => {
   );
 };
 
+// PropTypes
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };

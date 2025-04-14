@@ -14,12 +14,15 @@ namespace halocare.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthenticationService _authService;
-        //private readonly EmployeeService _employeeService;
+        private readonly EmployeeService _employeeService;
+        private readonly EmailService _emailService;
 
         public AuthController(IConfiguration configuration)
         {
             _authService = new AuthenticationService(configuration);
-            //_employeeService = new EmployeeService(configuration);
+            _employeeService = new EmployeeService(configuration);
+            _emailService = new EmailService(configuration);
+
 
         }
 
@@ -55,106 +58,96 @@ namespace halocare.Controllers
             }
         }
 
-        //    [HttpPost("reset-password")]
-        //    public IActionResult ResetPassword([FromBody] ResetPasswordModel model)
-        //    {
-        //        try
-        //        {
-        //            // בדיקה אם האימייל קיים במערכת ושליחת אימייל עם סיסמה חדשה
-        //            bool isSuccess = _authService.ResetPassword(model.Email);
+        [HttpPost("request-password-reset")]
+        public async Task<ActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
+        {
+            try
+            {
+                // בדוק אם המשתמש קיים במערכת
+                var employee =  _employeeService.GetEmployeeByEmail(request.Email);
+                if (employee == null)
+                {
+                    // לא מגלים אם המשתמש קיים או לא מסיבות אבטחה
+                    return Ok(new { success = true, message = "אם המייל קיים במערכת, נשלח קישור לאיפוס סיסמה" });
+                }
 
-        //            if (!isSuccess)
-        //            {
-        //                return NotFound("כתובת האימייל לא נמצאה במערכת או שאירעה שגיאה בשליחת האימייל");
-        //            }
+                // יצירת טוקן JWT לאיפוס סיסמה
+                string resetToken = _authService.GeneratePasswordResetToken(request.Email);
 
-        //            return Ok(new { message = "נשלח אימייל עם סיסמה חדשה" });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return StatusCode(500, $"שגיאת שרת: {ex.Message}");
-        //        }
-        //    }
+                // שליחת המייל
+                bool emailSent = await _emailService.SendPasswordResetEmail(
+                    request.Email,
+                    resetToken,
+                    "http://localhost:5173/reset-password" // כתובת הפרונטאנד
+                );
 
-        //    [HttpPost("change-password")]
-        //    public IActionResult ChangePassword([FromBody] ChangePasswordModel model)
-        //    {
-        //        try
-        //        {
-        //            bool isSuccess = _authService.ChangePassword(model.EmployeeId, model.CurrentPassword, model.NewPassword);
+                if (emailSent)
+                {
+                    return Ok(new { success = true, message = "קישור לאיפוס סיסמה נשלח למייל" });
+                }
+                else
+                {
+                    return StatusCode(500, new { success = false, message = "שגיאה בשליחת המייל" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
-        //            if (!isSuccess)
-        //            {
-        //                return BadRequest("הסיסמה הנוכחית אינה נכונה או שאירעה שגיאה בעדכון הסיסמה");
-        //            }
+        [HttpPost("reset-password")]
+        public async Task<ActionResult> ResetPassword([FromBody] PasswordResetDto reset)
+        {
+            try
+            {
+                Console.WriteLine(reset);
+                // בדיקת תקינות הטוקן וקבלת האימייל ממנו
+                if (!_authService.ValidatePasswordResetToken(reset.Token, out string email))
+                {
+                    return BadRequest(new { success = false, message = "קישור לא תקין או שפג תוקפו" });
+                }
 
-        //            return Ok(new { message = "הסיסמה עודכנה בהצלחה" });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return StatusCode(500, $"שגיאת שרת: {ex.Message}");
-        //        }
-        //    }
+                // וידוא שהאימייל בטוקן תואם את האימייל שנשלח
+                if (email != reset.Email)
+                {
+                    return BadRequest(new { success = false, message = "נתונים לא תקינים" });
+                }
 
-        //    [HttpPost("send-welcome-email")]
-        //    public IActionResult SendWelcomeEmail([FromBody] WelcomeEmailModel model)
-        //    {
-        //        try
-        //        {
-        //            bool isSuccess = _employeeService.SendWelcomeEmail(
-        //                model.Email,
-        //                model.Password,
-        //                model.FirstName,
-        //                model.LastName,
-        //                model.LoginUrl
-        //            );
+                // עדכון הסיסמה
+                var employee =  _employeeService.GetEmployeeByEmail(email);
+                if (employee == null)
+                {
+                    return BadRequest(new { success = false, message = "משתמש לא נמצא" });
+                }
 
-        //            if (!isSuccess)
-        //            {
-        //                return StatusCode(500, "אירעה שגיאה בשליחת האימייל");
-        //            }
+                // שמירת הסיסמה החדשה (יש לממש זאת בשירות העובדים)
+                 _employeeService.UpdatePassword(employee.EmployeeId, reset.NewPassword);
 
-        //            return Ok(new { message = "אימייל ברוכים הבאים נשלח בהצלחה" });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            return StatusCode(500, $"שגיאת שרת: {ex.Message}");
-        //        }
-        //    }
-        //}
+                return Ok(new { success = true, message = "הסיסמה עודכנה בהצלחה" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
-        //// מודלים
+
         public class LoginModel
         {
             public string Email { get; set; }
             public string Password { get; set; }
         }
+        public class PasswordResetDto
+        {
+            public string Email { get; set; }
+            public string Token { get; set; }
+            public string NewPassword { get; set; }
+        }
+        public class PasswordResetRequest
+        {
+            public string Email { get; set; }
+        }
     }
 }
 
-// מודל הכניסה למערכת
-//public class LoginModel
-//{
-//    public string Email { get; set; }
-//    public string Password { get; set; }
-//}
-//public class ResetPasswordModel
-//{
-//    public string Email { get; set; }
-//}
-
-//public class ChangePasswordModel
-//{
-//    public int EmployeeId { get; set; }
-//    public string CurrentPassword { get; set; }
-//    public string NewPassword { get; set; }
-//}
-
-//public class WelcomeEmailModel
-//{
-//    public string Email { get; set; }
-//    public string Password { get; set; }
-//    public string FirstName { get; set; }
-//    public string LastName { get; set; }
-//    public string LoginUrl { get; set; }
-//}

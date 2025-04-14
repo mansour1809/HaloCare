@@ -66,120 +66,104 @@ namespace halocare.BL.Services
                 issuer: jwtIssuer,
                 audience: jwtAudience,
                 claims: claims,
-                //expires: DateTime.Now.AddHours(24), // תוקף הטוקן - 24 שעות
-                expires: DateTime.Now.AddMinutes(5), // תוקף הטוקן - 24 שעות
+                expires: DateTime.Now.AddHours(12), // תוקף הטוקן - 12 שעות
                 signingCredentials: credentials
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        //public bool ResetPassword(string email)
-        //{
-        //    // 1. בדיקה אם האימייל קיים במערכת
-        //    Employee employee = _employeeRepository.GetEmployeeByEmail(email);
-        //    if (employee == null)
-        //        return false;
 
-        //    // 2. יצירת סיסמה אקראית חדשה
-        //    string newPassword = GenerateRandomPassword();
 
-        //    // 3. עדכון הסיסמה במסד הנתונים
-        //    string hashedPassword = HashPassword(newPassword);
-        //    bool updated = _employeeRepository.UpdatePassword(employee.EmployeeId, hashedPassword);
 
-        //    if (!updated)
-        //        return false;
 
-        //    // 4. שליחת אימייל עם הסיסמה החדשה
-        //    bool emailSent = SendPasswordResetEmail(email, newPassword, employee.FirstName);
+        public string GeneratePasswordResetToken(string email)
+        {
+            var jwtKey = _configuration["Jwt:Key"];
+            var jwtIssuer = _configuration["Jwt:Issuer"];
+            var jwtAudience = _configuration["Jwt:Audience"];
 
-        //    return emailSent;
-        //}
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        //public bool ChangePassword(int employeeId, string currentPassword, string newPassword)
-        //{
-        //    // 1. בדיקה אם המשתמש קיים
-        //    var employee = _employeeRepository.GetEmployeeById(employeeId);
-        //    if (employee == null)
-        //        return false;
+            var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Email, email),
+        new Claim("purpose", "password-reset") // מציין שזה טוקן לאיפוס סיסמה
+    };
 
-        //    // 2. אימות הסיסמה הנוכחית
-        //    string hashedCurrentPassword = HashPassword(currentPassword);
-        //    if (employee.Password != hashedCurrentPassword)
-        //        return false;
+            var token = new JwtSecurityToken(
+                issuer: jwtIssuer,
+                audience: jwtAudience,
+                claims: claims,
+                expires: DateTime.Now.AddHours(1), // תוקף קצר יחסית - שעה אחת
+                signingCredentials: credentials
+            );
 
-        //    // 3. עדכון הסיסמה החדשה
-        //    string hashedNewPassword = HashPassword(newPassword);
-        //    return _employeeRepository.UpdatePassword(employeeId, hashedNewPassword);
-        //}
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
 
-        //// פונקציות עזר
-        //private string GenerateRandomPassword(int length = 8)
-        //{
-        //    const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-        //    var random = new Random();
-        //    return new string(Enumerable.Repeat(chars, length)
-        //        .Select(s => s[random.Next(s.Length)]).ToArray());
-        //}
+        public bool ValidatePasswordResetToken(string token, out string email)
+        {
+            email = null; // ערך ברירת מחדל
+            try
+            {
+                var jwtKey = _configuration["Jwt:Key"];
+                var jwtIssuer = _configuration["Jwt:Issuer"];
+                var jwtAudience = _configuration["Jwt:Audience"];
 
-        //private bool SendPasswordResetEmail(string email, string newPassword, string firstName)
-        //{
-        //    try
-        //    {
-        //        // קבלת הגדרות SMTP מה-configuration
-        //        string smtpServer = _configuration["EmailSettings:SmtpServer"];
-        //        int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-        //        string smtpUsername = _configuration["EmailSettings:Username"];
-        //        string smtpPassword = _configuration["EmailSettings:Password"];
-        //        string senderEmail = _configuration["EmailSettings:SenderEmail"];
-        //        string senderName = _configuration["EmailSettings:SenderName"];
+                var tokenHandler = new JwtSecurityTokenHandler();
 
-        //        using (var client = new SmtpClient(smtpServer, smtpPort))
-        //        {
-        //            client.UseDefaultCredentials = false;
-        //            client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-        //            client.EnableSsl = true;
+                // בדיקה בסיסית אם זה בכלל טוקן תקין
+                if (!tokenHandler.CanReadToken(token))
+                {
+                    return false;
+                }
 
-        //            MailMessage message = new MailMessage();
-        //            message.From = new MailAddress(senderEmail, senderName);
-        //            message.To.Add(email);
-        //            message.Subject = "איפוס סיסמה - Halo Care";
-        //            message.Body = $@"
-        //                <html>
-        //                <body dir='rtl'>
-        //                    <h2>שלום {firstName},</h2>
-        //                    <p>קיבלנו בקשה לאיפוס הסיסמה שלך במערכת.</p>
-        //                    <p>הסיסמה החדשה שלך היא: <strong>{newPassword}</strong></p>
-        //                    <p>מומלץ לשנות את הסיסמה מיד לאחר ההתחברות הראשונה.</p>
-        //                    <p>בברכה,<br>צוות Halo Care</p>
-        //                </body>
-        //                </html>";
-        //            message.IsBodyHtml = true;
+                // קריאת הטוקן ישירות לפני הוולידציה כדי לחלץ את הקלייימים
+                var jwtToken = tokenHandler.ReadJwtToken(token);
 
-        //            client.Send(message);
-        //        }
+                // בדיקה אם ה-claim של המייל קיים
+                var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == JwtRegisteredClaimNames.Email);
+                if (emailClaim == null)
+                {
+                    return false; // אין טענת אימייל בטוקן
+                }
 
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
-        //        return false;
-        //    }
-        //}
+                // חילוץ האימייל מהטוקן
+                email = emailClaim.Value;
 
-        //private string HashPassword(string password)
-        //{
-        //    using (SHA256 sha256 = SHA256.Create())
-        //    {
-        //        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        //        StringBuilder builder = new StringBuilder();
-        //        for (int i = 0; i < bytes.Length; i++)
-        //        {
-        //            builder.Append(bytes[i].ToString("x2"));
-        //        }
-        //        return builder.ToString();
-        //    }
-        //}
+                // בדיקה אם המטרה של הטוקן היא איפוס סיסמה
+                var purposeClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "purpose");
+                if (purposeClaim == null || purposeClaim.Value != "password-reset")
+                {
+                    return false; // זה לא טוקן לאיפוס סיסמה
+                }
+
+                // וולידציה מלאה של הטוקן
+                var key = Encoding.ASCII.GetBytes(jwtKey);
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtAudience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                // בדיקת תקינות הטוקן
+                tokenHandler.ValidateToken(token, validationParameters, out _);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // הוספת לוג של השגיאה לצורכי דיבוג
+                Console.WriteLine($"Token validation error: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

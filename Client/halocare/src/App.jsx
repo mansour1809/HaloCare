@@ -21,7 +21,7 @@ import LoginPage from './components/login/login';
 import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
-// import ResetPasswordPage from './components/login/ResetPasswordPage';
+import ResetPassword from './components/login/ResetPassword';
 
 // אותנטיקציה
 import { useAuth, AuthProvider } from './components/login/AuthContext';
@@ -80,7 +80,7 @@ const AppContent = () => {
     <Router>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
         {isAuthenticated && <Navbar />}
-        
+
         <Box
           sx={{
             display: "flex",
@@ -89,98 +89,144 @@ const AppContent = () => {
             pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0,
           }}
         >
-          {isAuthenticated && <ProSidebar  />}
-          
+          {isAuthenticated && <ProSidebar />}
+
           <Box
             component="main"
             sx={{
               flexGrow: 1,
               p: 3,
               backgroundColor: "#f5f5f5",
-              ml: isAuthenticated ? `${DRAWER_WIDTH}px !important` : '0 !important',
-              mr: '0 !important',
-              width: isAuthenticated ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%',
-              minHeight: isAuthenticated ? `calc(100vh - ${NAVBAR_HEIGHT}px)` : '100vh',
+              ml: isAuthenticated
+                ? `${DRAWER_WIDTH}px !important`
+                : "0 !important",
+              mr: "0 !important",
+              width: isAuthenticated
+                ? `calc(100% - ${DRAWER_WIDTH}px)`
+                : "100%",
+              minHeight: isAuthenticated
+                ? `calc(100vh - ${NAVBAR_HEIGHT}px)`
+                : "100vh",
               overflow: "auto",
             }}
           >
             <Routes>
               {/* דף התחברות - פתוח לכולם */}
-              <Route path="/login" element={
-                isAuthenticated ? <Navigate to="/" /> : <LoginPage />
-              } />
+              <Route
+                path="/login"
+                element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
+              />
               {/* <Route path="/reset-password" element={<ResetPasswordPage />} /> */}
-              
+
+              {/* // Add this to your routes */}
+              <Route path="/reset-password" element={
+                                  // <PrivateRoute>
+
+                <ResetPassword />
+                                  // </PrivateRoute>
+
+                } />
+
               {/* כל השאר - רק למחוברים */}
-              <Route path="/" element={
-                <PrivateRoute>
-                  <HomePage />
-                </PrivateRoute>
-              } />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <HomePage />
+                  </PrivateRoute>
+                }
+              />
 
               {/* ניהול ילדים */}
-              <Route path="/kids/list" element={
-                <PrivateRoute>
-                  <KidsManagment />
-                </PrivateRoute>
-              } />
-              <Route path="/kids/add" element={
-                <PrivateRoute>
-                  <div>kids add</div>
-                </PrivateRoute>
-              } />
-              
+              <Route
+                path="/kids/list"
+                element={
+                  <PrivateRoute>
+                    <KidsManagment />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/kids/add"
+                element={
+                  <PrivateRoute>
+                    <div>kids add</div>
+                  </PrivateRoute>
+                }
+              />
+
               {/* ניהול צוות */}
-              <Route path="/employees/list" element={
-                <PrivateRoute>
-                  <EmployeesProvider>
-                  <EmployeesManagement />
-                  </EmployeesProvider>
-                </PrivateRoute>
-              } />
-              <Route path="/employees/add" element={
-                <PrivateRoute>
-                  <EmployeesProvider>
-                  <NewEmployeeForm />
-                  </EmployeesProvider>
-                </PrivateRoute>
-              } />
+              <Route
+                path="/employees/list"
+                element={
+                  <PrivateRoute>
+                    <EmployeesProvider>
+                      <EmployeesManagement />
+                    </EmployeesProvider>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/employees/add"
+                element={
+                  <PrivateRoute>
+                    <EmployeesProvider>
+                      <NewEmployeeForm />
+                    </EmployeesProvider>
+                  </PrivateRoute>
+                }
+              />
 
               {/* יומן ופגישות */}
-              <Route path="/calendar/schedule" element={
-                <PrivateRoute>
-                  <CalendarProvider>
-                  <Calendar />
-                  </CalendarProvider>
-                </PrivateRoute>
-              } />
-              <Route path="/calendar/meetings" element={
-                <PrivateRoute>
-                  <CalendarProvider>
-                  <EventsList />
-                  </CalendarProvider>
-                </PrivateRoute>
-              } />
+              <Route
+                path="/calendar/schedule"
+                element={
+                  <PrivateRoute>
+                    <CalendarProvider>
+                      <Calendar />
+                    </CalendarProvider>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/calendar/meetings"
+                element={
+                  <PrivateRoute>
+                    <CalendarProvider>
+                      <EventsList />
+                    </CalendarProvider>
+                  </PrivateRoute>
+                }
+              />
 
               {/* משימות */}
-              <Route path="/tasks" element={
-                <PrivateRoute>
-                  <div>Tasks Page</div>
-                </PrivateRoute>
-              } />
+              <Route
+                path="/tasks"
+                element={
+                  <PrivateRoute>
+                    <div>Tasks Page</div>
+                  </PrivateRoute>
+                }
+              />
 
               {/* דוחות */}
-              <Route path="/reports/attendance" element={
-                <PrivateRoute>
-                  <AttendanceTable />
-                </PrivateRoute>
-              } />
-              <Route path="/reports/treatments" element={
-                <PrivateRoute>
-                  <Flowerapp />
-                </PrivateRoute>
-              } />
-              
+              <Route
+                path="/reports/attendance"
+                element={
+                  <PrivateRoute>
+                    <AttendanceTable />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/reports/treatments"
+                element={
+                  <PrivateRoute>
+                    <Flowerapp />
+                  </PrivateRoute>
+                }
+              />
+
               {/* שגיאה 404 */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

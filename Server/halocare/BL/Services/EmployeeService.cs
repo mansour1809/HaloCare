@@ -7,6 +7,9 @@ using System.Net.Mail;
 using halocare.DAL.Models;
 using halocare.DAL.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace halocare.BL.Services
 {
@@ -101,10 +104,7 @@ namespace halocare.BL.Services
             return _employeeRepository.DeactivateEmployee(id);
         }
 
-        //public bool UpdatePassword(int employeeId, string hashedPassword)
-        //{
-        //    return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
-        //}
+        
 
         public Employee Login(string email, string password)
         {
@@ -131,62 +131,18 @@ namespace halocare.BL.Services
             return employee;
         }
 
-        // פונקציית שליחת אימייל ברוכים הבאים
-        //public bool SendWelcomeEmail(string email, string password, string firstName, string lastName, string loginUrl = null)
-        //{
-        //    try
-        //    {
-        //        // קבלת הגדרות SMTP מה-configuration
-        //        string smtpServer = _configuration["EmailSettings:SmtpServer"];
-        //        int smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-        //        string smtpUsername = _configuration["EmailSettings:Username"];
-        //        string smtpPassword = _configuration["EmailSettings:Password"];
-        //        string senderEmail = _configuration["EmailSettings:SenderEmail"];
-        //        string senderName = _configuration["EmailSettings:SenderName"];
 
-        //        // אם לא הועבר URL התחברות, השתמש בכתובת ברירת מחדל
-        //        if (string.IsNullOrEmpty(loginUrl))
-        //        {
-        //            loginUrl = _configuration["AppSettings:DefaultLoginUrl"];
-        //        }
 
-        //        using (var client = new SmtpClient(smtpServer, smtpPort))
-        //        {
-        //            client.UseDefaultCredentials = false;
-        //            client.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
-        //            client.EnableSsl = true;
 
-        //            MailMessage message = new MailMessage();
-        //            message.From = new MailAddress(senderEmail, senderName);
-        //            message.To.Add(email);
-        //            message.Subject = "ברוכים הבאים למערכת Halo Care";
-        //            message.Body = $@"
-        //                <html>
-        //                <body dir='rtl'>
-        //                    <h2>שלום {firstName} {lastName},</h2>
-        //                    <p>ברוכים הבאים למערכת Halo Care!</p>
-        //                    <p>להלן פרטי ההתחברות שלך למערכת:</p>
-        //                    <ul>
-        //                        <li><strong>שם משתמש:</strong> {email}</li>
-        //                        <li><strong>סיסמה:</strong> {password}</li>
-        //                    </ul>
-        //                    <p>לכניסה למערכת <a href='{loginUrl}'>לחץ כאן</a>.</p>
-        //                    <p>בברכה,<br>צוות Halo Care</p>
-        //                </body>
-        //                </html>";
-        //            message.IsBodyHtml = true;
 
-        //            client.Send(message);
-        //        }
 
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"שגיאה בשליחת אימייל: {ex.Message}");
-        //        return false;
-        //    }
-        //}
+
+
+        public bool UpdatePassword(int employeeId, string hashedPassword)
+        {
+            hashedPassword = HashPassword(hashedPassword);
+            return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
+        }
 
         private string HashPassword(string password)
         {
