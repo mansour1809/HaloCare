@@ -85,7 +85,8 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
    window.location.href = '/login';
     };
-  // AuthContext.js - הוסף את הפונקציה הזו
+
+
 const sendPasswordResetEmail = async (email) => {
   try {
     // כאן צריך להיות הקוד לשליחת בקשת איפוס סיסמה לשרת
