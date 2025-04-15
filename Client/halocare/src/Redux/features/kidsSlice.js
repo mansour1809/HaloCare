@@ -1,6 +1,6 @@
-// src/Redux/features/kids/kidsSlice.js
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../components/common/axiosConfig';
 
 // פעולה אסינכרונית לטעינת רשימת הילדים
 export const fetchKids = createAsyncThunk(

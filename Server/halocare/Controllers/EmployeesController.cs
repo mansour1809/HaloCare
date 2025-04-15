@@ -111,11 +111,11 @@ namespace halocare.Controllers
 
         // PATCH: api/Employees/5/deactivate
         [HttpPatch("{id}/deactivate")]
-        public IActionResult DeactivateEmployee(int id)
+        public IActionResult DeactivateEmployee(int id, [FromBody] UpdateEmployeeStatusRequest status)
         {
             try
             {
-                bool deactivated = _employeeService.DeactivateEmployee(id);
+                bool deactivated = _employeeService.DeactivateEmployee(id,status.IsActive);
 
                 if (deactivated)
                 {
@@ -135,6 +135,7 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+
         [HttpPost("sendWelcomeEmail")]
         public async Task<ActionResult> SendWelcomeEmail([FromBody] WelcomeEmailDto emailData)
         {
@@ -173,6 +174,10 @@ namespace halocare.Controllers
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string LoginUrl { get; set; }
+        }
+        public class UpdateEmployeeStatusRequest
+        {
+            public bool IsActive { get; set; }
         }
     }
 

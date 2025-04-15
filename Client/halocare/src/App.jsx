@@ -1,7 +1,7 @@
 // App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { rtlCache } from './common/rtlCache';
+import { rtlCache } from './components/common/rtlCache';
 import { CacheProvider } from '@emotion/react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 

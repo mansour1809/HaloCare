@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Net.NetworkInformation;
 using halocare.DAL.Models;
 using Microsoft.Extensions.Configuration;
 
@@ -51,13 +52,13 @@ namespace halocare.DAL.Repositories
     {
         { "@FirstName", employee.FirstName },
         { "@LastName", employee.LastName },
-        { "@BirthDate", employee.BirthDate },
+        { "@BirthDate", employee.BirthDate ??(object) DBNull.Value },
         { "@MobilePhone", employee.MobilePhone },
         { "@Email", employee.Email },
         { "@Password", employee.Password },
         { "@Photo", employee.Photo },
         { "@LicenseNum", employee.LicenseNum },
-        { "@StartDate", employee.StartDate },
+        { "@StartDate", employee.StartDate ?? (object)DBNull.Value},
         { "@IsActive", employee.IsActive },
         { "@ClassId", employee.ClassId ?? (object)DBNull.Value },
         { "@RoleName", employee.RoleName },
@@ -93,12 +94,12 @@ namespace halocare.DAL.Repositories
         }
 
         // במקום מחיקה פיזית, מעדכנים את IsActive ל-false
-        public bool DeactivateEmployee(int id)
+        public bool DeactivateEmployee(int id, bool status)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "@EmployeeId", id },
-                { "@IsActive", false }
+                { "@IsActive", status }
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeStatus", parameters);
@@ -161,13 +162,13 @@ namespace halocare.DAL.Repositories
                 EmployeeId = Convert.ToInt32(row["EmployeeId"]),
                 FirstName = row["FirstName"].ToString(),
                 LastName = row["LastName"].ToString(),
-                BirthDate = Convert.ToDateTime(row["BirthDate"]),
+                BirthDate = row["BirthDate"] != DBNull.Value ?  Convert.ToDateTime(row["BirthDate"]) : null,
                 MobilePhone = row["MobilePhone"].ToString(),
                 Email = row["Email"].ToString(),
                 Password = row["Password"].ToString(),
                 Photo = row["photoPath"].ToString(),
                 LicenseNum = row["LicenseNum"].ToString(),
-                StartDate = Convert.ToDateTime(row["StartDate"]),
+                StartDate = row["StartDate"] != DBNull.Value ? Convert.ToDateTime(row["StartDate"]): null,
                 IsActive = Convert.ToBoolean(row["IsActive"]),
                 ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
                 RoleName = row["RoleName"].ToString(),

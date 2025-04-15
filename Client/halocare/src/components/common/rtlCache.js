@@ -2,7 +2,7 @@ import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { prefixer } from 'stylis';
 
-// יצירת קאש לתמיכה ב-RTL
+// used for the rtl direction of the app
 export const rtlCache = createCache({
   key: 'muirtl',
   stylisPlugins: [prefixer, rtlPlugin],

@@ -9,6 +9,7 @@ import classesReducer from './features/classesSlice';
 import eventTypesReducer from './features/eventTypesSlice';
 import eventsReducer from './features/eventsSlice';
 import rolesReducer from './features/rolesSlice';
+import documentsReducer from './features/documentsSlice';
 
 // Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   classes: classesReducer,
   eventTypes: eventTypesReducer,
   roles: rolesReducer,
-  events: eventsReducer
+  events: eventsReducer,
+  documents: documentsReducer,
 });
 
 export default rootReducer;

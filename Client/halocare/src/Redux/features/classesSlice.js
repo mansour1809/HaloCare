@@ -1,6 +1,5 @@
-// src/Redux/features/classes/classesSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../components/common/axiosConfig';
 
 // פעולה אסינכרונית לטעינת רשימת הכיתות
 export const fetchClasses = createAsyncThunk(

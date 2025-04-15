@@ -16,4 +16,11 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="uploads\employees\documents\" />
+    <Folder Include="uploads\employees\pictures\" />
+    <Folder Include="uploads\kids\documents\" />
+    <Folder Include="uploads\kids\pictures\" />
+  </ItemGroup>
+
 </Project>

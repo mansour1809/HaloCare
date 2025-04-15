@@ -1,6 +1,5 @@
-// src/Redux/features/employees/employeesSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../components/common/axiosConfig';
 
 // פעולה אסינכרונית לטעינת רשימת העובדים
 export const fetchEmployees = createAsyncThunk(

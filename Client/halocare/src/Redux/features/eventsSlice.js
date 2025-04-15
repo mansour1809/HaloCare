@@ -1,6 +1,5 @@
-// src/Redux/features/events/eventsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../common/axiosConfig';
+import axios from '../../components/common/axiosConfig';
 
 // פונקציית עזר להמרת אירוע לפורמט קלנדר
 const formatEventForCalendar = (event) => {

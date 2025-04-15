@@ -17,17 +17,7 @@ namespace halocare.DAL.Repositories
 
             foreach (DataRow row in dataTable.Rows)
             {
-                Documentt document = new Documentt
-                {
-                    DocId = Convert.ToInt32(row["DocId"]),
-                    KidId = Convert.ToInt32(row["KidId"]),
-                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                    DocType = row["DocType"].ToString(),
-                    DocPath = row["DocPath"].ToString(),
-                    UploadDate = Convert.ToDateTime(row["UploadDate"])
-                };
-
-                documents.Add(document);
+                documents.Add(MapRowToDocument(row));
             }
 
             return documents;
@@ -45,17 +35,25 @@ namespace halocare.DAL.Repositories
 
             foreach (DataRow row in dataTable.Rows)
             {
-                Documentt document = new Documentt
-                {
-                    DocId = Convert.ToInt32(row["DocId"]),
-                    KidId = Convert.ToInt32(row["KidId"]),
-                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                    DocType = row["DocType"].ToString(),
-                    DocPath = row["DocPath"].ToString(),
-                    UploadDate = Convert.ToDateTime(row["UploadDate"])
-                };
+                documents.Add(MapRowToDocument(row));
+            }
 
-                documents.Add(document);
+            return documents;
+        }
+
+        public List<Documentt> GetDocumentsByEmployeeId(int employeeId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@EmployeeId", employeeId }
+            };
+
+            List<Documentt> documents = new List<Documentt>();
+            DataTable dataTable = ExecuteQuery("SP_GetDocumentsByEmployeeId", parameters);
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                documents.Add(MapRowToDocument(row));
             }
 
             return documents;
@@ -73,19 +71,7 @@ namespace halocare.DAL.Repositories
             if (dataTable.Rows.Count == 0)
                 return null;
 
-            DataRow row = dataTable.Rows[0];
-
-            Documentt document = new Documentt
-            {
-                DocId = Convert.ToInt32(row["DocId"]),
-                KidId = Convert.ToInt32(row["KidId"]),
-                EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                DocType = row["DocType"].ToString(),
-                DocPath = row["DocPath"].ToString(),
-                UploadDate = Convert.ToDateTime(row["UploadDate"])
-            };
-
-            return document;
+            return MapRowToDocument(dataTable.Rows[0]);
         }
 
         public int AddDocument(Documentt document)
@@ -95,8 +81,11 @@ namespace halocare.DAL.Repositories
                 { "@KidId", document.KidId },
                 { "@EmployeeId", document.EmployeeId },
                 { "@DocType", document.DocType },
+                { "@DocName", document.DocName },
                 { "@DocPath", document.DocPath },
-                { "@UploadDate", document.UploadDate }
+                { "@UploadDate", document.UploadDate },
+                { "@ContentType", document.ContentType },
+                { "@FileSize", document.FileSize }
             };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddDocument", parameters));
@@ -110,8 +99,10 @@ namespace halocare.DAL.Repositories
                 { "@KidId", document.KidId },
                 { "@EmployeeId", document.EmployeeId },
                 { "@DocType", document.DocType },
+                { "@DocName", document.DocName },
                 { "@DocPath", document.DocPath },
-                { "@UploadDate", document.UploadDate }
+                { "@ContentType", document.ContentType },
+                { "@FileSize", document.FileSize }
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateDocument", parameters);
@@ -127,6 +118,22 @@ namespace halocare.DAL.Repositories
 
             int rowsAffected = ExecuteNonQuery("SP_DeleteDocument", parameters);
             return rowsAffected > 0;
+        }
+
+        private Documentt MapRowToDocument(DataRow row)
+        {
+            return new Documentt
+            {
+                DocId = Convert.ToInt32(row["DocId"]),
+                KidId = row["KidId"] != DBNull.Value ? Convert.ToInt32(row["KidId"]) : (int?)null,
+                EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : (int?)null,
+                DocType = row["DocType"].ToString(),
+                DocName = row["DocName"] != DBNull.Value ? row["DocName"].ToString() : null,
+                DocPath = row["DocPath"].ToString(),
+                UploadDate = Convert.ToDateTime(row["UploadDate"]),
+                ContentType = row["ContentType"] != DBNull.Value ? row["ContentType"].ToString() : null,
+                FileSize = row["FileSize"] != DBNull.Value ? Convert.ToInt64(row["FileSize"]) : 0
+            };
         }
     }
 }

@@ -1,5 +1,5 @@
-// src/components/EmployeesManagement.jsx - גרסה משודרגת
-import React, { useState, useEffect } from "react";
+// src/components/EmployeesManagement.jsx 
+import  { useState, useEffect } from "react";
 import { 
   Paper, 
   Button, 
@@ -25,55 +25,31 @@ import {
   TableRow,
   Avatar,
   InputAdornment,
-  Chip
+  Chip,
+  Tab,
+  Tabs,
+  Tooltip
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from "@mui/icons-material/Edit";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { Link } from "react-router-dom";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { Alert, Grid } from '@mui/material';
-
+import FilesList from '../../components/common/FilesList';
+import FileUploader from '../../components/common/FileUploader';
 
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
-
-// פונקציה להפקת צבע עקבי לפי תפקיד
-const getRoleColor = (roleName) => {
-  if (!roleName) return "#9e9e9e"; // צבע ברירת מחדל לתפקידים ריקים
-  
-  // מיפוי תפקידים לצבעים
-  const roleColors = {
-    "גננת": "#4caf50", // ירוק
-    "מטפל רגשי": "#2196f3", // כחול
-    "מנהלת": "#9c27b0", // סגול
-    "פיזיותרפיסט": "#ff9800", // כתום
-    "מרפא בעיסוק": "#e91e63", // ורוד
-    "מזכירה": "#607d8b", // אפור כחול
-    "קלינאי תקשורת": "#009688" // טורקיז
-  };
-  
-  // החזרת צבע מהמיפוי או חישוב צבע אקראי-אך-עקבי לתפקידים חדשים
-  if (roleColors[roleName]) {
-    return roleColors[roleName];
-  } else {
-    // חישוב צבע עקבי לפי טקסט
-    let hash = 0;
-    for (let i = 0; i < roleName.length; i++) {
-      hash = roleName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xFF;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-  }
-};
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDocumentsByEmployeeId } from '../../Redux/features/documentsSlice';
 
 const EmployeesManagement = () => {
+  const dispatch = useDispatch();
+  
   // שימוש בקונטקסט
   const { 
     employees, 
@@ -92,7 +68,13 @@ const EmployeesManagement = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const [searchText, setSearchText] = useState('');
   const [localError, setLocalError] = useState("");
-
+  const [activeTab, setActiveTab] = useState(0);
+  const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false);
+  const [selectedEmployeeForDocuments, setSelectedEmployeeForDocuments] = useState(null);
+  
+  // קבלת המסמכים מהרדקס
+  const { documents, status: documentsStatus } = useSelector(state => state.documents);
+  
   // רענון נתונים בעלייה
   useEffect(() => {
     refreshEmployees();
@@ -125,6 +107,24 @@ const EmployeesManagement = () => {
       setLocalError(result.error);
     }
   };
+  
+  // פתיחת דיאלוג מסמכים
+  const handleOpenDocuments = (employee) => {
+    setSelectedEmployeeForDocuments(employee);
+    setDocumentsDialogOpen(true);
+    dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
+  };
+
+  // סגירת דיאלוג מסמכים
+  const handleCloseDocuments = () => {
+    setDocumentsDialogOpen(false);
+    setSelectedEmployeeForDocuments(null);
+  };
+  
+  // שינוי טאב במסמכים
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   // סינון ממשקי
   const handleSearchChange = (event) => {
@@ -140,6 +140,15 @@ const EmployeesManagement = () => {
     } catch (e) {
       return dateString;
     }
+  };
+
+  // קבלת צבע לפי תפקיד
+  const getRoleColor = (roleName) => {
+    if (!roleName) return "#9e9e9e"; // צבע ברירת מחדל לתפקידים ריקים
+    
+    // חיפוש הצבע מטבלת התפקידים
+    const role = roles.find(r => r.roleName === roleName);
+    return role?.color || "#9e9e9e"; // החזרת הצבע או ברירת מחדל
   };
 
   // סינון העובדים
@@ -164,7 +173,7 @@ const EmployeesManagement = () => {
   // מציאת שם כיתה לפי מזהה
   const getClassName = (classId) => {
     if (!classId) return '–';
-    const foundClass = classes.find(c => c.id === classId);
+    const foundClass = classes.find(c => c.classId === classId);
     return foundClass ? foundClass.className : classId.toString();
   };
 
@@ -238,9 +247,9 @@ const EmployeesManagement = () => {
       </Box>
       
       {(error || localError) && (
-        <Typography color="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error || localError}
-        </Typography>
+        </Alert>
       )}
       
       <TableContainer 
@@ -256,14 +265,14 @@ const EmployeesManagement = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>שם מלא</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>תפקיד</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>כיתה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>טלפון</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>דוא"ל</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>תאריך התחלה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>סטטוס</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' , textAlign: 'center' }}>פעולות</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>שם מלא</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תפקיד</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>כיתה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>טלפון</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>דוא"ל</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תאריך התחלה</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>סטטוס</TableCell>
+              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           {filteredEmployees.length > 0 ? (
@@ -276,11 +285,11 @@ const EmployeesManagement = () => {
                     borderBottom: '1px solid #eee'
                   }}
                 >
-                  <TableCell >
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {employee.photoPath ? (
                         <Avatar 
-                          src={employee.photoPath} 
+                          src={employee.photoPath}
                           alt={`${employee.firstName} ${employee.lastName}`}
                           sx={{ 
                             width: 40, 
@@ -310,7 +319,7 @@ const EmployeesManagement = () => {
                     </Box>
                   </TableCell>
                   
-                  <TableCell align="center">
+                  <TableCell>
                     {employee.roleName ? (
                       <Chip
                         label={employee.roleName}
@@ -325,43 +334,15 @@ const EmployeesManagement = () => {
                       '–'
                     )}
                   </TableCell>
-                  <TableCell align="center">{getClassName(employee.classId)}</TableCell>
-                  <TableCell align="center" dir="ltr">
-                    {employee.mobilePhone ? (
-                      <Typography
-                        component="a"
-                        href={`tel:${employee.mobilePhone}`}
-                        sx={{
-                          textDecoration: 'none',
-                          color: 'text.primary',
-                          '&:hover': { color: '#4cb5c3' }
-                        }}
-                      >
-                        {employee.mobilePhone}
-                      </Typography>
-                    ) : (
-                      '–'
-                    )}
+                  <TableCell>{getClassName(employee.classId)}</TableCell>
+                  <TableCell dir="ltr">
+                    {employee.mobilePhone || '–'}
                   </TableCell>
-                  <TableCell align="center">
-                    {employee.email ? (
-                      <Typography
-                        component="a"
-                        href={`mailto:${employee.email}`}
-                        sx={{
-                          textDecoration: 'none',
-                          color: 'text.primary',
-                          '&:hover': { color: '#4cb5c3' }
-                        }}
-                      >
-                        {employee.email}
-                      </Typography>
-                    ) : (
-                      '–'
-                    )}
+                  <TableCell>
+                    {employee.email || '–'}
                   </TableCell>
-                  <TableCell align="center">{formatDate(employee.startDate)}</TableCell>
-                  <TableCell align="center">
+                  <TableCell>{formatDate(employee.startDate)}</TableCell>
+                  <TableCell>
                     <Switch
                       checked={Boolean(employee.isActive)}
                       onChange={() => handleToggleActive(employee.employeeId, employee.isActive)}
@@ -376,21 +357,39 @@ const EmployeesManagement = () => {
                       }}
                     />
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell>
                     <Box sx={{ display: "flex", gap: 1 }}>
-                      <IconButton
-                        sx={{
-                          width: 35,
-                          height: 35,
-                          backgroundColor: "#4cb5c3",
-                          "&:hover": { backgroundColor: "#3da1af" },
-                          color: "white",
-                          transition: 'all 0.2s'
-                        }}
-                        onClick={() => handleEdit(employee)}
-                      >
-                        <EditIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
+                      <Tooltip title="עריכת פרטי עובד">
+                        <IconButton
+                          sx={{
+                            width: 35,
+                            height: 35,
+                            backgroundColor: "#4cb5c3",
+                            "&:hover": { backgroundColor: "#3da1af" },
+                            color: "white",
+                            transition: 'all 0.2s'
+                          }}
+                          onClick={() => handleEdit(employee)}
+                        >
+                          <EditIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="ניהול מסמכים">
+                        <IconButton
+                          sx={{
+                            width: 35,
+                            height: 35,
+                            backgroundColor: "#ff9800",
+                            "&:hover": { backgroundColor: "#f57c00" },
+                            color: "white",
+                            transition: 'all 0.2s'
+                          }}
+                          onClick={() => handleOpenDocuments(employee)}
+                        >
+                          <DescriptionIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -415,7 +414,7 @@ const EmployeesManagement = () => {
         open={open} 
         onClose={handleClose} 
         fullWidth 
-        maxWidth="md" // הגדלנו את הדיאלוג לגודל בינוני
+        maxWidth="md"
         dir="rtl"
         PaperProps={{
           sx: { borderRadius: '10px' }
@@ -567,6 +566,92 @@ const EmployeesManagement = () => {
             }}
           >
             שמור שינויים
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* דיאלוג מסמכי עובד */}
+      <Dialog
+        open={documentsDialogOpen}
+        onClose={handleCloseDocuments}
+        fullWidth
+        maxWidth="md"
+        dir="rtl"
+        PaperProps={{
+          sx: { borderRadius: '10px' }
+        }}
+      >
+        <DialogTitle sx={{ 
+          backgroundColor: '#f8f9fa', 
+          fontWeight: 'bold',
+          borderBottom: '1px solid #eee',
+          fontSize: '1.5rem',
+          color: '#4cb5c3',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <Box>
+            מסמכי עובד: {selectedEmployeeForDocuments?.firstName} {selectedEmployeeForDocuments?.lastName}
+          </Box>
+          <IconButton onClick={handleCloseDocuments} size="small">
+            <div style={{ fontSize: '1.5rem' }}>&times;</div>
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={handleTabChange} 
+            variant="fullWidth"
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Tab label="רשימת מסמכים" />
+            <Tab label="העלאת מסמך חדש" />
+          </Tabs>
+          
+          <Box sx={{ p: 3 }}>
+            {activeTab === 0 ? (
+              <>
+                {documentsStatus === 'loading' ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <FilesList 
+                    entityId={selectedEmployeeForDocuments?.employeeId}
+                    entityType="employee"
+                  />
+                )}
+              </>
+            ) : (
+              <FileUploader
+                entityId={selectedEmployeeForDocuments?.employeeId}
+                entityType="employee"
+                docType="document"
+                buttonText="בחר מסמך להעלאה"
+                onSuccess={() => {
+                  // לאחר העלאה מוצלחת, חזור לטאב רשימת המסמכים
+                  setActiveTab(0);
+                  // רענן את רשימת המסמכים
+                  dispatch(fetchDocumentsByEmployeeId(selectedEmployeeForDocuments?.employeeId));
+                }}
+              />
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ padding: 2, borderTop: '1px solid #eee' }}>
+          <Button 
+            onClick={handleCloseDocuments} 
+            variant="contained" 
+            sx={{ 
+              backgroundColor: '#4cb5c3',
+              '&:hover': {
+                backgroundColor: '#3da1af',
+              },
+              borderRadius: 2
+            }}
+          >
+            סגור
           </Button>
         </DialogActions>
       </Dialog>

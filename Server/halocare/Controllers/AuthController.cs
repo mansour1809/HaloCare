@@ -101,7 +101,6 @@ namespace halocare.Controllers
         {
             try
             {
-                Console.WriteLine(reset);
                 // בדיקת תקינות הטוקן וקבלת האימייל ממנו
                 if (!_authService.ValidatePasswordResetToken(reset.Token, out string email))
                 {

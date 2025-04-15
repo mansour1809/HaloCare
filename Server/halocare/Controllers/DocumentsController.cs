@@ -13,14 +13,16 @@ namespace halocare.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class DocumentsController : ControllerBase
     {
         private readonly DocumentService _documentService;
+        private readonly string _uploadsBasePath;
 
         public DocumentsController(IConfiguration configuration)
         {
             _documentService = new DocumentService(configuration);
+            _uploadsBasePath = configuration.GetValue<string>("UploadsBasePath") ??
+                               Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
         }
 
         // GET: api/Documents
@@ -66,6 +68,28 @@ namespace halocare.Controllers
             {
                 return Ok(_documentService.GetDocumentsByKidId(kidId));
             }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // GET: api/Documents/employee/5
+        [HttpGet("employee/{employeeId}")]
+        public ActionResult<IEnumerable<Documentt>> GetDocumentsByEmployeeId(int employeeId)
+        {
+            try
+            {
+                return Ok(_documentService.GetDocumentsByEmployeeId(employeeId));
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
@@ -88,44 +112,8 @@ namespace halocare.Controllers
                 // קבלת תוכן המסמך
                 byte[] fileContent = _documentService.GetDocumentContent(id);
 
-                // קביעת סוג התוכן לפי סיומת הקובץ
-                string contentType = "application/octet-stream"; // ברירת מחדל
-                string fileName = Path.GetFileName(document.DocPath);
-                string extension = Path.GetExtension(fileName).ToLowerInvariant();
-
-                switch (extension)
-                {
-                    case ".pdf":
-                        contentType = "application/pdf";
-                        break;
-                    case ".jpg":
-                    case ".jpeg":
-                        contentType = "image/jpeg";
-                        break;
-                    case ".png":
-                        contentType = "image/png";
-                        break;
-                    case ".gif":
-                        contentType = "image/gif";
-                        break;
-                    case ".doc":
-                        contentType = "application/msword";
-                        break;
-                    case ".docx":
-                        contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                        break;
-                    case ".xls":
-                        contentType = "application/vnd.ms-excel";
-                        break;
-                    case ".xlsx":
-                        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                        break;
-                    case ".txt":
-                        contentType = "text/plain";
-                        break;
-                }
-
-                return File(fileContent, contentType, fileName);
+                // החזרת הקובץ עם סוג התוכן המתאים
+                return File(fileContent, document.ContentType ?? "application/octet-stream", document.DocName);
             }
             catch (FileNotFoundException ex)
             {
@@ -141,15 +129,27 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Documents
-        [HttpPost]
-        public ActionResult<Documentt> PostDocument([FromForm] DocumentUploadModel model)
+        // POST: api/Documents/upload
+        [HttpPost("upload")]
+        public ActionResult<Documentt> UploadDocument([FromForm] DocumentUploadModel model)
         {
             try
             {
                 if (model.File == null || model.File.Length == 0)
                 {
                     return BadRequest("לא נבחר קובץ");
+                }
+
+                // וידוא שמספקים מידע על המסמך
+                if (model.Document == null)
+                {
+                    return BadRequest("לא סופק מידע על המסמך");
+                }
+
+                // וידוא שיש לפחות מזהה אחד (ילד או עובד)
+                if (!model.Document.KidId.HasValue && !model.Document.EmployeeId.HasValue)
+                {
+                    return BadRequest("יש לקשר את המסמך לילד או לעובד");
                 }
 
                 // קריאת תוכן הקובץ
@@ -161,42 +161,16 @@ namespace halocare.Controllers
                 }
 
                 // הוספת המסמך
-                int documentId = _documentService.AddDocument(model.Document, fileContent, model.File.FileName);
+                int documentId = _documentService.AddDocument(
+                    model.Document,
+                    fileContent,
+                    model.File.FileName,
+                    model.File.ContentType
+                );
+
                 model.Document.DocId = documentId;
 
                 return CreatedAtAction(nameof(GetDocument), new { id = documentId }, model.Document);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-            }
-        }
-
-        // PUT: api/Documents/5
-        [HttpPut("{id}")]
-        public IActionResult PutDocument(int id, Documentt    document)
-        {
-            if (id != document.DocId)
-            {
-                return BadRequest("מזהה המסמך בנתיב אינו תואם למזהה בגוף הבקשה");
-            }
-
-            try
-            {
-                bool updated = _documentService.UpdateDocument(document);
-
-                if (updated)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return NotFound($"מסמך עם מזהה {id} לא נמצא");
-                }
             }
             catch (ArgumentException ex)
             {

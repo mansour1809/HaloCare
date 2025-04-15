@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import axios from '../../common/axiosConfig';
+import axios from '../../components/common/axiosConfig';
 import { toISOStringWithoutTimezone } from './calendarUtils';
 import Swal from 'sweetalert2';
 import { useDispatch } from 'react-redux';

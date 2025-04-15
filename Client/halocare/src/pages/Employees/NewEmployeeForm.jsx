@@ -3,7 +3,7 @@ import {
   Container, Paper, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   FormControlLabel, Switch, CircularProgress,
-  InputAdornment, IconButton
+  InputAdornment, IconButton, Divider, Alert
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,10 +13,11 @@ import { Visibility, VisibilityOff, ContentCopy, CloudUpload } from '@mui/icons-
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { uploadDocument } from '../../Redux/features/documentsSlice';
 import Validations from './validations';
-import { fetchCities } from '../../Redux/features/citiesSlice';
 import Swal from 'sweetalert2';
+
 
 // יצירת תמה מותאמת לעברית
 const rtlTheme = createTheme({
@@ -38,12 +39,12 @@ const initialFormData = {
   email: '',
   mobilePhone: '',
   cityName: '',
-  photo: '',
   birthDate: null,
   licenseNum: '',
   startDate: new Date(),
   roleName: '',
   classId: '',
+  photo:'',
   password: '',
   isActive: true
 };
@@ -52,35 +53,29 @@ const NewEmployeeForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // שימוש בקונטקסט ובנתונים מ-Redux
+  // שימוש בקונטקסט העובדים
   const { 
     addEmployee, 
     sendWelcomeEmail, 
-    generateRandomPassword, 
+    generateRandomPassword,
     roles, 
     classes, 
+    cities,
+    loading: employeesLoading
   } = useEmployees();
   
-  // קבלת רשימת הערים מ-Redux
-  const { cities, status } = useSelector((state) => state.cities);
-
   // מצבי טופס
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
+  const [successMessage, setSuccessMessage] = useState("");
   
-  // קבצים ותמונה
+  // קבצים ותמונות
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [documents, setDocuments] = useState([]);
-  
-  // טעינת רשימת הערים כאשר הקומפוננטה נטענת
-  useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchCities());
-    }
-  }, [status, dispatch]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   
   // פונקציות טיפול בטופס
   const handleChange = (e) => {
@@ -96,20 +91,85 @@ const NewEmployeeForm = () => {
   
   const handleDateChange = (name, date) => {
     setFormData(prev => ({ ...prev, [name]: date }));
+    validateField(name, date);
+
   };
   
   // טיפול בקבצים
   const handleProfilePhotoChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setProfilePhoto(e.target.files[0]);
+      const file = e.target.files[0];
+      
+      // בדיקה שאכן מדובר בתמונה
+      if (!file.type.startsWith('image/')) {
+        Swal.fire({
+          icon: 'error',
+          title: 'קובץ לא מתאים',
+          text: 'יש לבחור קובץ תמונה בלבד (jpg, png, etc.)',
+          confirmButtonText: 'אישור'
+        });
+        return;
+      }
+      
+      // בדיקת גודל קובץ (מקסימום 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'קובץ גדול מדי',
+          text: 'גודל התמונה המקסימלי הוא 5MB',
+          confirmButtonText: 'אישור'
+        });
+        return;
+      }
+      
+      setProfilePhoto(file);
     }
   };
   
   const handleDocumentsChange = (e) => {
     if (e.target.files) {
-      setDocuments(Array.from(e.target.files));
+      // הגבלת כמות הקבצים ל-5
+      const newFiles = Array.from(e.target.files).slice(0, 5);
+      
+      // בדיקת גודל הקבצים (מקסימום 5MB לקובץ)
+      const validFiles = newFiles.filter(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'קובץ גדול מדי',
+            text: `הקובץ ${file.name} גדול מדי ולא ייכלל בהעלאה`,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+          return false;
+        }
+        return true;
+      });
+      
+      setDocuments(prev => [...prev, ...validFiles]);
     }
   };
+  
+  const removeDocument = (index) => {
+    setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  // // העתקת סיסמה ללוח
+  // const handleCopyPassword = () => {
+  //   if (formData.password) {
+  //     navigator.clipboard.writeText(formData.password);
+  //     Swal.fire({
+  //       icon: 'success',
+  //       title: 'הסיסמה הועתקה ללוח',
+  //       toast: true,
+  //       position: 'top-end',
+  //       showConfirmButton: false,
+  //       timer: 2000
+  //     });
+  //   }
+  // };
   
   // ניהול סיסמה
   const handleGeneratePassword = () => {
@@ -118,32 +178,63 @@ const NewEmployeeForm = () => {
     validateField('password', newPassword);
   };
   
-  // const handleCopyPassword = () => {
-  //   if (formData.password) {
-  //     navigator.clipboard.writeText(formData.password);
-  //     setPasswordCopied(true);
+  // העלאת הקבצים לאחר הוספת העובד
+  const uploadFiles = async (employeeId) => {
+    if (!profilePhoto && !documents.length) return true;
+    
+    try {
+      setUploadingFiles(true);
       
-  //     Swal.fire({
-  //       title: 'הסיסמה הועתקה',
-  //       text: 'הסיסמה הועתקה ללוח בהצלחה',
-  //       icon: 'success',
-  //       timer: 1500,
-  //       showConfirmButton: false,
-  //       position: 'top-end',
-  //       toast: true
-  //     });
+      // העלאת תמונת פרופיל אם קיימת
+      if (profilePhoto) {
+        const profileData = {
+          document: {
+            EmployeeId: employeeId,
+            KidId: null,
+            DocType: 'profile'
+          },
+          file: profilePhoto
+        };
+        
+        await dispatch(uploadDocument(profileData)).unwrap();
+      }
       
-  //     setTimeout(() => setPasswordCopied(false), 1500);
-  //   }
-  // };
+      // העלאת המסמכים אם קיימים
+      if (documents.length > 0) {
+        // העלאת כל המסמכים במקביל
+        const uploadPromises = documents.map(file => {
+          const documentData = {
+            document: {
+              EmployeeId: employeeId,
+              KidId: null,
+              DocType: 'document'
+            },
+            file: file
+          };
+          
+          return dispatch(uploadDocument(documentData)).unwrap();
+        });
+        
+        await Promise.all(uploadPromises);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('שגיאה בהעלאת קבצים:', error);
+      return false;
+    } finally {
+      setUploadingFiles(false);
+    }
+  };
   
   // פונקציות ולידציה
   const validateField = (name, value) => {
     const extraParams = {
-      required: ['firstName', 'lastName', 'password', 'roleName'].includes(name)
+      required: ['firstName', 'lastName', 'password', 'roleName',"classId","cityName"].includes(name)
     };
     
     const error = Validations(name, value, extraParams);
+    console.log("error", error);
     setErrors(prev => ({
       ...prev,
       [name]: error
@@ -203,19 +294,18 @@ const NewEmployeeForm = () => {
       // הכנת הנתונים לשליחה
       const employeeData = {
         ...formData,
-        photo: profilePhoto ? profilePhoto.name : "",
         employeeId: 0,
-        classId: formData.classId || 1002
+        photo: profilePhoto ? profilePhoto.name : "",
+        // classId: formData.classId || null
       };
       
-      // שליחה דרך הקונטקסט
+      // שליחה דרך הקונטקסט - שלב 1: הוספת העובד
       const result = await addEmployee(employeeData);
-      
       if (!result.success) {
         throw new Error(result.error);
       }
       
-      // שליחת מייל אם האפשרות מסומנת
+      // שלב 2: שליחת מייל אם האפשרות מסומנת
       if (sendEmail && formData.email) {
         await sendWelcomeEmail(
           formData.email, 
@@ -225,19 +315,42 @@ const NewEmployeeForm = () => {
         );
       }
       
-      // הצגת הודעת הצלחה
-      Swal.fire({
-        title: 'העובד נוסף בהצלחה!',
-        text: 'מעביר לרשימת העובדים...',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      // שלב 3: העלאת תמונת פרופיל ומסמכים
+      const newEmployeeId = result.data.employeeId;
+      const filesUploaded = await uploadFiles(newEmployeeId);
       
-      // מעבר לרשימת העובדים אחרי הוספה מוצלחת
-      // setTimeout(() => {
-      //   navigate('/employees');
-      // }, 2000);
+      if (!filesUploaded) {
+        // אם הקבצים לא הועלו בהצלחה, מציג התראה אבל ממשיך
+        Swal.fire({
+          icon: 'warning',
+          title: 'העובד נוסף בהצלחה',
+          text: 'אך אירעה שגיאה בהעלאת חלק מהקבצים',
+          timer: 2000,
+          confirmButtonText: 'אישור'
+        });
+      } else {
+        // הודעת הצלחה
+        Swal.fire({
+          title: 'העובד נוסף בהצלחה!',
+          text: 'מעביר לרשימת העובדים...',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+      
+      // ניקוי הטופס
+      setFormData({
+        ...initialFormData,
+        startDate: new Date()
+      });
+      setProfilePhoto(null);
+      setDocuments([]);
+      
+      // ניווט אחרי הוספה מוצלחת
+      setTimeout(() => {
+        navigate('/employees/list');
+      }, 2000);
       
     } catch (err) {      
       Swal.fire({
@@ -250,11 +363,12 @@ const NewEmployeeForm = () => {
       setSubmitting(false);
     }
   };
-  
+
   // פונקציות עזר להצגת שגיאות
   const getFieldError = (fieldName) => errors[fieldName] || '';
   const hasFieldError = (fieldName) => Boolean(errors[fieldName]);
-  
+
+
   return (
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
@@ -273,6 +387,16 @@ const NewEmployeeForm = () => {
               קליטת עובד חדש
             </Typography>
 
+            {successMessage && (
+              <Alert
+                severity="success"
+                sx={{ mb: 3 }}
+                onClose={() => setSuccessMessage("")}
+              >
+                {successMessage}
+              </Alert>
+            )}
+
             <form onSubmit={handleSubmit}>
               {/* פרטים אישיים */}
               <Box sx={{ marginBottom: 3 }}>
@@ -282,6 +406,7 @@ const NewEmployeeForm = () => {
                 >
                   פרטים אישיים
                 </Typography>
+                <Divider sx={{ mb: 2 }} />
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
@@ -321,6 +446,8 @@ const NewEmployeeForm = () => {
                         textField: {
                           fullWidth: true,
                           variant: "outlined",
+                          error: hasFieldError("birthDate"),
+                          helperText: getFieldError("birthDate"),
                         },
                       }}
                     />
@@ -343,6 +470,7 @@ const NewEmployeeForm = () => {
                   <Grid item xs={12} md={6}>
                     <FormControl
                       fullWidth
+                      required
                       variant="outlined"
                       error={hasFieldError("cityName")}
                     >
@@ -353,19 +481,14 @@ const NewEmployeeForm = () => {
                         onChange={handleChange}
                         label="עיר"
                       >
-                        {status === "loading" && (
+                        {!cities.length ? (
                           <MenuItem disabled>טוען ערים...</MenuItem>
-                        )}
-
-                        {status === "succeeded" &&
+                        ) : (
                           cities.map((city) => (
                             <MenuItem key={city.cityName} value={city.cityName}>
                               {city.cityName}
                             </MenuItem>
-                          ))}
-
-                        {status === "failed" && (
-                          <MenuItem disabled>שגיאה בטעינת ערים</MenuItem>
+                          ))
                         )}
                       </Select>
                       {hasFieldError("cityName") && (
@@ -393,7 +516,8 @@ const NewEmployeeForm = () => {
                     </Button>
                     {profilePhoto && (
                       <Typography variant="caption" display="block">
-                        {profilePhoto.name}
+                        {profilePhoto.name} (
+                        {Math.round(profilePhoto.size / 1024)} KB)
                       </Typography>
                     )}
                   </Grid>
@@ -408,6 +532,7 @@ const NewEmployeeForm = () => {
                 >
                   פרטי העסקה
                 </Typography>
+                <Divider sx={{ mb: 2 }} />
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
@@ -424,11 +549,15 @@ const NewEmployeeForm = () => {
                         onChange={handleChange}
                         label="תפקיד"
                       >
-                        {roles.map((role) => (
-                          <MenuItem key={role.roleName} value={role.roleName}>
-                            {role.roleName}
-                          </MenuItem>
-                        ))}
+                        {!roles.length ? (
+                          <MenuItem disabled>טוען תפקידים...</MenuItem>
+                        ) : (
+                          roles.map((role) => (
+                            <MenuItem key={role.roleName} value={role.roleName}>
+                              {role.roleName}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                       {hasFieldError("roleName") && (
                         <Typography variant="caption" color="error">
@@ -466,7 +595,7 @@ const NewEmployeeForm = () => {
                   </Grid>
 
                   <Grid item xs={12} md={6}>
-                    <FormControl fullWidth variant="outlined">
+                    <FormControl required fullWidth variant="outlined">
                       <InputLabel>שיוך לכיתה</InputLabel>
                       <Select
                         name="classId"
@@ -474,11 +603,15 @@ const NewEmployeeForm = () => {
                         onChange={handleChange}
                         label="שיוך לכיתה"
                       >
-                        {classes.map((cls) => (
-                          <MenuItem key={cls.classId} value={cls.classId}>
-                            {cls.className}
-                          </MenuItem>
-                        ))}
+                        {!classes.length ? (
+                          <MenuItem disabled>טוען כיתות...</MenuItem>
+                        ) : (
+                          classes.map((cls) => (
+                            <MenuItem key={cls.classId} value={cls.classId}>
+                              {cls.className}
+                            </MenuItem>
+                          ))
+                        )}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -515,9 +648,30 @@ const NewEmployeeForm = () => {
                       />
                     </Button>
                     {documents.length > 0 && (
-                      <Typography variant="caption" display="block">
-                        {documents.map((doc) => doc.name).join(", ")}
-                      </Typography>
+                      <Box sx={{ mt: 1 }}>
+                        {documents.map((doc, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 0.5,
+                            }}
+                          >
+                            <Typography variant="caption">
+                              {doc.name} ({Math.round(doc.size / 1024)} KB)
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => removeDocument(index)}
+                              sx={{ ml: 1 }}
+                            >
+                              &times;
+                            </IconButton>
+                          </Box>
+                        ))}
+                      </Box>
                     )}
                   </Grid>
                 </Grid>
@@ -531,9 +685,10 @@ const NewEmployeeForm = () => {
                 >
                   פרטי כניסה למערכת
                 </Typography>
+                <Divider sx={{ mb: 2 }} />
 
                 <Grid container spacing={2}>
-                <Grid item xs={12} >
+                  <Grid item xs={12}>
                     <TextField
                       fullWidth
                       label="דוא״ל"
@@ -572,13 +727,13 @@ const NewEmployeeForm = () => {
                                 <Visibility />
                               )}
                             </IconButton>
-                            {/* <IconButton
-                              onClick={handleCopyPassword}
+                            <IconButton
+                              // onClick={handleCopyPassword}
                               disabled={!formData.password}
                               edge="end"
                             >
                               <ContentCopy />
-                            </IconButton> */}
+                            </IconButton>
                           </InputAdornment>
                         ),
                       }}
@@ -622,7 +777,7 @@ const NewEmployeeForm = () => {
                 <Button
                   variant="outlined"
                   onClick={() => navigate("/employees")}
-                  disabled={submitting}
+                  disabled={submitting || uploadingFiles}
                 >
                   חזרה לרשימה
                 </Button>
@@ -636,9 +791,9 @@ const NewEmployeeForm = () => {
                     fontSize: "1rem",
                     borderRadius: 2,
                   }}
-                  disabled={submitting}
+                  disabled={submitting || uploadingFiles}
                 >
-                  {submitting ? (
+                  {submitting || uploadingFiles ? (
                     <CircularProgress size={24} />
                   ) : (
                     "שמירת עובד חדש"

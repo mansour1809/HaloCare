@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from '../../common/axiosConfig';
+import axios from '../../components/common/axiosConfig';
 import PropTypes from 'prop-types';
 
 // יצירת קונטקסט

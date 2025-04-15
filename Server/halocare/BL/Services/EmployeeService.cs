@@ -50,26 +50,25 @@ namespace halocare.BL.Services
                 throw new ArgumentException("התפקיד שצוין אינו קיים במערכת");
             }
 
+            Employee alreadyExist = _employeeRepository.GetEmployeeByEmail(employee.Email);
+            if (alreadyExist != null)
+            {
+                throw new ArgumentException("הדואר האלקטרוני כבר קיים במערכת");
+            }
+
             // הצפנת הסיסמה
             employee.Password = HashPassword(employee.Password);
 
             // הגדרת העובד כפעיל כברירת מחדל
             employee.IsActive = true;
 
-            // הגדרת תאריך תחילת עבודה
-            if (employee.StartDate == DateTime.MinValue)
-            {
-                employee.StartDate = DateTime.Now;
-            }
+            //// הגדרת תאריך תחילת עבודה
+            //if (employee.StartDate == DateTime.MinValue)
+            //{
+            //    employee.StartDate = DateTime.Now;
+            //}
 
             int employeeId = _employeeRepository.AddEmployee(employee);
-
-            //// אם העובד נוצר בהצלחה והוגדרה סיסמה, שלח מייל ברוכים הבאים
-            //if (employeeId > 0 && !string.IsNullOrEmpty(employee.Password))
-            //{
-            //    // שליחת אימייל ברוכים הבאים עם פרטי התחברות
-            //    SendWelcomeEmail(employee.Email, employee.Password, employee.FirstName, employee.LastName);
-            //}
 
             return employeeId;
         }
@@ -92,7 +91,7 @@ namespace halocare.BL.Services
             return _employeeRepository.UpdateEmployee(employee);
         }
 
-        public bool DeactivateEmployee(int id)
+        public bool DeactivateEmployee(int id, bool status)
         {
             // וידוא שהעובד קיים
             Employee existingEmployee = _employeeRepository.GetEmployeeById(id);
@@ -101,7 +100,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("העובד לא נמצא במערכת");
             }
 
-            return _employeeRepository.DeactivateEmployee(id);
+            return _employeeRepository.DeactivateEmployee(id, status);
         }
 
         
@@ -130,11 +129,6 @@ namespace halocare.BL.Services
 
             return employee;
         }
-
-
-
-
-
 
 
 

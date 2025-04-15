@@ -1,5 +1,6 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../components/common/axiosConfig';
 
 export const fetchCities = createAsyncThunk(
   'cities/fetchCities',
