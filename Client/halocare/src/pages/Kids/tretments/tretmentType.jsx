@@ -1,5 +1,4 @@
 // TreatmentSummariesPage.jsx
-// TreatmentSummariesPage.jsx - תיקוני ייבוא
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -51,9 +50,9 @@ import {
 //  import { API_BASE_URL } from '../../config';
 
 // קומפוננטה לצפייה בסיכום טיפול
-const tretmentType = ({ open, handleClose, treatment }) => {
+const TretmentType = ({ open, handleClose, treatment }) => {
   if (!treatment) return null;
-
+console.log("hello")
   return (
     <Dialog 
       open={open} 
@@ -762,4 +761,4 @@ const TreatmentSummariesPage = () => {
   );
 };
 
-export default tretmentType;
+export default TretmentType;

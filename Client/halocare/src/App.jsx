@@ -22,7 +22,7 @@ import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 // import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
 import ResetPassword from './components/login/ResetPassword';
-import tretmentType from './pages/Kids/tretments/tretmentType';
+import TretmentType from './pages/Kids/tretments/tretmentType';
 
 // אותנטיקציה
 import { useAuth, AuthProvider } from './components/login/AuthContext';
@@ -223,7 +223,7 @@ const AppContent = () => {
                 path="/reports/treatments"
                 element={
                   <PrivateRoute>
-                    <tretmentType />
+                    <TretmentType />
                   </PrivateRoute>
                 }
               />
