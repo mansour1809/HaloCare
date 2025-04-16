@@ -26,7 +26,7 @@ import {
   Edit as EditIcon,
   Save as SaveIcon
 } from '@mui/icons-material';
-import { useTreatmentContext } from '../../context/TreatmentContext';
+import { useTreatmentContext } from './TreatmentContext';
 
 const TreatmentViewDialog = () => {
   const {

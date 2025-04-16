@@ -25,9 +25,9 @@ import {
   Close as CloseIcon,
   Save as SaveIcon
 } from '@mui/icons-material';
-import { useTreatmentContext } from '../../context/TreatmentContext';
-import { fetchTreatmentTypes } from '../../store/slices/treatmentTypesSlice';
-import axios from '../../components/common/axiosConfig';
+import { useTreatmentContext } from './TreatmentContext';
+import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
+import axios from '../../../components/common/axiosConfig';
 
 const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
   const { isAddDialogOpen, closeAddDialog, addTreatment, loading, error } = useTreatmentContext();

@@ -4,9 +4,9 @@ import axios from '../../components/common/axiosConfig';
 
 export const fetchTreatmentsByKid = createAsyncThunk(
   'treatments/fetchTreatmentsByKid',
-  async (kidId, { rejectWithValue }) => {
+  async (kidId,treatmentType, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/api/Treatments/kid/${kidId}`);
+      const response = await axios.get(`/Treatments/kid/${kidId}/${treatmentType}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

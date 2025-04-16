@@ -22,13 +22,13 @@ import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 // import Flowerapp from './pages/kids/KidsFiles/FlowerApp';
 import ResetPassword from './components/login/ResetPassword';
-import tretmentType from './pages/Kids/tretments/TreatmentsList';
+// import tretmentType from './pages/Kids/tretments/TreatmentsList';
 
 // אותנטיקציה
 import { useAuth, AuthProvider } from './components/login/AuthContext';
 import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
-import TreatmentProvider from './pages/kids/tretments/TreatmentProvider';
+import {TreatmentProvider} from './pages/kids/tretments/TreatmentContext';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({

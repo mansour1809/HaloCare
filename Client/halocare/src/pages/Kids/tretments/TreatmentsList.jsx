@@ -28,8 +28,8 @@ import {
   FileDownload as FileDownloadIcon,
   Search as SearchIcon 
 } from '@mui/icons-material';
-import { fetchTreatmentsByKid } from '../../store/slices/treatmentsSlice';
-import { useTreatmentContext } from '../../context/TreatmentContext';
+import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
+import { useTreatmentContext } from './TreatmentContext';
 import TreatmentViewDialog from './TreatmentViewDialog';
 import AddTreatmentDialog from './AddTreatmentDialog';
 
