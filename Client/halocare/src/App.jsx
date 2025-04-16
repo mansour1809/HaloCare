@@ -28,6 +28,7 @@ import tretmentType from './pages/Kids/tretments/TreatmentsList';
 import { useAuth, AuthProvider } from './components/login/AuthContext';
 import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
+import TreatmentProvider from './pages/kids/tretments/TreatmentProvider';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -224,7 +225,9 @@ const AppContent = () => {
                 path="/reports/treatments"
                 element={
                   <PrivateRoute>
+                    <TreatmentProvider>
                     <TreatmentsList />
+                    </TreatmentProvider>
                   </PrivateRoute>
                 }
               />

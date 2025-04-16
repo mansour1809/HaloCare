@@ -1,5 +1,5 @@
 // src/context/TreatmentContext.jsx
-import React, { createContext, useState, useContext } from 'react';
+import  { createContext, useState, useContext } from 'react';
 import axios from 'axios';
 
 const TreatmentContext = createContext();

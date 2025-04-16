@@ -1,5 +1,6 @@
 // src/components/treatments/AddTreatmentDialog.jsx
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Dialog,
   DialogTitle,
@@ -25,19 +26,24 @@ import {
   Save as SaveIcon
 } from '@mui/icons-material';
 import { useTreatmentContext } from '../../context/TreatmentContext';
-import axios from 'axios';
+import { fetchTreatmentTypes } from '../../store/slices/treatmentTypesSlice';
+import axios from '../../components/common/axiosConfig';
 
-const AddTreatmentDialog = ({ kidId }) => {
+const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
   const { isAddDialogOpen, closeAddDialog, addTreatment, loading, error } = useTreatmentContext();
+  const dispatch = useDispatch();
+  
+  // שליפת סוגי טיפולים מהסטור
+  const { treatmentTypes, status: treatmentTypesStatus } = useSelector(state => state.treatmentTypes);
+  
   const [employees, setEmployees] = useState([]);
-  const [treatmentTypes, setTreatmentTypes] = useState([]);
   const [formError, setFormError] = useState('');
   
   const [formData, setFormData] = useState({
     kidId: kidId,
     employeeId: '',
     treatmentDate: new Date().toISOString().split('T')[0],
-    treatmentType: '',
+    treatmentType: treatmentType || '',
     description: '',
     cooperationLevel: 3,
     status: 'active',
@@ -51,7 +57,7 @@ const AddTreatmentDialog = ({ kidId }) => {
         kidId: kidId,
         employeeId: '',
         treatmentDate: new Date().toISOString().split('T')[0],
-        treatmentType: '',
+        treatmentType: treatmentType || '',
         description: '',
         cooperationLevel: 3,
         status: 'active',
@@ -59,29 +65,30 @@ const AddTreatmentDialog = ({ kidId }) => {
       });
       setFormError('');
     }
-  }, [isAddDialogOpen, kidId]);
+  }, [isAddDialogOpen, kidId, treatmentType]);
   
   // טעינת רשימת עובדים וסוגי טיפולים
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchEmployees = async () => {
       try {
-        const [employeesResponse, typesResponse] = await Promise.all([
-          axios.get('/api/employees?role=therapist'),
-          axios.get('/api/reference-data/treatment-types')
-        ]);
-        
-        setEmployees(employeesResponse.data);
-        setTreatmentTypes(typesResponse.data);
+        const response = await axios.get("/api/Employees?role=therapist");
+        setEmployees(response.data);
       } catch (err) {
-        console.error('Error fetching reference data:', err);
-        setFormError('שגיאה בטעינת נתוני עזר');
+        console.error('Error fetching employees:', err);
+        setFormError('שגיאה בטעינת רשימת המטפלים');
       }
     };
     
     if (isAddDialogOpen) {
-      fetchData();
+      // טען סוגי טיפולים אם לא נטענו כבר
+      if (treatmentTypesStatus === 'idle') {
+        dispatch(fetchTreatmentTypes());
+      }
+      
+      // טען רשימת עובדים
+      fetchEmployees();
     }
-  }, [isAddDialogOpen]);
+  }, [isAddDialogOpen, dispatch, treatmentTypesStatus]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -167,16 +174,22 @@ const AddTreatmentDialog = ({ kidId }) => {
                   value={formData.treatmentType}
                   onChange={handleInputChange}
                   label="סוג טיפול"
-                  disabled={loading}
+                  disabled={loading || treatmentTypesStatus === 'loading'}
                 >
                   <MenuItem value="">בחר סוג טיפול</MenuItem>
-                  {treatmentTypes.map((type) => (
+                  {treatmentTypesStatus === 'succeeded' && treatmentTypes.map((type) => (
                     <MenuItem key={type.id || type.name} value={type.name}>
                       {type.name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
+              {treatmentTypesStatus === 'loading' && (
+                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  <Typography variant="caption">טוען סוגי טיפולים...</Typography>
+                </Box>
+              )}
             </Grid>
             
             {/* תאריך טיפול */}
