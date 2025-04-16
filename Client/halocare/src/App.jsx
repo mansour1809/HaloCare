@@ -12,7 +12,7 @@ import PrivateRoute from './components/PrivateRoute';
 
 // דפים
 import Calendar from './pages/calendar/Calendar';
-import NewEmployeeForm from './pages/Employees/NewEmployeeForm';
+import EmployeeForm from './pages/Employees/EmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
 import KidsManagment from './pages/kids/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
@@ -174,7 +174,7 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <EmployeesProvider>
-                      <NewEmployeeForm />
+                      <EmployeeForm />
                     </EmployeesProvider>
                   </PrivateRoute>
                 }

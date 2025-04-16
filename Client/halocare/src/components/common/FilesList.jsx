@@ -1,5 +1,5 @@
 // src/components/components/common/FilesList.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDocumentsByEmployeeId, fetchDocumentsByKidId, deleteDocument } from '../../Redux/features/documentsSlice';
 import { 
@@ -26,24 +26,38 @@ import {
 import Swal from 'sweetalert2';
 
 const FilesList = ({
-  entityId,
-  entityType, // 'employee' או 'kid'
-  showFileType = true,
-  onDelete
-}) => {
-  const dispatch = useDispatch();
-  const { documents, status, error } = useSelector(state => state.documents);
-
-  useEffect(() => {
-    if (entityId) {
-      if (entityType === 'employee') {
-        dispatch(fetchDocumentsByEmployeeId(entityId));
-      } else if (entityType === 'kid') {
-        dispatch(fetchDocumentsByKidId(entityId));
+    entityId,
+    entityType, // 'employee' או 'kid'
+    showFileType = true,
+    onDelete
+  }) => {
+    const dispatch = useDispatch();
+    
+    // קבל את המסמכים מהרדקס, אבל אל תגרום לרינדור מחדש רק בגללם
+    const documents = useSelector(state => state.documents.documents);
+    const status = useSelector(state => state.documents.status);
+    const error = useSelector(state => state.documents.error);
+    
+    // שמור את ה-ID הנוכחי כדי למנוע קריאות מיותרות
+    const [currentEntityId, setCurrentEntityId] = useState(null);
+    
+    useEffect(() => {
+      // בדוק אם ה-ID השתנה כדי למנוע קריאות מיותרות
+      if (entityId && entityId !== currentEntityId) {
+        console.log('טוען מסמכים עבור:', entityId, 'סוג:', entityType);
+        
+        if (entityType === 'employee') {
+          dispatch(fetchDocumentsByEmployeeId(entityId));
+        } else if (entityType === 'kid') {
+          dispatch(fetchDocumentsByKidId(entityId));
+        }
+        
+        // עדכן את ה-ID הנוכחי
+        setCurrentEntityId(entityId);
       }
-    }
-  }, [dispatch, entityId, entityType]);
-
+    }, [dispatch, entityId, entityType, currentEntityId]);
+    
+  
   // הורדת קובץ
   const handleDownload = (docId, fileName) => {
     // יצירת לינק זמני להורדה

@@ -35,6 +35,50 @@ namespace halocare.DAL.Repositories
 
             return treatments;
         }
+        
+
+
+
+
+
+             public List<Treatment> GetTreatmentsByKidIdAndTreatmentId(int kidId,string treatmentType)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId },
+                { "@TreatmentTypeName", treatmentType}
+            };
+
+            List<Treatment> treatments = new List<Treatment>();
+
+            DataTable dataTable = ExecuteQuery("SP_GetTreatmentsByKidIdAndTreatmentId", parameters);
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                Treatment treatment = new Treatment
+                {
+                    TreatmentId = Convert.ToInt32(row["TreatmentId"]),
+                    KidId = Convert.ToInt32(row["KidId"]),
+                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
+                    TreatmentDate = Convert.ToDateTime(row["TreatmentDate"]),
+                    TreatmentType = row["TreatmentType"].ToString(),
+                    Description = row["Description"].ToString(),
+                    CooperationLevel = Convert.ToInt32(row["CooperationLevel"]),
+                    Status = row["Status"].ToString(),
+                    Highlight = row["Highlight"].ToString()
+                };
+
+                treatments.Add(treatment);
+            }
+
+            return treatments;
+        }
+
+
+
+
+
+
 
         public List<Treatment> GetTreatmentsByKidId(int kidId)
         {

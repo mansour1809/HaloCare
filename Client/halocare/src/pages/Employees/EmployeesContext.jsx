@@ -58,30 +58,20 @@ const refreshEmployees = useCallback(() => {
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
-      console.log("נתוני העובד:", employeeData);
-      
+
       // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`/Employees`, employeeData);
 
-      
       // רענון רשימת העובדים
       // refreshEmployees();
       
       setLoading(false);
       
-      // // הצגת הודעת הצלחה
-      // Swal.fire({
-      //   icon: 'success',
-      //   title: 'העובד נוסף בהצלחה!',
-      //   text: 'פרטי העובד נשמרו במערכת',
-      //   confirmButtonText: 'אישור'
-      // });
       
       return { success: true, data: response.data };
     } catch (err) {
       console.error("שגיאה בהוספת עובד חדש:", err);
       setLoading(false);
-      console.log("תגובה מהשרת:", err.response?.data   );
 
       // הצגת הודעת שגיאה
       Swal.fire({
@@ -102,9 +92,8 @@ const refreshEmployees = useCallback(() => {
   const updateEmployee = async (updatedEmployee) => {
     try {
       setLoading(true);
-      
       // שליחת עדכון העובד לשרת
-      await axios.put(`/Employees/${updatedEmployee.id}`, updatedEmployee);
+      await axios.put(`/Employees/${updatedEmployee.employeeId}`, updatedEmployee);
       
       // רענון רשימת העובדים
       refreshEmployees();
@@ -165,7 +154,7 @@ const refreshEmployees = useCallback(() => {
       });
       
       // רענון רשימת העובדים
-      // refreshEmployees();
+      refreshEmployees();
       
       setLoading(false);
       

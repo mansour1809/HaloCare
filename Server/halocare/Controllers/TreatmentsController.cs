@@ -71,6 +71,21 @@ namespace halocare.Controllers
             }
         }
 
+        // GET: api/Treatments/kid/5
+        [HttpGet("kid/{kidId}/{treatmentId}")]
+        public ActionResult<IEnumerable<Treatment>> GetTreatmentsByKidIdAndTreatmentId(int kidId,string treatmentType)
+        {
+            try
+            {
+                List<Treatment> treatments = _treatmentService.GetTreatmentsByKidIdAndTreatmentId(kidId, treatmentType);
+                return Ok(treatments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
         // POST: api/Treatments
         [HttpPost]
         public ActionResult<Treatment> PostTreatment(Treatment treatment)

@@ -49,23 +49,47 @@ const initialFormData = {
   isActive: true
 };
 
-const NewEmployeeForm = () => {
+const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
+  const isEditMode = Boolean(existingEmployee);
+  const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
+  const submitButtonText = isEditMode ? "שמור שינויים" : "שמירת עובד חדש";
   
   // שימוש בקונטקסט העובדים
   const { 
     addEmployee, 
+    updateEmployee,
     sendWelcomeEmail, 
     generateRandomPassword,
     roles, 
     classes, 
     cities,
-    loading: employeesLoading
   } = useEmployees();
   
+  // מצבי טופס - אתחל את הערכים מהעובד הקיים אם נמצא במצב עריכה
+  const [formData, setFormData] = useState(
+    isEditMode ? {
+      employeeId: existingEmployee.employeeId,
+      firstName: existingEmployee.firstName || '',
+      lastName: existingEmployee.lastName || '',
+      email: existingEmployee.email || '',
+      mobilePhone: existingEmployee.mobilePhone || '',
+      cityName: existingEmployee.cityName || '',
+      birthDate: existingEmployee.birthDate ? new Date(existingEmployee.birthDate) : null,
+      licenseNum: existingEmployee.licenseNum || '',
+      startDate: existingEmployee.startDate ? new Date(existingEmployee.startDate) : new Date(),
+      roleName: existingEmployee.roleName || '',
+      classId: existingEmployee.classId || '',
+      password: '', 
+      isActive: existingEmployee.isActive,
+      photo: existingEmployee.photo || '',  
+    } : initialFormData
+  );
+
+
   // מצבי טופס
-  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -234,7 +258,6 @@ const NewEmployeeForm = () => {
     };
     
     const error = Validations(name, value, extraParams);
-    console.log("error", error);
     setErrors(prev => ({
       ...prev,
       [name]: error
@@ -245,16 +268,35 @@ const NewEmployeeForm = () => {
 
   const validateForm = () => {
     // רשימת השדות שרוצים לבדוק
-    const fieldsToValidate = ['firstName', 'lastName', 'email', 'mobilePhone', 'password', 'roleName'];
+    const fieldsToValidate = 
+    isEditMode ?
+    ['firstName', 
+      'lastName', 
+      'mobilePhone', 
+      'roleName']
+    :
+    ['firstName', 
+      'lastName', 
+      'email', 
+      'mobilePhone', 
+      'password', 
+      'roleName'];
     let isValid = true;
     const newErrors = {};
     
+
     // בדיקת כל השדות
     for (const field of fieldsToValidate) {
-      const extraParams = {
+      const extraParams =isEditMode?
+       {
+        required: ['firstName', 'lastName', 'roleName'].includes(field)
+      }
+      :
+      {
         required: ['firstName', 'lastName', 'password', 'roleName'].includes(field)
       };
       
+
       const error = Validations(field, formData[field], extraParams);
       
       if (error) {
@@ -273,11 +315,9 @@ const NewEmployeeForm = () => {
     return isValid;
   };
   
-  // שליחת הטופס
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // בדיקת ולידציה מלאה
     if (!validateForm()) {
       Swal.fire({
         title: 'שגיאה בטופס',
@@ -291,22 +331,23 @@ const NewEmployeeForm = () => {
     try {
       setSubmitting(true);
       
-      // הכנת הנתונים לשליחה
-      const employeeData = {
-        ...formData,
-        employeeId: 0,
-        photo: profilePhoto ? profilePhoto.name : "",
-        // classId: formData.classId || null
-      };
+      let result;
       
-      // שליחה דרך הקונטקסט - שלב 1: הוספת העובד
-      const result = await addEmployee(employeeData);
+      if (isEditMode) {
+        console.log("formmData", formData)  
+        // מצב עריכה - עדכון עובד קיים
+        result = await updateEmployee(formData);
+      } else {
+        // מצב הוספה - הוספת עובד חדש
+        result = await addEmployee(formData);
+      }
+      
       if (!result.success) {
         throw new Error(result.error);
       }
       
-      // שלב 2: שליחת מייל אם האפשרות מסומנת
-      if (sendEmail && formData.email) {
+      // אם זו הוספה חדשה, שלח מייל אם צריך
+      if (!isEditMode && sendEmail && formData.email) {
         await sendWelcomeEmail(
           formData.email, 
           formData.password,
@@ -315,44 +356,31 @@ const NewEmployeeForm = () => {
         );
       }
       
-      // שלב 3: העלאת תמונת פרופיל ומסמכים
-      const newEmployeeId = result.data.employeeId;
-      const filesUploaded = await uploadFiles(newEmployeeId);
-      
-      if (!filesUploaded) {
-        // אם הקבצים לא הועלו בהצלחה, מציג התראה אבל ממשיך
-        Swal.fire({
-          icon: 'warning',
-          title: 'העובד נוסף בהצלחה',
-          text: 'אך אירעה שגיאה בהעלאת חלק מהקבצים',
-          timer: 2000,
-          confirmButtonText: 'אישור'
-        });
-      } else {
-        // הודעת הצלחה
-        Swal.fire({
-          title: 'העובד נוסף בהצלחה!',
-          text: 'מעביר לרשימת העובדים...',
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false
-        });
+      // אם זו הוספה חדשה, העלה קבצים
+      if (!isEditMode) {
+        const employeeId = result.data.employeeId;
+        await uploadFiles(employeeId);
       }
       
-      // ניקוי הטופס
-      setFormData({
-        ...initialFormData,
-        startDate: new Date()
+      // הודעת הצלחה
+      Swal.fire({
+        title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
       });
-      setProfilePhoto(null);
-      setDocuments([]);
       
-      // ניווט אחרי הוספה מוצלחת
-      setTimeout(() => {
-        navigate('/employees/list');
-      }, 2000);
+      // אם יש קולבק מוצלח, הפעל אותו
+      if (onSubmitSuccess) {
+        onSubmitSuccess(result.data);
+      } else {
+        // אחרת, נווט לרשימת העובדים
+        setTimeout(() => {
+          navigate('/employees');
+        }, 2000);
+      }
       
-    } catch (err) {      
+    } catch (err) {
       Swal.fire({
         title: 'שגיאה בשליחת הטופס',
         text: err.message || 'אנא בדוק את הנתונים ונסה שוב',
@@ -384,7 +412,7 @@ const NewEmployeeForm = () => {
               align="center"
               sx={{ fontWeight: "bold", color: "#333" }}
             >
-              קליטת עובד חדש
+             {pageTitle} 
             </Typography>
 
             {successMessage && (
@@ -634,6 +662,7 @@ const NewEmployeeForm = () => {
                     <Button
                       variant="outlined"
                       component="label"
+                      disabled={isEditMode}
                       startIcon={<CloudUpload />}
                       sx={{ height: "56px", width: "100%" }}
                     >
@@ -678,6 +707,7 @@ const NewEmployeeForm = () => {
               </Box>
 
               {/* פרטי כניסה למערכת */}
+              {!isEditMode && (
               <Box sx={{ marginBottom: 3 }}>
                 <Typography
                   variant="subtitle1"
@@ -772,7 +802,7 @@ const NewEmployeeForm = () => {
                   </Grid>
                 </Grid>
               </Box>
-
+              )}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Button
                   variant="outlined"
@@ -796,7 +826,7 @@ const NewEmployeeForm = () => {
                   {submitting || uploadingFiles ? (
                     <CircularProgress size={24} />
                   ) : (
-                    "שמירת עובד חדש"
+                    `${submitButtonText}`
                   )}
                 </Button>
               </Box>
@@ -808,4 +838,4 @@ const NewEmployeeForm = () => {
   );
 };
 
-export default NewEmployeeForm;
+export default EmployeeForm;

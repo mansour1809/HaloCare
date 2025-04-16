@@ -46,6 +46,7 @@ import FileUploader from '../../components/common/FileUploader';
 import { useEmployees } from './EmployeesContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDocumentsByEmployeeId } from '../../Redux/features/documentsSlice';
+import EmployeeForm from "./EmployeeForm";
 
 const EmployeesManagement = () => {
   const dispatch = useDispatch();
@@ -57,7 +58,6 @@ const EmployeesManagement = () => {
     classes,
     loading, 
     error, 
-    updateEmployee, 
     toggleEmployeeStatus,
     refreshEmployees
   } = useEmployees();
@@ -99,15 +99,7 @@ const EmployeesManagement = () => {
     setLocalError("");
   };
 
-  const handleSave = async () => {
-    const result = await updateEmployee(selectedEmployee);
-    if (result.success) {
-      handleClose();
-    } else {
-      setLocalError(result.error);
-    }
-  };
-  
+
   // פתיחת דיאלוג מסמכים
   const handleOpenDocuments = (employee) => {
     setSelectedEmployeeForDocuments(employee);
@@ -148,7 +140,7 @@ const EmployeesManagement = () => {
     
     // חיפוש הצבע מטבלת התפקידים
     const role = roles.find(r => r.roleName === roleName);
-    return role?.color || "#9e9e9e"; // החזרת הצבע או ברירת מחדל
+    return role?.description || "#9e9e9e"; // החזרת הצבע או ברירת מחדל
   };
 
   // סינון העובדים
@@ -187,475 +179,382 @@ const EmployeesManagement = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-      <Box sx={{ height: '100%', width: '100%', padding: 2 }} dir="rtl">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
+      <Box sx={{ height: "100%", width: "100%", padding: 2 }} dir="rtl">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Typography
+            variant="h5"
+            component="h1"
+            sx={{ fontWeight: "bold", color: "#4cb5c3" }}
+          >
             ניהול עובדים
           </Typography>
-          
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {/* חיפוש חופשי */}
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="חיפוש חופשי..."
-            value={searchText}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: 250 }}
-          />
-          
-          {/* סינון לפי תפקיד */}
-          <FormControl sx={{ minWidth: 200 }} size="small">
-            <InputLabel>סינון לפי תפקיד</InputLabel>
-            <Select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              label="סינון לפי תפקיד"
+
+          <Box sx={{ display: "flex", gap: 2 }}>
+            {/* חיפוש חופשי */}
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="חיפוש חופשי..."
+              value={searchText}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ width: 250 }}
+            />
+
+            {/* סינון לפי תפקיד */}
+            <FormControl sx={{ minWidth: 200 }} size="small">
+              <InputLabel>סינון לפי תפקיד</InputLabel>
+              <Select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                label="סינון לפי תפקיד"
+              >
+                <MenuItem value="">הכל</MenuItem>
+                {roles.map((role) => (
+                  <MenuItem key={role.roleName} value={role.roleName}>
+                    {role.roleName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              to="/employees/add"
+              sx={{
+                fontWeight: "medium",
+                backgroundColor: "#4cb5c3",
+                "&:hover": {
+                  backgroundColor: "#3da1af",
+                },
+              }}
             >
-              <MenuItem value="">הכל</MenuItem>
-              {roles.map((role) => (
-                <MenuItem key={role.roleName} value={role.roleName}>
-                  {role.roleName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          <Button 
-            variant="contained" 
-            color="primary" 
-            component={Link}
-            to="/employees/add"
-            sx={{ 
-              fontWeight: 'medium',
-              backgroundColor: '#4cb5c3',
-              '&:hover': {
-                backgroundColor: '#3da1af',
-              }
-            }}
-          >
-            הוספת עובד חדש
-          </Button>
+              הוספת עובד חדש
+            </Button>
+          </Box>
         </Box>
-      </Box>
-      
-      {(error || localError) && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error || localError}
-        </Alert>
-      )}
-      
-      <TableContainer 
-        component={Paper} 
-        sx={{ 
-          maxWidth: "100%", 
-          mb: 4,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-          borderRadius: '10px',
-          overflow: 'hidden'
-        }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>שם מלא</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תפקיד</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>כיתה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>טלפון</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>דוא"ל</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>תאריך התחלה</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>סטטוס</TableCell>
-              <TableCell sx={{ fontWeight: '700', fontSize: '1rem' }}>פעולות</TableCell>
-            </TableRow>
-          </TableHead>
-          {filteredEmployees.length > 0 ? (
-            <TableBody>
-              {filteredEmployees.map((employee) => (
-                <TableRow
-                  key={employee.employeeId}
-                  sx={{ 
-                    "&:hover": { backgroundColor: "#f5f9fa" },
-                    borderBottom: '1px solid #eee'
-                  }}
-                >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {employee.photoPath ? (
-                        <Avatar 
-                          src={employee.photoPath}
-                          alt={`${employee.firstName} ${employee.lastName}`}
-                          sx={{ 
-                            width: 40, 
-                            height: 40, 
-                            ml: 1,
-                            border: '2px solid #fff',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                      ) : (
-                        <Avatar
-                          sx={{ 
-                            width: 40, 
-                            height: 40, 
-                            ml: 1,
-                            backgroundColor: '#4cb5c3',
-                            color: 'white'
-                          }}
-                        >
-                          {employee.firstName && employee.firstName[0]}
-                          {employee.lastName && employee.lastName[0]}
-                        </Avatar>
-                      )}
-                      <Typography sx={{ fontWeight: 'medium' }}>
-                        {`${employee.firstName || ''} ${employee.lastName || ''}`}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  
-                  <TableCell>
-                    {employee.roleName ? (
-                      <Chip
-                        label={employee.roleName}
-                        sx={{
-                          backgroundColor: getRoleColor(employee.roleName),
-                          color: 'white',
-                          fontWeight: 'medium'
-                        }}
-                        size="small"
-                      />
-                    ) : (
-                      '–'
-                    )}
-                  </TableCell>
-                  <TableCell>{getClassName(employee.classId)}</TableCell>
-                  <TableCell dir="ltr">
-                    {employee.mobilePhone || '–'}
-                  </TableCell>
-                  <TableCell>
-                    {employee.email || '–'}
-                  </TableCell>
-                  <TableCell>{formatDate(employee.startDate)}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={Boolean(employee.isActive)}
-                      onChange={() => handleToggleActive(employee.employeeId, employee.isActive)}
-                      color="primary"
-                      sx={{
-                        '& .MuiSwitch-switchBase.Mui-checked': {
-                          color: '#4cb5c3',
-                        },
-                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                          backgroundColor: '#4cb5c3',
-                        },
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Tooltip title="עריכת פרטי עובד">
-                        <IconButton
-                          sx={{
-                            width: 35,
-                            height: 35,
-                            backgroundColor: "#4cb5c3",
-                            "&:hover": { backgroundColor: "#3da1af" },
-                            color: "white",
-                            transition: 'all 0.2s'
-                          }}
-                          onClick={() => handleEdit(employee)}
-                        >
-                          <EditIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                      
-                      <Tooltip title="ניהול מסמכים">
-                        <IconButton
-                          sx={{
-                            width: 35,
-                            height: 35,
-                            backgroundColor: "#ff9800",
-                            "&:hover": { backgroundColor: "#f57c00" },
-                            color: "white",
-                            transition: 'all 0.2s'
-                          }}
-                          onClick={() => handleOpenDocuments(employee)}
-                        >
-                          <DescriptionIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          ) : (
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                  <Typography color="text.secondary">
-                    לא נמצאו עובדים
-                  </Typography>
+
+        {(error || localError) && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error || localError}
+          </Alert>
+        )}
+
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxWidth: "100%",
+            mb: 4,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+            borderRadius: "10px",
+            overflow: "hidden",
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#f8f9fa" }}>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  שם מלא
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  תפקיד
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  כיתה
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  טלפון
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  דוא"ל
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  תאריך התחלה
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  סטטוס
+                </TableCell>
+                <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
+                  פעולות
                 </TableCell>
               </TableRow>
-            </TableBody>
-          )}
-        </Table>
-      </TableContainer>
-
-      {/* דיאלוג עריכת עובד */}
-      <Dialog 
-        open={open} 
-        onClose={handleClose} 
-        fullWidth 
-        maxWidth="md"
-        dir="rtl"
-        PaperProps={{
-          sx: { borderRadius: '10px' }
-        }}
-      >
-        <DialogTitle sx={{ 
-          backgroundColor: '#f8f9fa', 
-          fontWeight: 'bold',
-          borderBottom: '1px solid #eee',
-          fontSize: '1.5rem',
-          color: '#4cb5c3'
-        }}>
-          עריכת פרטי עובד
-        </DialogTitle>
-        <DialogContent sx={{ padding: 3, paddingTop: 3 }}>
-          {localError && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {localError}
-            </Alert>
-          )}
-          
-          {/* פרטים אישיים */}
-          <Box sx={{ marginBottom: 3 }}>
-            <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
-              פרטים אישיים
-            </Typography>
-            
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="שם פרטי"
-                  value={selectedEmployee?.firstName || ""}
-                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, firstName: e.target.value })}
-                  variant="outlined"
-                  required
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="שם משפחה"
-                  value={selectedEmployee?.lastName || ""}
-                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, lastName: e.target.value })}
-                  variant="outlined"
-                  required
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <DatePicker
-                  label="תאריך לידה"
-                  value={selectedEmployee?.birthDate ? new Date(selectedEmployee.birthDate) : null}
-                  onChange={(date) => setSelectedEmployee({ ...selectedEmployee, birthDate: date })}
-                  slotProps={{ 
-                    textField: { 
-                      fullWidth: true, 
-                      variant: "outlined" 
-                    } 
-                  }}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="טלפון נייד"
-                  value={selectedEmployee?.mobilePhone || ""}
-                  onChange={(e) => setSelectedEmployee({ ...selectedEmployee, mobilePhone: e.target.value })}
-                  variant="outlined"
-                />
-              </Grid>
-            </Grid>
-          </Box>
-          
-          {/* פרטי תפקיד */}
-          <Box>
-            <Typography variant="subtitle1" sx={{ color: '#4cb5c3', fontWeight: 'bold', marginBottom: 2 }}>
-              פרטי תפקיד
-            </Typography>
-            
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>תפקיד</InputLabel>
-                  <Select
-                    value={selectedEmployee?.roleName || ""}
-                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, roleName: e.target.value })}
-                    label="תפקיד"
-                    required
+            </TableHead>
+            {filteredEmployees.length > 0 ? (
+              <TableBody>
+                {filteredEmployees.map((employee) => (
+                  <TableRow
+                    key={employee.employeeId}
+                    sx={{
+                      "&:hover": { backgroundColor: "#f5f9fa" },
+                      borderBottom: "1px solid #eee",
+                    }}
                   >
-                    {roles.map((role) => (
-                      <MenuItem key={role.roleName} value={role.roleName}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Box 
-                            sx={{ 
-                              width: 12, 
-                              height: 12, 
-                              borderRadius: '50%', 
-                              bgcolor: getRoleColor(role.roleName),
-                              mr: 1
-                            }} 
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        {employee.photoPath ? (
+                          <Avatar
+                            src={employee.photoPath}
+                            alt={`${employee.firstName} ${employee.lastName}`}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              ml: 1,
+                              border: "2px solid #fff",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                            }}
                           />
-                          {role.roleName}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>שיוך לכיתה</InputLabel>
-                  <Select
-                    value={selectedEmployee?.classId || ""}
-                    key={selectedEmployee?.classId}
-                    onChange={(e) => setSelectedEmployee({ ...selectedEmployee, classId: e.target.value })}
-                    label="שיוך לכיתה"
-                  >
-                    <MenuItem value="">ללא שיוך</MenuItem>
-                    {classes.map((cls) => (
-                      <MenuItem key={cls.classId} value={cls.classId}>{cls.className}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ padding: 2, borderTop: '1px solid #eee' }}>
-          <Button 
-            onClick={handleClose} 
-            variant="outlined" 
-            sx={{ borderRadius: 2 }}
-          >
-            ביטול
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            variant="contained" 
-            sx={{ 
-              backgroundColor: '#4cb5c3',
-              '&:hover': {
-                backgroundColor: '#3da1af',
-              },
-              borderRadius: 2
-            }}
-          >
-            שמור שינויים
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* דיאלוג מסמכי עובד */}
-      <Dialog
-        open={documentsDialogOpen}
-        onClose={handleCloseDocuments}
-        fullWidth
-        maxWidth="md"
-        dir="rtl"
-        PaperProps={{
-          sx: { borderRadius: '10px' }
-        }}
-      >
-        <DialogTitle sx={{ 
-          backgroundColor: '#f8f9fa', 
-          fontWeight: 'bold',
-          borderBottom: '1px solid #eee',
-          fontSize: '1.5rem',
-          color: '#4cb5c3',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <Box>
-            מסמכי עובד: {selectedEmployeeForDocuments?.firstName} {selectedEmployeeForDocuments?.lastName}
-          </Box>
-          <IconButton onClick={handleCloseDocuments} size="small">
-            <div style={{ fontSize: '1.5rem' }}>&times;</div>
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
-          <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange} 
-            variant="fullWidth"
-            sx={{ borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Tab label="רשימת מסמכים" />
-            <Tab label="העלאת מסמך חדש" />
-          </Tabs>
-          
-          <Box sx={{ p: 3 }}>
-            {activeTab === 0 ? (
-              <>
-                {documentsStatus === 'loading' ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                    <CircularProgress />
-                  </Box>
-                ) : (
-                  <FilesList 
-                    entityId={selectedEmployeeForDocuments?.employeeId}
-                    entityType="employee"
-                  />
-                )}
-              </>
+                        ) : (
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              ml: 1,
+                              backgroundColor: "#4cb5c3",
+                              color: "white",
+                            }}
+                          >
+                            {employee.firstName && employee.firstName[0]}
+                            {employee.lastName && employee.lastName[0]}
+                          </Avatar>
+                        )}
+                        <Typography sx={{ fontWeight: "medium" }}>
+                          {`${employee.firstName || ""} ${
+                            employee.lastName || ""
+                          }`}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      {employee.roleName ? (
+                        <Chip
+                          label={employee.roleName}
+                          sx={{
+                            backgroundColor: getRoleColor(employee.roleName),
+                            color: "white",
+                            fontWeight: "medium",
+                          }}
+                          size="small"
+                        />
+                      ) : (
+                        "–"
+                      )}
+                    </TableCell>
+                    <TableCell>{getClassName(employee.classId)}</TableCell>
+                    <TableCell dir="ltr">
+                      {employee.mobilePhone || "–"}
+                    </TableCell>
+                    <TableCell>{employee.email || "–"}</TableCell>
+                    <TableCell>{formatDate(employee.startDate)}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={Boolean(employee.isActive)}
+                        onChange={() =>
+                          handleToggleActive(
+                            employee.employeeId,
+                            employee.isActive
+                          )
+                        }
+                        color="primary"
+                        sx={{
+                          "& .MuiSwitch-switchBase.Mui-checked": {
+                            color: "#4cb5c3",
+                          },
+                          "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                            {
+                              backgroundColor: "#4cb5c3",
+                            },
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Tooltip title="עריכת פרטי עובד">
+                          <IconButton
+                            sx={{
+                              width: 35,
+                              height: 35,
+                              backgroundColor: "#4cb5c3",
+                              "&:hover": { backgroundColor: "#3da1af" },
+                              color: "white",
+                              transition: "all 0.2s",
+                            }}
+                            onClick={() => handleEdit(employee)}
+                          >
+                            <EditIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="ניהול מסמכים">
+                          <IconButton
+                            sx={{
+                              width: 35,
+                              height: 35,
+                              backgroundColor: "#ff9800",
+                              "&:hover": { backgroundColor: "#f57c00" },
+                              color: "white",
+                              transition: "all 0.2s",
+                            }}
+                            onClick={() => handleOpenDocuments(employee)}
+                          >
+                            <DescriptionIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             ) : (
-              <FileUploader
-                entityId={selectedEmployeeForDocuments?.employeeId}
-                entityType="employee"
-                docType="document"
-                buttonText="בחר מסמך להעלאה"
-                onSuccess={() => {
-                  // לאחר העלאה מוצלחת, חזור לטאב רשימת המסמכים
-                  setActiveTab(0);
-                  // רענן את רשימת המסמכים
-                  dispatch(fetchDocumentsByEmployeeId(selectedEmployeeForDocuments?.employeeId));
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <Typography color="text.secondary">
+                      לא נמצאו עובדים
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
+          </Table>
+        </TableContainer>
+
+        {/* דיאלוג עריכת עובד */}
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          fullWidth
+          maxWidth="md"
+          dir="rtl"
+        >
+          <DialogTitle>
+            <IconButton onClick={handleClose}>
+              <div style={{ fontSize: "1.5rem" }}>&times;</div>
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            {selectedEmployee && (
+              <EmployeeForm
+                existingEmployee={selectedEmployee}
+                onSubmitSuccess={(updatedEmployee) => {
+                  handleClose();
+                  refreshEmployees();
                 }}
               />
             )}
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ padding: 2, borderTop: '1px solid #eee' }}>
-          <Button 
-            onClick={handleCloseDocuments} 
-            variant="contained" 
-            sx={{ 
-              backgroundColor: '#4cb5c3',
-              '&:hover': {
-                backgroundColor: '#3da1af',
-              },
-              borderRadius: 2
+          </DialogContent>
+        </Dialog>
+
+        {/* דיאלוג מסמכי עובד */}
+        <Dialog
+          open={documentsDialogOpen}
+          onClose={handleCloseDocuments}
+          fullWidth
+          maxWidth="md"
+          dir="rtl"
+          PaperProps={{
+            sx: { borderRadius: "10px" },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              backgroundColor: "#f8f9fa",
+              fontWeight: "bold",
+              borderBottom: "1px solid #eee",
+              fontSize: "1.5rem",
+              color: "#4cb5c3",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            סגור
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+            <Box>
+              מסמכי עובד: {selectedEmployeeForDocuments?.firstName}{" "}
+              {selectedEmployeeForDocuments?.lastName}
+            </Box>
+            <IconButton onClick={handleCloseDocuments} size="small">
+              <div style={{ fontSize: "1.5rem" }}>&times;</div>
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0 }}>
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="fullWidth"
+              sx={{ borderBottom: 1, borderColor: "divider" }}
+            >
+              <Tab label="רשימת מסמכים" />
+              <Tab label="העלאת מסמך חדש" />
+            </Tabs>
+
+            <Box sx={{ p: 3 }}>
+              {activeTab === 0 ? (
+                <>
+                  {documentsStatus === "loading" ? (
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", p: 4 }}
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <FilesList
+                      entityId={selectedEmployeeForDocuments?.employeeId}
+                      entityType="employee"
+                    />
+                  )}
+                </>
+              ) : (
+                <FileUploader
+                  entityId={selectedEmployeeForDocuments?.employeeId}
+                  entityType="employee"
+                  docType="document"
+                  buttonText="בחר מסמך להעלאה"
+                  onSuccess={() => {
+                    // לאחר העלאה מוצלחת, חזור לטאב רשימת המסמכים
+                    setActiveTab(0);
+                    // רענן את רשימת המסמכים
+                    dispatch(
+                      fetchDocumentsByEmployeeId(
+                        selectedEmployeeForDocuments?.employeeId
+                      )
+                    );
+                  }}
+                />
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ padding: 2, borderTop: "1px solid #eee" }}>
+            <Button
+              onClick={handleCloseDocuments}
+              variant="contained"
+              sx={{
+                backgroundColor: "#4cb5c3",
+                "&:hover": {
+                  backgroundColor: "#3da1af",
+                },
+                borderRadius: 2,
+              }}
+            >
+              סגור
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </LocalizationProvider>
   );
 };

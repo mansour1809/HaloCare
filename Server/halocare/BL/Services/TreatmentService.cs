@@ -35,6 +35,11 @@ namespace halocare.BL.Services
         {
             return _treatmentRepository.GetTreatmentsByKidId(kidId);
         }
+        
+        public List<Treatment> GetTreatmentsByKidIdAndTreatmentId(int kidId, string treatmentType)
+        {
+            return _treatmentRepository.GetTreatmentsByKidIdAndTreatmentId(kidId, treatmentType);
+        }
 
         public int AddTreatment(Treatment treatment)
         {

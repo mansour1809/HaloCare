@@ -125,8 +125,7 @@ export const CalendarProvider = ({ children }) => {
 
   // הוספת אירוע חדש
   const addEvent = useCallback(async (eventData) => {
-    // setIsLoading(true);
-    // setError(null);
+
       const serverEventData = prepareEventData(eventData);
       const response = await axios.post('/Events', serverEventData);
       dispatch(fetchEvents());//refreshing the events list
@@ -136,8 +135,7 @@ export const CalendarProvider = ({ children }) => {
 
   // עדכון אירוע קיים
   const updateEvent = useCallback(async (eventData) => {
-    // setIsLoading(true);
-    // setError(null);
+
     const serverEventData = prepareEventData(eventData);
       const response = await axios.put(`/Events/${eventData.id}`, serverEventData);
       dispatch(fetchEvents());//refreshing the events list
