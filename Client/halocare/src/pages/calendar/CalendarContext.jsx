@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from '../../components/common/axiosConfig';
-import { toISOStringWithoutTimezone } from './calendarUtils';
 import Swal from 'sweetalert2';
 import { useDispatch } from 'react-redux';
 import { fetchKids } from '../../Redux/features/kidsSlice';
@@ -83,6 +82,13 @@ export const CalendarProvider = ({ children }) => {
       console.error('Error reading user from localStorage:', error);
     }
   }, [])
+
+   const toISOStringWithoutTimezone = (date) => {
+    if (!date) return '';
+    const dt = new Date(date);
+    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+    return dt.toISOString().slice(0, 16);
+  };
 
   const getDefaultEventValues = useCallback((startTime = new Date(), endTime = null) => {
     if (!endTime) {

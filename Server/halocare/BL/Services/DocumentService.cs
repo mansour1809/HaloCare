@@ -29,23 +29,35 @@ namespace halocare.BL.Services
 
         private void EnsureDirectoriesExist()
         {
-            // יצירת תיקיית הבסיס
-            if (!Directory.Exists(_uploadsBasePath))
-                Directory.CreateDirectory(_uploadsBasePath);
-
-            // יצירת תת-תיקיות
-            string[] subFolders = new[] {
-        "employees/pictures",
-        "employees/documents",
-        "kids/pictures",
-        "kids/documents"
-    };
-
-            foreach (var subFolder in subFolders)
+            try
             {
-                string path = Path.Combine(_uploadsBasePath, subFolder);
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                // יצירת תיקיית הבסיס
+                if (!Directory.Exists(_uploadsBasePath))
+                {
+                    Directory.CreateDirectory(_uploadsBasePath);
+                }
+
+                // יצירת תת-תיקיות
+                string[] subFolders = new[] {
+            "employees/pictures",
+            "employees/documents",
+            "kids/pictures",
+            "kids/documents"
+        };
+
+                foreach (var subFolder in subFolders)
+                {
+                    string path = Path.Combine(_uploadsBasePath, subFolder.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"שגיאה ביצירת תיקיות: {ex.Message}");
+                throw new DirectoryNotFoundException($"לא ניתן ליצור את תיקיית המסמכים: {ex.Message}");
             }
         }
         public List<Documentt> GetAllDocuments()
@@ -118,30 +130,57 @@ namespace halocare.BL.Services
 
             // קביעת התיקייה לשמירת הקובץ בהתאם לסוג המסמך
             string subFolder;
-            if (document.KidId.HasValue && document.DocType.ToLower() == "picture")
-                subFolder = Path.Combine("kids", "pictures");
-            else if (document.KidId.HasValue)
-                subFolder = Path.Combine("kids", "documents");
-            else if (document.EmployeeId.HasValue && document.DocType.ToLower() == "profile")
-                subFolder = Path.Combine("employees", "pictures");
+            string docTypeNormalized = (document.DocType ?? "").ToLower().Trim();
+
+            if (document.KidId.HasValue)
+            {
+                subFolder = docTypeNormalized == "picture" || docTypeNormalized == "profile" ?
+                    Path.Combine("kids", "pictures") :
+                    Path.Combine("kids", "documents");
+            }
             else
-                subFolder = Path.Combine("employees", "documents");
+            {
+                subFolder = docTypeNormalized == "picture" || docTypeNormalized == "profile" ?
+                    Path.Combine("employees", "pictures") :
+                    Path.Combine("employees", "documents");
+            }
 
             // יצירת שם קובץ ייחודי
             string fileExtension = Path.GetExtension(fileName);
             string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
-            string relativePath = Path.Combine(subFolder, uniqueFileName);
-            string fullPath = Path.Combine(_uploadsBasePath, relativePath);
 
-            // שמירת הקובץ
-            File.WriteAllBytes(fullPath, fileContent);
+            // המרה לשימוש ב-Path.Combine במקום חיבור ידני של נתיבים
+            string relativePath = Path.Combine(subFolder, uniqueFileName).Replace("\\", "/");
+            string fullPath = Path.Combine(_uploadsBasePath, subFolder, uniqueFileName);
 
-            // הגדרת נתיב יחסי במסמך (לא נתיב מלא על מנת לאפשר העברה בין שרתים)
-            document.DocPath = relativePath.Replace("\\", "/"); // נרמול הנתיב לפורמט URL
+            try
+            {
+                // וידוא שהתיקייה קיימת
+                string directoryPath = Path.GetDirectoryName(fullPath);
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
 
-            // שמירת המסמך במסד הנתונים
-            return _documentRepository.AddDocument(document);
+                // שמירת הקובץ
+                File.WriteAllBytes(fullPath, fileContent);
+
+                // הגדרת נתיב יחסי במסמך
+                document.DocPath = relativePath;
+                document.DocName = fileName;
+                document.ContentType = contentType ?? "application/octet-stream";
+                document.FileSize = fileContent.Length;
+                document.UploadDate = DateTime.Now;
+
+                // שמירת המסמך במסד הנתונים
+                return _documentRepository.AddDocument(document);
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"שגיאה בשמירת הקובץ: {ex.Message}", ex);
+            }
         }
+
 
         public bool UpdateDocument(Documentt document)
         {
@@ -189,14 +228,23 @@ namespace halocare.BL.Services
             }
 
             // קריאת תוכן הקובץ
-            string fullPath = Path.Combine(_uploadsBasePath, existingDocument.DocPath.Replace("/", "\\"));
+            string normalizePath = existingDocument.DocPath.Replace("/", Path.DirectorySeparatorChar.ToString());
+            string fullPath = Path.Combine(_uploadsBasePath, normalizePath);
+
             if (File.Exists(fullPath))
             {
-                return File.ReadAllBytes(fullPath);
+                try
+                {
+                    return File.ReadAllBytes(fullPath);
+                }
+                catch (Exception ex)
+                {
+                    throw new IOException($"שגיאה בקריאת הקובץ: {ex.Message}", ex);
+                }
             }
             else
             {
-                throw new FileNotFoundException("הקובץ לא נמצא במערכת", fullPath);
+                throw new FileNotFoundException($"הקובץ '{existingDocument.DocName}' לא נמצא בנתיב: {fullPath}");
             }
         }
     }

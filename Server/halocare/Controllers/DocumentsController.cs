@@ -12,7 +12,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class DocumentsController : ControllerBase
     {
         private readonly DocumentService _documentService;
@@ -98,6 +98,7 @@ namespace halocare.Controllers
 
         // GET: api/Documents/5/content
         [HttpGet("{id}/content")]
+
         public ActionResult GetDocumentContent(int id)
         {
             try
@@ -112,8 +113,13 @@ namespace halocare.Controllers
                 // קבלת תוכן המסמך
                 byte[] fileContent = _documentService.GetDocumentContent(id);
 
-                // החזרת הקובץ עם סוג התוכן המתאים
-                return File(fileContent, document.ContentType ?? "application/octet-stream", document.DocName);
+                // הגדרת ההורדה עם סוג התוכן המתאים
+                return File(
+                    fileContent,
+                    document.ContentType ?? "application/octet-stream",
+                    document.DocName ?? $"document_{id}",
+                    true // הוספת פרמטר להגדרה כקובץ להורדה
+                );
             }
             catch (FileNotFoundException ex)
             {
@@ -125,31 +131,29 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה בשרת: {ex.Message}");
             }
         }
-
         // POST: api/Documents/upload
         [HttpPost("upload")]
         public ActionResult<Documentt> UploadDocument([FromForm] DocumentUploadModel model)
         {
             try
             {
+                // בדיקות תקינות
                 if (model.File == null || model.File.Length == 0)
                 {
-                    return BadRequest("לא נבחר קובץ");
+                    return BadRequest("לא נבחר קובץ או שהקובץ ריק");
                 }
 
-                // וידוא שמספקים מידע על המסמך
                 if (model.Document == null)
                 {
                     return BadRequest("לא סופק מידע על המסמך");
                 }
 
-                // וידוא שיש לפחות מזהה אחד (ילד או עובד)
                 if (!model.Document.KidId.HasValue && !model.Document.EmployeeId.HasValue)
                 {
-                    return BadRequest("יש לקשר את המסמך לילד או לעובד");
+                    return BadRequest("חובה לקשר את המסמך לילד או לעובד");
                 }
 
                 // קריאת תוכן הקובץ
@@ -164,24 +168,28 @@ namespace halocare.Controllers
                 int documentId = _documentService.AddDocument(
                     model.Document,
                     fileContent,
-                    model.File.FileName,
+                    Path.GetFileName(model.File.FileName), // וידוא שנשתמש רק בשם הקובץ ללא נתיב
                     model.File.ContentType
                 );
 
-                model.Document.DocId = documentId;
+                // קבלת המסמך המלא לאחר השמירה
+                var savedDocument = _documentService.GetDocumentById(documentId);
 
-                return CreatedAtAction(nameof(GetDocument), new { id = documentId }, model.Document);
+                return CreatedAtAction(nameof(GetDocument), new { id = documentId }, savedDocument);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
             }
+            catch (IOException ex)
+            {
+                return StatusCode(500, $"שגיאה בשמירת הקובץ: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה בשרת: {ex.Message}");
             }
         }
-
         // DELETE: api/Documents/5
         [HttpDelete("{id}")]
         public IActionResult DeleteDocument(int id)

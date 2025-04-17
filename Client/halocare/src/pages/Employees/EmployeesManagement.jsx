@@ -34,11 +34,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from "@mui/icons-material/Edit";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { Link } from "react-router-dom";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
-import { Alert, Grid } from '@mui/material';
+import { Alert } from '@mui/material';
 import FilesList from '../../components/common/FilesList';
 import FileUploader from '../../components/common/FileUploader';
 
@@ -73,7 +72,7 @@ const EmployeesManagement = () => {
   const [selectedEmployeeForDocuments, setSelectedEmployeeForDocuments] = useState(null);
   
   // קבלת המסמכים מהרדקס
-  const { documents, status: documentsStatus } = useSelector(state => state.documents);
+  const  documentsStatus = useSelector(state => state.documents.status);
   
   // רענון נתונים בעלייה
   useEffect(() => {
@@ -105,6 +104,7 @@ const EmployeesManagement = () => {
     setSelectedEmployeeForDocuments(employee);
     setDocumentsDialogOpen(true);
     dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
+
   };
 
   // סגירת דיאלוג מסמכים
@@ -451,7 +451,7 @@ const EmployeesManagement = () => {
             {selectedEmployee && (
               <EmployeeForm
                 existingEmployee={selectedEmployee}
-                onSubmitSuccess={(updatedEmployee) => {
+                onSubmitSuccess={() => {
                   handleClose();
                   refreshEmployees();
                 }}
@@ -515,6 +515,8 @@ const EmployeesManagement = () => {
                     <FilesList
                       entityId={selectedEmployeeForDocuments?.employeeId}
                       entityType="employee"
+                      // autoFetch={true}
+                      // showFileType={true}
                     />
                   )}
                 </>

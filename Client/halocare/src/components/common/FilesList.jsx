@@ -1,72 +1,42 @@
-// src/components/components/common/FilesList.jsx
-import React, { useEffect, useState } from 'react';
+// src/components/common/FilesList.jsx
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDocumentsByEmployeeId, fetchDocumentsByKidId, deleteDocument } from '../../Redux/features/documentsSlice';
+import { fetchDocumentsByEntityId, deleteDocument } from '../../Redux/features/documentsSlice';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper,
-  IconButton,
-  Tooltip,
-  Typography,
-  Box,
-  CircularProgress
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
+  Paper, IconButton, Tooltip, Typography, Box, CircularProgress
 } from '@mui/material';
 import { 
-  Download as DownloadIcon, 
-  Delete as DeleteIcon, 
-  InsertDriveFile as FileIcon, 
-  Image as ImageIcon,
+  Download as DownloadIcon, Delete as DeleteIcon, 
+  InsertDriveFile as FileIcon, Image as ImageIcon,
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import Swal from 'sweetalert2';
+import { useEffect } from 'react';
 
-const FilesList = ({
-    entityId,
-    entityType, // 'employee' או 'kid'
-    showFileType = true,
-    onDelete
-  }) => {
-    const dispatch = useDispatch();
-    
-    // קבל את המסמכים מהרדקס, אבל אל תגרום לרינדור מחדש רק בגללם
-    const documents = useSelector(state => state.documents.documents);
-    const status = useSelector(state => state.documents.status);
-    const error = useSelector(state => state.documents.error);
-    
-    // שמור את ה-ID הנוכחי כדי למנוע קריאות מיותרות
-    const [currentEntityId, setCurrentEntityId] = useState(null);
-    
-    useEffect(() => {
-      // בדוק אם ה-ID השתנה כדי למנוע קריאות מיותרות
-      if (entityId && entityId !== currentEntityId) {
-        console.log('טוען מסמכים עבור:', entityId, 'סוג:', entityType);
-        
-        if (entityType === 'employee') {
-          dispatch(fetchDocumentsByEmployeeId(entityId));
-        } else if (entityType === 'kid') {
-          dispatch(fetchDocumentsByKidId(entityId));
-        }
-        
-        // עדכן את ה-ID הנוכחי
-        setCurrentEntityId(entityId);
-      }
-    }, [dispatch, entityId, entityType, currentEntityId]);
-    
+const FilesList = ({ entityId,entityType,showFileType =true, onDelete}) => {
+  const dispatch = useDispatch();
   
+  // קבלת נתונים מהרדקס
+  const documents = useSelector(state => state.documents.documents);
+  const status = useSelector(state => state.documents.status);
+  const error = useSelector(state => state.documents.error);
+
+// useEffect(() => {
+//   console.log('entityId:', entityId, 'entityType:', entityType, 'autoFetch:', autoFetch);
+//   if (autoFetch && entityId) {
+//     console.log('טוען מסמכים אוטומטית עבור:', entityId, 'סוג:', entityType);
+//     dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
+//   }
+// }, [dispatch, entityId, entityType, autoFetch]);
+
+useEffect(() => {
+  console.log('entityId:', entityId, 'entityType:', entityType);
+    dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
+},[dispatch, entityId, entityType]);
+
   // הורדת קובץ
-  const handleDownload = (docId, fileName) => {
-    // יצירת לינק זמני להורדה
-    const downloadLink = document.createElement('a');
-    downloadLink.href = `/api/Documents/${docId}/content`;
-    downloadLink.download = fileName || `document-${docId}`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+  const handleDownload = (docId) => {
+    window.open(`/api/Documents/${docId}/content`, '_blank');
   };
 
   // מחיקת מסמך
@@ -114,14 +84,16 @@ const FilesList = ({
     return <FileIcon color="info" />;
   };
 
+  // תצוגת טעינה
   if (status === 'loading') {
     return (
-      <Box display="flex" justifyContent="center" p={4}>
+      <Box display="flex" justifyContent="center" p={2}>
         <CircularProgress />
       </Box>
     );
   }
 
+  // תצוגת שגיאה
   if (status === 'failed') {
     return (
       <Typography color="error" p={2}>
@@ -130,23 +102,25 @@ const FilesList = ({
     );
   }
 
+  // אין מסמכים
   if (!documents || documents.length === 0) {
     return (
-      <Typography color="textSecondary" p={2}>
+      <Typography color="textSecondary" p={2} textAlign="center">
         אין מסמכים להצגה
       </Typography>
     );
   }
 
+  // הצגת הטבלה
   return (
     <TableContainer component={Paper}>
-      <Table aria-label="טבלת מסמכים">
+      <Table size="small" aria-label="טבלת מסמכים">
         <TableHead>
           <TableRow>
-            {showFileType && <TableCell>סוג מסמך</TableCell>}
+            {showFileType && <TableCell>סוג</TableCell>}
             <TableCell>שם הקובץ</TableCell>
             <TableCell>תאריך העלאה</TableCell>
-            <TableCell>פעולות</TableCell>
+            <TableCell align="center">פעולות</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -166,27 +140,25 @@ const FilesList = ({
               <TableCell>
                 {new Date(doc.uploadDate).toLocaleDateString('he-IL')}
               </TableCell>
-              <TableCell>
-                <Box display="flex">
-                  <Tooltip title="הורד">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleDownload(doc.docId, doc.docName)}
-                      size="small"
-                    >
-                      <DownloadIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="מחק">
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDelete(doc.docId)}
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+              <TableCell align="center">
+                <Tooltip title="הורד">
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleDownload(doc.docId, doc.docName)}
+                    size="small"
+                  >
+                    <DownloadIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="מחק">
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDelete(doc.docId)}
+                    size="small"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

@@ -1,30 +1,25 @@
-import  { useState, useRef } from 'react';
+// src/components/common/FileUploader.jsx
+import React, { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { uploadDocument } from '../../Redux/features/documentsSlice';
 import Swal from 'sweetalert2';
 import { 
-  Button, 
-  Typography, 
-  Box, 
-  CircularProgress, 
-  IconButton,
-  Paper,
-  Chip
+  Button, Typography, Box, CircularProgress, 
+  Paper, Chip, Alert
 } from '@mui/material';
 import { 
   CloudUpload as UploadIcon, 
   InsertDriveFile as FileIcon, 
-  Image as ImageIcon, 
-  Close as CloseIcon,
+  Image as ImageIcon,
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 
 const FileUploader = ({ 
   entityId, 
-  entityType, // 'employee' או 'kid'
-  docType,    // 'profile', 'document', 'picture', וכו'
+  entityType,  // 'employee' או 'kid'
+  docType,     // סוג המסמך
   onSuccess,
-  allowedTypes = '*', // אופציונלי, למשל "image/*" רק לתמונות
+  allowedTypes = '*',
   maxSize = 5 * 1024 * 1024, // 5MB ברירת מחדל
   buttonText = 'בחר קובץ',
   showPreview = true
@@ -34,31 +29,23 @@ const FileUploader = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // טיפול בבחירת קובץ
   const handleFileChange = (e) => {
+    setError(null);
     const file = e.target.files[0];
     if (!file) return;
 
     // בדיקת גודל קובץ
     if (file.size > maxSize) {
-      Swal.fire({
-        icon: 'error',
-        title: 'הקובץ גדול מדי',
-        text: `הגודל המקסימלי המותר הוא ${Math.round(maxSize / 1024 / 1024)} MB`,
-        confirmButtonText: 'אישור'
-      });
+      setError(`הגודל המקסימלי המותר הוא ${Math.round(maxSize / 1024 / 1024)} MB`);
       return;
     }
 
-    // בדיקת סוג קובץ אם יש הגבלה
+    // בדיקת סוג קובץ
     if (allowedTypes !== '*' && !file.type.match(allowedTypes)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'סוג קובץ לא מורשה',
-        text: `יש להעלות רק קבצים מסוג ${allowedTypes}`,
-        confirmButtonText: 'אישור'
-      });
+      setError(`יש להעלות רק קבצים מסוג ${allowedTypes}`);
       return;
     }
 
@@ -74,64 +61,81 @@ const FileUploader = ({
     }
   };
 
-  // פתיחת חלון בחירת קבצים
-  const handleButtonClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // העלאת הקובץ לשרת
+  // העלאת הקובץ
   const handleUpload = async () => {
     if (!selectedFile) return;
+    if (!entityId) {
+      setError("חסר מזהה ישות (entityId)");
+      return;
+    }
 
     setLoading(true);
+    setError(null);
     
     const documentData = {
       document: {
         KidId: entityType === 'kid' ? entityId : null,
         EmployeeId: entityType === 'employee' ? entityId : null,
-        DocType: docType
+        DocType: docType || 'document' // ערך ברירת מחדל אם חסר
       },
       file: selectedFile
     };
 
     try {
-      const resultAction = await dispatch(uploadDocument(documentData));
-      if (uploadDocument.fulfilled.match(resultAction)) {
-        Swal.fire({
-          icon: 'success',
-          title: 'הקובץ הועלה בהצלחה',
-          confirmButtonText: 'אישור'
-        });
-        
-        // ניקוי הטופס
-        setSelectedFile(null);
-        setPreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        
-        // קריאה לפונקציית הקולבק עם המסמך שהועלה
-        if (onSuccess) onSuccess(resultAction.payload);
-      }
-    } catch (error) {
+      const result = await dispatch(uploadDocument(documentData)).unwrap();
+      
+      // הודעת הצלחה
       Swal.fire({
-        icon: 'error',
-        title: 'שגיאה בהעלאת הקובץ',
-        text: error.message || 'אירעה שגיאה, אנא נסה שוב מאוחר יותר',
+        icon: 'success',
+        title: 'הקובץ הועלה בהצלחה',
         confirmButtonText: 'אישור'
       });
+      
+      // ניקוי הטופס
+      resetForm();
+      
+      // קריאה לפונקציית הקולבק
+      if (onSuccess) onSuccess(result);
+    } catch (err) {
+      setError(err || 'אירעה שגיאה בהעלאת הקובץ');
     } finally {
       setLoading(false);
     }
   };
 
-  // ניקוי הקובץ שנבחר
-  const handleClear = () => {
+  // איפוס הטופס
+  const resetForm = () => {
     setSelectedFile(null);
     setPreview(null);
+    setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // הצגת אייקון מתאים לסוג הקובץ
+  const getFileIcon = () => {
+    if (!selectedFile) return null;
+    
+    if (selectedFile.type.includes('pdf')) {
+      return <PdfIcon fontSize="large" color="error" />;
+    } else if (selectedFile.type.includes('image')) {
+      return <ImageIcon fontSize="large" color="success" />;
+    }
+    return <FileIcon fontSize="large" color="info" />;
+  };
+
   return (
-    <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
+    <Paper elevation={1} sx={{ p: 2, mb: 2 }}>
+      <Typography variant="subtitle1" sx={{ mb: 1 }}>
+        העלאת קובץ {docType ? `(${docType})` : ''}
+      </Typography>
+      
+      {/* הודעת שגיאה */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+      
       {/* כפתור בחירת קובץ */}
       <Box display="flex" alignItems="center" mb={2}>
         <input
@@ -143,56 +147,47 @@ const FileUploader = ({
         />
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleButtonClick}
+          onClick={() => fileInputRef.current.click()}
           startIcon={<UploadIcon />}
           disabled={loading}
-          sx={{ ml: 1 }}
         >
           {buttonText}
         </Button>
         
+        {/* הצגת שם הקובץ שנבחר */}
         {selectedFile && (
-          <Box display="flex" alignItems="center" ml={2}>
-            <Chip
-              label={`${selectedFile.name} (${Math.round(selectedFile.size / 1024)} KB)`}
-              onDelete={handleClear}
-              color="default"
-              variant="outlined"
-            />
-          </Box>
+          <Chip
+            label={`${selectedFile.name} (${Math.round(selectedFile.size / 1024)} KB)`}
+            onDelete={resetForm}
+            color="primary"
+            variant="outlined"
+            sx={{ ml: 2 }}
+          />
         )}
       </Box>
 
       {/* תצוגה מקדימה */}
       {preview && showPreview && (
-        <Box mb={2} maxWidth={300}>
-          <Box 
-            component="img" 
+        <Box mb={2} maxWidth={300} maxHeight={200} overflow="hidden">
+          <img 
             src={preview} 
             alt="תצוגה מקדימה" 
-            sx={{ 
-              maxHeight: 200, 
+            style={{ 
+              maxHeight: '100%', 
               maxWidth: '100%', 
-              borderRadius: 1,
+              borderRadius: 4,
               objectFit: 'contain'
             }} 
           />
         </Box>
       )}
 
-      {/* אייקון לפי סוג הקובץ אם אינו תמונה */}
+      {/* אייקון לפי סוג הקובץ */}
       {selectedFile && !preview && showPreview && (
         <Box display="flex" alignItems="center" mb={2}>
-          {selectedFile.type.includes('pdf') ? (
-            <PdfIcon fontSize="large" color="error" />
-          ) : selectedFile.type.includes('image') ? (
-            <ImageIcon fontSize="large" color="success" />
-          ) : (
-            <FileIcon fontSize="large" color="info" />
-          )}
+          {getFileIcon()}
           <Typography variant="body2" ml={1}>
-            סוג קובץ: {selectedFile.type}
+            סוג קובץ: {selectedFile.type || 'לא מזוהה'}
           </Typography>
         </Box>
       )}
