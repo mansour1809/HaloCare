@@ -1,6 +1,6 @@
 // src/components/common/FilesList.jsx
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDocumentsByEntityId, deleteDocument } from '../../Redux/features/documentsSlice';
+import { fetchDocumentsByEntityId, deleteDocument, clearDocuments } from '../../Redux/features/documentsSlice';
 import { 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
   Paper, IconButton, Tooltip, Typography, Box, CircularProgress
@@ -11,81 +11,152 @@ import {
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import Swal from 'sweetalert2';
-import { useEffect } from 'react';
+import { useCallback, useEffect} from 'react';
+import axios from './axiosConfig';
+import { delay } from 'lodash';
 
-const FilesList = ({ entityId,entityType,showFileType =true, onDelete}) => {
+const FilesList = ({
+  entityId,
+  entityType,
+  showFileType = true,
+  onDelete,
+  openDialog,
+  closeDialog,
+}) => {
   const dispatch = useDispatch();
-  
   // קבלת נתונים מהרדקס
-  const documents = useSelector(state => state.documents.documents);
-  const status = useSelector(state => state.documents.status);
-  const error = useSelector(state => state.documents.error);
+  const documents = useSelector((state) => state.documents.documents);
+  const status = useSelector((state) => state.documents.status);
+  const error = useSelector((state) => state.documents.error);
 
-// useEffect(() => {
-//   console.log('entityId:', entityId, 'entityType:', entityType, 'autoFetch:', autoFetch);
-//   if (autoFetch && entityId) {
-//     console.log('טוען מסמכים אוטומטית עבור:', entityId, 'סוג:', entityType);
-//     dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
-//   }
-// }, [dispatch, entityId, entityType, autoFetch]);
+  // useEffect(() => {
+  //   console.log('entityId:', entityId, 'entityType:', entityType, 'autoFetch:', autoFetch);
+  //   if (autoFetch && entityId) {
+  //     console.log('טוען מסמכים אוטומטית עבור:', entityId, 'סוג:', entityType);
+  //     dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
+  //   }
+  // }, [dispatch, entityId, entityType, autoFetch]);
 
-useEffect(() => {
-  console.log('entityId:', entityId, 'entityType:', entityType);
+  // useEffect(() => {
+  //   if (entityId !== undefined) {
+  //   console.log(status);
+  //   if (status !== "succeeded")
+  //     dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
+  //   }
+  //   console.log(entityId);
+  //   console.log(documents);
+  // }, [entityId, entityType, dispatch, status]);
+  // const refreshDocuments = (() => {
+  //   dispatch(clearDocuments());
+  //   dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
+  // });
+
+  useEffect(() => {
+    console.log(entityId)
+    if (entityId) {
+      // dispatch(clearDocuments());
+//       console.log(status)
+if(status === "idle")
     dispatch(fetchDocumentsByEntityId({ entityId, entityType }));
-},[dispatch, entityId, entityType]);
 
-  // הורדת קובץ
-  const handleDownload = (docId) => {
-    window.open(`/api/Documents/${docId}/content`, '_blank');
+    }
+  }, [entityId,entityType, dispatch, status]);
+
+  
+    
+  const handleDownload = async (docId, fileName) => {
+    try {
+      // response from the server a file type - blob
+      const response = await axios.get(`/Documents/${docId}/content`, {
+        responseType: "blob",
+      });
+
+      // creating url for the bloc- file func
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+
+      // create a link and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName || `document_${docId}`;
+      document.body.appendChild(link);
+      link.click();
+
+      //cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("שגיאה בהורדת הקובץ:", error);
+      Swal.fire({
+        icon: "error",
+        title: "שגיאה בהורדת הקובץ",
+        text: "לא ניתן להוריד את הקובץ כרגע. נסה שוב מאוחר יותר.",
+        confirmButtonText: "אישור",
+      });
+    }
   };
 
-  // מחיקת מסמך
+  // delete document
   const handleDelete = async (docId) => {
+    closeDialog();
+    dispatch(clearDocuments());
     const result = await Swal.fire({
-      title: 'האם אתה בטוח?',
-      text: 'פעולה זו אינה ניתנת לביטול!',
-      icon: 'warning',
+      title: "האם אתה בטוח?",
+      text: "פעולה זו אינה ניתנת לביטול!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'כן, מחק!',
-      cancelButtonText: 'ביטול'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "כן, מחק!",
+      cancelButtonText: "ביטול",
     });
 
     if (result.isConfirmed) {
       try {
         await dispatch(deleteDocument(docId)).unwrap();
-        Swal.fire({
-          title: 'נמחק!',
-          text: 'המסמך נמחק בהצלחה',
-          icon: 'success',
-          confirmButtonText: 'אישור'
+
+        await new Promise((resolve) => {
+          Swal.fire({
+            title: "נמחק!",
+            text: "המסמך נמחק בהצלחה",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+            didClose: () => resolve(),
+          });
         });
-        
+
+        openDialog();
         if (onDelete) onDelete(docId);
       } catch (err) {
         Swal.fire({
-          title: 'שגיאה!',
-          text: err || 'אירעה שגיאה במחיקת המסמך',
-          icon: 'error',
-          confirmButtonText: 'אישור'
+          title: "שגיאה!",
+          text: err || "אירעה שגיאה במחיקת המסמך",
+          icon: "error",
+          confirmButtonText: "אישור",
         });
       }
     }
+    else 
+      openDialog();
   };
 
   // החזרת אייקון לפי סוג המסמך
   const getFileIcon = (contentType, docType) => {
-    if (contentType?.includes('image') || docType === 'profile' || docType === 'picture') {
+    if (
+      contentType?.includes("image") ||
+      docType === "profile" ||
+      docType === "picture"
+    ) {
       return <ImageIcon color="success" />;
-    } else if (contentType?.includes('pdf')) {
+    } else if (contentType?.includes("pdf")) {
       return <PdfIcon color="error" />;
     }
     return <FileIcon color="info" />;
   };
 
   // תצוגת טעינה
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <Box display="flex" justifyContent="center" p={2}>
         <CircularProgress />
@@ -94,10 +165,10 @@ useEffect(() => {
   }
 
   // תצוגת שגיאה
-  if (status === 'failed') {
+  if (status === "failed") {
     return (
       <Typography color="error" p={2}>
-        שגיאה: {error || 'אירעה שגיאה בטעינת המסמכים'}
+        שגיאה: {error || "אירעה שגיאה בטעינת המסמכים"}
       </Typography>
     );
   }
@@ -124,7 +195,7 @@ useEffect(() => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {documents.map(doc => (
+          {documents.map((doc) => (
             <TableRow key={doc.docId} hover>
               {showFileType && (
                 <TableCell>
@@ -136,9 +207,9 @@ useEffect(() => {
                   </Box>
                 </TableCell>
               )}
-              <TableCell>{doc.docName || 'קובץ ללא שם'}</TableCell>
+              <TableCell>{doc.docName || "קובץ ללא שם"}</TableCell>
               <TableCell>
-                {new Date(doc.uploadDate).toLocaleDateString('he-IL')}
+                {new Date(doc.uploadDate).toLocaleDateString("he-IL")}
               </TableCell>
               <TableCell align="center">
                 <Tooltip title="הורד">

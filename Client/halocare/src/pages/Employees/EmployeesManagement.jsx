@@ -44,7 +44,7 @@ import FileUploader from '../../components/common/FileUploader';
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDocumentsByEmployeeId } from '../../Redux/features/documentsSlice';
+import { clearDocuments, fetchDocumentsByEmployeeId } from '../../Redux/features/documentsSlice';
 import EmployeeForm from "./EmployeeForm";
 
 const EmployeesManagement = () => {
@@ -103,18 +103,19 @@ const EmployeesManagement = () => {
   const handleOpenDocuments = (employee) => {
     setSelectedEmployeeForDocuments(employee);
     setDocumentsDialogOpen(true);
-    dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
+    // dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
 
   };
 
   // סגירת דיאלוג מסמכים
   const handleCloseDocuments = () => {
+    dispatch(clearDocuments());
     setDocumentsDialogOpen(false);
     setSelectedEmployeeForDocuments(null);
   };
   
   // שינוי טאב במסמכים
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = ( newValue) => {
     setActiveTab(newValue);
   };
 
@@ -515,6 +516,8 @@ const EmployeesManagement = () => {
                     <FilesList
                       entityId={selectedEmployeeForDocuments?.employeeId}
                       entityType="employee"
+                      closeDialog={() => setDocumentsDialogOpen(false)}
+                      openDialog={() => setDocumentsDialogOpen(true)}
                       // autoFetch={true}
                       // showFileType={true}
                     />
@@ -535,7 +538,10 @@ const EmployeesManagement = () => {
                         selectedEmployeeForDocuments?.employeeId
                       )
                     );
-                  }}
+                  }
+                }
+                  closeDialog={() => setDocumentsDialogOpen(false)}
+                  openDialog={() => setDocumentsDialogOpen(true)}
                 />
               )}
             </Box>

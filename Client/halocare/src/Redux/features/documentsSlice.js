@@ -26,22 +26,39 @@ export const uploadDocument = createAsyncThunk(
   async ({ document, file }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
+      
+      // הוספת הקובץ
       formData.append('File', file);
       
-      // הוספת מידע על המסמך ב-FormData
-      for (const [key, value] of Object.entries(document)) {
-        if (value !== null && value !== undefined) {
-          formData.append(`Document.${key}`, value);
-        }
+      // הוספת פרטי המסמך בתצורה שהשרת מצפה
+      if (document.KidId) {
+        formData.append('Document.KidId', document.KidId);
+      }
+      
+      formData.append('Document.DocName', file.name);
+
+      
+      if (document.EmployeeId) {
+        formData.append('Document.EmployeeId', document.EmployeeId);
+      }
+      
+      if (document.DocType) {
+        formData.append('Document.DocType', document.DocType);
       }
 
+      // שליחת הבקשה
       const response = await axios.post('/Documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
+      
       return response.data;
     } catch (error) {
+      console.error('שגיאה בהעלאת מסמך:', error);
+      if (error.response && error.response.data) {
+        console.error('פרטי שגיאה:', error.response.data);
+      }
       return rejectWithValue(error.response?.data || 'שגיאה בהעלאת מסמך');
     }
   }

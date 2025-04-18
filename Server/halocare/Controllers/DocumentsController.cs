@@ -12,7 +12,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class DocumentsController : ControllerBase
     {
         private readonly DocumentService _documentService;
@@ -196,6 +196,7 @@ namespace halocare.Controllers
         {
             try
             {
+                Console.WriteLine(id);
                 bool deleted = _documentService.DeleteDocument(id);
 
                 if (deleted)

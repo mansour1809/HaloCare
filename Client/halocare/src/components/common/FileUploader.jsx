@@ -22,7 +22,9 @@ const FileUploader = ({
   allowedTypes = '*',
   maxSize = 5 * 1024 * 1024, // 5MB ברירת מחדל
   buttonText = 'בחר קובץ',
-  showPreview = true
+  showPreview = true,
+  closeDialog,
+  openDialog
 }) => {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
@@ -83,19 +85,23 @@ const FileUploader = ({
 
     try {
       const result = await dispatch(uploadDocument(documentData)).unwrap();
+      closeDialog()
+      setTimeout(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'הקובץ הועלה בהצלחה',
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          // After SweetAlert closes (automatically or after user confirmation), reopen the dialog
+          openDialog();
       
-      // הודעת הצלחה
-      Swal.fire({
-        icon: 'success',
-        title: 'הקובץ הועלה בהצלחה',
-        confirmButtonText: 'אישור'
-      });
+          // Optionally do anything else after reopening
+          resetForm();
+          if (onSuccess) onSuccess(result);
+        });
+      }, 300);
       
-      // ניקוי הטופס
-      resetForm();
-      
-      // קריאה לפונקציית הקולבק
-      if (onSuccess) onSuccess(result);
     } catch (err) {
       setError(err || 'אירעה שגיאה בהעלאת הקובץ');
     } finally {

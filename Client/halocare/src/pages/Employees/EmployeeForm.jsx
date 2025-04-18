@@ -213,8 +213,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
       if (profilePhoto) {
         const profileData = {
           document: {
-            EmployeeId: employeeId,
-            KidId: null,
+            EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
             DocType: 'profile'
           },
           file: profilePhoto
@@ -225,26 +224,28 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
       
       // העלאת המסמכים אם קיימים
       if (documents.length > 0) {
-        // העלאת כל המסמכים במקביל
-        const uploadPromises = documents.map(file => {
+        for (const file of documents) {
           const documentData = {
             document: {
-              EmployeeId: employeeId,
-              KidId: null,
+              EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
               DocType: 'document'
             },
             file: file
           };
           
-          return dispatch(uploadDocument(documentData)).unwrap();
-        });
-        
-        await Promise.all(uploadPromises);
+          await dispatch(uploadDocument(documentData)).unwrap();
+        }
       }
       
       return true;
     } catch (error) {
       console.error('שגיאה בהעלאת קבצים:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בהעלאת קבצים',
+        text: 'אירעה שגיאה בהעלאת הקבצים. אנא נסה שוב.',
+        confirmButtonText: 'אישור'
+      });
       return false;
     } finally {
       setUploadingFiles(false);
