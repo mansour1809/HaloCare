@@ -55,14 +55,6 @@ namespace halocare
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
-            Console.WriteLine("Uploads Path: " + uploadsPath); // Add this line for debug
-
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(uploadsPath),
-                RequestPath = "/uploads"
-            });
 
             app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseHttpsRedirection();
@@ -72,7 +64,12 @@ namespace halocare
             app.UseAuthorization();
 
             app.MapControllers();
-            
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+                RequestPath = "/uploads"
+            });
             app.Run();
         }
     }
