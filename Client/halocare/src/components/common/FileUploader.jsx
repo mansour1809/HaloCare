@@ -138,8 +138,8 @@ const FileUploader = ({
       {/* הודעת שגיאה */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
+    {typeof error === 'object' ? (error.message || 'שגיאה לא ידועה') : error}
+    </Alert>
       )}
       
       {/* כפתור בחירת קובץ */}

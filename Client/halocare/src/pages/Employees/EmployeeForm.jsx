@@ -14,7 +14,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
 import { useDispatch } from 'react-redux';
-import { uploadDocument } from '../../Redux/features/documentsSlice';
+import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
 import Validations from './validations';
 import Swal from 'sweetalert2';
 
@@ -68,6 +68,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
     cities,
   } = useEmployees();
   
+  console.log(existingEmployee)
   // מצבי טופס - אתחל את הערכים מהעובד הקיים אם נמצא במצב עריכה
   const [formData, setFormData] = useState(
     isEditMode ? {
@@ -147,6 +148,16 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
       }
       
       setProfilePhoto(file);
+      const reader = new FileReader();
+    reader.onload = (e) => {
+      // שמירת התצוגה המקדימה במצב זמני (לא דרוש ב-state נפרד, רק להצגה)
+      const previewElement = document.getElementById('profile-preview');
+      if (previewElement) {
+        previewElement.src = e.target.result;
+        previewElement.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(file);
     }
   };
   
@@ -179,21 +190,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
   const removeDocument = (index) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
-  
-  // // העתקת סיסמה ללוח
-  // const handleCopyPassword = () => {
-  //   if (formData.password) {
-  //     navigator.clipboard.writeText(formData.password);
-  //     Swal.fire({
-  //       icon: 'success',
-  //       title: 'הסיסמה הועתקה ללוח',
-  //       toast: true,
-  //       position: 'top-end',
-  //       showConfirmButton: false,
-  //       timer: 2000
-  //     });
-  //   }
-  // };
+
   
   // ניהול סיסמה
   const handleGeneratePassword = () => {
@@ -208,18 +205,46 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
     
     try {
       setUploadingFiles(true);
-      
       // העלאת תמונת פרופיל אם קיימת
       if (profilePhoto) {
+        const existingDocs = await dispatch(fetchDocumentsByEmployeeId(employeeId)).unwrap();
+        const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
+        
+        // מחיקת התמונה הקודמת אם קיימת
+        if (existingProfilePic) {
+          await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+        }
+        
+
         const profileData = {
           document: {
             EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
-            DocType: 'profile'
+            DocType: "profile",
+            DocName: profilePhoto.name,
           },
-          file: profilePhoto
+          file: profilePhoto,
         };
-        
-        await dispatch(uploadDocument(profileData)).unwrap();
+
+        const uploadResult = await dispatch(
+          uploadDocument(profileData)
+        ).unwrap();
+
+        // עדכון שדה photoPath בטבלת העובדים
+        if (uploadResult && uploadResult.docPath) {
+          // במצב עריכה, יש להשתמש ב-formData המלא
+          if (isEditMode) {
+            await updateEmployee({
+              ...formData,
+              photo: uploadResult.docPath
+            });
+          } else {
+            // במצב הוספת עובד חדש, נעדכן רק את שדה התמונה
+            await updateEmployee({
+              employeeId: employeeId,
+              photo: uploadResult.docPath
+            });
+          }
+        }
       }
       
       // העלאת המסמכים אם קיימים
@@ -228,7 +253,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
           const documentData = {
             document: {
               EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
-              DocType: 'document'
+              DocType: 'document',
+              DocName: file.name
             },
             file: file
           };
@@ -362,8 +388,10 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
         const employeeId = result.data.employeeId;
         await uploadFiles(employeeId);
       }
+      else
+      await uploadFiles(formData.employeeId);
       
-      // הודעת הצלחה
+      // הודעת הצלחה  
       Swal.fire({
         title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
         icon: 'success',
@@ -528,28 +556,66 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<CloudUpload />}
-                      sx={{ height: "56px", width: "100%" }}
-                    >
-                      {profilePhoto ? "תמונה נבחרה" : "העלאת תמונת פרופיל"}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={handleProfilePhotoChange}
-                      />
-                    </Button>
-                    {profilePhoto && (
-                      <Typography variant="caption" display="block">
-                        {profilePhoto.name} (
-                        {Math.round(profilePhoto.size / 1024)} KB)
-                      </Typography>
-                    )}
-                  </Grid>
+               
+                  {/* אזור תצוגה מקדימה לתמונת פרופיל */}
+<Grid item xs={12} md={6}>
+  <Button
+    variant="outlined"
+    component="label"
+    startIcon={<CloudUpload />}
+    sx={{ height: "56px", width: "100%" }}
+  >
+    {profilePhoto ? "תמונה נבחרה" : "העלאת תמונת פרופיל"}
+    <input
+      type="file"
+      hidden
+      accept="image/*"
+      onChange={handleProfilePhotoChange}
+    />
+  </Button>
+  
+  {/* הצגת שם הקובץ אם נבחר */}
+  {profilePhoto && (
+    <Typography variant="caption" display="block">
+      {profilePhoto.name} ({Math.round(profilePhoto.size / 1024)} KB)
+    </Typography>
+  )}
+  
+  {/* תצוגה מקדימה של התמונה */}
+  <Box mt={1} textAlign="center" display={profilePhoto ? 'block' : 'none'}>
+    <img 
+      id="profile-preview"
+      src="" 
+      alt="תצוגה מקדימה" 
+      style={{ 
+        maxHeight: '100px', 
+        maxWidth: '100%', 
+        borderRadius: '50%',
+        border: '1px solid #ddd',
+        display: 'none'
+      }} 
+    />
+  </Box>
+  
+  {/* הצגת תמונה קיימת אם בעריכה */}
+  {isEditMode && formData.photo && !profilePhoto && (
+    <Box mt={1} textAlign="center">
+      <Typography variant="caption" display="block" sx={{ mb: 1 }}>
+        תמונה נוכחית:
+      </Typography>
+      <img 
+        src={`/api/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}`}
+        alt="תמונה נוכחית" 
+        style={{ 
+          maxHeight: '150px', 
+          maxWidth: '100%', 
+          borderRadius: '50%',
+          border: '1px solid #ddd'
+        }} 
+      />
+    </Box>
+  )}
+</Grid>
                 </Grid>
               </Box>
 

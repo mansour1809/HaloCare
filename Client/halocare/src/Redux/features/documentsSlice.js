@@ -8,14 +8,27 @@ export const fetchDocumentsByEntityId = createAsyncThunk(
   async ({ entityId, entityType }, { rejectWithValue }) => {
     try {
       // שימוש בנתיב דינמי בהתאם לסוג הישות
-      const endpoint = entityType === 'employee' ? 
-        `/Documents/employee/${entityId}` : 
-        `/Documents/kid/${entityId}`;
-      
+      const endpoint = 
+        `/Documents/${entityType}/${entityId}`;
       const response = await axios.get(endpoint);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת מסמכים');
+    }
+  }
+);
+
+export const fetchDocumentsById = createAsyncThunk(
+  'documents/fetchById',
+  async ({ documentId }, { rejectWithValue }) => {
+    try {
+      // שימוש בנתיב דינמי בהתאם לסוג הישות
+      const endpoint = 
+        `/Documents/${documentId}`;
+      const response = await axios.get(endpoint);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בטעינת מסמך');
     }
   }
 );

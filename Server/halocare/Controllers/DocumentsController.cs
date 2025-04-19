@@ -196,7 +196,6 @@ namespace halocare.Controllers
         {
             try
             {
-                Console.WriteLine(id);
                 bool deleted = _documentService.DeleteDocument(id);
 
                 if (deleted)
