@@ -62,6 +62,7 @@ const theme = createTheme({
   },
 });
 
+const baseURL = "https://localhost:7225/api";
 const EmployeesManagement = () => {
   const dispatch = useDispatch();
   
@@ -366,7 +367,7 @@ const EmployeesManagement = () => {
                         <Avatar
 src={
   employee.photo
-    ? `https://localhost:7225/api/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}`
+    ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}`
     : ''
 }  alt={`${employee.firstName} ${employee.lastName}`}
   sx={{

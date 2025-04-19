@@ -6,7 +6,7 @@ export const fetchTreatmentTypes = createAsyncThunk(
   'treatmentTypes/fetchTreatmentTypes',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/Treatments/types");
+      const response = await axios.get("/TreatmentTypes");
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

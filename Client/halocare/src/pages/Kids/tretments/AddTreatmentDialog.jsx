@@ -27,7 +27,8 @@ import {
 } from '@mui/icons-material';
 import { useTreatmentContext } from './TreatmentContext';
 import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
-import { useAuth } from '../../context/AuthContext'; // נניח שיש קונטקסט כזה למשתמש מחובר
+
+import { useAuth } from '../../../components/login/AuthContext'; 
 
 const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
   const { isAddDialogOpen, closeAddDialog, addTreatment, loading, error } = useTreatmentContext();
