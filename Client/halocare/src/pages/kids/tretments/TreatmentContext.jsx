@@ -42,7 +42,7 @@ export const TreatmentProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.post(`/api/treatments`, {
+      const response = await axios.post(`/treatments`, {
         ...treatmentData,
         kidId
       });
@@ -63,7 +63,7 @@ export const TreatmentProvider = ({ children }) => {
     setError(null);
     
     try {
-      const response = await axios.put(`/api/treatments/${treatmentId}`, treatmentData);
+      const response = await axios.put(`/treatments/${treatmentId}`, treatmentData);
       
       setLoading(false);
       closeViewDialog();
@@ -81,7 +81,7 @@ export const TreatmentProvider = ({ children }) => {
     setError(null);
     
     try {
-      await axios.delete(`/api/treatments/${treatmentId}`);
+      await axios.delete(`/treatments/${treatmentId}`);
       
       setLoading(false);
       closeViewDialog();

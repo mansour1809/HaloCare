@@ -16,9 +16,6 @@ import {
   TablePagination,
   IconButton, 
   TextField,
-  Grid,
-  Card,
-  CardContent,
   CircularProgress,
   Alert
 } from '@mui/material';
@@ -50,39 +47,32 @@ const TreatmentsList = () => {
   // טעינת טיפולים בעת טעינת הדף
   useEffect(() => {
     if (kidId) {
-      dispatch(fetchTreatmentsByKid(kidId));
+      dispatch(fetchTreatmentsByKid({ kidId, treatmentType }));
     }
-  }, [dispatch, kidId]);
+  }, [dispatch, kidId, treatmentType]);
 
-  // סינון טיפולים - כולל לפי סוג טיפול אם צוין
+  // סינון טיפולים
   useEffect(() => {
     if (!treatments || treatments.length === 0) {
       setFilteredTreatments([]);
       return;
     }
     
-    // ראשית מסנן לפי סוג טיפול אם קיים
-    let filtered = treatments;
-    if (treatmentType) {
-      filtered = treatments.filter(treatment => 
-        treatment.treatmentType === treatmentType
-      );
-    }
-    
-    // אחר כך מסנן לפי חיפוש חופשי
+    // סינון לפי חיפוש חופשי
     if (searchTerm.trim() === '') {
-      setFilteredTreatments(filtered);
+      setFilteredTreatments(treatments);
     } else {
       const term = searchTerm.toLowerCase();
       setFilteredTreatments(
-        filtered.filter(treatment => 
+        treatments.filter(treatment => 
           treatment.description?.toLowerCase().includes(term) ||
           treatment.highlight?.toLowerCase().includes(term) ||
-          treatment.treatmentType?.toLowerCase().includes(term)
+          treatment.treatmentType?.toLowerCase().includes(term) ||
+          treatment.employeeName?.toLowerCase().includes(term)
         )
       );
     }
-  }, [treatments, searchTerm, treatmentType]);
+  }, [treatments, searchTerm]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -104,6 +94,90 @@ const TreatmentsList = () => {
     return date.toLocaleDateString('he-IL');
   };
 
+  // עיצוב הכותרת של הדף
+  const renderTitle = () => (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+        סיכומי טיפולים {treatmentType ? `- ${treatmentType}` : ''}
+      </Typography>
+      <Button 
+        variant="contained" 
+        startIcon={<AddIcon />} 
+        onClick={() => openAddDialog()}
+        sx={{ fontWeight: 'bold' }}
+      >
+        סיכום חדש
+      </Button>
+    </Box>
+  );
+
+  // תצוגת טבלת הטיפולים
+  const renderTreatmentsTable = () => (
+    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <TableContainer>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell align="right">שם הטיפול</TableCell>
+              <TableCell align="right">תאריך</TableCell>
+              <TableCell align="right">מטפל</TableCell>
+              <TableCell align="center">פעולות</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredTreatments.length > 0 ? (
+              filteredTreatments
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((treatment) => (
+                  <TableRow hover key={treatment.treatmentId || treatment.id}>
+                    <TableCell align="right">{treatment.treatmentType}</TableCell>
+                    <TableCell align="right">{formatDate(treatment.treatmentDate)}</TableCell>
+                    <TableCell align="right">{treatment.employeeName || 'לא צוין'}</TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        color="primary"
+                        onClick={() => openViewDialog(treatment)}
+                        size="small"
+                        title="צפייה בסיכום טיפול"
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                      <IconButton
+                        color="default"
+                        size="small"
+                        title="הורדת סיכום טיפול"
+                      >
+                        <FileDownloadIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  לא נמצאו טיפולים
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {filteredTreatments.length > 0 && (
+        <TablePagination
+          component="div"
+          count={filteredTreatments.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="שורות בעמוד:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} מתוך ${count}`}
+          rowsPerPageOptions={[5, 10, 25]}
+        />
+      )}
+    </Paper>
+  );
+
   // תוכן שיוצג בהתאם למצב הטעינה
   let content;
   if (status === 'loading') {
@@ -121,51 +195,11 @@ const TreatmentsList = () => {
   } else {
     content = (
       <>
-        {/* סטטיסטיקה */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                  {filteredTreatments?.length || 0}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  סה"כ טיפולים
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                  {filteredTreatments.length > 0 ? '85%' : '0%'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  אחוז התקדמות
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                  {filteredTreatments?.filter(t => t.highlight)?.length || 0}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  יעדים שהושגו
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
         {/* פילטר חיפוש */}
         <Box sx={{ mb: 3 }}>
           <TextField
             variant="outlined"
-            placeholder="חיפוש..."
+            placeholder="חיפוש בטיפולים..."
             fullWidth
             value={searchTerm}
             onChange={handleSearch}
@@ -177,89 +211,14 @@ const TreatmentsList = () => {
         </Box>
 
         {/* טבלת טיפולים */}
-        <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-          <TableContainer>
-            <Table stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell align="right">שם הטיפול</TableCell>
-                  <TableCell align="right">תאריך</TableCell>
-                  <TableCell align="right">מטפל</TableCell>
-                  <TableCell align="center">פעולות</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredTreatments.length > 0 ? (
-                  filteredTreatments
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((treatment) => (
-                      <TableRow hover key={treatment.treatmentId}>
-                        <TableCell align="right">{treatment.treatmentType}</TableCell>
-                        <TableCell align="right">{formatDate(treatment.treatmentDate)}</TableCell>
-                        <TableCell align="right" sx={{ display: 'flex', alignItems: 'center' }}>
-                          {treatment.employeeName || 'XXXXX'}
-                        </TableCell>
-                        <TableCell align="center">
-                          <IconButton
-                            color="primary"
-                            onClick={() => openViewDialog(treatment)}
-                            size="small"
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                          <IconButton
-                            color="default"
-                            size="small"
-                          >
-                            <FileDownloadIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      לא נמצאו טיפולים
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {filteredTreatments.length > 0 && (
-            <TablePagination
-              component="div"
-              count={filteredTreatments.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              labelRowsPerPage="שורות בעמוד:"
-              labelDisplayedRows={({ from, to, count }) => `${from}-${to} מתוך ${count}`}
-              rowsPerPageOptions={[5, 10, 25]}
-            />
-          )}
-        </Paper>
+        {renderTreatmentsTable()}
       </>
     );
   }
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-          סיכומי טיפולים {treatmentType ? `- ${treatmentType}` : ''}
-        </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={() => openAddDialog()}
-          sx={{ fontWeight: 'bold' }}
-        >
-          סיכום חדש
-        </Button>
-      </Box>
-
+      {renderTitle()}
       {content}
 
       {/* דיאלוגים */}

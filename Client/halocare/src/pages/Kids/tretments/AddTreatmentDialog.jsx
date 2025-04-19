@@ -27,21 +27,21 @@ import {
 } from '@mui/icons-material';
 import { useTreatmentContext } from './TreatmentContext';
 import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
-import axios from '../../../components/common/axiosConfig';
+import { useAuth } from '../../context/AuthContext'; // נניח שיש קונטקסט כזה למשתמש מחובר
 
 const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
   const { isAddDialogOpen, closeAddDialog, addTreatment, loading, error } = useTreatmentContext();
   const dispatch = useDispatch();
+  const { currentUser } = useAuth(); // קבלת המשתמש המחובר מקונטקסט האותנטיקציה
   
   // שליפת סוגי טיפולים מהסטור
   const { treatmentTypes, status: treatmentTypesStatus } = useSelector(state => state.treatmentTypes);
   
-  const [employees, setEmployees] = useState([]);
   const [formError, setFormError] = useState('');
   
   const [formData, setFormData] = useState({
     kidId: kidId,
-    employeeId: '',
+    employeeId: currentUser?.id || '', // שימוש במזהה של המשתמש הנוכחי
     treatmentDate: new Date().toISOString().split('T')[0],
     treatmentType: treatmentType || '',
     description: '',
@@ -55,7 +55,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     if (isAddDialogOpen) {
       setFormData({
         kidId: kidId,
-        employeeId: '',
+        employeeId: currentUser?.id || '', // שימוש במזהה של המשתמש הנוכחי
         treatmentDate: new Date().toISOString().split('T')[0],
         treatmentType: treatmentType || '',
         description: '',
@@ -65,28 +65,12 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       });
       setFormError('');
     }
-  }, [isAddDialogOpen, kidId, treatmentType]);
+  }, [isAddDialogOpen, kidId, treatmentType, currentUser]);
   
-  // טעינת רשימת עובדים וסוגי טיפולים
+  // טעינת סוגי טיפולים
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axios.get("/api/Employees?role=therapist");
-        setEmployees(response.data);
-      } catch (err) {
-        console.error('Error fetching employees:', err);
-        setFormError('שגיאה בטעינת רשימת המטפלים');
-      }
-    };
-    
-    if (isAddDialogOpen) {
-      // טען סוגי טיפולים אם לא נטענו כבר
-      if (treatmentTypesStatus === 'idle') {
-        dispatch(fetchTreatmentTypes());
-      }
-      
-      // טען רשימת עובדים
-      fetchEmployees();
+    if (isAddDialogOpen && treatmentTypesStatus === 'idle') {
+      dispatch(fetchTreatmentTypes());
     }
   }, [isAddDialogOpen, dispatch, treatmentTypesStatus]);
   
@@ -105,12 +89,25 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }));
   };
   
-  const validateForm = () => {
-    if (!formData.employeeId) {
-      setFormError('יש לבחור מטפל');
-      return false;
+  const generateHighlight = async () => {
+    // כאן תהיה לוגיקה לייצור היילייט באמצעות בינה מלאכותית
+    // לצורך הדוגמה, נחזיר סיכום פשוט מהתיאור
+    if (!formData.description.trim()) {
+      setFormError('יש להזין תיאור טיפול לפני יצירת היילייט');
+      return;
     }
     
+    // לוגיקה פשוטה לחילוץ ההיילייט - במציאות זה יכול להיות קריאה ל-API של בינה מלאכותית
+    const sentences = formData.description.split('.');
+    const highlight = sentences.length > 1 ? sentences[0] + '.' : formData.description;
+    
+    setFormData(prev => ({
+      ...prev,
+      highlight: highlight
+    }));
+  };
+  
+  const validateForm = () => {
     if (!formData.treatmentType) {
       setFormError('יש לבחור סוג טיפול');
       return false;
@@ -150,7 +147,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6">הוספת סיכום טיפול</Typography>
-        <IconButton edge="end" color="inherit" onClick={closeAddDialog}>
+        <IconButton edge="end" color="inherit" onClick={closeAddDialog} aria-label="סגור">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -209,25 +206,15 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
               />
             </Grid>
             
-            {/* מטפל */}
+            {/* מידע על המטפל (מוצג כשדה קריאה בלבד) */}
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel>מטפל</InputLabel>
-                <Select
-                  name="employeeId"
-                  value={formData.employeeId}
-                  onChange={handleInputChange}
-                  label="מטפל"
-                  disabled={loading}
-                >
-                  <MenuItem value="">בחר מטפל</MenuItem>
-                  {employees.map((employee) => (
-                    <MenuItem key={employee.id} value={employee.id}>
-                      {employee.firstName} {employee.lastName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <TextField
+                label="מטפל"
+                value={`${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`}
+                fullWidth
+                disabled
+                helperText="הטיפול יירשם בשם המשתמש המחובר למערכת"
+              />
             </Grid>
             
             {/* רמת שיתוף פעולה */}
@@ -262,19 +249,32 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
               />
             </Grid>
             
-            {/* נקודות חשובות */}
+            {/* נקודות חשובות עם כפתור ליצירה אוטומטית */}
             <Grid item xs={12}>
-              <TextField
-                label="נקודות חשובות / היילייט"
-                name="highlight"
-                value={formData.highlight}
-                onChange={handleInputChange}
-                fullWidth
-                multiline
-                rows={2}
-                disabled={loading}
-                placeholder="הוסף נקודות חשובות שיש לשים לב אליהן בטיפול הבא..."
-              />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <TextField
+                  label="נקודות חשובות / היילייט"
+                  name="highlight"
+                  value={formData.highlight}
+                  onChange={handleInputChange}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  disabled={loading}
+                  placeholder="הוסף נקודות חשובות שיש לשים לב אליהן בטיפול הבא..."
+                />
+                <Button 
+                  variant="outlined" 
+                  onClick={generateHighlight}
+                  disabled={loading || !formData.description.trim()}
+                  sx={{ mt: 1 }}
+                >
+                  צור אוטומטית
+                </Button>
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                לחיצה על "צור אוטומטית" תיצור המלצה אוטומטית על בסיס תיאור הטיפול
+              </Typography>
             </Grid>
           </Grid>
         </DialogContent>
