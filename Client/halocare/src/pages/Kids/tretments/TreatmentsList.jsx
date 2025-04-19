@@ -1,7 +1,7 @@
-// src/components/treatments/TreatmentsList.jsx
+// src/components/treatments/TreatmentsList.jsx (עדכון)
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -17,25 +17,31 @@ import {
   IconButton, 
   TextField,
   CircularProgress,
-  Alert
+  Alert,
+  Breadcrumbs,
+  Link
 } from '@mui/material';
 import { 
   Add as AddIcon, 
   Visibility as VisibilityIcon,
   FileDownload as FileDownloadIcon,
-  Search as SearchIcon 
+  Search as SearchIcon,
+  ArrowBack as ArrowBackIcon 
 } from '@mui/icons-material';
 import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
+import { fetchKidById } from '../../../Redux/features/kidsSlice';
 import { useTreatmentContext } from './TreatmentContext';
 import TreatmentViewDialog from './TreatmentViewDialog';
 import AddTreatmentDialog from './AddTreatmentDialog';
 
 const TreatmentsList = () => {
   const { kidId, treatmentType } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   
   // שליפת state מהסטור
   const { treatments, status, error } = useSelector(state => state.treatments);
+  const { selectedKid, status: kidStatus } = useSelector(state => state.kids);
   
   const { openAddDialog, openViewDialog } = useTreatmentContext();
   
@@ -48,8 +54,13 @@ const TreatmentsList = () => {
   useEffect(() => {
     if (kidId) {
       dispatch(fetchTreatmentsByKid({ kidId, treatmentType }));
+      
+      // אם אין פרטי ילד, נטען אותם
+      if (!selectedKid || selectedKid.kidId !== parseInt(kidId)) {
+        dispatch(fetchKidById(kidId));
+      }
     }
-  }, [dispatch, kidId, treatmentType]);
+  }, [dispatch, kidId, treatmentType, selectedKid]);
 
   // סינון טיפולים
   useEffect(() => {
@@ -94,34 +105,71 @@ const TreatmentsList = () => {
     return date.toLocaleDateString('he-IL');
   };
 
+  const handleGoBack = () => {
+    navigate(`/kids/${kidId}`);
+  };
+
   // עיצוב הכותרת של הדף
   const renderTitle = () => (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-      <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
-        סיכומי טיפולים {treatmentType ? `- ${treatmentType}` : ''}
-      </Typography>
-      <Button 
-        variant="contained" 
-        startIcon={<AddIcon />} 
-        onClick={() => openAddDialog()}
-        sx={{ fontWeight: 'bold' }}
-      >
-        סיכום חדש
-      </Button>
+    <Box sx={{ mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        <IconButton onClick={handleGoBack} sx={{ mr: 1 }}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Breadcrumbs>
+          <Link 
+            color="inherit" 
+            component="button"
+            onClick={() => navigate('/kids')}
+            underline="hover"
+          >
+            רשימת ילדים
+          </Link>
+          <Link 
+            color="inherit" 
+            component="button"
+            onClick={() => navigate(`/kids/${kidId}`)}
+            underline="hover"
+          >
+            {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'תיק ילד'}
+          </Link>
+          <Typography color="text.primary">
+            {treatmentType ? `טיפולי ${treatmentType}` : 'סיכומי טיפולים'}
+          </Typography>
+        </Breadcrumbs>
+      </Box>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
+          סיכומי טיפולים {treatmentType ? `- ${treatmentType}` : ''}
+        </Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />} 
+          onClick={() => openAddDialog()}
+          sx={{ 
+            fontWeight: 'bold',
+            backgroundColor: '#4cb5c3',
+            '&:hover': { backgroundColor: '#3da1af' }
+          }}
+        >
+          סיכום חדש
+        </Button>
+      </Box>
     </Box>
   );
 
   // תצוגת טבלת הטיפולים
   const renderTreatmentsTable = () => (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+    <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '10px' }}>
       <TableContainer>
         <Table stickyHeader>
           <TableHead>
-            <TableRow>
-              <TableCell align="right">שם הטיפול</TableCell>
-              <TableCell align="right">תאריך</TableCell>
-              <TableCell align="right">מטפל</TableCell>
-              <TableCell align="center">פעולות</TableCell>
+            <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>שם הטיפול</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>תאריך</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 'bold' }}>מטפל</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 'bold' }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -134,28 +182,42 @@ const TreatmentsList = () => {
                     <TableCell align="right">{formatDate(treatment.treatmentDate)}</TableCell>
                     <TableCell align="right">{treatment.employeeName || 'לא צוין'}</TableCell>
                     <TableCell align="center">
-                      <IconButton
-                        color="primary"
-                        onClick={() => openViewDialog(treatment)}
-                        size="small"
-                        title="צפייה בסיכום טיפול"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton
-                        color="default"
-                        size="small"
-                        title="הורדת סיכום טיפול"
-                      >
-                        <FileDownloadIcon />
-                      </IconButton>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
+                        <IconButton
+                          sx={{
+                            width: 35,
+                            height: 35,
+                            backgroundColor: '#4cb5c3',
+                            color: 'white',
+                            '&:hover': { backgroundColor: '#3da1af' },
+                          }}
+                          onClick={() => openViewDialog(treatment)}
+                          size="small"
+                          title="צפייה בסיכום טיפול"
+                        >
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton
+                          sx={{
+                            width: 35,
+                            height: 35,
+                            backgroundColor: '#ff9800',
+                            color: 'white',
+                            '&:hover': { backgroundColor: '#f57c00' },
+                          }}
+                          size="small"
+                          title="הורדת סיכום טיפול"
+                        >
+                          <FileDownloadIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} align="center">
-                  לא נמצאו טיפולים
+                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                  {status === 'succeeded' ? 'לא נמצאו טיפולים' : ''}
                 </TableCell>
               </TableRow>
             )}
@@ -180,7 +242,7 @@ const TreatmentsList = () => {
 
   // תוכן שיוצג בהתאם למצב הטעינה
   let content;
-  if (status === 'loading') {
+  if (status === 'loading' || kidStatus === 'loading') {
     content = (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
         <CircularProgress />
@@ -217,7 +279,7 @@ const TreatmentsList = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3 }} dir="rtl">
       {renderTitle()}
       {content}
 

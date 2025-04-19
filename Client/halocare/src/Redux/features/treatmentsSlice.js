@@ -1,15 +1,19 @@
-// src/store/slices/treatmentsSlice.js
+// src/Redux/features/treatmentsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
 export const fetchTreatmentsByKid = createAsyncThunk(
   'treatments/fetchTreatmentsByKid',
-  async (kidId,treatmentType, { rejectWithValue }) => {
+  async ({ kidId, treatmentType }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Treatments/kid/${kidId}/${treatmentType}`);
+      let url = `/Treatments/kid/${kidId}`;
+      if (treatmentType) {
+        url += `/${treatmentType}`;
+      }
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data || 'שגיאה בטעינת רשימת הטיפולים');
     }
   }
 );
@@ -21,7 +25,13 @@ const treatmentsSlice = createSlice({
     status: 'idle',
     error: null
   },
-  reducers: {},
+  reducers: {
+    clearTreatments: (state) => {
+      state.treatments = [];
+      state.status = 'idle';
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTreatmentsByKid.pending, (state) => {
@@ -37,5 +47,7 @@ const treatmentsSlice = createSlice({
       });
   }
 });
+
+export const { clearTreatments } = treatmentsSlice.actions;
 
 export default treatmentsSlice.reducer;

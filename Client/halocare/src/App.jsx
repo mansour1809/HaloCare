@@ -29,6 +29,8 @@ import { useAuth, AuthProvider } from './components/login/AuthContext';
 import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
 import {TreatmentProvider} from './pages/Kids/tretments/TreatmentContext';
+// import KidFlowerProfileDynamic from './pages/kids/KidsFiles/FlowerApp';
+import KidProfilePage from './pages/kids/KidsFiles/KidProfilePage';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -207,7 +209,7 @@ const AppContent = () => {
                 path="/tasks"
                 element={
                   <PrivateRoute>
-                    <div>Tasks Page</div>
+                    <KidProfilePage />
                   </PrivateRoute>
                 }
               />

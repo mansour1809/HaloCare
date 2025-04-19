@@ -1,161 +1,181 @@
-import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
+// src/components/kids/KidsList.jsx
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Avatar, 
+  Button, 
+  IconButton, 
   TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-  Grid,
-  Card,
-  CardContent
-} from "@mui/material";
-
-const initialKids = [
-  { id: 1, name: "דניאל לוי", parentPhone: "0524787890", age: 3, className: "כיתה 1" },
-  { id: 2, name: "יואב עברי", parentPhone: "0524787890", age: 2.9, className: "כיתה 1" },
-  { id: 3, name: "אילון מנור", parentPhone: "0524787890", age: 2.5, className: "כיתה 2" },
-  { id: 4, name: "יהל אביקר", parentPhone: "0546458380", age: 1.8, className: "כיתה 2" },
-];
+  InputAdornment,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import { 
+  Add as AddIcon, 
+  Search as SearchIcon,
+  Visibility as VisibilityIcon
+} from '@mui/icons-material';
+import { fetchKids } from '../../Redux/features/kidsSlice';
 
 const KidsManagement = () => {
-  const [kids, setKids] = useState(initialKids);
-  const [open, setOpen] = useState(false);
-  const [selectedKid, setSelectedKid] = useState(null);
-
-  const handleEdit = (kid) => {
-    setSelectedKid(kid);
-    setOpen(true);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { kids, status, error } = useSelector(state => state.kids);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  useEffect(() => {
+    dispatch(fetchKids());
+  }, [dispatch]);
+  
+  const filteredKids = kids.filter(kid => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (kid.firstName && kid.firstName.toLowerCase().includes(searchLower)) ||
+      (kid.lastName && kid.lastName.toLowerCase().includes(searchLower))
+    );
+  });
+  
+  const handleViewKidProfile = (kidId) => {
+    navigate(`/kids/${kidId}`);
   };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedKid(null);
+  
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('he-IL');
   };
-
-  const handleSave = () => {
-    setKids(kids.map(k => k.id === selectedKid.id ? selectedKid : k));
-    handleClose();
-  };
-
-  // חלוקה לכיתות
-  const classA = kids.filter(kid => kid.className === "כיתה 1");
-  const classB = kids.filter(kid => kid.className === "כיתה 2");
-
+  
   return (
-    <Grid container spacing={3} justifyContent="center" style={{ padding: 20, direction : "rtl"  }}>
-      {/* כיתה א */}
-      <Grid item xs={12} md={6}>
-        <Card sx={{ boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" align="center" gutterBottom>
-              כיתה 1
-            </Typography>
-            <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>שם</TableCell>
-                    <TableCell>טלפון הורה</TableCell>
-                    <TableCell>גיל</TableCell>
-                    <TableCell>עריכה</TableCell>
+    <Box sx={{ p: 3 }} dir="rtl">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>
+          רשימת ילדים
+        </Typography>
+        
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="חיפוש ילד..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: 250 }}
+          />
+          
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{
+              backgroundColor: '#4cb5c3',
+              '&:hover': { backgroundColor: '#3da1af' }
+            }}
+            onClick={() => navigate('/kids/add')}
+          >
+            הוספת ילד חדש
+          </Button>
+        </Box>
+      </Box>
+      
+      {status === 'loading' && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+      
+      {status === 'failed' && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {status === 'succeeded' && (
+        <TableContainer component={Paper} sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: '10px' }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>שם הילד</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>תאריך לידה</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>כיתה</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>מגדר</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', fontSize: '1rem' }}>פעולות</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredKids.length > 0 ? (
+                filteredKids.map(kid => (
+                  <TableRow key={kid.kidId} sx={{ '&:hover': { backgroundColor: '#f5f9fa' } }}>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar
+                          src={kid.photo ? `https://localhost:7225/api/Documents/content-by-path?path=${encodeURIComponent(kid.photo)}` : ''}
+                          alt={`${kid.firstName} ${kid.lastName}`}
+                          sx={{ width: 40, height: 40, mr: 1 }}
+                        >
+                          {!kid.photo && (
+                            <>
+                              {kid.firstName && kid.firstName[0]}
+                              {kid.lastName && kid.lastName[0]}
+                            </>
+                          )}
+                        </Avatar>
+                        <Typography sx={{ fontWeight: 'medium' }}>
+                          {`${kid.firstName || ""} ${kid.lastName || ""}`}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{formatDate(kid.birthDate)}</TableCell>
+                    <TableCell>{kid.className || '–'}</TableCell>
+                    <TableCell>{kid.gender || '–'}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleViewKidProfile(kid.kidId)}
+                        sx={{
+                          backgroundColor: '#4cb5c3',
+                          color: 'white',
+                          '&:hover': { backgroundColor: '#3da1af' },
+                          width: 35,
+                          height: 35
+                        }}
+                      >
+                        <VisibilityIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {classA.map((kid) => (
-                    <TableRow key={kid.id}>
-                      <TableCell>{kid.name}</TableCell>
-                      <TableCell>{kid.parentPhone}</TableCell>
-                      <TableCell>{kid.age}</TableCell>
-                      <TableCell>
-                        <Button variant="contained" color="primary" onClick={() => handleEdit(kid)}>
-                          ערוך
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      {/* כיתה ב */}
-      <Grid item xs={12} md={6}>
-        <Card sx={{ boxShadow: 3 }}>
-          <CardContent>
-            <Typography variant="h6" align="center" gutterBottom>
-              כיתה 2
-            </Typography>
-            <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>שם</TableCell>
-                    <TableCell>טלפון הורה</TableCell>
-                    <TableCell>גיל</TableCell>
-                    <TableCell>עריכה</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {classB.map((kid) => (
-                    <TableRow key={kid.id}>
-                      <TableCell>{kid.name}</TableCell>
-                      <TableCell>{kid.parentPhone}</TableCell>
-                      <TableCell>{kid.age}</TableCell>
-                      <TableCell>
-                        <Button variant="contained" color="primary" onClick={() => handleEdit(kid)}>
-                          ערוך
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      {/* דיאלוג עריכה */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>עריכת ילד</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="שם"
-            fullWidth
-            value={selectedKid?.name || ""}
-            onChange={(e) => setSelectedKid({ ...selectedKid, name: e.target.value })}
-          />
-          <TextField
-            label="טלפון הורה"
-            fullWidth
-            value={selectedKid?.parentPhone || ""}
-            onChange={(e) => setSelectedKid({ ...selectedKid, parentPhone: e.target.value })}
-          />
-          <TextField
-            label="גיל"
-            fullWidth
-            type="number"
-            value={selectedKid?.age || ""}
-            onChange={(e) => setSelectedKid({ ...selectedKid, age: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>ביטול</Button>
-          <Button onClick={handleSave} color="primary">שמירה</Button>
-        </DialogActions>
-      </Dialog>
-    </Grid>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <Typography color="text.secondary">
+                      לא נמצאו ילדים
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
   );
 };
 

@@ -176,8 +176,8 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
                 >
                   <MenuItem value="">בחר סוג טיפול</MenuItem>
                   {treatmentTypesStatus === 'succeeded' && treatmentTypes.map((type) => (
-                    <MenuItem key={type.id || type.name} value={type.name}>
-                      {type.name}
+                    <MenuItem key={ type.treatmentTypeName} value={type.treatmentTypeName}>
+                      {type.treatmentTypeName}
                     </MenuItem>
                   ))}
                 </Select>
