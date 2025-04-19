@@ -362,11 +362,13 @@ const EmployeesManagement = () => {
                     >
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
-                          {console.log(encodeURIComponent(employee.photo))}
-                          {console.log(employee.employeeId)}
+                          {console.log(`/api/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}`)}
                         <Avatar
-  src={employee.photo ? `/api/Documents/content?path=${encodeURIComponent(employee.photo)}` : ''}
-  alt={`${employee.firstName} ${employee.lastName}`}
+src={
+  employee.photo
+    ? `https://localhost:7225/api/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}`
+    : ''
+}  alt={`${employee.firstName} ${employee.lastName}`}
   sx={{
     width: 40,
     height: 40,

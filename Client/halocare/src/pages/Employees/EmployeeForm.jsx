@@ -3,7 +3,8 @@ import {
   Container, Paper, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   FormControlLabel, Switch, CircularProgress,
-  InputAdornment, IconButton, Divider, Alert
+  InputAdornment, IconButton, Divider, Alert,
+  Breadcrumbs
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,7 +12,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { Visibility, VisibilityOff, ContentCopy, CloudUpload } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
 import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
@@ -430,6 +431,22 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess }) => {
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
         <Container maxWidth="md" dir="rtl">
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Link
+          underline="hover"
+          color="inherit"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate('/employees/list');
+          }}
+          sx={{ cursor: 'pointer' }}
+        >
+          רשימת עובדים
+        </Link>
+        <Typography color="text.primary">
+          {'עריכת עובד' }
+        </Typography>
+      </Breadcrumbs>
           <Paper
             elevation={3}
             sx={{ padding: 3, marginTop: 4, marginBottom: 4 }}

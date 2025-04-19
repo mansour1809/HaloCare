@@ -12,7 +12,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class DocumentsController : ControllerBase
     {
         private readonly DocumentService _documentService;
@@ -134,6 +134,31 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה בשרת: {ex.Message}");
             }
         }
+
+        // בקונטרולר DocumentsController
+        [HttpGet("content-by-path")]
+        public ActionResult GetDocumentContentByPath([FromQuery] string path)
+        {
+            Console.WriteLine(path);
+            try
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    return BadRequest("נדרש נתיב למסמך");
+                }
+
+                byte[] fileContent = _documentService.GetDocumentContentByPath(path);
+                string contentType = GetContentTypeFromPath(path);
+
+                return File(fileContent, contentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        
         // POST: api/Documents/upload
         [HttpPost("upload")]
         public ActionResult<Documentt> UploadDocument([FromForm] DocumentUploadModel model)
@@ -216,8 +241,21 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
-    }
+    
+    // פונקציית עזר לקביעת סוג התוכן לפי סיומת הקובץ
+    private string GetContentTypeFromPath(string path)
+    {
+        string extension = Path.GetExtension(path).ToLower();
 
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            _ => "application/octet-stream"
+        };
+    }
+    }
     public class DocumentUploadModel
     {
         public Documentt Document { get; set; }

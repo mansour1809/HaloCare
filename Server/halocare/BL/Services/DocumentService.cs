@@ -218,6 +218,29 @@ namespace halocare.BL.Services
             return _documentRepository.DeleteDocument(id);
         }
 
+        public byte[] GetDocumentContentByPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException("נתיב לא יכול להיות ריק");
+            }
+
+            // פענוח URL אם צריך
+            path = Uri.UnescapeDataString(path);
+
+            // החלפת / ב-\ (במערכת Windows) או להיפך (במערכת Linux)
+            string normalizedPath = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+
+            // יצירת הנתיב המלא
+            string fullPath = Path.Combine(_uploadsBasePath, normalizedPath);
+            Console.WriteLine(fullPath);
+            if (!File.Exists(fullPath))
+            {
+                throw new FileNotFoundException($"הקובץ לא נמצא: {fullPath}");
+            }
+
+            return File.ReadAllBytes(fullPath);
+        }
         public byte[] GetDocumentContent(int id)
         {
             // וידוא שהמסמך קיים
