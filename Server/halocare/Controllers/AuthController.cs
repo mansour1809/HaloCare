@@ -13,7 +13,7 @@ namespace halocare.Controllers
 
     public class AuthController : ControllerBase
     {
-        private readonly AuthenticationService _authService;
+        private readonly AuthenticationService _authService;     
         private readonly EmployeeService _employeeService;
         private readonly EmailService _emailService;
 
@@ -31,7 +31,7 @@ namespace halocare.Controllers
         {
             try
             {
-                // אימות המשתמש
+                // authinticate
                 Employee employee = _authService.Authenticate(model.Email, model.Password);
 
                 if (employee == null)
@@ -40,10 +40,10 @@ namespace halocare.Controllers
                 }
 
 
-                // יצירת טוקן JWT
+                // generate jwt
                 var token = _authService.GenerateJwtToken(employee);
 
-                // החזרת הטוקן למשתמש יחד עם מידע בסיסי על העובד
+                // returning token beside some details
                 return Ok(new
                 {
                     token,
@@ -64,7 +64,7 @@ namespace halocare.Controllers
         {
             try
             {
-                // בדוק אם המשתמש קיים במערכת
+                // check if employee exist
                 Employee employee =  _employeeService.GetEmployeeByEmail(request.Email);
                 if (employee == null)
                 {
@@ -78,7 +78,7 @@ namespace halocare.Controllers
                     request.Email,
                     resetToken,
                     //"http://localhost:5173/reset-password" 
-                    "https://proj.ruppin.ac.il/broup3/test2/halocare/reset-password" //frontend
+                    "https://proj.ruppin.ac.il/bgroup3/test2/halocare/#/reset-password" //frontend
                 );
 
                 if (emailSent)
@@ -113,7 +113,7 @@ namespace halocare.Controllers
                     return BadRequest(new { success = false, message = "נתונים לא תקינים" });
                 }
 
-                // עדכון הסיסמה
+                // update pass
                 Employee employee = _employeeService.GetEmployeeByEmail(email);
 
                 if (employee == null)
