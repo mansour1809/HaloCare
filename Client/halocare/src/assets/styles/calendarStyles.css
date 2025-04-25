@@ -1,0 +1,233 @@
+
+      /* Swap next and prev icons */
+      .fc-icon-chevron-right::before {
+          content: "";
+
+        }
+
+      .fc-icon-chevron-left::before {
+        content: "";
+
+      }
+      /* רקע כללי לסרגל הכלים */
+      .fc-toolbar {
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(to left, #ffffff, #f7faff) !important;
+        box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12) !important;
+      }
+
+
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* ############################################################################################## */
+/* version 2  */
+/* 
+  עיצוב כללי ליומן 
+  מותאם לתצוגה עברית וצבעים מותאמים
+*/
+/* כללי */
+.fc {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Rubik', 'Assistant', sans-serif;
+}
+
+/* כותרת */
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin: 0 0.5rem;
+}
+
+/* כפתורים */
+.fc .fc-button {
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  text-transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.fc .fc-button:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.fc .fc-button-primary {
+  background-color: #1976d2;
+  border-color: #1976d2;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #1565c0;
+  border-color: #1565c0;
+}
+
+.fc .fc-today-button {
+  font-weight: bold;
+}
+
+/* כפתור היום */
+.fc .fc-today-button:not(:disabled) {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+.fc .fc-today-button:not(:disabled):hover {
+  background-color: #43a047;
+  border-color: #43a047;
+}
+
+/* כותרות ימים */
+.fc-day-header {
+  font-weight: 600 !important;
+  padding: 10px 0 !important;
+  background-color: #f5f9ff;
+  border-radius: 5px;
+  margin: 2px;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #2c3e50;
+  text-decoration: none !important;
+  padding: 5px 0;
+}
+
+/* תאים של היומן */
+.fc .fc-daygrid-day {
+  transition: background-color 0.2s;
+}
+
+.fc .fc-daygrid-day:hover {
+  background-color: #f8f9fa;
+}
+
+/* סגנון היום הנוכחי */
+.fc .fc-day-today {
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+/* שעות היומן */
+.fc .fc-timegrid-slot {
+  height: 48px;
+}
+
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  font-weight: 500;
+  color: #546e7a;
+}
+
+/* אירועים */
+.fc-event-custom {
+  border-radius: 6px;
+  border-right-width: 4px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+}
+
+.fc-event-custom:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.fc-event-custom .fc-event-title {
+  font-weight: 500;
+  padding: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-event-custom .fc-event-time {
+  font-weight: 500;
+  padding: 2px 4px;
+  font-size: 0.85em;
+  opacity: 0.9;
+}
+
+.fc-event-custom .fc-event-location {
+  font-size: 0.8em;
+  opacity: 0.8;
+  padding: 0 4px 2px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* אינדיקטור זמן נוכחי */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: #e91e63;
+  border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: #e91e63;
+  border-width: 5px;
+}
+
+/* התאמה למסכים קטנים */
+@media screen and (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1.2rem;
+  }
+  
+  .fc .fc-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .fc-event-custom .fc-event-title {
+    font-size: 0.9em;
+  }
+}
+
+.fc-event-participants {
+  font-size: 0.75em;
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+
+.fc-event-participants .kids-count,
+.fc-event-participants .employees-count {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1px 4px;
+}
+
+.fc-event-location {
+  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+  opacity: 0.85;
+}
+
+.fc-event-location .location-icon {
+  margin-left: 2px;
+}
+.muirtl-1qw2a80-MuiGrid-root>.MuiGrid-item {
+  padding-top: 30px;
+}
+
+.my-zindex-fix {
+  z-index: 2000 !important; 
+}

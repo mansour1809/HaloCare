@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "halocare-180996",
+  "private_key_id": "4959d6ed6802dbcfdcb89b582a47ca12b5ec54b2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDaemMhKfRHtyBV\n2vsWLOX360GeNYtIhtuBxzh38pBNA0SgJTHhqsmoTCSf8DUSjosuoGUovLwT7P6k\ngSVuzI8+BTqqtnlp309J2VTXk8L0zSR9nryhT7z/Vz5VZAuuiMmDN0GF/xAR3/qt\nW4tEnylU7Av98hdBQCAQ4ZYKZyIoKXoE44nRozKaMtk2IoKijvGueazMU0UaGc7r\nfsovvjr1VNj9sbsuzOXCdDmiEJsLdbbNrMcBjzSD1XffWqHIYgrXF8tVZiKtiryt\nVXIm3nsA3AuXB3mPLX7f9w964Z0p2WHSl+dcFwGJs73ZbM+7Hmb5NLSx4+rNBtOb\nZ5NgdMn7AgMBAAECggEAAwnjuhDa0GqIHRmUF21db3LKsVgeTU5u3CG4s9ZgUmni\nuPV7eZ+F+XzBn6XYHx9zaR0a+xOQ7BgGPKR9MErRDTRGahxqmOHduPG4X90yv3Pg\n94xPJFE3GDgO6mIfVXiakOQiWao//3elhWa6C6TJDuDPk+MblrE9IO76Rr/DdlqC\nv0nu4EbDm/zHtfUCsUBSC66ngxPLJrRCBQJ+j+MwDgv6ZlMTCOep60jXmQJLoDn4\nwQPD93XSi5RsNKPmh/rAei1XYatx2zFLaONOOgBWaWf3pAdNX/08rY1LmTOY2oxw\nem+NENIVr1VMwBRs0dOSqKar6dTiXG2QeZs5ee0u1QKBgQDuOP0eC41PUbC1E+Qm\nAR+n7Ut4+bAwT/1DdsZOp7msAQNrGLXsrUhfmcPL9zXdhz1kUcaSGfxb0/CSHQr9\nE4LYsghrvCUyJo5EsdhLv9wNE7sxaBkDpJxxIX5IYh930IawqUC2gkjcHMemIxPC\nvJrcmAxa0hUpGpJHdXYNbc8m7wKBgQDqyDLEdyAr0FVJ+5BUaYpynkxXAVBOFa/u\nYeY96qsfP5QB0gh8FKFcd2VVImN6qqt6gn5vij+SOEIzrcdhVbkC+x+BlD8/RM1l\niPrNAQp1TO8greTwSZrWMaFRsyyTH2JplA66yXkvjzDg+q/dCaNICOBLIOHw7wAo\n9UyjQT3ttQKBgGuFdVl2RVWjvWo9jCBLKYqV5Ba6O/fSYrFsjp05vugPnQddo98r\nZxsfP+xzq/BM9jytXD7dU7Xutwp76VXI1KoR0RMvXGqCVHxU+RdXhW6xlS/7mC64\nwZOeVm09PI7Lo79g5UB7FX+jzckC1Ax1LECcsBbd84cV4yg1sA7nnTQpAoGBAJ3y\nKr0jCwCOuiH4XAN9sQck2WSa3KR7UI0FTXiP+6kdA3wqCU04L8neBMy+QsBOOuhD\nC74L+nJq6JaNrRkdK0cHHA33ZokwxyEsgtURgzCgniqU8fR4//JjFwy4hh8/uNwg\nH7ynN6C4KwDfhRollrQqTIIeUAHfN3NWesVFad0VAoGBAIkXWLpUUMfeRM17FJWc\nIeakMKTVzPmDUAIw8YmlEQ+Rb4A/2QtPBAr68EOX96j65RIQWNhv2VDjG0xrGoOG\nEtUJcOyvlBmf4vTrjmm4sUWuCWSOtRxtlTQ7cnxrPYMFjo9CGtsqKEIhKTZRn54N\ncxPBggk81lKR594H5SvlcMgQ\n-----END PRIVATE KEY-----\n",
+  "client_email": "halocare@halocare-180996.iam.gserviceaccount.com",
+  "client_id": "113231140964734460648",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/halocare%40halocare-180996.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
