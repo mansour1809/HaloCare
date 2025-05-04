@@ -25,6 +25,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupsIcon from '@mui/icons-material/Groups';
+import { api } from '../services/api';
 
 const HomePage = () => {
   const [tasks, setTasks] = useState([
@@ -52,7 +53,6 @@ const HomePage = () => {
       }
     });
 
-    // המרה למערך לתצוגה נוחה יותר
     return Object.entries(summary).map(([className, count]) => ({
       className,
       count
@@ -64,35 +64,38 @@ const HomePage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        // טעינת נתוני נוכחות להיום
+        // קבלת התאריך הנוכחי בפורמט YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
-        const attendanceResponse = await fetch(`/api/Attendance/date/${today}`);
         
-        if (attendanceResponse.ok) {
-          const attendanceData = await attendanceResponse.json();
+        // טעינת נתוני נוכחות
+        try {
+          const attendanceData = await api.getAttendanceByDate(today);
           const summary = calculateAttendanceSummary(attendanceData);
           setAttendanceSummary(summary);
+        } catch (err) {
+          console.error('Error fetching attendance:', err);
         }
 
-        // טעינת אירועים מהיומן להיום
-        const eventsResponse = await fetch(`/api/Events?date=${today}`);
-        
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
+        // טעינת אירועים מהיומן
+        try {
+          const eventsData = await api.getEventsByDate(today);
           // סינון אירועים להיום בלבד
           const todayEventsFiltered = eventsData.filter(event => 
-            event.startTime.startsWith(today)
+            event.startTime && event.startTime.startsWith(today)
           );
           // מיון לפי שעת התחלה
           todayEventsFiltered.sort((a, b) => 
             new Date(a.startTime) - new Date(b.startTime)
           );
           setTodayEvents(todayEventsFiltered);
+        } catch (err) {
+          console.error('Error fetching events:', err);
         }
 
       } catch (err) {
-        setError('שגיאה בטעינת הנתונים');
+        setError('שגיאה בטעינת הנתונים. אנא נסה שוב.');
         console.error('Error fetching data:', err);
       } finally {
         setLoading(false);
@@ -104,6 +107,7 @@ const HomePage = () => {
 
   // פורמט שעה לתצוגה
   const formatTime = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleTimeString('he-IL', { 
       hour: '2-digit', 
@@ -127,8 +131,34 @@ const HomePage = () => {
   };
 
   // רענון הדף
-  const handleRefresh = () => {
-    window.location.reload();
+  const handleRefresh = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    setLoading(true);
+    
+    try {
+      const [attendanceData, eventsData] = await Promise.all([
+        api.getAttendanceByDate(today),
+        api.getEventsByDate(today)
+      ]);
+      
+      const summary = calculateAttendanceSummary(attendanceData);
+      setAttendanceSummary(summary);
+      
+      const todayEventsFiltered = eventsData.filter(event => 
+        event.startTime && event.startTime.startsWith(today)
+      );
+      todayEventsFiltered.sort((a, b) => 
+        new Date(a.startTime) - new Date(b.startTime)
+      );
+      setTodayEvents(todayEventsFiltered);
+      
+      setError(null);
+    } catch (err) {
+      setError('שגיאה ברענון הנתונים');
+      console.error('Error refreshing data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // עריכת הודעה יומית
@@ -152,6 +182,11 @@ const HomePage = () => {
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#eaf4fc', minHeight: '100vh' }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
       
       {/* הודעה יומית מהמנהלת */}
       <Paper elevation={4} sx={{ p: 3, mb: 4, backgroundColor: '#fff9c4', position: 'relative' }}>
@@ -193,7 +228,7 @@ const HomePage = () => {
           <Paper elevation={3} sx={{ p: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" fontWeight="bold">📋 לוח משימות</Typography>
-              <IconButton onClick={handleRefresh} size="small">
+              <IconButton onClick={handleRefresh} size="small" disabled={loading}>
                 <RefreshIcon />
               </IconButton>
             </Box>
