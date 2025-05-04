@@ -15,9 +15,16 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CircularProgress,
+  Alert,
+  Card,
+  CardContent
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 const HomePage = () => {
   const [tasks, setTasks] = useState([
@@ -28,24 +35,84 @@ const HomePage = () => {
   const [dailyMessage, setDailyMessage] = useState('זכרו שמחר מגיעה מפקחת — נא להכין את לוחות הקיר בהתאם 🙏');
   const [editOpen, setEditOpen] = useState(false);
   const [editedMessage, setEditedMessage] = useState('');
-  const [isAdmin, setIsAdmin] = useState(true); // לשנות ל-false למשתמש רגיל
-  const [attendanceSummary, setAttendanceSummary] = useState({
-    class1: 0,
-    class2: 0
-  });
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [attendanceSummary, setAttendanceSummary] = useState([]);
+  const [todayEvents, setTodayEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // פונקציה לחישוב סיכום נוכחות
+  const calculateAttendanceSummary = (attendanceData) => {
+    const summary = {};
+    
+    attendanceData.forEach(record => {
+      if (record.attendanceStatus === 'נוכח') {
+        const className = record.className || 'לא משויך לכיתה';
+        summary[className] = (summary[className] || 0) + 1;
+      }
+    });
+
+    // המרה למערך לתצוגה נוחה יותר
+    return Object.entries(summary).map(([className, count]) => ({
+      className,
+      count
+    }));
+  };
+
+  // טעינת נתונים ראשונית
   useEffect(() => {
-    // כאן יש קריאה לדאטהבייס (דמה):
-    // נניח שמחזירים אובייקט כמו: { class1: 12, class2: 14 }
-    const fetchAttendanceSummary = async () => {
-      // דוגמה נתונים זמניים
-      const dataFromDB = { class1: 12, class2: 14 };
-      setAttendanceSummary(dataFromDB);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // טעינת נתוני נוכחות להיום
+        const today = new Date().toISOString().split('T')[0];
+        const attendanceResponse = await fetch(`/api/Attendance/date/${today}`);
+        
+        if (attendanceResponse.ok) {
+          const attendanceData = await attendanceResponse.json();
+          const summary = calculateAttendanceSummary(attendanceData);
+          setAttendanceSummary(summary);
+        }
+
+        // טעינת אירועים מהיומן להיום
+        const eventsResponse = await fetch(`/api/Events?date=${today}`);
+        
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json();
+          // סינון אירועים להיום בלבד
+          const todayEventsFiltered = eventsData.filter(event => 
+            event.startTime.startsWith(today)
+          );
+          // מיון לפי שעת התחלה
+          todayEventsFiltered.sort((a, b) => 
+            new Date(a.startTime) - new Date(b.startTime)
+          );
+          setTodayEvents(todayEventsFiltered);
+        }
+
+      } catch (err) {
+        setError('שגיאה בטעינת הנתונים');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchAttendanceSummary();
+    fetchData();
   }, []);
 
+  // פורמט שעה לתצוגה
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('he-IL', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+  };
+
+  // פונקציות למשימות
   const handleTaskToggle = (index) => {
     const updatedTasks = [...tasks];
     updatedTasks[index].done = !updatedTasks[index].done;
@@ -59,14 +126,12 @@ const HomePage = () => {
     }
   };
 
-  const dailySchedule = [
-    { time: '08:00', activity: 'קבלת הילדים' },
-    { time: '09:00', activity: 'פעילות יצירה' },
-    { time: '10:30', activity: 'ארוחת בוקר' },
-    { time: '11:00', activity: 'משחק בחצר' },
-    { time: '12:00', activity: 'הביתה' },
-  ];
+  // רענון הדף
+  const handleRefresh = () => {
+    window.location.reload();
+  };
 
+  // עריכת הודעה יומית
   const handleEditMessage = () => {
     setEditedMessage(dailyMessage);
     setEditOpen(true);
@@ -75,12 +140,19 @@ const HomePage = () => {
   const handleSaveMessage = () => {
     setDailyMessage(editedMessage);
     setEditOpen(false);
-    // כאן אפשר לשמור גם לדאטהבייס אם צריך
   };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#eaf4fc', minHeight: '100vh' }}>
-
+      
       {/* הודעה יומית מהמנהלת */}
       <Paper elevation={4} sx={{ p: 3, mb: 4, backgroundColor: '#fff9c4', position: 'relative' }}>
         <Typography variant="h6" fontWeight="bold">📢 הודעה יומית מהמנהלת:</Typography>
@@ -102,9 +174,11 @@ const HomePage = () => {
           <TextField
             fullWidth
             multiline
+            rows={3}
             value={editedMessage}
             onChange={(e) => setEditedMessage(e.target.value)}
             autoFocus
+            sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
@@ -117,7 +191,12 @@ const HomePage = () => {
         {/* לוח משימות */}
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>📋 לוח משימות</Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h6" fontWeight="bold">📋 לוח משימות</Typography>
+              <IconButton onClick={handleRefresh} size="small">
+                <RefreshIcon />
+              </IconButton>
+            </Box>
             <List>
               {tasks.map((task, index) => (
                 <ListItem key={index}>
@@ -138,6 +217,7 @@ const HomePage = () => {
                 size="small"
                 value={newTask}
                 onChange={(e) => setNewTask(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
                 sx={{ flexGrow: 1, mr: 1 }}
               />
               <Button variant="contained" onClick={handleAddTask}>הוסף</Button>
@@ -145,28 +225,80 @@ const HomePage = () => {
           </Paper>
         </Grid>
 
-        {/* לוח זמנים יומי + נוכחות */}
+        {/* יומן + נוכחות */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>📆 לוח זמנים יומי</Typography>
-            <List>
-              {dailySchedule.map((item, index) => (
-                <React.Fragment key={index}>
-                  <ListItem>
-                    <ListItemText
-                      primary={`${item.time} - ${item.activity}`}
-                    />
-                  </ListItem>
-                  {index < dailySchedule.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
+          {/* יומן יומי */}
+          <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+            <Box display="flex" alignItems="center" mb={2}>
+              <EventNoteIcon sx={{ mr: 1, color: '#1976d2' }} />
+              <Typography variant="h6" fontWeight="bold">לוח זמנים יומי</Typography>
+            </Box>
+            
+            {todayEvents.length > 0 ? (
+              <List>
+                {todayEvents.map((event, index) => (
+                  <React.Fragment key={event.id}>
+                    <ListItem sx={{ 
+                      backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
+                      borderRadius: 1,
+                      mb: 0.5
+                    }}>
+                      <ListItemText
+                        primary={
+                          <Box display="flex" alignItems="center">
+                            <Typography variant="subtitle1" fontWeight="bold" sx={{ minWidth: 60 }}>
+                              {formatTime(event.startTime)}
+                            </Typography>
+                            <Typography variant="subtitle1" sx={{ ml: 2 }}>
+                              {event.eventType} - {event.description}
+                            </Typography>
+                          </Box>
+                        }
+                        secondary={event.location ? `מיקום: ${event.location}` : null}
+                      />
+                    </ListItem>
+                  </React.Fragment>
+                ))}
+              </List>
+            ) : (
+              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                אין אירועים מתוכננים להיום
+              </Typography>
+            )}
           </Paper>
 
-          <Paper elevation={3} sx={{ p: 3, mt: 3, backgroundColor: '#fce4ec' }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>👧👦 סיכום נוכחות יומית</Typography>
-            <Typography>כיתה 1: {attendanceSummary.class1} ילדים נוכחים</Typography>
-            <Typography>כיתה 2: {attendanceSummary.class2} ילדים נוכחים</Typography>
+          {/* סיכום נוכחות */}
+          <Paper elevation={3} sx={{ p: 3, backgroundColor: '#e3f2fd' }}>
+            <Box display="flex" alignItems="center" mb={2}>
+              <GroupsIcon sx={{ mr: 1, color: '#1976d2' }} />
+              <Typography variant="h6" fontWeight="bold">סיכום נוכחות יומית</Typography>
+            </Box>
+            
+            {attendanceSummary.length > 0 ? (
+              <Grid container spacing={2}>
+                {attendanceSummary.map((item, index) => (
+                  <Grid item xs={12} sm={6} key={index}>
+                    <Card sx={{ backgroundColor: '#fff', boxShadow: 1 }}>
+                      <CardContent sx={{ py: 1.5 }}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          {item.className}
+                        </Typography>
+                        <Typography variant="h4" color="primary">
+                          {item.count}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ילדים נוכחים
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                אין נתוני נוכחות להיום
+              </Typography>
+            )}
           </Paper>
         </Grid>
       </Grid>
