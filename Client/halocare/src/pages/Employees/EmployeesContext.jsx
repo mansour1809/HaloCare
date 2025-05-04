@@ -196,8 +196,8 @@ const refreshEmployees = useCallback(() => {
         password,
         firstName,
         lastName,
-        loginUrl: window.location.origin + "/bgroup3/test2/halocare/#/login",
-        // loginUrl: window.location.origin + "/#/login",
+        // loginUrl: window.location.origin + "/bgroup3/test2/halocare/#/login",
+        loginUrl: window.location.origin + "/#/login",
       });
 
       // הצגת הודעת הצלחה

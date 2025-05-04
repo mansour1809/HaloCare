@@ -77,8 +77,8 @@ namespace halocare.Controllers
                 bool emailSent = await _emailService.SendPasswordResetEmail(
                     request.Email,
                     resetToken,
-                    //"http://localhost:5173/reset-password" 
-                    "https://proj.ruppin.ac.il/bgroup3/test2/halocare/#/reset-password" //frontend
+                    "http://localhost:5173/#/reset-password" 
+                    // "https://proj.ruppin.ac.il/bgroup3/test2/halocare/#/reset-password" //frontend
                 );
 
                 if (emailSent)
