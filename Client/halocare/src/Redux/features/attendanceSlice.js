@@ -32,6 +32,9 @@ export const fetchAttendanceByDate = createAsyncThunk(
   async (date, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/Attendance/date/${date}`);
+
+      console.log("response.data", response.data);
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת נתוני הנוכחות לתאריך');

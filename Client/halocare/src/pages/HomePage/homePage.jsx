@@ -27,24 +27,23 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupsIcon from '@mui/icons-material/Groups';
 
 // נייבא את ה-actions מה-slices
-import { fetchAllClasses } from '../redux/classesSlice';
-import { fetchAttendanceByDate } from '../redux/attendanceSlice';
-import { fetchEvents } from '../redux/eventsSlice';
-import { fetchAllKids } from '../redux/kidsSlice';
+import { fetchAttendanceByDate } from '../../redux/features/attendanceSlice';
+import { fetchEvents } from '../../redux/features/eventsSlice';
+import { fetchEventTypes } from '../../redux/features/eventTypesSlice';
 
 const HomePage = () => {
   const dispatch = useDispatch();
   
-  // קבלת נתונים מה-redux store
-  const { attendances, loading: attendanceLoading } = useSelector(state => state.attendance);
-  const { events, loading: eventsLoading } = useSelector(state => state.events);
+  // גישה ישירה למבנה הנכון בחנות
+  const attendance = useSelector(state => state.attendance);
+  const events = useSelector(state => state.events);
+  const eventTypes = useSelector(state => state.eventTypes?.eventTypes || []);
+  
+  // משתני מצב מקומיים
   const [tasks, setTasks] = useState([
     { text: 'לסדר את הכיתה', done: false },
     { text: 'לבדוק ציוד יצירה', done: false },
   ]);
-  const { kids, loading: kidsLoading } = useSelector(state => state.kids);
-  const { classes, loading: classesLoading } = useSelector(state => state.classes);
-  
   const [newTask, setNewTask] = useState('');
   const [dailyMessage, setDailyMessage] = useState('זכרו שמחר מגיעה מפקחת — נא להכין את לוחות הקיר בהתאם 🙏');
   const [editOpen, setEditOpen] = useState(false);
@@ -62,24 +61,26 @@ const HomePage = () => {
     // טעינת נוכחות להיום
     dispatch(fetchAttendanceByDate(today));
     
-    // טעינת כל האירועים (אם אין פונקציה לפי תאריך)
+    // טעינת כל האירועים
     dispatch(fetchEvents());
     
-    // טעינת ילדים וכיתות (אם צריך)
-    dispatch(fetchAllKids());
-    dispatch(fetchAllClasses());
+    // טעינת סוגי אירועים (לצבעים)
+    dispatch(fetchEventTypes());
   }, [dispatch, today]);
   
-  // חישוב סיכום נוכחות והתאמת אירועי היום הנוכחי
+  // חישוב סיכום נוכחות
   useEffect(() => {
-    if (attendances.length > 0) {
+    // גישה לנתוני נוכחות בצורה בטוחה
+    const attendanceData = attendance?.attendances || [];
+    
+    if (attendanceData.length > 0) {
       // חישוב סיכום נוכחות לפי כיתה
       const summary = {};
       
-      attendances.forEach(record => {
-        // נניח שיש לנו שדה status או attendanceStatus וגם className
-        if (record.status === 'נוכח' || record.attendanceStatus === 'נוכח') {
-          const className = record.className || 'לא משויך לכיתה';
+      attendanceData.forEach(record => {
+        // בודק את שדה הסטטוס (יתכן ששם השדה שונה במערכת שלך)
+        if (record.attendanceStatus === 'נוכח' || record.status === 'נוכח') {
+          const className = record.className || record.class?.name || 'לא משויך לכיתה';
           summary[className] = (summary[className] || 0) + 1;
         }
       });
@@ -92,21 +93,41 @@ const HomePage = () => {
       
       setAttendanceSummary(summaryArray);
     }
-    
-    // סינון אירועים רק להיום
-    if (events.length > 0) {
-      const filteredEvents = events.filter(event => 
-        event.startTime && event.startTime.startsWith(today)
-      );
+  }, [attendance]);
+  
+  // עיבוד אירועים עם צבעים
+  useEffect(() => {
+    // בדיקת טעינת אירועים
+    const eventsData = events?.events || [];
+    if (eventsData.length > 0) {
+      // סינון אירועים רק להיום
+      const filteredEvents = eventsData.filter(event => {
+        const eventDate = event.start?.split('T')[0];
+        return eventDate === today;
+      });
+      
+      // הוספת מידע על צבעים מטבלת סוגי אירועים
+      const coloredEvents = filteredEvents.map(event => {
+        // חיפוש סוג האירוע וצבע מתאים
+        const eventType = eventTypes.find(type => 
+          type.id === event.eventTypeId || type.eventTypeId === event.eventTypeId
+        );
+        
+        return {
+          ...event,
+          color: eventType?.color || '#1976d2', // צבע ברירת מחדל אם אין התאמה
+          typeDescription: eventType?.description || event.eventType || 'אירוע'
+        };
+      });
       
       // מיון לפי זמן התחלה
-      filteredEvents.sort((a, b) => 
-        new Date(a.startTime) - new Date(b.startTime)
+      coloredEvents.sort((a, b) => 
+        new Date(a.start) - new Date(b.start)
       );
       
-      setTodayEvents(filteredEvents);
+      setTodayEvents(coloredEvents);
     }
-  }, [attendances, events, today]);
+  }, [events, eventTypes, today]);
   
   // פורמט שעה לתצוגה
   const formatTime = (dateString) => {
@@ -151,7 +172,7 @@ const HomePage = () => {
   };
   
   // בדיקה אם יש טעינה
-  const isLoading = attendanceLoading || eventsLoading || kidsLoading || classesLoading;
+  const isLoading = attendance?.loading || events?.loading;
   
   if (isLoading) {
     return (
@@ -243,44 +264,88 @@ const HomePage = () => {
 
         {/* יומן + נוכחות */}
         <Grid item xs={12} md={6}>
-          {/* יומן יומי */}
+          {/* יומן יומי - דומה ללוח שנה */}
           <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" mb={2}>
               <EventNoteIcon sx={{ mr: 1, color: '#1976d2' }} />
               <Typography variant="h6" fontWeight="bold">לוח זמנים יומי</Typography>
             </Box>
             
-            {todayEvents.length > 0 ? (
-              <List>
-                {todayEvents.map((event, index) => (
-                  <React.Fragment key={event.id || index}>
-                    <ListItem sx={{ 
-                      backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
-                      borderRadius: 1,
-                      mb: 0.5
-                    }}>
-                      <ListItemText
-                        primary={
-                          <Box display="flex" alignItems="center">
-                            <Typography variant="subtitle1" fontWeight="bold" sx={{ minWidth: 60 }}>
-                              {formatTime(event.startTime)}
-                            </Typography>
-                            <Typography variant="subtitle1" sx={{ ml: 2 }}>
-                              {event.eventType || event.type} - {event.description || event.title}
-                            </Typography>
-                          </Box>
+            {/* תצוגת אירועים בדומה ללוח השנה */}
+            <Box sx={{ position: 'relative', minHeight: '300px', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+              {todayEvents.length > 0 ? (
+                todayEvents.map((event, index) => {
+                  // חישוב מיקום וגובה לפי זמן
+                  const startTime = new Date(event.start);
+                  const endTime = event.end ? new Date(event.end) : new Date(startTime.getTime() + 60 * 60 * 1000);
+                  
+                  const startHour = startTime.getHours() + startTime.getMinutes() / 60;
+                  const endHour = endTime.getHours() + endTime.getMinutes() / 60;
+                  
+                  // מיקום וגודל בוקס האירוע (7:00-18:00 = 11 שעות)
+                  const top = ((startHour - 7) / 11) * 100;
+                  const height = ((endHour - startHour) / 11) * 100;
+                  
+                  return (
+                    <Box
+                      key={event.id || index}
+                      sx={{
+                        position: 'absolute',
+                        top: `${top}%`,
+                        height: `${height}%`,
+                        width: 'calc(100% - 60px)',
+                        right: '60px', // מרחק מציר הזמן
+                        backgroundColor: event.color,
+                        borderRadius: '4px',
+                        padding: '8px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        opacity: 0.9,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          opacity: 1,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                         }
-                        secondary={event.location ? `מיקום: ${event.location}` : null}
-                      />
-                    </ListItem>
-                  </React.Fragment>
+                      }}
+                    >
+                      <Typography variant="subtitle2" fontWeight="bold" sx={{ color: '#fff' }}>
+                        {formatTime(event.start)} - {formatTime(event.end)}
+                      </Typography>
+                      <Typography variant="body2" noWrap sx={{ color: '#fff' }}>
+                        {event.typeDescription}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#fff', mt: 'auto' }}>
+                        {event.description || event.title}
+                      </Typography>
+                    </Box>
+                  );
+                })
+              ) : (
+                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                  אין אירועים מתוכננים להיום
+                </Typography>
+              )}
+              
+              {/* ציר זמנים */}
+              <Box sx={{ position: 'absolute', top: 0, right: 0, height: '100%', width: '60px' }}>
+                {[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((hour) => (
+                  <Box key={hour} sx={{ 
+                    position: 'absolute', 
+                    top: `${(hour - 7) / 11 * 100}%`, 
+                    right: 0, 
+                    width: '100%',
+                    borderTop: '1px solid #e0e0e0',
+                    paddingRight: '5px',
+                    textAlign: 'right',
+                    fontSize: '0.8rem',
+                    color: '#666'
+                  }}>
+                    {`${hour}:00`}
+                  </Box>
                 ))}
-              </List>
-            ) : (
-              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-                אין אירועים מתוכננים להיום
-              </Typography>
-            )}
+              </Box>
+            </Box>
           </Paper>
 
           {/* סיכום נוכחות */}
