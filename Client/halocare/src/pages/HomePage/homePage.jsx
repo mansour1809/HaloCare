@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Box,
   Typography,
@@ -10,7 +11,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
   IconButton,
   Dialog,
   DialogTitle,
@@ -26,12 +26,25 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupsIcon from '@mui/icons-material/Groups';
 
+// נייבא את ה-actions מה-slices
+import { fetchAllClasses } from '../redux/classesSlice';
+import { fetchAttendanceByDate } from '../redux/attendanceSlice';
+import { fetchEvents } from '../redux/eventsSlice';
+import { fetchAllKids } from '../redux/kidsSlice';
 
 const HomePage = () => {
+  const dispatch = useDispatch();
+  
+  // קבלת נתונים מה-redux store
+  const { attendances, loading: attendanceLoading } = useSelector(state => state.attendance);
+  const { events, loading: eventsLoading } = useSelector(state => state.events);
   const [tasks, setTasks] = useState([
     { text: 'לסדר את הכיתה', done: false },
     { text: 'לבדוק ציוד יצירה', done: false },
   ]);
+  const { kids, loading: kidsLoading } = useSelector(state => state.kids);
+  const { classes, loading: classesLoading } = useSelector(state => state.classes);
+  
   const [newTask, setNewTask] = useState('');
   const [dailyMessage, setDailyMessage] = useState('זכרו שמחר מגיעה מפקחת — נא להכין את לוחות הקיר בהתאם 🙏');
   const [editOpen, setEditOpen] = useState(false);
@@ -39,72 +52,62 @@ const HomePage = () => {
   const [isAdmin, setIsAdmin] = useState(true);
   const [attendanceSummary, setAttendanceSummary] = useState([]);
   const [todayEvents, setTodayEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // חישוב התאריך הנוכחי בפורמט YYYY-MM-DD
+  const today = new Date().toISOString().split('T')[0];
 
-  // פונקציה לחישוב סיכום נוכחות
-  const calculateAttendanceSummary = (attendanceData) => {
-    const summary = {};
-    
-    attendanceData.forEach(record => {
-      if (record.attendanceStatus === 'נוכח') {
-        const className = record.className || 'לא משויך לכיתה';
-        summary[className] = (summary[className] || 0) + 1;
-      }
-    });
-
-    return Object.entries(summary).map(([className, count]) => ({
-      className,
-      count
-    }));
-  };
-
-  // טעינת נתונים ראשונית
+  // טעינת נתונים ראשוניים
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // קבלת התאריך הנוכחי בפורמט YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
-        
-        // טעינת נתוני נוכחות
-        try {
-          const attendanceData = await api.getAttendanceByDate(today);
-          const summary = calculateAttendanceSummary(attendanceData);
-          setAttendanceSummary(summary);
-        } catch (err) {
-          console.error('Error fetching attendance:', err);
+    // טעינת נוכחות להיום
+    dispatch(fetchAttendanceByDate(today));
+    
+    // טעינת כל האירועים (אם אין פונקציה לפי תאריך)
+    dispatch(fetchEvents());
+    
+    // טעינת ילדים וכיתות (אם צריך)
+    dispatch(fetchAllKids());
+    dispatch(fetchAllClasses());
+  }, [dispatch, today]);
+  
+  // חישוב סיכום נוכחות והתאמת אירועי היום הנוכחי
+  useEffect(() => {
+    if (attendances.length > 0) {
+      // חישוב סיכום נוכחות לפי כיתה
+      const summary = {};
+      
+      attendances.forEach(record => {
+        // נניח שיש לנו שדה status או attendanceStatus וגם className
+        if (record.status === 'נוכח' || record.attendanceStatus === 'נוכח') {
+          const className = record.className || 'לא משויך לכיתה';
+          summary[className] = (summary[className] || 0) + 1;
         }
-
-        // טעינת אירועים מהיומן
-        try {
-          const eventsData = await api.getEventsByDate(today);
-          // סינון אירועים להיום בלבד
-          const todayEventsFiltered = eventsData.filter(event => 
-            event.startTime && event.startTime.startsWith(today)
-          );
-          // מיון לפי שעת התחלה
-          todayEventsFiltered.sort((a, b) => 
-            new Date(a.startTime) - new Date(b.startTime)
-          );
-          setTodayEvents(todayEventsFiltered);
-        } catch (err) {
-          console.error('Error fetching events:', err);
-        }
-
-      } catch (err) {
-        setError('שגיאה בטעינת הנתונים. אנא נסה שוב.');
-        console.error('Error fetching data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+      });
+      
+      // המרה למערך לתצוגה
+      const summaryArray = Object.entries(summary).map(([className, count]) => ({
+        className,
+        count
+      }));
+      
+      setAttendanceSummary(summaryArray);
+    }
+    
+    // סינון אירועים רק להיום
+    if (events.length > 0) {
+      const filteredEvents = events.filter(event => 
+        event.startTime && event.startTime.startsWith(today)
+      );
+      
+      // מיון לפי זמן התחלה
+      filteredEvents.sort((a, b) => 
+        new Date(a.startTime) - new Date(b.startTime)
+      );
+      
+      setTodayEvents(filteredEvents);
+    }
+  }, [attendances, events, today]);
+  
   // פורמט שעה לתצוגה
   const formatTime = (dateString) => {
     if (!dateString) return '';
@@ -115,71 +118,49 @@ const HomePage = () => {
       hour12: false 
     });
   };
-
+  
   // פונקציות למשימות
   const handleTaskToggle = (index) => {
     const updatedTasks = [...tasks];
     updatedTasks[index].done = !updatedTasks[index].done;
     setTasks(updatedTasks);
   };
-
+  
   const handleAddTask = () => {
     if (newTask.trim()) {
       setTasks([...tasks, { text: newTask, done: false }]);
       setNewTask('');
     }
   };
-
-  // רענון הדף
-  const handleRefresh = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    setLoading(true);
-    
-    try {
-      const [attendanceData, eventsData] = await Promise.all([
-        api.getAttendanceByDate(today),
-        api.getEventsByDate(today)
-      ]);
-      
-      const summary = calculateAttendanceSummary(attendanceData);
-      setAttendanceSummary(summary);
-      
-      const todayEventsFiltered = eventsData.filter(event => 
-        event.startTime && event.startTime.startsWith(today)
-      );
-      todayEventsFiltered.sort((a, b) => 
-        new Date(a.startTime) - new Date(b.startTime)
-      );
-      setTodayEvents(todayEventsFiltered);
-      
-      setError(null);
-    } catch (err) {
-      setError('שגיאה ברענון הנתונים');
-      console.error('Error refreshing data:', err);
-    } finally {
-      setLoading(false);
-    }
+  
+  // רענון הנתונים
+  const handleRefresh = () => {
+    dispatch(fetchAttendanceByDate(today));
+    dispatch(fetchEvents());
   };
-
+  
   // עריכת הודעה יומית
   const handleEditMessage = () => {
     setEditedMessage(dailyMessage);
     setEditOpen(true);
   };
-
+  
   const handleSaveMessage = () => {
     setDailyMessage(editedMessage);
     setEditOpen(false);
   };
-
-  if (loading) {
+  
+  // בדיקה אם יש טעינה
+  const isLoading = attendanceLoading || eventsLoading || kidsLoading || classesLoading;
+  
+  if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
         <CircularProgress />
       </Box>
     );
   }
-
+  
   return (
     <Box sx={{ p: 4, backgroundColor: '#eaf4fc', minHeight: '100vh' }}>
       {error && (
@@ -228,7 +209,7 @@ const HomePage = () => {
           <Paper elevation={3} sx={{ p: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" fontWeight="bold">📋 לוח משימות</Typography>
-              <IconButton onClick={handleRefresh} size="small" disabled={loading}>
+              <IconButton onClick={handleRefresh} size="small" disabled={isLoading}>
                 <RefreshIcon />
               </IconButton>
             </Box>
@@ -272,7 +253,7 @@ const HomePage = () => {
             {todayEvents.length > 0 ? (
               <List>
                 {todayEvents.map((event, index) => (
-                  <React.Fragment key={event.id}>
+                  <React.Fragment key={event.id || index}>
                     <ListItem sx={{ 
                       backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
                       borderRadius: 1,
@@ -285,7 +266,7 @@ const HomePage = () => {
                               {formatTime(event.startTime)}
                             </Typography>
                             <Typography variant="subtitle1" sx={{ ml: 2 }}>
-                              {event.eventType} - {event.description}
+                              {event.eventType || event.type} - {event.description || event.title}
                             </Typography>
                           </Box>
                         }

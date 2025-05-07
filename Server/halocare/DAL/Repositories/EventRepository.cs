@@ -35,6 +35,38 @@ namespace halocare.DAL.Repositories
 
             return events;
         }
+        
+        
+        public List<Event> GetEventsByDate(DateTime date)
+        {
+            List<Event> events = new List<Event>();
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@EventsByDate", date }
+            };
+
+            DataTable dataTable = ExecuteQuery("SP_GetEventsByDate",parameters);
+            foreach (DataRow row in dataTable.Rows)
+            {
+                Event eventItem = new Event
+                {
+                    EventId = Convert.ToInt32(row["EventId"]),
+                    EventTypeId = Convert.ToInt32(row["EventTypeId"]),
+                    EventType = row["EventType"].ToString(),
+                    Color = row["Color"].ToString(),
+                    StartTime = Convert.ToDateTime(row["StartTime"]),
+                    EndTime = Convert.ToDateTime(row["EndTime"]),
+                    Location = row["Location"].ToString(),
+                    Description = row["Description"].ToString(),
+                    EventTitle = row["EventTitle"]?.ToString(),
+                    CreatedBy = Convert.ToInt32(row["CreatedBy"])
+                };
+
+                events.Add(eventItem);
+            }
+
+            return events;
+        }
 
         public Event GetEventById(int id)
         {
