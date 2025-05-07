@@ -7,11 +7,13 @@ using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
 using halocare.DAL.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class TSHAAdvancedController : ControllerBase
     {
         private readonly TreatmentService _treatmentService;

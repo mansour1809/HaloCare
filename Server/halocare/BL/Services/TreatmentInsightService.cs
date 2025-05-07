@@ -101,6 +101,7 @@ namespace halocare.BL.Services
             {
                 // Set up Google Cloud credentials - אישורים
                 string credentialPath = _configuration["GoogleCloud:CredentialFile"];
+                Console.WriteLine($"Using credential file: {credentialPath}");
                 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
 
                 // יצירת לקוח Google NL
