@@ -26,9 +26,11 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // בדיקה שאנחנו לא מנסים להיכנס לדף ההתחברות כבר
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/bgroup3/test2/halocare/#/login';
-        // window.location.href = '/#/login';
+      if (!window.location.pathname.includes("/login")) {
+        if (!window.location.pathname.includes("/reset-password")) {
+          window.location.href = "/bgroup3/test2/halocare/#/login";
+          // window.location.href = '/#/login';
+        }
       }
       // החזרת שגיאה ריקה להמשך זרימת התוכנית
       return Promise.reject({ silent: true });
