@@ -25,7 +25,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupsIcon from '@mui/icons-material/Groups';
-import { api } from '../services/api';
+
 
 const HomePage = () => {
   const [tasks, setTasks] = useState([
