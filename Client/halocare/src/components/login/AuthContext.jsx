@@ -90,8 +90,8 @@ export const AuthProvider = ({ children }) => {
     // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
-    window.location.href = '/bgroup3/test2/halocare/#/login';
-    // window.location.href = '/#/login';
+    // window.location.href = '/bgroup3/test2/halocare/#/login';
+    window.location.href = '/#/login';
   };
 
   // פונקציה לבקשת איפוס סיסמה
