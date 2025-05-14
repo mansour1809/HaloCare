@@ -106,51 +106,58 @@ const Navbar = () => {
       }}
     >
       <Toolbar>
-        {/* תפריט משתמש - בקצה הימני */}
-        <Box sx={{ flexGrow: 0, marginRight: 2 }}>
-          <Tooltip title="הגדרות משתמש">
-            <Box 
-              onClick={handleOpenUserMenu} 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: '4px 8px 4px 12px'
+          <Box sx={{ flexGrow: 0, marginRight: 2 }}>
+            <Tooltip title="הגדרות משתמש">
+              <Box 
+                onClick={handleOpenUserMenu} 
+                sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            padding: '4px 8px 4px 12px'
+                }}
+              >
+                <KeyboardArrowDownIcon fontSize="small" />
+                <Avatar 
+            alt="צוות" 
+            src="/static/images/avatar/1.jpg" 
+            sx={{ width: 32, height: 32, ml: 1 }}
+                />
+              </Box>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
               }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
             >
-              <KeyboardArrowDownIcon fontSize="small" />
-              <Avatar 
-                alt="צוות" 
-                src="/static/images/avatar/1.jpg" 
-                sx={{ width: 32, height: 32, ml: 1 }}
-              />
-            </Box>
-          </Tooltip>
-          <Menu
-            sx={{ mt: '45px' }}
-            id="menu-appbar"
-            anchorEl={anchorElUser}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
+              {userSettings.map((setting) => (
+                <MenuItem 
+            key={setting} 
+            onClick={() => {
+              handleCloseUserMenu();
+              if (setting === 'פרופיל') {
+                window.location.href = '/#/profile';
+              }
             }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorElUser)}
-            onClose={handleCloseUserMenu}
-          >
-            {userSettings.map((setting) => (
-              <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                <Typography textAlign="center">{setting}</Typography>
-              </MenuItem>
-            ))}
-          </Menu>
-        </Box>
-        
-        {/* התראות והודעות - בצד ימין */}
+                >
+            <Typography textAlign="center">{setting}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          
+          {/* התראות והודעות - בצד ימין */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 2 }}>
           <IconButton size="large" color="inherit">
             <Badge badgeContent={3} color="error">

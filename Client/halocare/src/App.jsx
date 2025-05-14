@@ -30,6 +30,8 @@ import {TreatmentProvider} from './pages/Kids/tretments/TreatmentContext';
 import KidProfilePage from './pages/kids/KidsFiles/KidProfilePage';
 import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
+import Profile from './pages/Employees/Profile';
+import SystemSettings from './pages/SystemSettings';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -214,10 +216,10 @@ const AppContent = () => {
               />
 
               <Route
-                path="/tasks"
+                path="/settings"
                 element={
                   <PrivateRoute>
-                    {/* <KidProfilePage /> */}
+                    <SystemSettings />
                   </PrivateRoute>
                 }
               />
@@ -240,7 +242,14 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
+ <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                      <Profile />
+                  </PrivateRoute>
+                }
+              />
               {/* error 404*/}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

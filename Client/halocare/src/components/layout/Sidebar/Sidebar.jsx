@@ -210,10 +210,10 @@ const ProSidebar = () => {
 
           <MenuItem
             icon={<FormatListBulletedIcon />}
-            onClick={() => navigate("/tasks")}
-            style={location.pathname === "/tasks" ? activeMenuItemStyles : {}}
+            onClick={() => navigate("/settings")}
+            style={location.pathname === "/settings" ? activeMenuItemStyles : {}}
           >
-            לוח משימות
+            הגדרות מערכת
           </MenuItem>
 
           <SubMenu label="דוחות" icon={<AssessmentIcon />}>
