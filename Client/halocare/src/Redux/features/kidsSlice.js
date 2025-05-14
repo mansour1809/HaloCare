@@ -7,7 +7,6 @@ export const fetchKids = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/Kids');
-      console.log('Kids response:', response.data); // Debugging line
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת רשימת הילדים');

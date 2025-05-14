@@ -32,6 +32,7 @@ import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import Profile from './pages/Employees/Profile';
 import SystemSettings from './pages/SystemSettings';
+import KidRegistrationProcess from './pages/addKid/KidRegistrationProcess';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -174,7 +175,8 @@ const AppContent = () => {
                 path="/kids/add"
                 element={
                   <PrivateRoute>
-                    <div>kids add</div>
+                    {/* <div>kids add</div> */}
+                    <KidRegistrationProcess />
                   </PrivateRoute>
                 }
               />
