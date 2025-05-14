@@ -51,6 +51,11 @@ namespace halocare.BL.Services
         {
             return _eventRepository.GetEventById(id);
         }
+        
+        public Event GetEventsByDate(DateTime date)
+        {
+            return _eventRepository.GetEventsByDate(date);
+        }
 
         //public List<Event> GetEventsByDateRange(DateTime startDate, DateTime endDate)
         //{
