@@ -139,10 +139,13 @@ const ProgressLogo = ({
             progress={progress} // מעביר את אחוז ההתקדמות לסטיילינג
           >
             <defs>
-              <linearGradient id="logoGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#3f51b5" />
-                <stop offset="50%" stopColor="#5677fc" />
-                <stop offset="100%" stopColor="#5677fc" />
+              <linearGradient id="logoGradient" x1="100%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#3E5BA7" />
+                <stop offset="20%" stopColor="#3E5BA7" />
+                <stop offset="40%" stopColor="#3E5BA7" />
+                <stop offset="60%" stopColor="#7FCDDA" />
+                <stop offset="80%" stopColor="#73BFB5" />
+                <stop offset="100%" stopColor="#73BFB5" />
               </linearGradient>
               <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="5" result="blur" />
@@ -153,7 +156,7 @@ const ProgressLogo = ({
               d={logoPath}
               transform="translate(1.003 1.007)" 
               fill="url(#logoGradient)"  /* מילוי בגרדיאנט */
-              stroke="#2196f3"
+              stroke="#040059"
               strokeWidth="2"
               filter="url(#logoGlow)"
             />
