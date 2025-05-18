@@ -23,11 +23,13 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 // סטיילינג מותאם אישית
 const FormContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
+  paddingTop: theme.spacing(5), // תוספת מרווח למעלה לטובת הלוגו
   direction: 'rtl',
+  marginTop: 0, // אין צורך במרווח למעלה כי הלוגו מתחבר לטופס
   marginBottom: theme.spacing(3),
   boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
   borderRadius: theme.spacing(2),
-  maxWidth: '800px',
+  maxWidth: '100%',
   margin: '0 auto',
   position: 'relative',
   overflow: 'hidden',
@@ -41,6 +43,7 @@ const FormContainer = styled(Paper)(({ theme }) => ({
     background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.primary.main})`,
   }
 }));
+
 
 const KidRegistrationProcess = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -192,32 +195,32 @@ const KidRegistrationProcess = () => {
     : null;
   
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" align="center" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-        קליטת ילד חדש
-      </Typography>
+     <LocalizationProvider dateAdapter={AdapterDateFns}>
+  <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Typography variant="h4" component="h1" align="center" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+      קליטת ילד חדש
+    </Typography>
       
       {/* לוגו התקדמות */}
       <ProgressLogo 
-        activeStep={activeStep} 
-        totalSteps={steps.length}
-        kidName={kidName}
-        onStepClick={handleStepClick}
-      />
+      activeStep={activeStep} 
+      totalSteps={steps.length}
+      kidName={kidName}
+      onStepClick={handleStepClick}
+      steps={steps.map(step => step.label)}
+    />
       
       {/* טופס נוכחי */}
-      <Fade in={true} timeout={500}>
-        <FormContainer>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold', color: 'primary.dark' }}>
-            {steps[activeStep].label}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {steps[activeStep].description}
-          </Typography>
-          
-          {steps[activeStep].component}
-          
+     <Fade in={true} timeout={500}>
+      <FormContainer>
+        <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold', color: 'primary.dark' }}>
+          {steps[activeStep].label}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {steps[activeStep].description}
+        </Typography>
+        
+        {steps[activeStep].component}
           {/* כפתורי פעולה */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
             <Button
