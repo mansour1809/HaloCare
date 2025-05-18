@@ -57,25 +57,25 @@ namespace halocare.Controllers
         }
 
         // GET: api/Events/mm-dd-yy
-        [HttpGet("{date}")]
-        public ActionResult<IEnumerable<Event>> GetEventsByDate(DateTime date)
-        {
-            try
-            {
-                List<Event> eventsByDate = _eventService.GetEventByDate(date);
+        //[HttpGet("{date}")]
+        //public ActionResult<IEnumerable<Event>> GetEventsByDate(DateTime date)
+        //{
+        //    try
+        //    {
+        //        List<Event> eventsByDate = _eventService.GetEventByDate(date);
 
-                if (eventsByDate == null)
-                {
-                    return NotFound($"אירוע עם מזהה {date} לא נמצא");
-                }
+        //        if (eventsByDate == null)
+        //        {
+        //            return NotFound($"אירוע עם מזהה {date} לא נמצא");
+        //        }
 
-                return Ok(eventsByDate);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-            }
-        }
+        //        return Ok(eventsByDate);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+        //    }
+        //}
 
         // GET: api/Events/5/kids
         [HttpGet("{id}/kids")]

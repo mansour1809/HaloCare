@@ -68,3 +68,22 @@ button:focus-visible {
 .muirtl-x2zd30-MuiTableCell-root {
 text-align: center;
 }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-size: 16px; /* default */
+  zoom: 1;          /* make sure it's not zoomed */
+}
+html {
+  zoom: 0.85 !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  -ms-transform: none !important;
+  -o-transform: none !important;
+}
+body {
+  zoom: 0.85 !important;
+  transform: none !important;
+  
+}

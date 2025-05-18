@@ -52,7 +52,7 @@ namespace halocare.BL.Services
             return _eventRepository.GetEventById(id);
         }
         
-        public Event GetEventsByDate(DateTime date)
+        public List<Event> GetEventsByDate(DateTime date)
         {
             return _eventRepository.GetEventsByDate(date);
         }

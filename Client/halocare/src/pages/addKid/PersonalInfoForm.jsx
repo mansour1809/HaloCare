@@ -1,531 +1,702 @@
-// src/components/forms/FormSteps/PersonalInfoForm.jsx
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+// components/kids/PersonalInfoForm.jsx
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  Typography,
-  Grid,
-  TextField,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  FormHelperText,
-  Box,
-  Divider,
-  Paper,
-  Alert,
-  Button
+  Grid, Typography, TextField, MenuItem, FormControl,
+  InputLabel, Select, Button, Divider, Box,
+  Avatar, FormHelperText, Alert, AlertTitle,
+  InputAdornment, Tooltip, CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import heLocale from 'date-fns/locale/he';
-import { fetchKidById } from '../../../redux/features/kidsSlice';
+import { styled } from '@mui/material/styles';
 import {
-  fetchFormQuestions,
-  selectFormQuestions,
-  selectCurrentFormData,
-  updateAnswer,
-  addValidationError,
-  clearValidationErrors
-} from '../../../redux/features/formsSlice';
+  Edit as EditIcon,
+  Save as SaveIcon,
+  DeleteOutline as DeleteIcon,
+  CloudUpload as UploadIcon,
+  Info as InfoIcon,
+  Call as CallIcon,
+  Email as EmailIcon,
+  Home as HomeIcon,
+  Work as WorkIcon
+} from '@mui/icons-material';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import { fetchCities } from '../../Redux/features/citiesSlice';
+import { createKid, updateKid } from '../../Redux/features/kidsSlice';
 
-// רכיב טופס פרטים אישיים (טופס 1)
-const PersonalInfoForm = ({ kidId, onChange }) => {
+// תצוגת האווטאר עם אפשרות להעלאת תמונה
+const ProfileImageUpload = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  marginBottom: theme.spacing(2),
+}));
+
+// סקשן מוגדר בטופס
+const FormSection = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2, 0),
+  position: 'relative',
+}));
+
+// כותרת של סקשן עם קו מתחת
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  display: 'flex', 
+  alignItems: 'center',
+  marginBottom: theme.spacing(3),
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  color: theme.palette.primary.main,
+  fontWeight: 'bold',
+}));
+
+// סכימת ולידציה עם Yup
+const validationSchema = yup.object({
+  firstName: yup.string().required('שם פרטי הוא שדה חובה'),
+  lastName: yup.string().required('שם משפחה הוא שדה חובה'),
+  birthDate: yup.date().required('תאריך לידה הוא שדה חובה')
+    .max(new Date(), 'תאריך לידה לא יכול להיות בעתיד')
+    .test('age', 'הגיל חייב להיות בין 0-3 שנים', 
+      (value) => {
+        if (!value) return true;
+        const today = new Date();
+        const threeYearsAgo = new Date();
+        threeYearsAgo.setFullYear(today.getFullYear() - 3);
+        return value >= threeYearsAgo;
+      }),
+  gender: yup.string().required('מין הוא שדה חובה'),
+  cityName: yup.string().required('עיר היא שדה חובה'),
+  address: yup.string().required('כתובת היא שדה חובה'),
+  hName: yup.string().required('קופת חולים היא שדה חובה'),
+  parent1FirstName: yup.string().required('שם הורה ראשי הוא שדה חובה'),
+  parent1LastName: yup.string().required('שם משפחה הורה ראשי הוא שדה חובה'),
+  parent1Mobile: yup.string()
+    .required('טלפון נייד הורה ראשי הוא שדה חובה')
+    .matches(/^05\d{8}$/, 'מספר טלפון לא תקין'),
+  emergencyContactName: yup.string().required('איש קשר לשעת חירום הוא שדה חובה'),
+  emergencyContactPhone: yup.string()
+    .required('טלפון איש קשר חירום הוא שדה חובה')
+    .matches(/^0\d{8,9}$/, 'מספר טלפון לא תקין'),
+});
+
+const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const dispatch = useDispatch();
-  const questions = useSelector(state => selectFormQuestions(state, 1)); // formId = 1 לטופס פרטים אישיים
-  const { answers, validationErrors } = useSelector(selectCurrentFormData);
-  const { selectedKid, status: kidStatus } = useSelector(state => state.kids);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(data?.photoPath || null);
   
-  // טעינת פרטי הילד ושאלות הטופס
+  // שליפת נתוני רפרנס מהסטור
+  const { cities, status: citiesStatus } = useSelector(state => state.cities);
+  const { status: kidStatus, error: kidError } = useSelector(state => state.kids);
+  
+  // טעינת נתוני רפרנס בעת טעינת הקומפוננטה
   useEffect(() => {
-    if (kidId && !selectedKid) {
-      dispatch(fetchKidById(kidId));
+    dispatch(fetchCities());
+  }, [dispatch]);
+  
+  // טיפול בהעלאת תמונה
+  const handlePhotoChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setPhotoFile(file);
+      
+      // יצירת URL לתצוגה מקדימה
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-    
-    if (questions.length === 0) {
-      dispatch(fetchFormQuestions(1));
-    }
-  }, [dispatch, kidId, selectedKid, questions.length]);
-  
-  // טיפול בשינוי תשובה
-  const handleAnswerChange = (questionNo, value, other = null) => {
-    dispatch(updateAnswer({ questionNo, answer: value, other }));
-    if (onChange) {
-      onChange(questionNo, value);
-    }
   };
   
-  // מציאת שאלה לפי מספר
-  const findQuestion = (questionNo) => {
-    return questions.find(q => q.questionNo === questionNo) || {};
-  };
+  // רשימת קופות חולים סטטית
+  const healthInsurances = ['כללית', 'מכבי', 'מאוחדת', 'לאומית'];
   
-  // בדיקה האם השדה הוא חובה
-  const isRequired = (questionNo) => {
-    const question = findQuestion(questionNo);
-    return question.isMandatory;
-  };
-  
-  // בדיקה האם יש שגיאה בשדה
-  const hasError = (questionNo) => {
-    return !!validationErrors[questionNo];
-  };
-  
-  // החזרת הודעת שגיאה לשדה
-  const getErrorMessage = (questionNo) => {
-    return validationErrors[questionNo] || '';
-  };
-  
-  // טעינת ערכי ברירת מחדל אם יש פרטי ילד קיימים
-  useEffect(() => {
-    if (selectedKid && Object.keys(answers).length === 0) {
-      // העברת פרטי הילד לתשובות
-      if (selectedKid.firstName) {
-        handleAnswerChange(1, selectedKid.firstName);
+  // מימוש ה-Formik - זהה למימוש הקודם...
+  const formik = useFormik({
+    initialValues: {
+      id: data?.id || 0,
+      firstName: data?.firstName || '',
+      lastName: data?.lastName || '',
+      birthDate: data?.birthDate ? new Date(data.birthDate) : null,
+      gender: data?.gender || '',
+      cityName: data?.cityName || '',
+      address: data?.address || '',
+      hName: data?.hName || '',
+      photoPath: data?.photoPath || '',
+      parent1FirstName: data?.parent1FirstName || '',
+      parent1LastName: data?.parent1LastName || '',
+      parent1Mobile: data?.parent1Mobile || '',
+      parent1Email: data?.parent1Email || '',
+      parent1Address: data?.parent1Address || '',
+      parent1Occupation: data?.parent1Occupation || '',
+      parent2FirstName: data?.parent2FirstName || '',
+      parent2LastName: data?.parent2LastName || '',
+      parent2Mobile: data?.parent2Mobile || '',
+      parent2Email: data?.parent2Email || '',
+      parent2Address: data?.parent2Address || '',
+      parent2Occupation: data?.parent2Occupation || '',
+      homePhone: data?.homePhone || '',
+      emergencyContactName: data?.emergencyContactName || '',
+      emergencyContactPhone: data?.emergencyContactPhone || '',
+      plannedEntryDate: data?.plannedEntryDate || null,
+      socialWorker: data?.socialWorker || '',
+      referralDate: data?.referralDate || null,
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      try {
+        // העלאת תמונה אם יש
+        let photoPath = values.photoPath;
+        if (photoFile) {
+          const formData = new FormData();
+          formData.append('photo', photoFile);
+          // כאן צריך להיות קוד להעלאת התמונה לשרת
+          // לדוגמה:
+          // const response = await axios.post('/api/upload-photo', formData);
+          // photoPath = response.data.photoPath;
+        }
+        
+        // יצירת אובייקט הנתונים לשמירה
+        const kidData = {
+          ...values,
+          photoPath,
+          isActive: true
+        };
+        
+        // שמירת הנתונים בהתאם למצב עריכה/יצירה
+        let result;
+        if (isEditMode) {
+          result = await dispatch(updateKid(kidData)).unwrap();
+        } else {
+          result = await dispatch(createKid(kidData)).unwrap();
+        }
+        
+        // עדכון ה-parent component
+        onUpdate(result);
+      } catch (error) {
+        console.error('שגיאה בשמירת נתוני הילד:', error);
       }
-      if (selectedKid.lastName) {
-        handleAnswerChange(2, selectedKid.lastName);
-      }
-      if (selectedKid.birthDate) {
-        handleAnswerChange(3, selectedKid.birthDate.substring(0, 10)); // פורמט תאריך YYYY-MM-DD
-      }
-      if (selectedKid.gender) {
-        handleAnswerChange(4, selectedKid.gender);
-      }
-      if (selectedKid.identityNumber) {
-        handleAnswerChange(5, selectedKid.identityNumber);
-      }
-      if (selectedKid.address) {
-        handleAnswerChange(6, selectedKid.address);
-      }
-      if (selectedKid.cityName) {
-        handleAnswerChange(7, selectedKid.cityName);
-      }
-      if (selectedKid.hName) {
-        handleAnswerChange(8, selectedKid.hName);
-      }
-    }
-  }, [selectedKid, answers]);
-  
-  if (kidStatus === 'loading' || questions.length === 0) {
-    return <Typography>טוען נתונים...</Typography>;
-  }
+    },
+  });
   
   return (
-    <Box sx={{ p: 2 }}>
-      <Paper elevation={0} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
+    <form onSubmit={formik.handleSubmit}>
+      {kidError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>שגיאה</AlertTitle>
+          {kidError}
+        </Alert>
+      )}
+      
+      {/* תמונת פרופיל */}
+      <ProfileImageUpload>
+        <Avatar
+          src={photoPreview}
+          sx={{
+            width: 120,
+            height: 120,
+            mb: 1,
+            boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+          }}
+        />
+        <input
+          accept="image/*"
+          style={{ display: 'none' }}
+          id="kid-photo-upload"
+          type="file"
+          onChange={handlePhotoChange}
+        />
+        <label htmlFor="kid-photo-upload">
+          <Button
+            variant="contained"
+            component="span"
+            startIcon={<UploadIcon />}
+            size="small"
+          >
+            העלאת תמונה
+          </Button>
+        </label>
+      </ProfileImageUpload>
+      
+      {/* חלק 1: פרטי הילד */}
+      <FormSection>
+        <SectionTitle variant="h6">
           פרטי הילד
-        </Typography>
+        </SectionTitle>
         
-        <Grid container spacing={3}>
-          {/* שם פרטי ושם משפחה */}
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(1).questionText || "שם פרטי"}
-              value={answers[1]?.answer || ''}
-              onChange={(e) => handleAnswerChange(1, e.target.value)}
-              required={isRequired(1)}
-              error={hasError(1)}
-              helperText={getErrorMessage(1)}
-              dir="rtl"
+              id="firstName"
+              name="firstName"
+              label="שם פרטי"
+              value={formik.values.firstName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+              helperText={formik.touched.firstName && formik.errors.firstName}
+              required
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(2).questionText || "שם משפחה"}
-              value={answers[2]?.answer || ''}
-              onChange={(e) => handleAnswerChange(2, e.target.value)}
-              required={isRequired(2)}
-              error={hasError(2)}
-              helperText={getErrorMessage(2)}
-              dir="rtl"
+              id="lastName"
+              name="lastName"
+              label="שם משפחה"
+              value={formik.values.lastName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+              helperText={formik.touched.lastName && formik.errors.lastName}
+              required
+              size="small"
             />
           </Grid>
-          
-          {/* תאריך לידה ומגדר */}
           <Grid item xs={12} sm={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={heLocale}>
-              <DatePicker
-                label={findQuestion(3).questionText || "תאריך לידה"}
-                value={answers[3]?.answer ? new Date(answers[3].answer) : null}
-                onChange={(date) => {
-                  if (date) {
-                    const formattedDate = date.toISOString().substring(0, 10);
-                    handleAnswerChange(3, formattedDate);
-                  }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    required={isRequired(3)}
-                    error={hasError(3)}
-                    helperText={getErrorMessage(3)}
-                    dir="rtl"
-                  />
-                )}
-              />
-            </LocalizationProvider>
+            <DatePicker
+              label="תאריך לידה"
+              value={formik.values.birthDate}
+              onChange={(value) => formik.setFieldValue('birthDate', value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  id="birthDate"
+                  name="birthDate"
+                  error={formik.touched.birthDate && Boolean(formik.errors.birthDate)}
+                  helperText={formik.touched.birthDate && formik.errors.birthDate}
+                  required
+                  size="small"
+                />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <FormControl 
-              fullWidth 
-              required={isRequired(4)} 
-              error={hasError(4)}
+              fullWidth
+              error={formik.touched.gender && Boolean(formik.errors.gender)}
+              required
+              size="small"
             >
               <InputLabel id="gender-label">מין</InputLabel>
               <Select
                 labelId="gender-label"
-                value={answers[4]?.answer || ''}
-                onChange={(e) => handleAnswerChange(4, e.target.value)}
+                id="gender"
+                name="gender"
+                value={formik.values.gender}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 label="מין"
               >
                 <MenuItem value="זכר">זכר</MenuItem>
                 <MenuItem value="נקבה">נקבה</MenuItem>
               </Select>
-              {hasError(4) && <FormHelperText>{getErrorMessage(4)}</FormHelperText>}
+              {formik.touched.gender && formik.errors.gender && (
+                <FormHelperText>{formik.errors.gender}</FormHelperText>
+              )}
             </FormControl>
           </Grid>
           
-          {/* ת"ז וכתובת */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={findQuestion(5).questionText || "מספר תעודת זהות"}
-              value={answers[5]?.answer || ''}
-              onChange={(e) => handleAnswerChange(5, e.target.value)}
-              required={isRequired(5)}
-              error={hasError(5)}
-              helperText={getErrorMessage(5)}
-              dir="rtl"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={findQuestion(6).questionText || "כתובת"}
-              value={answers[6]?.answer || ''}
-              onChange={(e) => handleAnswerChange(6, e.target.value)}
-              required={isRequired(6)}
-              error={hasError(6)}
-              helperText={getErrorMessage(6)}
-              dir="rtl"
-            />
-          </Grid>
-          
-          {/* עיר וקופת חולים */}
+          {/* שאר שדות פרטי הילד */}
           <Grid item xs={12} sm={6}>
             <FormControl 
-              fullWidth 
-              required={isRequired(7)} 
-              error={hasError(7)}
+              fullWidth
+              error={formik.touched.cityName && Boolean(formik.errors.cityName)}
+              required
+              size="small"
             >
               <InputLabel id="city-label">עיר</InputLabel>
               <Select
                 labelId="city-label"
-                value={answers[7]?.answer || ''}
-                onChange={(e) => handleAnswerChange(7, e.target.value)}
+                id="cityName"
+                name="cityName"
+                value={formik.values.cityName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 label="עיר"
               >
-                <MenuItem value="חיפה">חיפה</MenuItem>
-                <MenuItem value="תל אביב">תל אביב</MenuItem>
-                <MenuItem value="ירושלים">ירושלים</MenuItem>
-                <MenuItem value="באר שבע">באר שבע</MenuItem>
-                <MenuItem value="כפר קרע">כפר קרע</MenuItem>
-                <MenuItem value="אחר">אחר</MenuItem>
+                {cities.map((city) => (
+                  <MenuItem key={city.cityName} value={city.cityName}>{city.cityName}</MenuItem>
+                ))}
               </Select>
-              {hasError(7) && <FormHelperText>{getErrorMessage(7)}</FormHelperText>}
+              {formik.touched.cityName && formik.errors.cityName && (
+                <FormHelperText>{formik.errors.cityName}</FormHelperText>
+              )}
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="address"
+              name="address"
+              label="כתובת"
+              value={formik.values.address}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.address && Boolean(formik.errors.address)}
+              helperText={formik.touched.address && formik.errors.address}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <HomeIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              required
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
             <FormControl 
-              fullWidth 
-              required={isRequired(8)} 
-              error={hasError(8)}
+              fullWidth
+              error={formik.touched.hName && Boolean(formik.errors.hName)}
+              required
+              size="small"
             >
               <InputLabel id="health-insurance-label">קופת חולים</InputLabel>
               <Select
                 labelId="health-insurance-label"
-                value={answers[8]?.answer || ''}
-                onChange={(e) => handleAnswerChange(8, e.target.value)}
+                id="hName"
+                name="hName"
+                value={formik.values.hName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 label="קופת חולים"
               >
-                <MenuItem value="כללית">כללית</MenuItem>
-                <MenuItem value="מכבי">מכבי</MenuItem>
-                <MenuItem value="מאוחדת">מאוחדת</MenuItem>
-                <MenuItem value="לאומית">לאומית</MenuItem>
-                <MenuItem value="אחר">אחר</MenuItem>
+                {healthInsurances.map((hi) => (
+                  <MenuItem key={hi} value={hi}>{hi}</MenuItem>
+                ))}
               </Select>
-              {hasError(8) && <FormHelperText>{getErrorMessage(8)}</FormHelperText>}
+              {formik.touched.hName && formik.errors.hName && (
+                <FormHelperText>{formik.errors.hName}</FormHelperText>
+              )}
             </FormControl>
           </Grid>
-          
-          {/* תאריך קליטה ועו"ס מפנה */}
           <Grid item xs={12} sm={6}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={heLocale}>
-              <DatePicker
-                label={findQuestion(9).questionText || "תאריך קליטה מתוכנן"}
-                value={answers[9]?.answer ? new Date(answers[9].answer) : null}
-                onChange={(date) => {
-                  if (date) {
-                    const formattedDate = date.toISOString().substring(0, 10);
-                    handleAnswerChange(9, formattedDate);
-                  }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    required={isRequired(9)}
-                    error={hasError(9)}
-                    helperText={getErrorMessage(9)}
-                    dir="rtl"
-                  />
-                )}
-              />
-            </LocalizationProvider>
+            <DatePicker
+              label="תאריך קליטה מתוכנן"
+              value={formik.values.plannedEntryDate}
+              onChange={(value) => formik.setFieldValue('plannedEntryDate', value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  id="plannedEntryDate"
+                  name="plannedEntryDate"
+                  size="small"
+                />
+              )}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(10).questionText || "עו\"ס מפנה"}
-              value={answers[10]?.answer || ''}
-              onChange={(e) => handleAnswerChange(10, e.target.value)}
-              required={isRequired(10)}
-              error={hasError(10)}
-              helperText={getErrorMessage(10)}
-              dir="rtl"
+              id="socialWorker"
+              name="socialWorker"
+              label="עו״ס מפנה"
+              value={formik.values.socialWorker}
+              onChange={formik.handleChange}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <DatePicker
+              label="תאריך הפנייה"
+              value={formik.values.referralDate}
+              onChange={(value) => formik.setFieldValue('referralDate', value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  fullWidth
+                  id="referralDate"
+                  name="referralDate"
+                  size="small"
+                />
+              )}
             />
           </Grid>
         </Grid>
-      </Paper>
+      </FormSection>
       
-      <Paper elevation={0} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
-          פרטי הורה 1
-        </Typography>
+      {/* חלק 2: פרטי הורה ראשי */}
+      <FormSection>
+        <SectionTitle variant="h6">
+          פרטי הורה ראשי
+        </SectionTitle>
         
-        <Grid container spacing={3}>
-          {/* שם ות"ז הורה 1 */}
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(12).questionText || "שם הורה 1"}
-              value={answers[12]?.answer || ''}
-              onChange={(e) => handleAnswerChange(12, e.target.value)}
-              required={isRequired(12)}
-              error={hasError(12)}
-              helperText={getErrorMessage(12)}
-              dir="rtl"
+              id="parent1FirstName"
+              name="parent1FirstName"
+              label="שם פרטי"
+              value={formik.values.parent1FirstName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.parent1FirstName && Boolean(formik.errors.parent1FirstName)}
+              helperText={formik.touched.parent1FirstName && formik.errors.parent1FirstName}
+              required
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(13).questionText || "מספר תעודת זהות הורה 1"}
-              value={answers[13]?.answer || ''}
-              onChange={(e) => handleAnswerChange(13, e.target.value)}
-              required={isRequired(13)}
-              error={hasError(13)}
-              helperText={getErrorMessage(13)}
-              dir="rtl"
-            />
-          </Grid>
-          
-          {/* טלפון וכתובת הורה 1 */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={findQuestion(14).questionText || "טלפון נייד הורה 1"}
-              value={answers[14]?.answer || ''}
-              onChange={(e) => handleAnswerChange(14, e.target.value)}
-              required={isRequired(14)}
-              error={hasError(14)}
-              helperText={getErrorMessage(14)}
-              dir="rtl"
+              id="parent1LastName"
+              name="parent1LastName"
+              label="שם משפחה"
+              value={formik.values.parent1LastName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.parent1LastName && Boolean(formik.errors.parent1LastName)}
+              helperText={formik.touched.parent1LastName && formik.errors.parent1LastName}
+              required
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(15).questionText || "כתובת הורה 1 (אם שונה מהילד)"}
-              value={answers[15]?.answer || ''}
-              onChange={(e) => handleAnswerChange(15, e.target.value)}
-              required={isRequired(15)}
-              error={hasError(15)}
-              helperText={getErrorMessage(15)}
-              dir="rtl"
+              id="parent1Mobile"
+              name="parent1Mobile"
+              label="טלפון נייד"
+              value={formik.values.parent1Mobile}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.parent1Mobile && Boolean(formik.errors.parent1Mobile)}
+              helperText={formik.touched.parent1Mobile && formik.errors.parent1Mobile}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CallIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              required
+              size="small"
             />
           </Grid>
-          
-          {/* דוא"ל ותעסוקה הורה 1 */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(16).questionText || "דוא\"ל הורה 1"}
+              id="parent1Email"
+              name="parent1Email"
+              label="דוא״ל"
               type="email"
-              value={answers[16]?.answer || ''}
-              onChange={(e) => handleAnswerChange(16, e.target.value)}
-              required={isRequired(16)}
-              error={hasError(16)}
-              helperText={getErrorMessage(16)}
-              dir="rtl"
+              value={formik.values.parent1Email}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(17).questionText || "תעסוקה הורה 1"}
-              value={answers[17]?.answer || ''}
-              onChange={(e) => handleAnswerChange(17, e.target.value)}
-              required={isRequired(17)}
-              error={hasError(17)}
-              helperText={getErrorMessage(17)}
-              dir="rtl"
+              id="parent1Address"
+              name="parent1Address"
+              label="כתובת (אם שונה מכתובת הילד)"
+              value={formik.values.parent1Address}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <HomeIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              id="parent1Occupation"
+              name="parent1Occupation"
+              label="תעסוקה"
+              value={formik.values.parent1Occupation}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <WorkIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
             />
           </Grid>
         </Grid>
-      </Paper>
+      </FormSection>
       
-      <Paper elevation={0} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
-          פרטי הורה 2 (אופציונלי)
-        </Typography>
+      {/* חלק 3: פרטי הורה משני (אופציונלי) */}
+      <FormSection>
+        <SectionTitle variant="h6">
+          פרטי הורה משני
+          <Tooltip title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
+            <InfoIcon fontSize="small" sx={{ ml: 1, fontSize: '1rem' }} />
+          </Tooltip>
+        </SectionTitle>
         
-        <Grid container spacing={3}>
-          {/* שם ות"ז הורה 2 */}
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(18).questionText || "שם הורה 2"}
-              value={answers[18]?.answer || ''}
-              onChange={(e) => handleAnswerChange(18, e.target.value)}
-              required={isRequired(18)}
-              error={hasError(18)}
-              helperText={getErrorMessage(18)}
-              dir="rtl"
+              id="parent2FirstName"
+              name="parent2FirstName"
+              label="שם פרטי"
+              value={formik.values.parent2FirstName}
+              onChange={formik.handleChange}
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(19).questionText || "מספר תעודת זהות הורה 2"}
-              value={answers[19]?.answer || ''}
-              onChange={(e) => handleAnswerChange(19, e.target.value)}
-              required={isRequired(19)}
-              error={hasError(19)}
-              helperText={getErrorMessage(19)}
-              dir="rtl"
-            />
-          </Grid>
-          
-          {/* טלפון וכתובת הורה 2 */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={findQuestion(20).questionText || "טלפון נייד הורה 2"}
-              value={answers[20]?.answer || ''}
-              onChange={(e) => handleAnswerChange(20, e.target.value)}
-              required={isRequired(20)}
-              error={hasError(20)}
-              helperText={getErrorMessage(20)}
-              dir="rtl"
+              id="parent2LastName"
+              name="parent2LastName"
+              label="שם משפחה"
+              value={formik.values.parent2LastName}
+              onChange={formik.handleChange}
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(21).questionText || "כתובת הורה 2 (אם שונה מהילד)"}
-              value={answers[21]?.answer || ''}
-              onChange={(e) => handleAnswerChange(21, e.target.value)}
-              required={isRequired(21)}
-              error={hasError(21)}
-              helperText={getErrorMessage(21)}
-              dir="rtl"
+              id="parent2Mobile"
+              name="parent2Mobile"
+              label="טלפון נייד"
+              value={formik.values.parent2Mobile}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CallIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
             />
           </Grid>
-          
-          {/* דוא"ל ותעסוקה הורה 2 */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(22).questionText || "דוא\"ל הורה 2"}
+              id="parent2Email"
+              name="parent2Email"
+              label="דוא״ל"
               type="email"
-              value={answers[22]?.answer || ''}
-              onChange={(e) => handleAnswerChange(22, e.target.value)}
-              required={isRequired(22)}
-              error={hasError(22)}
-              helperText={getErrorMessage(22)}
-              dir="rtl"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label={findQuestion(23).questionText || "תעסוקה הורה 2"}
-              value={answers[23]?.answer || ''}
-              onChange={(e) => handleAnswerChange(23, e.target.value)}
-              required={isRequired(23)}
-              error={hasError(23)}
-              helperText={getErrorMessage(23)}
-              dir="rtl"
+              value={formik.values.parent2Email}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
             />
           </Grid>
         </Grid>
-      </Paper>
+      </FormSection>
       
-      <Paper elevation={0} sx={{ p: 3, mb: 4, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
+      {/* חלק 4: פרטי קשר נוספים */}
+      <FormSection>
+        <SectionTitle variant="h6">
           פרטי קשר נוספים
-        </Typography>
+        </SectionTitle>
         
-        <Grid container spacing={3}>
-          {/* טלפון בבית ואיש קשר לחירום */}
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(24).questionText || "טלפון בבית"}
-              value={answers[24]?.answer || ''}
-              onChange={(e) => handleAnswerChange(24, e.target.value)}
-              required={isRequired(24)}
-              error={hasError(24)}
-              helperText={getErrorMessage(24)}
-              dir="rtl"
+              id="homePhone"
+              name="homePhone"
+              label="טלפון בבית"
+              value={formik.values.homePhone}
+              onChange={formik.handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CallIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              size="small"
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(25).questionText || "איש קשר במקרה חירום"}
-              value={answers[25]?.answer || ''}
-              onChange={(e) => handleAnswerChange(25, e.target.value)}
-              required={isRequired(25)}
-              error={hasError(25)}
-              helperText={getErrorMessage(25)}
-              dir="rtl"
+              id="emergencyContactName"
+              name="emergencyContactName"
+              label="איש קשר בשעת חירום"
+              value={formik.values.emergencyContactName}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.emergencyContactName && Boolean(formik.errors.emergencyContactName)}
+              helperText={formik.touched.emergencyContactName && formik.errors.emergencyContactName}
+              required
+              size="small"
             />
           </Grid>
-          
-          {/* טלפון איש קשר חירום */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label={findQuestion(26).questionText || "טלפון איש קשר חירום"}
-              value={answers[26]?.answer || ''}
-              onChange={(e) => handleAnswerChange(26, e.target.value)}
-              required={isRequired(26)}
-              error={hasError(26)}
-              helperText={getErrorMessage(26)}
-              dir="rtl"
+              id="emergencyContactPhone"
+              name="emergencyContactPhone"
+              label="טלפון איש קשר חירום"
+              value={formik.values.emergencyContactPhone}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.emergencyContactPhone && Boolean(formik.errors.emergencyContactPhone)}
+              helperText={formik.touched.emergencyContactPhone && formik.errors.emergencyContactPhone}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CallIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+              required
+              size="small"
             />
           </Grid>
         </Grid>
-      </Paper>
-    </Box>
+      </FormSection>
+      
+      {/* כפתורי פעולה בתחתית הטופס */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => formik.resetForm()}
+          startIcon={<DeleteIcon />}
+        >
+          נקה טופס
+        </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          startIcon={kidStatus === 'loading' ? <CircularProgress size={20} color="inherit" /> : (isEditMode ? <EditIcon /> : <SaveIcon />)}
+          disabled={kidStatus === 'loading'}
+        >
+          {isEditMode ? 'עדכן פרטים' : 'שמור פרטים'}
+        </Button>
+      </Box>
+    </form>
   );
 };
 

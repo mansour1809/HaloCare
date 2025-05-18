@@ -33,6 +33,8 @@ import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import Profile from './pages/Employees/Profile';
 import SystemSettings from './pages/SystemSettings';
 import KidRegistrationProcess from './pages/addKid/KidRegistrationProcess';
+import KidProfile from './pages/addKid/KidProfile';
+import { DynamicForm } from '@mui/icons-material';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -175,11 +177,39 @@ const AppContent = () => {
                 path="/kids/add"
                 element={
                   <PrivateRoute>
-                    {/* <div>kids add</div> */}
                     <KidRegistrationProcess />
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/kid-profile/:id"
+                element={
+                  <PrivateRoute>
+                    <KidProfile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/forms/:formId/:kidId?"
+                element={
+                  <PrivateRoute>
+                    <DynamicForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/parent-form/:formId/:token?"
+                element={
+                  <PrivateRoute>
+                    {/* <div>kids add</div> */}
+                    {/* <ParentFormView /> */}
+                  </PrivateRoute>
+                }
+              />
+
+
+
+
 
               {/* employees managment*/}
               <Route
