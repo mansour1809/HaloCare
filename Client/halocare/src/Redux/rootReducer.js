@@ -16,6 +16,8 @@ import attendanceReducer from './features/attendanceSlice';
 import formsReducer from './features/formsSlice';
 import parentFormsReducer from './features/parentFormsSlice';
 import answersReducer from './features/answersSlice';
+import parentReducer from './features/parentSlice';
+import healthInsurancesSlice from './features/healthinsurancesSlice';
 
 // Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
@@ -33,6 +35,8 @@ const rootReducer = combineReducers({
   forms: formsReducer,
   parentFormsSlice: parentFormsReducer,
   answers: answersReducer,
+  parent: parentReducer,
+  healthInsurances: healthInsurancesSlice,
 });
 
 export default rootReducer;

@@ -37,7 +37,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           underline="hover"
           sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
           color="inherit"
-          onClick={() => navigate('/kids')}
+          onClick={() => navigate('/kids/list')}
         >
           <PersonIcon sx={{ mr: 0.5, fontSize: 'small' }} />
           רשימת ילדים
@@ -48,7 +48,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           color="inherit"
           onClick={() => navigate(`/kids/${kidId}`)}
         >
-          {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'תיק ילד'}
+          {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'תסכום ילד'}
         </Link>
         <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
           {getTreatmentName(treatmentType) ? `טיפולי ${getTreatmentName(treatmentType)}` : 'סיכומי טיפולים'}

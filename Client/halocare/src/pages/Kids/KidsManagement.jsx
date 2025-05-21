@@ -1,7 +1,7 @@
 // src/components/kids/KidsManagement.jsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -33,14 +33,13 @@ import {
   Tabs,
   Tab,
   Tooltip,
-  Divider
 } from '@mui/material';
 import { 
   Add as AddIcon, 
   Search as SearchIcon,
   Visibility as VisibilityIcon,
   Home as HomeIcon,
-  Edit as EditIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import axios from 'axios';
@@ -205,14 +204,30 @@ const KidsManagement = () => {
     <ThemeProvider theme={theme}>
       <Box sx={{ p: 3 }} dir="rtl">
         {/* Breadcrumbs */}
-        <Breadcrumbs sx={{ mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-            <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
-              רשימת ילדים
-            </Typography>
-          </Box>
-        </Breadcrumbs>
+         <Breadcrumbs sx={{ mb: 2 }}>
+        <Link
+          underline="hover"
+          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          color="inherit"
+          onClick={() => navigate('/')}
+        >
+          <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+          ראשי
+        </Link>
+        <Link
+          underline="hover"
+          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          color="inherit"
+          onClick={() => navigate('/kids/list')}
+        >
+          <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+          רשימת ילדים
+        </Link>
+
+        <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
+          {/* {getTreatmentName(treatmentType) ? `טיפולי ${getTreatmentName(treatmentType)}` : 'סיכומי טיפולים'} */}
+        </Typography>
+      </Breadcrumbs>
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3' }}>

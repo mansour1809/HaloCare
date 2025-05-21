@@ -1,6 +1,7 @@
 // src/Redux/features/kidsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
+import { createParent, updateParent } from './parentSlice';
 
 export const fetchKids = createAsyncThunk(
   'kids/fetchKids',
@@ -25,6 +26,7 @@ export const fetchKidById = createAsyncThunk(
     }
   }
 );
+
 export const fetchKidProfile = createAsyncThunk(
   'kids/fetchKidProfile',
   async (kidId, { rejectWithValue }) => {
@@ -37,14 +39,84 @@ export const fetchKidProfile = createAsyncThunk(
   }
 );
 
-export const createKid = createAsyncThunk(
-  'kids/createKid',
-  async (kidData, { rejectWithValue }) => {
+// This thunk will handle creating both parents and the kid
+export const createKidWithParents = createAsyncThunk(
+  'kids/createKidWithParents',
+  async (formData, { dispatch, rejectWithValue }) => {
     try {
-      const response = await axios.post('/Kids', kidData);
-      return response.data;
+      // 1. Create or update parent 1
+      const parent1Data = {
+        parentId: formData.parent1Id || 0, // 0 for new parent
+        firstName: formData.parent1FirstName,
+        lastName: formData.parent1LastName,
+        mobilePhone: formData.parent1Mobile,
+        address: formData.parent1Address || formData.address, // Use kid's address if not specified
+        cityName: formData.parent1CityName || formData.cityName, // Use kid's city if not specified
+        homePhone: formData.homePhone,
+        email: formData.parent1Email
+      };
+
+      let parent1Result;
+      if (parent1Data.parentId === 0) {
+        parent1Result = await dispatch(createParent(parent1Data)).unwrap();
+      } else {
+        parent1Result = await dispatch(updateParent(parent1Data)).unwrap();
+      }
+
+      // 2. Create or update parent 2 (if provided)
+      let parent2Result = null;
+      if (formData.parent2FirstName && formData.parent2LastName) {
+        const parent2Data = {
+          parentId: formData.parent2Id || 0, // 0 for new parent
+          firstName: formData.parent2FirstName,
+          lastName: formData.parent2LastName,
+          mobilePhone: formData.parent2Mobile,
+          address: formData.parent2Address || formData.address,
+          cityName: formData.parent2CityName || formData.cityName,
+          homePhone: formData.homePhone,
+          email: formData.parent2Email
+        };
+
+        if (parent2Data.parentId === 0) {
+          parent2Result = await dispatch(createParent(parent2Data)).unwrap();
+        } else {
+          parent2Result = await dispatch(updateParent(parent2Data)).unwrap();
+        }
+      }
+
+      // 3. Create the kid with parent references
+      const kidData = {
+        id: formData.id || 0, // 0 for new kid
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        cityName: formData.cityName,
+        address: formData.address,
+        isActive: true,
+        parentId1: parent1Result.parentId,
+        parentId2: parent2Result?.parentId || null,
+        hName: formData.hName,
+        pathToFolder: formData.pathToFolder,
+        classId: formData.classId,
+        photoPath: formData.photoPath
+      };
+
+      // Create or update kid
+      let response;
+      if (kidData.id === 0) {
+        response = await axios.post('/Kids', kidData);
+      } else {
+        response = await axios.put(`/Kids/${kidData.id}`, kidData);
+      }
+
+      return {
+        kid: response.data,
+        parent1: parent1Result,
+        parent2: parent2Result
+      };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה ביצירת ילד חדש');
+      return rejectWithValue(error.response?.data || 'שגיאה בשמירת נתוני הילד וההורים');
     }
   }
 );
@@ -60,17 +132,20 @@ export const updateKid = createAsyncThunk(
     }
   }
 );
+
 const kidsSlice = createSlice({
   name: 'kids',
   initialState: {
     kids: [],
     selectedKid: null,
+    selectedKidWithParents: null, // To store the full kid profile with parent data
     status: 'idle',
     error: null
   },
   reducers: {
     clearSelectedKid: (state) => {
       state.selectedKid = null;
+      state.selectedKidWithParents = null;
     }
   },
   extraReducers: (builder) => {
@@ -100,45 +175,52 @@ const kidsSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload || 'שגיאה בטעינת פרטי הילד';
       })
+      
+      // Fetch kid profile
       .addCase(fetchKidProfile.pending, (state) => {
-  state.status = 'loading';
-})
-.addCase(fetchKidProfile.fulfilled, (state, action) => {
-  state.status = 'succeeded';
-  state.selectedKid = action.payload;
-})
-.addCase(fetchKidProfile.rejected, (state, action) => {
-  state.status = 'failed';
-  state.error = action.payload || 'שגיאה בטעינת פרופיל הילד';
-})
-.addCase(createKid.pending, (state) => {
-  state.status = 'loading';
-})
-.addCase(createKid.fulfilled, (state, action) => {
-  state.status = 'succeeded';
-  state.kids.push(action.payload);
-  state.selectedKid = action.payload;
-})
-.addCase(createKid.rejected, (state, action) => {
-  state.status = 'failed';
-  state.error = action.payload || 'שגיאה ביצירת ילד חדש';
-})
-.addCase(updateKid.pending, (state) => {
-  state.status = 'loading';
-})
-.addCase(updateKid.fulfilled, (state, action) => {
-  state.status = 'succeeded';
-  // עדכון הילד ברשימה
-  const index = state.kids.findIndex(kid => kid.id === action.payload.id);
-  if (index !== -1) {
-    state.kids[index] = action.payload;
-  }
-  state.selectedKid = action.payload;
-})
-.addCase(updateKid.rejected, (state, action) => {
-  state.status = 'failed';
-  state.error = action.payload || 'שגיאה בעדכון פרטי הילד';
-});
+        state.status = 'loading';
+      })
+      .addCase(fetchKidProfile.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.selectedKid = action.payload;
+      })
+      .addCase(fetchKidProfile.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'שגיאה בטעינת פרופיל הילד';
+      })
+      
+      // Create kid with parents
+      .addCase(createKidWithParents.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(createKidWithParents.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.kids.push(action.payload.kid);
+        state.selectedKid = action.payload.kid;
+        state.selectedKidWithParents = action.payload;
+      })
+      .addCase(createKidWithParents.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'שגיאה ביצירת ילד וההורים שלו';
+      })
+      
+      // Regular update kid
+      .addCase(updateKid.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateKid.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        // עדכון הילד ברשימה
+        const index = state.kids.findIndex(kid => kid.id === action.payload.id);
+        if (index !== -1) {
+          state.kids[index] = action.payload;
+        }
+        state.selectedKid = action.payload;
+      })
+      .addCase(updateKid.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'שגיאה בעדכון פרטי הילד';
+      });
   }
 });
 

@@ -1,22 +1,29 @@
 // components/kids/KidRegistrationProcess.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   Box, Paper, Button, Typography, Container, 
-  Slide, Fade
+  Slide, Fade, Stepper, Step, StepLabel, StepContent,
+  Breadcrumbs, CircularProgress, Divider
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { 
   ChevronLeft as ArrowBackIcon,
   Check as CheckCircleIcon,
-  Send as SendIcon
+  Send as SendIcon,
+  Home as HomeIcon,
+  Person as PersonIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
+import GroupIcon from '@mui/icons-material/Group';
 import { sendFormToParent } from '../../Redux/features/formsSlice';
+import { fetchKidById } from '../../Redux/features/kidsSlice';
 import PersonalInfoForm from './PersonalInfoForm';
 import DynamicFormRenderer from './DynamicFormRenderer';
 import ProgressLogo from './ProgressLogo';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -44,9 +51,36 @@ const FormContainer = styled(Paper)(({ theme }) => ({
   }
 }));
 
+const StepButton = styled(Button)(({ theme, completed }) => ({
+  marginTop: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  backgroundColor: completed ? theme.palette.success.light : 'transparent',
+  color: completed ? theme.palette.success.contrastText : theme.palette.text.primary,
+  '&:hover': {
+    backgroundColor: completed ? theme.palette.success.main : theme.palette.action.hover,
+  },
+  transition: 'all 0.3s ease',
+}));
+
+const SuccessMessage = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.success.light,
+  borderRadius: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: theme.spacing(3),
+  '& .MuiSvgIcon-root': {
+    color: theme.palette.success.main,
+    marginLeft: theme.spacing(1)
+  }
+}));
 
 const KidRegistrationProcess = () => {
+  const { kidId } = useParams(); // אם יש מזהה בנתיב, זה מצב עריכה
+  const isEditMode = Boolean(kidId);
+  
   const [activeStep, setActiveStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState({});
   const [formData, setFormData] = useState({
     personalInfo: {},
     developmentalInfo: {},
@@ -55,11 +89,42 @@ const KidRegistrationProcess = () => {
     approvals: {},
     homeVisit: {}
   });
+  const [isFormSaved, setIsFormSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode);
   
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
   const { status: sendStatus } = useSelector(state => state.forms);
+  const { selectedKid, status: kidStatus } = useSelector(state => state.kids);
+  
+  // טעינת נתוני ילד קיים במצב עריכה
+  useEffect(() => {
+    if (isEditMode && kidId) {
+      setIsLoading(true);
+      dispatch(fetchKidById(kidId))
+        .unwrap()
+        .then(kidData => {
+          setFormData(prev => ({
+            ...prev,
+            personalInfo: kidData
+          }));
+          setIsFormSaved(true);
+          setCompletedSteps(prev => ({...prev, 0: true}));
+        })
+        .catch(error => {
+          Swal.fire({
+            icon: 'error',
+            title: 'שגיאה בטעינת נתוני הילד',
+            text: 'לא ניתן לטעון את נתוני הילד. אנא נסה שנית מאוחר יותר.'
+          });
+          console.error('Error loading kid data:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [dispatch, kidId, isEditMode]);
   
   // רשימת השלבים
   const steps = [
@@ -69,7 +134,8 @@ const KidRegistrationProcess = () => {
       formId: null, // אין צורך בformId עבור PersonalInfoForm
       component: <PersonalInfoForm 
                   data={formData.personalInfo} 
-                  onUpdate={(data) => handleFormUpdate('personalInfo', data)} 
+                  onUpdate={handlePersonalInfoUpdate} 
+                  isEditMode={isEditMode}
                 />
     },
     {
@@ -123,23 +189,62 @@ const KidRegistrationProcess = () => {
                 />
     }
   ];
+
+  // פונקציה מיוחדת לטיפול בעדכון נתוני הילד בשלב הראשון
+  function handlePersonalInfoUpdate(kidData) {
+    // עדכון נתוני הילד בסטייט
+    setFormData(prev => ({
+      ...prev,
+      personalInfo: kidData
+    }));
+    
+    // סימון שהשלב הראשון הושלם
+    setCompletedSteps(prev => ({...prev, 0: true}));
+    setIsFormSaved(true);
+    
+    // הצג הודעת הצלחה
+    Swal.fire({
+      icon: 'success',
+      title: 'פרטי הילד נשמרו בהצלחה',
+      text: `פרטי הילד ${kidData.firstName} ${kidData.lastName} נשמרו במערכת`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+    
+    // מעבר לשלב הבא
+    handleNext();
+  }
   
-  // עדכון נתוני הטפסים
+  // עדכון נתוני הטפסים האחרים
   const handleFormUpdate = (formName, data) => {
     setFormData(prev => ({
       ...prev,
       [formName]: data
     }));
     
-    // אם מדובר בפרטים אישיים (השלב הראשון) ויש ID - התקדם לשלב הבא
-    if (formName === 'personalInfo' && data.id) {
-      handleNext();
-    }
+    // סימון השלב הנוכחי כהושלם
+    setCompletedSteps(prev => ({...prev, activeStep: true}));
   };
   
   // מעבר לשלב הבא
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => {
+      const nextStep = prevActiveStep + 1;
+      // אם הגענו לסוף התהליך, נציג הודעת סיום
+      if (nextStep === steps.length) {
+        Swal.fire({
+          icon: 'success',
+          title: 'תהליך קליטת הילד הושלם בהצלחה!',
+          text: 'כל השלבים הושלמו. כעת ניתן לצפות בפרופיל הילד המלא.',
+          confirmButtonText: 'מעבר לפרופיל הילד',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate(`/kid-profile/${formData.personalInfo.id}`);
+          }
+        });
+      }
+      return nextStep;
+    });
   };
   
   // חזרה לשלב הקודם
@@ -150,43 +255,77 @@ const KidRegistrationProcess = () => {
   // מעבר לשלב ספציפי
   const handleStepClick = (stepIndex) => {
     // בדיקה אם יש כבר ID לילד (אחרי השלב הראשון)
-    if (stepIndex > 0 && !formData.personalInfo.id) {
-      toast.warning('יש למלא קודם את פרטי הילד הבסיסיים');
+    if (stepIndex > 0 && !isFormSaved) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'לא ניתן להמשיך',
+        text: 'יש למלא ולשמור קודם את פרטי הילד הבסיסיים',
+      });
       return;
     }
     
     // אפשר לעבור רק לשלבים שכבר הושלמו או לשלב הנוכחי +1
-    if (stepIndex <= activeStep + 1) {
+    if (stepIndex <= activeStep + 1 || completedSteps[stepIndex - 1]) {
       setActiveStep(stepIndex);
     } else {
       toast.info('יש להשלים את השלבים בסדר הנכון');
     }
   };
   
-  // הגשת התהליך המלא
-  const handleSubmit = async () => {
-    navigate(`/kid-profile/${formData.personalInfo.id}`);
-    toast.success('הילד נקלט בהצלחה!');
-  };
-  
   // שליחת טופס למילוי ע"י הורה
   const handleSendToParent = async (formId) => {
     if (!formData.personalInfo.id) {
-      toast.error('יש לשמור תחילה את פרטי הילד');
+      Swal.fire({
+        icon: 'error',
+        title: 'לא ניתן לשלוח טופס',
+        text: 'יש לשמור תחילה את פרטי הילד',
+      });
       return;
     }
     
     try {
+      Swal.fire({
+        title: 'שולח טופס...',
+        text: 'אנא המתן בזמן שליחת הטופס להורה',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      
       await dispatch(sendFormToParent({ 
         kidId: formData.personalInfo.id, 
         formId 
       })).unwrap();
       
-      toast.success(`הטופס נשלח בהצלחה להורה`);
+      Swal.fire({
+        icon: 'success',
+        title: 'הטופס נשלח בהצלחה',
+        text: `הטופס נשלח בהצלחה להורה של ${formData.personalInfo.firstName}`,
+        timer: 2000,
+      });
     } catch (error) {
-      toast.error('אירעה שגיאה בשליחת הטופס');
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בשליחת הטופס',
+        text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
+      });
       console.error(error);
     }
+  };
+  
+  // סיום התהליך ומעבר לפרופיל הילד
+  const handleFinish = () => {
+    Swal.fire({
+      icon: 'success',
+      title: 'תהליך קליטת הילד הושלם בהצלחה!',
+      text: 'כל השלבים הושלמו. כעת ניתן לצפות בפרופיל הילד המלא.',
+      confirmButtonText: 'מעבר לפרופיל הילד',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/kid-profile/${formData.personalInfo.id}`);
+      }
+    });
   };
   
   // שם הילד לתצוגה בלוגו (אם יש)
@@ -194,102 +333,151 @@ const KidRegistrationProcess = () => {
     ? `${formData.personalInfo.firstName} ${formData.personalInfo.lastName || ''}`
     : null;
   
+  // אם הקומפוננטה במצב טעינה
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          טוען נתוני ילד...
+        </Typography>
+      </Container>
+    );
+  }
+  
   return (
-     <LocalizationProvider dateAdapter={AdapterDateFns}>
-  <Container maxWidth="lg" sx={{ py: 4 }}>
-    <Typography variant="h4" component="h1" align="center" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-      קליטת ילד חדש
-    </Typography>
-      
-      {/* לוגו התקדמות */}
-      <ProgressLogo 
-      activeStep={activeStep} 
-      totalSteps={steps.length}
-      kidName={kidName}
-      onStepClick={handleStepClick}
-      steps={steps.map(step => step.label)}
-    />
-      
-      {/* טופס נוכחי */}
-     <Fade in={true} timeout={500}>
-      <FormContainer>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold', color: 'primary.dark' }}>
-          {steps[activeStep].label}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          {steps[activeStep].description}
-        </Typography>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Breadcrumbs sx={{ mb: 2 }}>
+          <Link
+            underline="hover"
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            color="inherit"
+            onClick={() => navigate('/')}
+          >
+            <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+            ראשי
+          </Link>
+          <Link
+            underline="hover"
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            color="inherit"
+            onClick={() => navigate('/kids/list')}
+          >
+            <GroupIcon sx={{ mr: 0.5, fontSize: 'medium' }} />
+            רשימת ילדים
+          </Link>
+          <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
+            {isEditMode ? `עריכת פרטי ${kidName || 'ילד'}` : 'קליטת ילד חדש'}
+          </Typography>
+        </Breadcrumbs>
         
-        {steps[activeStep].component}
-          {/* כפתורי פעולה */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-            <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              variant="outlined"
-            >
-              חזרה
-            </Button>
-            <Box>
-              {/* כפתור שליחה להורה - מופיע רק בשלבים מסוימים */}
-              {[1, 2, 3, 4].includes(activeStep) && formData.personalInfo.id && (
-                <Button 
-                  onClick={() => handleSendToParent(steps[activeStep].formId)}
-                  variant="contained" 
-                  color="info" 
-                  sx={{ mr: 1 }}
-                  startIcon={<SendIcon />}
-                  disabled={sendStatus === 'loading'}
-                >
-                  שלח להורה
-                </Button>
-              )}
-              
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleSubmit}
-                  startIcon={<CheckCircleIcon />}
-                >
-                  סיים תהליך
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  endIcon={<ArrowBackIcon />}
-                  // disabled={activeStep === 0 && !formData.personalInfo.id}
-                >
-                  הבא
-                </Button>
-              )}
+        {/* הודעת הצלחה אם הילד נשמר */}
+        {isFormSaved && (
+          <Fade in={true}>
+            <SuccessMessage>
+              <CheckCircleIcon />
+              <Typography>
+                {isEditMode 
+                  ? 'פרטי הילד עודכנו במערכת. ניתן להמשיך בתהליך.'
+                  : 'הילד נוצר בהצלחה! כעת ניתן להמשיך למילוי שאר הטפסים.'}
+              </Typography>
+            </SuccessMessage>
+          </Fade>
+        )}
+        
+        {/* לוגו התקדמות */}
+        <ProgressLogo 
+          activeStep={activeStep} 
+          totalSteps={steps.length}
+          kidName={kidName}
+          onStepClick={handleStepClick}
+          steps={steps.map(step => step.label)}
+          completedSteps={completedSteps}
+        />
+        
+        {/* טופס נוכחי */}
+        <Fade in={true} timeout={500}>
+          <FormContainer>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold', color: 'primary.dark' }}>
+              {steps[activeStep].label}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {steps[activeStep].description}
+            </Typography>
+            
+            {steps[activeStep].component}
+            
+            {/* כפתורי פעולה */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+              <Button
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                variant="outlined"
+                startIcon={<ArrowForwardIcon />}
+              >
+                חזרה
+              </Button>
+              <Box>
+                {/* כפתור שליחה להורה - מופיע רק בשלבים מסוימים */}
+                {[1, 2, 3, 4].includes(activeStep) && isFormSaved && (
+                  <Button 
+                    onClick={() => handleSendToParent(steps[activeStep].formId)}
+                    variant="contained" 
+                    color="info" 
+                    sx={{ mr: 1 }}
+                    startIcon={<SendIcon />}
+                    disabled={sendStatus === 'loading'}
+                  >
+                    שלח להורה
+                  </Button>
+                )}
+                
+                {activeStep === steps.length - 1 ? (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleFinish}
+                    startIcon={<CheckCircleIcon />}
+                  >
+                    סיים תהליך
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                    endIcon={<ArrowBackIcon />}
+                    disabled={activeStep === 0 && !isFormSaved}
+                  >
+                    הבא
+                  </Button>
+                )}
+              </Box>
             </Box>
-          </Box>
-        </FormContainer>
-      </Fade>
-      
-      {/* הודעת סיום */}
-      {activeStep === steps.length && (
-        <Slide direction="up" in={true} mountOnEnter unmountOnExit>
-          <Paper sx={{ p: 3, borderRadius: 2, backgroundColor: 'success.light', maxWidth: 600, mx: 'auto', mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              כל השלבים הושלמו בהצלחה!
-            </Typography>
-            <Typography paragraph>
-              הילד נקלט במערכת. ניתן לצפות בפרטיו בדף תיק הילד.
-            </Typography>
-            <Button 
-              onClick={() => navigate(`/kid-profile/${formData.personalInfo.id}`)} 
-              variant="contained"
-              startIcon={<CheckCircleIcon />}
-            >
-              מעבר לתיק הילד
-            </Button>
-          </Paper>
-        </Slide>
-      )}
-    </Container>
+          </FormContainer>
+        </Fade>
+        
+        {/* הודעת סיום */}
+        {activeStep === steps.length && (
+          <Slide direction="up" in={true} mountOnEnter unmountOnExit>
+            <Paper sx={{ p: 3, borderRadius: 2, backgroundColor: 'success.light', maxWidth: 600, mx: 'auto', mt: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                כל השלבים הושלמו בהצלחה!
+              </Typography>
+              <Typography paragraph>
+                הילד נקלט במערכת. ניתן לצפות בפרטיו בדף תיק הילד.
+              </Typography>
+              <Button 
+                onClick={() => navigate(`/kid-profile/${formData.personalInfo.id}`)} 
+                variant="contained"
+                startIcon={<CheckCircleIcon />}
+              >
+                מעבר לתיק הילד
+              </Button>
+            </Paper>
+          </Slide>
+        )}
+      </Container>
     </LocalizationProvider>
   );
 };

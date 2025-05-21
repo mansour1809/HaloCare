@@ -139,7 +139,8 @@ const KidProfile = () => {
       </Box>
     );
   }
-  
+  console.log('Kid Profile:', kidProfile);
+  console.log('profileError:', profileError);
   if (profileError || !kidProfile) {
     return <Alert severity="error">לא נמצאו נתונים עבור ילד זה או שאירעה שגיאה בטעינת הנתונים.</Alert>;
   }

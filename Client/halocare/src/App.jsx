@@ -270,7 +270,8 @@ const AppContent = () => {
                 path="/reports/treatments"
                 element={
                   <PrivateRoute>
-                      <TreatmentsList />
+                      {/* <TreatmentsList /> */}
+                      <KidProfile/>
                   </PrivateRoute>
                 }
               />

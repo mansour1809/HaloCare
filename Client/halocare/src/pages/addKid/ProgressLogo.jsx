@@ -197,7 +197,7 @@ const ProgressLogo = ({
           zIndex: 1
         }}
       >
-        <StyledStepper activeStep={activeStep} alternativeLabel={true}>
+        <StyledStepper activeStep={activeStep} alternativeLabel={true} >
           {stepsToShow.map((label, index) => (
             <Step 
               key={index}

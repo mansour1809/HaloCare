@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import HomeIcon from '@mui/icons-material/Home';
-import PersonIcon from '@mui/icons-material/Person';
+import GroupIcon from '@mui/icons-material/Group';
 import { fetchKidById } from '../../../Redux/features/kidsSlice';
 import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
 import KidFlowerProfile from './KidFlowerProfile';
@@ -91,7 +91,7 @@ const KidProfilePage = () => {
           color="inherit"
           onClick={() => navigate('/kids/list')}
         >
-          <PersonIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+          <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
           רשימת ילדים
         </Link>
         <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
