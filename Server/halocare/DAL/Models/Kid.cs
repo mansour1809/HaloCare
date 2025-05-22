@@ -14,7 +14,7 @@ namespace halocare.DAL.Models
         public bool IsActive { get; set; }
         public string HName { get; set; }
         public string PathToFolder { get; set; }
-        public string Photo { get; set; }
+        public string? PhotoPath { get; set; }
         public int? ClassId { get; set; }
         public int? ParentId1 { get; set; }
         public int? ParentId2 { get; set; }

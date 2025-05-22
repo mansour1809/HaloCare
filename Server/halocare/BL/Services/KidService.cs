@@ -42,8 +42,6 @@ namespace halocare.BL.Services
                 throw new ArgumentException("kid age have to be between 0-3 years");
             }
 
-            // default values
-            kid.IsActive = true;
 
             // save kid details
             return _kidRepository.AddKid(kid);

@@ -137,8 +137,9 @@ namespace halocare.Controllers
 
         // POST: api/Kids
         [HttpPost]
-        public ActionResult<Kid> PostKid(Kid kid)
+        public ActionResult<Kid> PostKid([FromBody] Kid kid)
         {
+            Console.WriteLine(kid);
             try
             {
                 int kidId = _kidService.AddKid(kid);

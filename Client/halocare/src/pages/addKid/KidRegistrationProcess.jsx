@@ -347,7 +347,8 @@ const KidRegistrationProcess = () => {
   
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: 4}}>
+        <Box sx={{ display: 'flex', direction: 'rtl'}}>
         <Breadcrumbs sx={{ mb: 2 }}>
           <Link
             underline="hover"
@@ -371,7 +372,7 @@ const KidRegistrationProcess = () => {
             {isEditMode ? `עריכת פרטי ${kidName || 'ילד'}` : 'קליטת ילד חדש'}
           </Typography>
         </Breadcrumbs>
-        
+        </Box>
         {/* הודעת הצלחה אם הילד נשמר */}
         {isFormSaved && (
           <Fade in={true}>

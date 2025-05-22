@@ -254,7 +254,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   
   // שליפת נתוני רפרנס מהסטור
   const { cities, status: citiesStatus } = useSelector(state => state.cities);
-  const { status: kidStatus, error: kidError } = useSelector(state => state.kids);
+  const { kids,status: kidStatus, error: kidError } = useSelector(state => state.kids);
   const { classes, status: classesStatus } = useSelector(state => state.classes || { classes: [], status: 'idle' });
   const { healthInsurances, status: healthInsurancesStatus } = useSelector(state => state.healthInsurances);
   const isLoading = kidStatus === 'loading';
@@ -333,14 +333,14 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       try {
         // העלאת תמונה אם יש
         let photoPath = values.photoPath;
-        if (photoFile) {
-          const formData = new FormData();
-          formData.append('photo', photoFile);
-          // כאן צריך להיות קוד להעלאת התמונה לשרת
-          // העלה את התמונה ושמור את הנתיב - זה קוד לדוגמה
-          const photoResponse = await axios.post('/api/upload', formData);
-          photoPath = photoResponse.data.photoPath;
-        }
+        // if (photoFile) {
+        //   const formData = new FormData();
+        //   formData.append('photo', photoFile);
+        //   // כאן צריך להיות קוד להעלאת התמונה לשרת
+        //   // העלה את התמונה ושמור את הנתיב - זה קוד לדוגמה
+        //   const photoResponse = await axios.post('/api/upload', formData);
+        //   photoPath = photoResponse.data.photoPath;
+        // }
         
         // יצירת אובייקט הנתונים לשמירה
         const formData = {
@@ -348,6 +348,17 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           photoPath
         };
         
+// if(kids.includes(formData.id)) {
+if(kids.find(kid => kid.id === formData.id)) {
+  // אם הילד קיים במערכת, הצג הודעת אזהרה
+  Swal.fire({
+    icon: 'warning',
+    title: 'הילד קיים במערכת',
+    text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת הילדים',
+    confirmButtonText: 'אוקי'
+  });
+  return;
+}
         // שמירת הנתונים בהתאם למצב עריכה/יצירה באמצעות thunk החדש
         const result = await dispatch(createKidWithParents(formData)).unwrap();
         

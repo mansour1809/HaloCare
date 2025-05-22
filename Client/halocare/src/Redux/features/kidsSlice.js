@@ -99,12 +99,13 @@ export const createKidWithParents = createAsyncThunk(
         hName: formData.hName,
         pathToFolder: formData.pathToFolder,
         classId: formData.classId,
-        photoPath: formData.photoPath
+        photoPath: formData.photoPath || null
       };
 
       // Create or update kid
       let response;
       if (kidData.id === 0) {
+        console.log("kidDatakidDatakidDatakidDatakidDatakidData", kidData);
         response = await axios.post('/Kids', kidData);
       } else {
         response = await axios.put(`/Kids/${kidData.id}`, kidData);
