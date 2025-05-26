@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Button } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { baseURL } from '../../../components/common/axiosConfig';
+import { baseURL } from '../../components/common/axiosConfig';
 
 const KidFlowerProfile = ({ kid }) => {
   const navigate = useNavigate();

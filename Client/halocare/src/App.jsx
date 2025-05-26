@@ -27,13 +27,13 @@ import { useAuth, AuthProvider } from './components/login/AuthContext';
 import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
 import {TreatmentProvider} from './pages/Kids/tretments/TreatmentContext';
-import KidProfilePage from './pages/kids/KidsFiles/KidProfilePage';
+import KidProfilePage from './pages/kids/KidProfilePage';
 import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import Profile from './pages/Employees/Profile';
 import SystemSettings from './pages/SystemSettings';
-import KidRegistrationProcess from './pages/addKid/KidRegistrationProcess';
-import KidProfile from './pages/addKid/KidProfile';
+import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
+// import KidProfile from './pages/addKid/KidProfile';
 import { DynamicForm } from '@mui/icons-material';
 
 // יצירת ערכת נושא מותאמת אישית
@@ -185,7 +185,7 @@ const AppContent = () => {
                 path="/kid-profile/:id"
                 element={
                   <PrivateRoute>
-                    <KidProfile />
+                    {/* <KidProfile /> */}
                   </PrivateRoute>
                 }
               />
@@ -271,10 +271,20 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                       {/* <TreatmentsList /> */}
-                      <KidProfile/>
+                      {/* <KidProfile/> */}
                   </PrivateRoute>
                 }
               />
+            
+              <Route
+                path="/kids/intake/:kidId"
+                element={
+                  <PrivateRoute>
+                      <KidRegistrationProcess />
+                  </PrivateRoute>
+                }
+              />
+
  <Route
                 path="/profile"
                 element={

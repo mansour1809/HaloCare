@@ -47,8 +47,7 @@ import * as yup from 'yup';
 import { fetchCities } from '../../Redux/features/citiesSlice';
 import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlice';
-import { createKidWithParents } from '../../Redux/features/kidsSlice';
-import axios from '../../components/common/axiosConfig';
+import { createKidWithParents,updateKidWithParents, fetchKids } from '../../Redux/features/kidsSlice';
 
 // עיצוב משופר לאווטאר עם אפקט הבלטה וזוהר
 const EnhancedAvatar = styled(Avatar)(({ theme }) => ({
@@ -213,8 +212,8 @@ const validationSchema = yup.object({
   parent1Mobile: yup.string()
     .required('טלפון נייד הורה ראשי הוא שדה חובה')
     .matches(/^05\d{8}$/, 'מספר טלפון לא תקין'),
-  parent1Email: yup.string().email('כתובת דוא״ל לא תקינה'),
-  
+  parent1Email: yup.string().email().required('כתובת דוא״ל לא תקינה'),
+
   // פרטי קשר
   emergencyContactName: yup.string().required('איש קשר לשעת חירום הוא שדה חובה'),
   emergencyContactPhone: yup.string()
@@ -239,7 +238,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   // מצבי התרחבות הסקשנים
   const [expandedSections, setExpandedSections] = useState({
     childDetails: true,
-    primaryParent: true,
+    primaryParent: false,
     secondaryParent: false, 
     contactInfo: false,
     classInfo: false
@@ -259,14 +258,102 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const { healthInsurances, status: healthInsurancesStatus } = useSelector(state => state.healthInsurances);
   const isLoading = kidStatus === 'loading';
   
+  // הגדרת initialValues בהתבסס על הנתונים שהתקבלו
+  const getInitialValues = () => {
+    if (data && isEditMode) {
+      if (data && isEditMode) {
+    return {
+      // פרטי הילד
+      id: data.id || 0,
+      idNumber: data.id || 0, // להוסיף גם את זה
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      birthDate: data.birthDate ? new Date(data.birthDate) : null,
+      gender: data.gender || '',
+      cityName: data.cityName || '',
+      address: data.address || '',
+      hName: data.hName || '',
+      photo: data.photo || '',
+      classId: data.classId || '',
+      pathToFolder: data.pathToFolder || '',
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      
+      // פרטי הורה ראשי
+      parent1FirstName: data.parentName1 ? data.parentName1.split(' ')[0] : '',
+      parent1LastName: data.parentName1 ? data.parentName1.split(' ').slice(1).join(' ') : '',
+      parent1Mobile: data.parentPhone1 || '',
+      parent1Email: data.parentEmail1 || '',
+      parent1Address: data.parentAddress1 || '',
+      parent1CityName: data.parentCity1 || '',
+      
+      // פרטי הורה משני
+      parent2FirstName: data.parentName2 ? data.parentName2.split(' ')[0] : '',
+      parent2LastName: data.parentName2 ? data.parentName2.split(' ').slice(1).join(' ') : '',
+      parent2Mobile: data.parentPhone2 || '',
+      parent2Email: data.parentEmail2 || '',
+      parent2Address: data.parentAddress2 || '',
+      parent2CityName: data.parentCity2 || '',
+      
+      // פרטי קשר נוספים
+      homePhone: data.homePhone || '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      plannedEntryDate: null,
+      socialWorker: '',
+      referralDate: null,
+    };
+  }
+    }
+    
+    // ערכים ריקים עבור ילד חדש
+    return {
+      id: 0,
+      firstName: '',
+      lastName: '',
+      birthDate: null,
+      gender: '',
+      cityName: '',
+      address: '',
+      hName: '',
+      photo: '',
+      classId: '',
+      pathToFolder: '',
+      isActive: true,
+      parent1FirstName: '',
+      parent1LastName: '',
+      parent1Mobile: '',
+      parent1Email: '',
+      parent1Address: '',
+      parent1CityName: '',
+      parent2FirstName: '',
+      parent2LastName: '',
+      parent2Mobile: '',
+      parent2Email: '',
+      parent2Address: '',
+      parent2CityName: '',
+      homePhone: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      plannedEntryDate: null,
+      socialWorker: '',
+      referralDate: null,
+    };
+  };
+
   // טעינת נתוני רפרנס בעת טעינת הקומפוננטה
   useEffect(() => {
     dispatch(fetchCities());
-    // אם יש גישה לסטור של כיתות, טען גם אותו
     dispatch(fetchClasses());
     dispatch(fetchHealthInsurances());
+    dispatch(fetchKids());
   }, [dispatch]);
-  
+
+  useEffect(() => {
+    if (data && isEditMode) {
+      formik.resetForm({ values: getInitialValues() });
+    }
+  }, [data, isEditMode]);
+
   // טיפול בהעלאת תמונה
   const handlePhotoChange = (event) => {
     if (event.target.files && event.target.files[0]) {
@@ -284,107 +371,107 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   
   // רשימת קופות חולים
   // const healthInsurances = ['כללית', 'מכבי', 'מאוחדת', 'לאומית'];
-  
   // מימוש ה-Formik
   const formik = useFormik({
-    initialValues: {
-      // פרטי הילד
-      id: data?.id || 0,
-      firstName: data?.firstName || '',
-      lastName: data?.lastName || '',
-      birthDate: data?.birthDate ? new Date(data.birthDate) : null,
-      gender: data?.gender || '',
-      cityName: data?.cityName || '',
-      address: data?.address || '',
-      hName: data?.hName || '',
-      photoPath: data?.photoPath || '',
-      classId: data?.classId || '',
-      pathToFolder: data?.pathToFolder || '',
-      isActive: data?.isActive !== undefined ? data.isActive : true,
-      idNumber: data?.idNumber || '',
-      // פרטי הורה ראשי
-      parent1Id: data?.parentId1 || 0,
-      parent1FirstName: data?.parent1FirstName || '',
-      parent1LastName: data?.parent1LastName || '',
-      parent1Mobile: data?.parent1Mobile || '',
-      parent1Email: data?.parent1Email || '',
-      parent1Address: data?.parent1Address || '',
-      parent1CityName: data?.parent1CityName || '',
-      
-      // פרטי הורה משני
-      parent2Id: data?.parentId2 || 0,
-      parent2FirstName: data?.parent2FirstName || '',
-      parent2LastName: data?.parent2LastName || '',
-      parent2Mobile: data?.parent2Mobile || '',
-      parent2Email: data?.parent2Email || '',
-      parent2Address: data?.parent2Address || '',
-      parent2CityName: data?.parent2CityName || '',
-      
-      // פרטי קשר נוספים
-      homePhone: data?.homePhone || '',
-      emergencyContactName: data?.emergencyContactName || '',
-      emergencyContactPhone: data?.emergencyContactPhone || '',
-      plannedEntryDate: data?.plannedEntryDate ? new Date(data.plannedEntryDate) : null,
-      socialWorker: data?.socialWorker || '',
-      referralDate: data?.referralDate ? new Date(data.referralDate) : null,
-    },
-    validationSchema: validationSchema,
-    onSubmit: async (values) => {
-      try {
-        // העלאת תמונה אם יש
-        let photoPath = values.photoPath;
-        // if (photoFile) {
-        //   const formData = new FormData();
-        //   formData.append('photo', photoFile);
-        //   // כאן צריך להיות קוד להעלאת התמונה לשרת
-        //   // העלה את התמונה ושמור את הנתיב - זה קוד לדוגמה
-        //   const photoResponse = await axios.post('/api/upload', formData);
-        //   photoPath = photoResponse.data.photoPath;
-        // }
-        
-        // יצירת אובייקט הנתונים לשמירה
-        const formData = {
-          ...values,
-          photoPath
-        };
-        
-// if(kids.includes(formData.id)) {
-if(kids.find(kid => kid.id === formData.id)) {
-  // אם הילד קיים במערכת, הצג הודעת אזהרה
-  Swal.fire({
-    icon: 'warning',
-    title: 'הילד קיים במערכת',
-    text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת הילדים',
-    confirmButtonText: 'אוקי'
-  });
-  return;
-}
-        // שמירת הנתונים בהתאם למצב עריכה/יצירה באמצעות thunk החדש
-        const result = await dispatch(createKidWithParents(formData)).unwrap();
-        
-         Swal.fire({
-      icon: 'success',
-      title: 'נשמר בהצלחה!',
-      text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} נשמרו בהצלחה`,
-      timer: 2000,
-      showConfirmButton: false
-    });
-    
-    // עדכון ה-parent component
-    onUpdate(result.kid);
-      } catch (error) {
-        console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
-         Swal.fire({
-      icon: 'error',
-      title: 'שגיאה בשמירת הנתונים',
-      text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
-    });
+  initialValues: getInitialValues(),
+  validationSchema: validationSchema,
+  enableReinitialize: true,
+  onSubmit: async (values) => {
+    try {
+      // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
+      if (!isEditMode) {
+        const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
+        if (existingKid) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'הילד קיים במערכת',
+            text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת ילדים',
+            confirmButtonText: 'אוקי'
+          });
+          return;
+        }
       }
-    },
-  });
+
+      // הכנת הנתונים לשמירה בפורמט שה-slice מצפה לו
+      const formDataForSlice = {
+        // נתוני ילד
+        id: values.id,
+        idNumber: values.idNumber || values.id,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        birthDate: values.birthDate,
+        gender: values.gender,
+        cityName: values.cityName,
+        address: values.address,
+        hName: values.hName,
+        photo: values.photo,
+        classId: values.classId || null,
+        pathToFolder: values.pathToFolder,
+        isActive: values.isActive,
+        
+        // נתוני הורה ראשי
+        parent1Id: data?.parentId1 || 0, // מהנתונים הקיימים במצב עריכה
+        parent1FirstName: values.parent1FirstName,
+        parent1LastName: values.parent1LastName,
+        parent1Mobile: values.parent1Mobile,
+        parent1Email: values.parent1Email,
+        parent1Address: values.parent1Address,
+        parent1CityName: values.parent1CityName,
+        
+        // נתוני הורה משני
+        parent2Id: data?.parentId2 || 0, // מהנתונים הקיימים במצב עריכה
+        parent2FirstName: values.parent2FirstName,
+        parent2LastName: values.parent2LastName,
+        parent2Mobile: values.parent2Mobile,
+        parent2Email: values.parent2Email,
+        parent2Address: values.parent2Address,
+        parent2CityName: values.parent2CityName,
+        
+        // נתוני קשר נוספים
+        homePhone: values.homePhone,
+      };
+
+      let result;
+      
+      if (isEditMode) {
+        // עדכון ילד קיים
+        result = await dispatch(updateKidWithParents(formDataForSlice)).unwrap();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'עודכן בהצלחה!',
+          text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} עודכנו בהצלחה`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        // יצירת ילד חדש
+        result = await dispatch(createKidWithParents(formDataForSlice)).unwrap();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'נשמר בהצלחה!',
+          text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} נשמרו בהצלחה`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+      
+      // עדכון ה-parent component
+      onUpdate(result.kid);
+      
+    } catch (error) {
+      console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בשמירת הנתונים',
+        text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
+      });
+    }
+  },
+});
   
   const isFormFilled = formik.dirty && Object.values(formik.values).some(val => val !== '');
-  
   return (
     <form dir="rtl" onSubmit={formik.handleSubmit}>
       {/* הודעת שגיאה אם יש */}

@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 // קבע כתובת בסיס
-// axios.defaults.baseURL = 'https://localhost:7225/api';
-axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/test2/tar1/api';
+axios.defaults.baseURL = 'https://localhost:7225/api';
+// axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/test2/tar1/api';
 
 // הוסף interceptor שיוסיף את הטוקן לכל בקשה
 axios.interceptors.request.use(

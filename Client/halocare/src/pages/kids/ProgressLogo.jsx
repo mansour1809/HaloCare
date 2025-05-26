@@ -221,4 +221,3 @@ const ProgressLogo = ({
 };
 
 export default ProgressLogo;
-

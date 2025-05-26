@@ -18,6 +18,8 @@ import parentFormsReducer from './features/parentFormsSlice';
 import answersReducer from './features/answersSlice';
 import parentReducer from './features/parentSlice';
 import healthInsurancesSlice from './features/healthinsurancesSlice';
+import intakeProcessReducer from './features/intakeProcessSlice'; 
+
 
 // Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
@@ -37,6 +39,8 @@ const rootReducer = combineReducers({
   answers: answersReducer,
   parent: parentReducer,
   healthInsurances: healthInsurancesSlice,
+  intakeProcess: intakeProcessReducer, 
+
 });
 
 export default rootReducer;

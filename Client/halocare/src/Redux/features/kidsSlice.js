@@ -86,7 +86,7 @@ export const createKidWithParents = createAsyncThunk(
 
       // 3. Create the kid with parent references
       const kidData = {
-        id: formData.id || 0, // 0 for new kid
+        id: formData.idNumber || 0, // 0 for new kid
         firstName: formData.firstName,
         lastName: formData.lastName,
         birthDate: formData.birthDate,
@@ -104,12 +104,11 @@ export const createKidWithParents = createAsyncThunk(
 
       // Create or update kid
       let response;
-      if (kidData.id === 0) {
-        console.log("kidDatakidDatakidDatakidDatakidDatakidData", kidData);
+      // if (kidData.id === 0) {
         response = await axios.post('/Kids', kidData);
-      } else {
-        response = await axios.put(`/Kids/${kidData.id}`, kidData);
-      }
+      // } else {
+      //   response = await axios.put(`/Kids/${kidData.id}`, kidData);
+      // }
 
       return {
         kid: response.data,
@@ -121,6 +120,85 @@ export const createKidWithParents = createAsyncThunk(
     }
   }
 );
+
+export const updateKidWithParents = createAsyncThunk(
+  'kids/updateKidWithParents',
+  async (formData, { dispatch, rejectWithValue }) => {
+    try {
+      // 1. Update parent 1
+      const parent1Data = {
+        parentId: formData.parent1Id || 0,
+        firstName: formData.parent1FirstName,
+        lastName: formData.parent1LastName,
+        mobilePhone: formData.parent1Mobile,
+        address: formData.parent1Address || formData.address,
+        cityName: formData.parent1CityName || formData.cityName,
+        homePhone: formData.homePhone,
+        email: formData.parent1Email
+      };
+
+      let parent1Result;
+      if (parent1Data.parentId === 0) {
+        // יצירת הורה חדש אם לא קיים
+        parent1Result = await dispatch(createParent(parent1Data)).unwrap();
+      } else {
+        // עדכון הורה קיים
+        parent1Result = await dispatch(updateParent(parent1Data)).unwrap();
+      }
+
+      // 2. Update parent 2 (if provided)
+      let parent2Result = null;
+      if (formData.parent2FirstName && formData.parent2LastName) {
+        const parent2Data = {
+          parentId: formData.parent2Id || 0,
+          firstName: formData.parent2FirstName,
+          lastName: formData.parent2LastName,
+          mobilePhone: formData.parent2Mobile,
+          address: formData.parent2Address || formData.address,
+          cityName: formData.parent2CityName || formData.cityName,
+          homePhone: formData.homePhone,
+          email: formData.parent2Email
+        };
+
+        if (parent2Data.parentId === 0) {
+          parent2Result = await dispatch(createParent(parent2Data)).unwrap();
+        } else {
+          parent2Result = await dispatch(updateParent(parent2Data)).unwrap();
+        }
+      }
+
+      // 3. Update the kid with parent references
+      const kidData = {
+        id: formData.id, // יש ID קיים במצב עדכון
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        cityName: formData.cityName,
+        address: formData.address,
+        isActive: formData.isActive,
+        parentId1: parent1Result.parentId,
+        parentId2: parent2Result?.parentId || null,
+        hName: formData.hName,
+        pathToFolder: formData.pathToFolder,
+        classId: formData.classId,
+        photo: formData.photo || null
+      };
+
+      // עדכון הילד
+      const response = await axios.put(`/Kids/${kidData.id}`, kidData);
+
+      return {
+        kid: response.data,
+        parent1: parent1Result,
+        parent2: parent2Result
+      };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון נתוני הילד וההורים');
+    }
+  }
+);
+
 
 export const updateKid = createAsyncThunk(
   'kids/updateKid',
@@ -221,6 +299,23 @@ const kidsSlice = createSlice({
       .addCase(updateKid.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload || 'שגיאה בעדכון פרטי הילד';
+      })
+       .addCase(updateKidWithParents.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateKidWithParents.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        // עדכון הילד ברשימה
+        const index = state.kids.findIndex(kid => kid.id === action.payload.kid.id);
+        if (index !== -1) {
+          state.kids[index] = action.payload.kid;
+        }
+        state.selectedKid = action.payload.kid;
+        state.selectedKidWithParents = action.payload;
+      })
+      .addCase(updateKidWithParents.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'שגיאה בעדכון ילד וההורים שלו';
       });
   }
 });
