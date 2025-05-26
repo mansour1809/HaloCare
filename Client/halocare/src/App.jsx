@@ -30,7 +30,7 @@ import {TreatmentProvider} from './pages/Kids/tretments/TreatmentContext';
 import KidProfilePage from './pages/kids/KidProfilePage';
 import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
-import Profile from './pages/Employees/Profile';
+import Profile from './pages/Employees/EmployeeProfile';
 import SystemSettings from './pages/SystemSettings';
 import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
 // import KidProfile from './pages/addKid/KidProfile';
