@@ -19,11 +19,11 @@ import {
 import GroupIcon from '@mui/icons-material/Group';
 import { sendFormToParent } from '../../Redux/features/formsSlice';
 import { fetchKidById } from '../../Redux/features/kidsSlice';
-import { fetchKidIntakeProcess, startIntakeProcess } from '../../Redux/features/intakeProcessSlice';
+// import { fetchKidIntakeProcess, startIntakeProcess } from '../../Redux/features/intakeProcessSlice';
 import PersonalInfoForm from './PersonalInfoForm';
 import DynamicFormRenderer from './DynamicFormRenderer';
 import ProgressLogo from './ProgressLogo';
-import IntakeStatusBadge from '../../components/kids/IntakeStatusBadge';
+// import IntakeStatusBadge from '../../components/kids/IntakeStatusBadge';
 import { intakeProcessService } from '../../services/intakeProcessService';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -106,7 +106,8 @@ const KidRegistrationProcess = () => {
           setCompletedSteps(prev => ({...prev, 0: true}));
           
           // טעינת תהליך הקליטה
-          return dispatch(fetchKidIntakeProcess(kidId));
+          // return dispatch(fetchKidIntakeProcess(kidId));
+          return
         })
         .then(processResult => {
           if (processResult.payload) {
@@ -272,7 +273,7 @@ const KidRegistrationProcess = () => {
         setCompletedSteps(prev => ({...prev, [activeStep]: true}));
         
         // רענון תהליך הקליטה
-        dispatch(fetchKidIntakeProcess(formData.personalInfo.id));
+        // dispatch(fetchKidIntakeProcess(formData.personalInfo.id));
         
       } catch (error) {
         console.error('Error completing form step:', error);
@@ -360,7 +361,7 @@ const KidRegistrationProcess = () => {
       });
       
       // רענון תהליך הקליטה
-      dispatch(fetchKidIntakeProcess(formData.personalInfo.id));
+      // dispatch(fetchKidIntakeProcess(formData.personalInfo.id));
       
     } catch (error) {
       Swal.fire({
@@ -432,20 +433,7 @@ const KidRegistrationProcess = () => {
           </Breadcrumbs>
         </Box>
       
-        {/* תצוגת סטטוס תהליך קליטה */}
-        {selectedProcess && (
-          <Paper sx={{ p: 2, mb: 3, borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="h6">
-                סטטוס תהליך קליטה:
-              </Typography>
-              <IntakeStatusBadge 
-                status={selectedProcess.status} 
-                percentage={selectedProcess.completionPercentage}
-              />
-            </Box>
-          </Paper>
-        )}
+       
         
         {/* לוגו התקדמות */}
         <ProgressLogo 

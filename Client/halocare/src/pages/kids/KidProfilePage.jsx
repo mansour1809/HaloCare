@@ -29,11 +29,10 @@ import {
   
 } from '@mui/icons-material';
 import { fetchKidById } from '../../Redux/features/kidsSlice';
-import { fetchKidIntakeProcess } from '../../Redux/features/intakeProcessSlice';
+// import { fetchKidIntakeProcess } from '../../Redux/features/intakeProcessSlice';
 import { fetchTreatmentTypes } from '../../Redux/features/treatmentTypesSlice';
 import KidFlowerProfile from './KidFlowerProfile';
 import IntakeStatusBadge from '../../components/kids/IntakeStatusBadge';
-import { intakeProcessService } from '../../services/intakeProcessService';
 import Swal from 'sweetalert2';
 
 const KidProfilePage = () => {
@@ -54,7 +53,7 @@ const KidProfilePage = () => {
   useEffect(() => {
     if (kidId) {
       dispatch(fetchKidById(kidId));
-      dispatch(fetchKidIntakeProcess(kidId));
+      // dispatch(fetchKidIntakeProcess(kidId));
       dispatch(fetchTreatmentTypes());
     }
   }, [dispatch, kidId]);
@@ -65,7 +64,7 @@ const KidProfilePage = () => {
     try {
       await Promise.all([
         dispatch(fetchKidById(kidId)),
-        dispatch(fetchKidIntakeProcess(kidId))
+        // dispatch(fetchKidIntakeProcess(kidId))
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);

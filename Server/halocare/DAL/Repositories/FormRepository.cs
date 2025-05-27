@@ -21,7 +21,9 @@ namespace halocare.DAL.Repositories
                 {
                     FormId = Convert.ToInt32(row["FormId"]),
                     FormName = row["FormName"].ToString(),
-                    FormDescription = row["FormDescription"].ToString()
+                    FormDescription = row["FormDescription"].ToString(),
+                    FormOrder = row["FormOrder"] == DBNull.Value ? null : (int?)Convert.ToInt32(row["FormOrder"]),
+                    IsFirstStep = Convert.ToBoolean(row["IsFirstStep"])
                 };
 
                 forms.Add(form);
@@ -48,7 +50,9 @@ namespace halocare.DAL.Repositories
             {
                 FormId = Convert.ToInt32(row["FormId"]),
                 FormName = row["FormName"].ToString(),
-                FormDescription = row["FormDescription"].ToString()
+                FormDescription = row["FormDescription"].ToString(),
+                FormOrder = row["FormOrder"] == DBNull.Value ? null : (int?)Convert.ToInt32(row["FormOrder"]),
+                IsFirstStep = Convert.ToBoolean(row["IsFirstStep"])
             };
 
             return form;
@@ -59,7 +63,9 @@ namespace halocare.DAL.Repositories
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "@FormName", form.FormName },
-                { "@FormDescription", form.FormDescription }
+                { "@FormDescription", form.FormDescription },
+                { "@FormOrder", form.FormOrder ?? (object)DBNull.Value },
+                { "@IsFirstStep", form.IsFirstStep }
             };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddForm", parameters));
@@ -71,7 +77,9 @@ namespace halocare.DAL.Repositories
             {
                 { "@FormId", form.FormId },
                 { "@FormName", form.FormName },
-                { "@FormDescription", form.FormDescription }
+                { "@FormDescription", form.FormDescription },
+                { "@FormOrder", form.FormOrder ?? (object)DBNull.Value },
+                { "@IsFirstStep", form.IsFirstStep }
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateForm", parameters);

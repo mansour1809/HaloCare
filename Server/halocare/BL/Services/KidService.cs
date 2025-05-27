@@ -12,9 +12,8 @@ namespace halocare.BL.Services
         private readonly TreatmentRepository _treatmentRepository;
         private readonly AlertRepository _alertRepository;
         private readonly AttendanceRepository _attendanceRepository;
-        private readonly KidIntakeProcessRepository _processRepository;
+        private readonly KidOnboardingService _onboardingService;
 
-        //private readonly TSHARepository _tshaRepository;
 
         public KidService(IConfiguration configuration)
         {
@@ -22,9 +21,8 @@ namespace halocare.BL.Services
             _treatmentRepository = new TreatmentRepository(configuration);
             _alertRepository = new AlertRepository(configuration);
             _attendanceRepository = new AttendanceRepository(configuration);
-            _processRepository = new KidIntakeProcessRepository(configuration);
+            _onboardingService = new KidOnboardingService(configuration);
 
-            //_tshaRepository = new TSHARepository(configuration);
         }
 
         public List<Kid> GetAllKids()
@@ -48,28 +46,14 @@ namespace halocare.BL.Services
 
 
             int kidId = _kidRepository.AddKid(kid);
-
-            // יצירת תהליך קליטה אוטומטי עם 20% התקדמות (שלב ראשון הושלם)
             try
             {
-                var intakeProcess = new KidIntakeProcess
-                {
-                    KidId = kidId,
-                    Status = "IN_PROGRESS",
-                    CurrentFormId = 1003, // הטופס הבא בתור
-                    CompletedForms = "[1002]", // פרטים אישיים הושלמו
-                    PendingForms = "[1003,1004,1005,1006,1007]", // שאר הטפסים ממתינים
-                    ParentPendingForms = "[]",
-                    CompletionPercentage = 20, // 1 מתוך 5 טפסים נוספים (פרטים אישיים לא נכללים בספירה)
-                    Notes = "תהליך קליטה החל אוטומטית עם רישום הילד במערכת"
-                };
-
-                _processRepository.AddKidIntakeProcess(intakeProcess);
+                _onboardingService.StartOnboardingProcess(kidId);
             }
             catch (Exception ex)
             {
-                // רק לוג השגיאה, לא נכשיל את כל התהליך
-                Console.WriteLine($"Warning: Could not create intake process for kid {kidId}: {ex.Message}");
+                //do not stop to process-cause the kid already created
+                Console.WriteLine($"שגיאה בהתחלת תהליך קליטה: {ex.Message}");
             }
 
             return kidId;
@@ -115,11 +99,6 @@ namespace halocare.BL.Services
         {
             return _attendanceRepository.GetAttendancesByKidId(kidId);
         }
-
-        //public List<TSHA> GetKidTSHAs(int kidId)
-        //{
-        //    return _tshaRepository.GetTSHAsByKidId(kidId);
-        //}
 
         public Kid GetKidFile(int kidId)
         {

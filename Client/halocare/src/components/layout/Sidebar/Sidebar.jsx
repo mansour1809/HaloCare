@@ -145,9 +145,9 @@ const ProSidebar = () => {
             </MenuItem>
             <MenuItem
               icon={<PersonAddIcon />}
-              onClick={() => navigate("/kids/add")}
+              onClick={() => navigate("/kids/onboarding/new")}
               style={
-                location.pathname === "/kids/add" ? activeMenuItemStyles : {}
+                location.pathname === "/kids/onboarding/new" ? activeMenuItemStyles : {}
               }
             >
               הוספת ילד

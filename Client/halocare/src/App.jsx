@@ -35,6 +35,7 @@ import SystemSettings from './pages/SystemSettings';
 import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
 // import KidProfile from './pages/addKid/KidProfile';
 import { DynamicForm } from '@mui/icons-material';
+import KidOnboarding from './pages/kids/KidOnboarding';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -174,13 +175,22 @@ const AppContent = () => {
               />
 
               <Route
-                path="/kids/add"
+                path="/kids/onboarding/new"
                 element={
                   <PrivateRoute>
-                    <KidRegistrationProcess />
+                    <KidOnboarding />
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/kids/onboarding/:kidId"
+                element={
+                  <PrivateRoute>
+                    <KidOnboarding />
+                  </PrivateRoute>
+                }
+              />
+
               <Route
                 path="/kid-profile/:id"
                 element={

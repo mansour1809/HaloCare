@@ -10,7 +10,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
 
     public class KidsController : ControllerBase
     {
@@ -119,21 +119,6 @@ namespace halocare.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
-
-        // GET: api/Kids/5/tshas
-        //[HttpGet("{id}/tshas")]
-        //public ActionResult<IEnumerable<TSHA>> GetKidTSHAs(int id)
-        //{
-        //    try
-        //    {
-        //        var tshas = _kidService.GetKidTSHAs(id);
-        //        return Ok(tshas);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Error: {ex.Message}");
-        //    }
-        //}
 
         // POST: api/Kids
         [HttpPost]

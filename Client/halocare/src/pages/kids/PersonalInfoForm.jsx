@@ -1,4 +1,4 @@
-// components/kids/PersonalInfoForm.jsx
+// src/pages/kids/PersonalInfoForm.jsx - עיצוב מטורף + תיקונים טכניים
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -6,7 +6,7 @@ import {
   InputLabel, Select, Button, Box, Avatar, FormHelperText, 
   Alert, AlertTitle, InputAdornment, Tooltip, CircularProgress,
   Paper, Divider, Chip, RadioGroup, FormControlLabel, Radio,
-  FormLabel, Fade, Zoom, Card, CardContent, Badge, Tab, Tabs,
+  FormLabel, Fade, Zoom, Card, CardContent, Badge, 
   IconButton, Stack, Switch, Collapse, useTheme
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -47,7 +47,8 @@ import * as yup from 'yup';
 import { fetchCities } from '../../Redux/features/citiesSlice';
 import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlice';
-import { createKidWithParents,updateKidWithParents, fetchKids } from '../../Redux/features/kidsSlice';
+import { fetchParentById } from '../../Redux/features/parentSlice';
+import { createKidWithParents, updateKidWithParents, fetchKids } from '../../Redux/features/kidsSlice';
 
 // עיצוב משופר לאווטאר עם אפקט הבלטה וזוהר
 const EnhancedAvatar = styled(Avatar)(({ theme }) => ({
@@ -204,22 +205,17 @@ const validationSchema = yup.object({
   address: yup.string().required('כתובת היא שדה חובה'),
   hName: yup.string().required('קופת חולים היא שדה חובה'),
   idNumber: yup.string()
-  .required('תעודת זהות היא שדה חובה')
-  .matches(/^\d{9}$/, 'תעודת זהות צריכה להכיל 9 ספרות'),
+    .required('תעודת זהות היא שדה חובה')
+    .matches(/^\d{9}$/, 'תעודת זהות צריכה להכיל 9 ספרות'),
+  
   // פרטי הורה ראשי
   parent1FirstName: yup.string().required('שם הורה ראשי הוא שדה חובה'),
   parent1LastName: yup.string().required('שם משפחה הורה ראשי הוא שדה חובה'),
   parent1Mobile: yup.string()
     .required('טלפון נייד הורה ראשי הוא שדה חובה')
     .matches(/^05\d{8}$/, 'מספר טלפון לא תקין'),
-  parent1Email: yup.string().email().required('כתובת דוא״ל לא תקינה'),
+  parent1Email: yup.string().email('כתובת דוא״ל לא תקינה').required('דוא״ל הורה ראשי חובה'),
 
-  // פרטי קשר
-  emergencyContactName: yup.string().required('איש קשר לשעת חירום הוא שדה חובה'),
-  emergencyContactPhone: yup.string()
-    .required('טלפון איש קשר חירום הוא שדה חובה')
-    .matches(/^0\d{8,9}$/, 'מספר טלפון לא תקין'),
-  
   // פרטי הורה משני (לא חובה)
   parent2Mobile: yup.string()
     .nullable()
@@ -240,8 +236,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     childDetails: true,
     primaryParent: false,
     secondaryParent: false, 
-    contactInfo: false,
-    classInfo: false
   });
   
   const toggleSection = (section) => {
@@ -253,61 +247,57 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   
   // שליפת נתוני רפרנס מהסטור
   const { cities, status: citiesStatus } = useSelector(state => state.cities);
-  const { kids,status: kidStatus, error: kidError } = useSelector(state => state.kids);
+  const { kids, status: kidStatus, error: kidError } = useSelector(state => state.kids);
   const { classes, status: classesStatus } = useSelector(state => state.classes || { classes: [], status: 'idle' });
   const { healthInsurances, status: healthInsurancesStatus } = useSelector(state => state.healthInsurances);
   const isLoading = kidStatus === 'loading';
   
-  // הגדרת initialValues בהתבסס על הנתונים שהתקבלו
+  // הגדרת initialValues מתקנת להורים
   const getInitialValues = () => {
     if (data && isEditMode) {
-      if (data && isEditMode) {
-    return {
-      // פרטי הילד
-      id: data.id || 0,
-      idNumber: data.id || 0, // להוסיף גם את זה
-      firstName: data.firstName || '',
-      lastName: data.lastName || '',
-      birthDate: data.birthDate ? new Date(data.birthDate) : null,
-      gender: data.gender || '',
-      cityName: data.cityName || '',
-      address: data.address || '',
-      hName: data.hName || '',
-      photo: data.photo || '',
-      classId: data.classId || '',
-      pathToFolder: data.pathToFolder || '',
-      isActive: data.isActive !== undefined ? data.isActive : true,
-      
-      // פרטי הורה ראשי
-      parent1FirstName: data.parentName1 ? data.parentName1.split(' ')[0] : '',
-      parent1LastName: data.parentName1 ? data.parentName1.split(' ').slice(1).join(' ') : '',
-      parent1Mobile: data.parentPhone1 || '',
-      parent1Email: data.parentEmail1 || '',
-      parent1Address: data.parentAddress1 || '',
-      parent1CityName: data.parentCity1 || '',
-      
-      // פרטי הורה משני
-      parent2FirstName: data.parentName2 ? data.parentName2.split(' ')[0] : '',
-      parent2LastName: data.parentName2 ? data.parentName2.split(' ').slice(1).join(' ') : '',
-      parent2Mobile: data.parentPhone2 || '',
-      parent2Email: data.parentEmail2 || '',
-      parent2Address: data.parentAddress2 || '',
-      parent2CityName: data.parentCity2 || '',
-      
-      // פרטי קשר נוספים
-      homePhone: data.homePhone || '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
-      plannedEntryDate: null,
-      socialWorker: '',
-      referralDate: null,
-    };
-  }
+      return {
+        // פרטי הילד
+        id: data.id || 0,
+        idNumber: data.id || 0,
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        birthDate: data.birthDate ? new Date(data.birthDate) : null,
+        gender: data.gender || '',
+        cityName: data.cityName || '',
+        address: data.address || '',
+        hName: data.hName || '',
+        photo: data.photo || '',
+        classId: data.classId || '',
+        pathToFolder: data.pathToFolder || '',
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        
+        // פרטי הורה ראשי - עכשיו עם הנתונים הנכונים
+        parent1Id: data.parentId1 || 0,
+        parent1FirstName: data.parent1FirstName || '',
+        parent1LastName: data.parent1LastName || '',
+        parent1Mobile: data.parent1Mobile || '',
+        parent1Email: data.parent1Email || '',
+        parent1Address: data.parent1Address || data.address || '',
+        parent1CityName: data.parent1CityName || data.cityName || '',
+        
+        // פרטי הורה משני
+        parent2Id: data.parentId2 || 0,
+        parent2FirstName: data.parent2FirstName || '',
+        parent2LastName: data.parent2LastName || '',
+        parent2Mobile: data.parent2Mobile || '',
+        parent2Email: data.parent2Email || '',
+        parent2Address: data.parent2Address || '',
+        parent2CityName: data.parent2CityName || '',
+        
+        // פרטי קשר נוספים
+        homePhone: data.homePhone || '',
+      };
     }
     
     // ערכים ריקים עבור ילד חדש
     return {
       id: 0,
+      idNumber: '',
       firstName: '',
       lastName: '',
       birthDate: null,
@@ -319,12 +309,14 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       classId: '',
       pathToFolder: '',
       isActive: true,
+      parent1Id: 0,
       parent1FirstName: '',
       parent1LastName: '',
       parent1Mobile: '',
       parent1Email: '',
       parent1Address: '',
       parent1CityName: '',
+      parent2Id: 0,
       parent2FirstName: '',
       parent2LastName: '',
       parent2Mobile: '',
@@ -332,21 +324,56 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       parent2Address: '',
       parent2CityName: '',
       homePhone: '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
-      plannedEntryDate: null,
-      socialWorker: '',
-      referralDate: null,
     };
   };
 
-  // טעינת נתוני רפרנס בעת טעינת הקומפוננטה
+  // טעינת נתוני רפרנס + נתוני הורים במצב עריכה
   useEffect(() => {
     dispatch(fetchCities());
     dispatch(fetchClasses());
     dispatch(fetchHealthInsurances());
     dispatch(fetchKids());
-  }, [dispatch]);
+    
+    // טעינת נתוני הורים במצב עריכה
+    if (isEditMode && data) {
+      loadParentsData();
+    }
+  }, [dispatch, data, isEditMode]);
+
+  // טעינת נתוני הורים
+  const loadParentsData = async () => {
+    try {
+      if (data.parentId1) {
+        const parent1Result = await dispatch(fetchParentById(data.parentId1)).unwrap();
+        // עדכון הטופס עם נתוני הורה ראשי
+        formik.setValues(prev => ({
+          ...prev,
+          parent1FirstName: parent1Result.firstName || '',
+          parent1LastName: parent1Result.lastName || '',
+          parent1Mobile: parent1Result.mobilePhone || '',
+          parent1Email: parent1Result.email || '',
+          parent1Address: parent1Result.address || '',
+          parent1CityName: parent1Result.cityName || '',
+        }));
+      }
+      
+      if (data.parentId2) {
+        const parent2Result = await dispatch(fetchParentById(data.parentId2)).unwrap();
+        // עדכון הטופס עם נתוני הורה משני
+        formik.setValues(prev => ({
+          ...prev,
+          parent2FirstName: parent2Result.firstName || '',
+          parent2LastName: parent2Result.lastName || '',
+          parent2Mobile: parent2Result.mobilePhone || '',
+          parent2Email: parent2Result.email || '',
+          parent2Address: parent2Result.address || '',
+          parent2CityName: parent2Result.cityName || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading parents data:', error);
+    }
+  };
 
   useEffect(() => {
     if (data && isEditMode) {
@@ -360,7 +387,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       const file = event.target.files[0];
       setPhotoFile(file);
       
-      // יצירת URL לתצוגה מקדימה
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target.result);
@@ -369,109 +395,106 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     }
   };
   
-  // רשימת קופות חולים
-  // const healthInsurances = ['כללית', 'מכבי', 'מאוחדת', 'לאומית'];
   // מימוש ה-Formik
   const formik = useFormik({
-  initialValues: getInitialValues(),
-  validationSchema: validationSchema,
-  enableReinitialize: true,
-  onSubmit: async (values) => {
-    try {
-      // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
-      if (!isEditMode) {
-        const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
-        if (existingKid) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'הילד קיים במערכת',
-            text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת ילדים',
-            confirmButtonText: 'אוקי'
-          });
-          return;
+    initialValues: getInitialValues(),
+    validationSchema: validationSchema,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      try {
+        // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
+        if (!isEditMode) {
+          const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
+          if (existingKid) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'הילד קיים במערכת',
+              text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת ילדים',
+              confirmButtonText: 'אוקי'
+            });
+            return;
+          }
         }
-      }
 
-      // הכנת הנתונים לשמירה בפורמט שה-slice מצפה לו
-      const formDataForSlice = {
-        // נתוני ילד
-        id: values.id,
-        idNumber: values.idNumber || values.id,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        birthDate: values.birthDate,
-        gender: values.gender,
-        cityName: values.cityName,
-        address: values.address,
-        hName: values.hName,
-        photo: values.photo,
-        classId: values.classId || null,
-        pathToFolder: values.pathToFolder,
-        isActive: values.isActive,
-        
-        // נתוני הורה ראשי
-        parent1Id: data?.parentId1 || 0, // מהנתונים הקיימים במצב עריכה
-        parent1FirstName: values.parent1FirstName,
-        parent1LastName: values.parent1LastName,
-        parent1Mobile: values.parent1Mobile,
-        parent1Email: values.parent1Email,
-        parent1Address: values.parent1Address,
-        parent1CityName: values.parent1CityName,
-        
-        // נתוני הורה משני
-        parent2Id: data?.parentId2 || 0, // מהנתונים הקיימים במצב עריכה
-        parent2FirstName: values.parent2FirstName,
-        parent2LastName: values.parent2LastName,
-        parent2Mobile: values.parent2Mobile,
-        parent2Email: values.parent2Email,
-        parent2Address: values.parent2Address,
-        parent2CityName: values.parent2CityName,
-        
-        // נתוני קשר נוספים
-        homePhone: values.homePhone,
-      };
+        // הכנת הנתונים לשמירה בפורמט שה-slice מצפה לו
+        const formDataForSlice = {
+          // נתוני ילד
+          id: values.id,
+          idNumber: values.idNumber || values.id,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          birthDate: values.birthDate,
+          gender: values.gender,
+          cityName: values.cityName,
+          address: values.address,
+          hName: values.hName,
+          photo: values.photo,
+          classId: values.classId || null,
+          pathToFolder: values.pathToFolder,
+          isActive: values.isActive,
+          
+          // נתוני הורה ראשי
+          parent1Id: values.parent1Id,
+          parent1FirstName: values.parent1FirstName,
+          parent1LastName: values.parent1LastName,
+          parent1Mobile: values.parent1Mobile,
+          parent1Email: values.parent1Email,
+          parent1Address: values.parent1Address,
+          parent1CityName: values.parent1CityName,
+          
+          // נתוני הורה משני
+          parent2Id: values.parent2Id,
+          parent2FirstName: values.parent2FirstName,
+          parent2LastName: values.parent2LastName,
+          parent2Mobile: values.parent2Mobile,
+          parent2Email: values.parent2Email,
+          parent2Address: values.parent2Address,
+          parent2CityName: values.parent2CityName,
+          
+          // נתוני קשר נוספים
+          homePhone: values.homePhone,
+        };
 
-      let result;
-      
-      if (isEditMode) {
-        // עדכון ילד קיים
-        result = await dispatch(updateKidWithParents(formDataForSlice)).unwrap();
+        let result;
         
-        Swal.fire({
-          icon: 'success',
-          title: 'עודכן בהצלחה!',
-          text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} עודכנו בהצלחה`,
-          timer: 2000,
-          showConfirmButton: false
-        });
-      } else {
-        // יצירת ילד חדש
-        result = await dispatch(createKidWithParents(formDataForSlice)).unwrap();
+        if (isEditMode) {
+          result = await dispatch(updateKidWithParents(formDataForSlice)).unwrap();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'עודכן בהצלחה!',
+            text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} עודכנו בהצלחה`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          result = await dispatch(createKidWithParents(formDataForSlice)).unwrap();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'נשמר בהצלחה!',
+            text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} נשמרו בהצלחה`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
         
+        // עדכון ה-parent component
+        onUpdate(result.kid);
+        
+      } catch (error) {
+        console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
         Swal.fire({
-          icon: 'success',
-          title: 'נשמר בהצלחה!',
-          text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} נשמרו בהצלחה`,
-          timer: 2000,
-          showConfirmButton: false
+          icon: 'error',
+          title: 'שגיאה בשמירת הנתונים',
+          text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
         });
       }
-      
-      // עדכון ה-parent component
-      onUpdate(result.kid);
-      
-    } catch (error) {
-      console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'שגיאה בשמירת הנתונים',
-        text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
-      });
-    }
-  },
-});
+    },
+  });
   
   const isFormFilled = formik.dirty && Object.values(formik.values).some(val => val !== '');
+
   return (
     <form dir="rtl" onSubmit={formik.handleSubmit}>
       {/* הודעת שגיאה אם יש */}
@@ -628,57 +651,53 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   }}
                 />
               </Grid>
-<Grid item xs={12} sm={6}>
-  <TextField
-    fullWidth
-    id="idNumber"
-    name="idNumber"
-    label="תעודת זהות"
-    placeholder="מספר תעודת זהות של הילד"
-    value={formik.values.idNumber}
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    error={formik.touched.idNumber && Boolean(formik.errors.idNumber)}
-    helperText={formik.touched.idNumber && formik.errors.idNumber}
-    required
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <BadgeIcon color="primary" fontSize="small" />
-        </InputAdornment>
-      ),
-    }}
-  />
-</Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="idNumber"
+                  name="idNumber"
+                  label="תעודת זהות"
+                  placeholder="מספר תעודת זהות של הילד"
+                  value={formik.values.idNumber}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.idNumber && Boolean(formik.errors.idNumber)}
+                  helperText={formik.touched.idNumber && formik.errors.idNumber}
+                  required
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <BadgeIcon color="primary" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
               <Grid item xs={12} sm={6}>
                 <DatePicker
                   label="תאריך לידה"
                   value={formik.values.birthDate}
                   onChange={(date) => formik.setFieldValue("birthDate", date)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      id="birthDate"
-                      name="birthDate"
-                      required
-                      fullWidth
-                      onBlur={formik.handleBlur}
-                      error={
-                        formik.touched.birthDate &&
-                        Boolean(formik.errors.birthDate)
-                      }
-                      helperText={
-                        formik.touched.birthDate && formik.errors.birthDate
-                      }
-                      InputProps={{
+                  slots={{
+                    textField: TextField
+                  }}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true,
+                      error: formik.touched.birthDate && Boolean(formik.errors.birthDate),
+                      helperText: formik.touched.birthDate && formik.errors.birthDate,
+                      InputProps: {
                         startAdornment: (
                           <InputAdornment position="start">
                             <CakeIcon color="primary" fontSize="small" />
                           </InputAdornment>
                         ),
-                      }}
-                    />
-                  )}
+                      }
+                    }
+                  }}
                 />
               </Grid>
 
@@ -1325,7 +1344,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         </Collapse>
       </AnimatedSection>
 
-      {/* חלק 4: פרטי קשר נוספים */}
+      {/* חלק 4: פרטי קשר נוספים
       <AnimatedSection expanded={expandedSections.contactInfo}>
         <SectionHeader onClick={() => toggleSection("contactInfo")}>
           <SectionIcon expanded={expandedSections.contactInfo}>
@@ -1507,7 +1526,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
             </Grid>
           </CardContent>
         </Collapse>
-      </AnimatedSection>
+      </AnimatedSection> */}
 
       {/* סיכום והשלמה */}
       <Box sx={{ mt: 2, mb: 2 }}>

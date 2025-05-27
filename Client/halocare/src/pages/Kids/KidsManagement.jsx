@@ -1,867 +1,476 @@
-// src/pages/kids/KidsManagement.jsx - גרסה משופרת
+// src/pages/kids/KidsManagement.jsx - גרסה מעודכנת ונקייה
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, Avatar, Button, IconButton, TextField, InputAdornment,
   CircularProgress, Alert, Chip, Breadcrumbs, FormControl, InputLabel, 
-  Select, MenuItem, Switch, Dialog, DialogTitle, DialogContent, DialogActions,
-  Tabs, Tab, Tooltip, Card, CardContent, Grid, LinearProgress, Fab
+  Select, MenuItem, Tooltip, Card, CardContent, Grid, LinearProgress, Fab
 } from '@mui/material';
 import { 
   Add as AddIcon, Search as SearchIcon, Visibility as VisibilityIcon,
-  Home as HomeIcon, Group as GroupIcon, FilterList as FilterIcon,
-  Refresh as RefreshIcon, ViewModule as ViewModuleIcon,
-  ViewList as ViewListIcon
+  Home as HomeIcon, Group as GroupIcon, Refresh as RefreshIcon,
+  PlayArrow as StartIcon, Pause as PauseIcon, Edit as EditIcon,
+  CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { fetchKids } from '../../Redux/features/kidsSlice';
-import { fetchIntakeProcesses } from '../../Redux/features/intakeProcessSlice';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import { fetchDocumentsByKidId, clearDocuments } from '../../Redux/features/documentsSlice';
-import FilesList from '../../components/common/FilesList';
-import FileUploader from '../../components/common/FileUploader';
-import IntakeStatusBadge from '../../components/kids/IntakeStatusBadge';
-import IntakeActionButtons from '../../components/kids/IntakeActionButtons';
-import { intakeProcessService } from '../../services/intakeProcessService';
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { baseURL } from "../../components/common/axiosConfig";
 
-const theme = createTheme({
-  components: {
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          textAlign: 'center',
-        },
-      },
-    },
-  },
-});
+import { fetchKids } from '../../Redux/features/kidsSlice';
+import { fetchOnboardingStatus } from '../../Redux/features/onboardingSlice';
+import Swal from 'sweetalert2';
+
+// קומפוננטה לבאדג' סטטוס
+const OnboardingStatusChip = ({ status, percentage = 0 }) => {
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'Completed':
+        return { color: 'success', label: '✓ הושלם', variant: 'filled' };
+      case 'InProgress':
+        return { color: 'primary', label: `⚡ בתהליך (${percentage}%)`, variant: 'filled' };
+      case 'Started':
+        return { color: 'info', label: '🚀 התחיל', variant: 'filled' };
+      default:
+        return { color: 'default', label: '○ ממתין', variant: 'outlined' };
+    }
+  };
+
+  const config = getStatusConfig();
+  
+  return (
+    <Chip
+      label={config.label}
+      color={config.color}
+      variant={config.variant}
+      size="small"
+      sx={{ fontWeight: 'medium', minWidth: '120px' }}
+    />
+  );
+};
+
+// כפתורי פעולות
+const OnboardingActions = ({ kid, onboardingStatus, onAction }) => {
+  const getActions = () => {
+    if (!onboardingStatus) {
+      return [
+        { 
+          action: 'start', 
+          label: 'התחל קליטה', 
+          color: 'primary', 
+          icon: <StartIcon />,
+          tooltip: 'התחל תהליך קליטה חדש'
+        }
+      ];
+    }
+
+    switch (onboardingStatus.process?.processStatus) {
+      case 'InProgress':
+        return [
+          { 
+            action: 'continue', 
+            label: 'המשך', 
+            color: 'primary', 
+            icon: <EditIcon />,
+            tooltip: 'המשך תהליך הקליטה'
+          }
+        ];
+      case 'Completed':
+        return [
+          { 
+            action: 'view', 
+            label: 'צפה', 
+            color: 'success', 
+            icon: <VisibilityIcon />,
+            tooltip: 'צפה בפרופיל הילד'
+          }
+        ];
+      default:
+        return [
+          { 
+            action: 'start', 
+            label: 'התחל', 
+            color: 'primary', 
+            icon: <StartIcon />,
+            tooltip: 'התחל תהליך קליטה'
+          }
+        ];
+    }
+  };
+
+  const actions = getActions();
+
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5 }}>
+      {actions.map((actionConfig) => (
+        <Tooltip key={actionConfig.action} title={actionConfig.tooltip}>
+          <IconButton
+            size="small"
+            onClick={() => onAction(actionConfig.action, kid.id)}
+            sx={{
+              backgroundColor: `${actionConfig.color}.main`,
+              color: 'white',
+              '&:hover': {
+                backgroundColor: `${actionConfig.color}.dark`,
+              }
+            }}
+          >
+            {actionConfig.icon}
+          </IconButton>
+        </Tooltip>
+      ))}
+      
+      {/* כפתור צפייה בפרופיל תמיד זמין */}
+      <Tooltip title="צפייה בפרופיל הילד">
+        <IconButton
+          size="small"
+          onClick={() => onAction('profile', kid.id)}
+          sx={{
+            backgroundColor: 'info.main',
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'info.dark',
+            }
+          }}
+        >
+          <VisibilityIcon />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
+};
 
 const KidsManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Redux state
   const { kids, status, error } = useSelector(state => state.kids);
-  const { processes } = useSelector(state => state.intakeProcess);
-  const documentsStatus = useSelector(state => state.documents.status);
   
-  // Local state
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [classFilter, setClassFilter] = useState('');
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
-  const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false);
-  const [selectedKidForDocuments, setSelectedKidForDocuments] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
-  const [localError, setLocalError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-  
-  // רשימת הכיתות הייחודיות
-  const classes = [...new Set(kids.map(kid => kid.classId).filter(Boolean))];
-  
-  // טעינת נתונים
+  const [onboardingStatuses, setOnboardingStatuses] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  // טעינה ראשונית
   useEffect(() => {
-    dispatch(fetchKids());
-    dispatch(fetchIntakeProcesses());
+    loadData();
   }, [dispatch]);
-  
-  // יצירת מפה של תהליכי קליטה לפי kidId
-  const processesMap = React.useMemo(() => {
-    const map = {};
-    processes.forEach(process => {
-      map[process.kidId] = process;
-    });
-    return map;
-  }, [processes]);
-  
-  // פילטור הילדים המתקדם
-  const filteredKids = kids.filter(kid => {
-    const process = processesMap[kid.id];
-    
-    // סינון לפי חיפוש
-    const searchLower = searchTerm.toLowerCase();
-    const searchMatch = !searchTerm ? true : 
-      (kid.firstName && kid.firstName.toLowerCase().includes(searchLower)) ||
-      (kid.lastName && kid.lastName.toLowerCase().includes(searchLower)) ||
-      (kid.gender && kid.gender.toLowerCase().includes(searchLower));
-    
-    // סינון לפי כיתה
-    const classMatch = !classFilter ? true : kid.classId === classFilter;
-    
-    // סינון לפי סטטוס קליטה
-    const statusMatch = !statusFilter ? true : 
-      (process ? process.status === statusFilter : statusFilter === 'NOT_STARTED');
-    
-    return searchMatch && classMatch && statusMatch;
-  });
-  
-  // רענון נתונים
-  const handleRefresh = async () => {
-    setRefreshing(true);
+
+  const loadData = async () => {
+    setLoading(true);
     try {
-      await Promise.all([
-        dispatch(fetchKids()),
-        dispatch(fetchIntakeProcesses())
-      ]);
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-  
-  // טיפול בפעולות תהליך קליטה
-  const handleIntakeAction = async (action, kidId) => {
-    try {
-      switch (action) {
-        case 'start':
-          await intakeProcessService.startProcess(kidId);
-          Swal.fire({
-            icon: 'success',
-            title: 'תהליך קליטה החל בהצלחה',
-            timer: 2000
-          });
-          navigate(`/kids/intake/${kidId}`);
-          break;
-          
-        case 'continue':
-          navigate(`/kids/intake/${kidId}`);
-          break;
-          
-        case 'view':
-          navigate(`/kids/${kidId}`);
-          break;
-          
-        case 'remind':
-          // כאן תוסיף לוגיקה לשליחת תזכורת
-          Swal.fire({
-            icon: 'info',
-            title: 'שליחת תזכורת',
-            text: 'תזכורת נשלחה להורים'
-          });
-          break;
-          
-        case 'pause':
-          await intakeProcessService.updateStatus(kidId, 'PAUSED');
-          break;
-          
-        case 'resume':
-          await intakeProcessService.updateStatus(kidId, 'IN_PROGRESS');
-          break;
-          
-        case 'edit':
-          navigate(`/kids/intake/${kidId}`);
-          break;
-          
-        case 'fill-instead':
-          navigate(`/kids/intake/${kidId}`);
-          break;
-      }
+      // טעינת רשימת ילדים
+      const kidsResult = await dispatch(fetchKids()).unwrap();
       
-      // רענון הנתונים אחרי פעולה
-      dispatch(fetchIntakeProcesses());
-      
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'שגיאה',
-        text: error.message || 'אירעה שגיאה בביצוע הפעולה'
+      // טעינת סטטוסי קליטה לכל ילד
+      const statusPromises = kidsResult.map(async (kid) => {
+        try {
+          const statusResult = await dispatch(fetchOnboardingStatus(kid.id)).unwrap();
+          return { kidId: kid.id, status: statusResult };
+        } catch (error) {
+          // אם אין תהליך קליטה - החזר null
+          return { kidId: kid.id, status: null };
+        }
       });
+      
+      const statuses = await Promise.all(statusPromises);
+      const statusMap = {};
+      statuses.forEach(({ kidId, status }) => {
+        statusMap[kidId] = status;
+      });
+      
+      setOnboardingStatuses(statusMap);
+      
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-  
+
+  // רענון נתונים
+  const handleRefresh = () => {
+    loadData();
+  };
+
+  // טיפול בפעולות
+  const handleAction = (action, kidId) => {
+    switch (action) {
+      case 'start':
+      case 'continue':
+        navigate(`/kids/onboarding/${kidId}`);
+        break;
+      case 'view':
+      case 'profile':
+        navigate(`/kids/${kidId}`);
+        break;
+      default:
+        console.log(`Action ${action} not implemented yet`);
+    }
+  };
+
   // חישוב גיל
   const calculateAge = (birthDateString) => {
     if (!birthDateString) return '–';
     const birthDate = new Date(birthDateString);
     const today = new Date();
-    let years = today.getFullYear() - birthDate.getFullYear();
-    let months = today.getMonth() - birthDate.getMonth();
-    const days = today.getDate() - birthDate.getDate();
-
-    if (months < 0 || (months === 0 && days < 0)) {
-      years--;
-      months += 12;
-    }
-
-    const age = years + months / 12;
-    return age.toFixed(1);
-  };
-  
-  // טיפול בשינוי סטטוס פעיל/לא פעיל
-  const handleToggleActive = async (kidId, currentStatus) => {
-    try {
-      const result = await Swal.fire({
-        icon: 'question',
-        title: `האם אתה בטוח שברצונך ${currentStatus ? 'להשבית' : 'להפעיל'} את הילד?`,
-        text: `הילד יהיה ${currentStatus ? 'לא פעיל' : 'פעיל'} במערכת`,
-        showCancelButton: true,
-        confirmButtonText: 'כן, בצע שינוי',
-        cancelButtonText: 'ביטול',
-        customClass: {
-          container: 'swal-rtl'
-        }
-      });
-      
-      if (!result.isConfirmed) return;
-      
-      await axios.patch(`/Kids/${kidId}/deactivate`, {
-        isActive: !currentStatus,
-      });
-      
-      dispatch(fetchKids());
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'הסטטוס עודכן בהצלחה!',
-        timer: 2000
-      });
-      
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'שגיאה בעדכון סטטוס הילד'
-      });
+    const years = today.getFullYear() - birthDate.getFullYear();
+    const months = today.getMonth() - birthDate.getMonth();
+    
+    if (years > 0) {
+      return `${years} שנים`;
+    } else {
+      return `${months >= 0 ? months : months + 12} חודשים`;
     }
   };
-  
-  // פתיחת דיאלוג מסמכים
-  const handleOpenDocuments = (kid) => {
-    setSelectedKidForDocuments(kid);
-    setDocumentsDialogOpen(true);
-    dispatch(fetchDocumentsByKidId(kid.id));
+
+  // פילטור ילדים
+  const filteredKids = kids.filter(kid => {
+    const searchMatch = !searchTerm || 
+      (kid.firstName && kid.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (kid.lastName && kid.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const onboardingStatus = onboardingStatuses[kid.id];
+    const processStatus = onboardingStatus?.process?.processStatus || 'NotStarted';
+    const statusMatch = !statusFilter || processStatus === statusFilter;
+    
+    return searchMatch && statusMatch;
+  });
+
+  // חישוב סטטיסטיקות
+  const stats = {
+    total: kids.length,
+    completed: Object.values(onboardingStatuses).filter(s => s?.process?.processStatus === 'Completed').length,
+    inProgress: Object.values(onboardingStatuses).filter(s => s?.process?.processStatus === 'InProgress').length,
+    notStarted: kids.length - Object.keys(onboardingStatuses).length
   };
-  
-  // סגירת דיאלוג מסמכים
-  const handleCloseDocuments = () => {
-    setActiveTab(0);
-    dispatch(clearDocuments());
-    setDocumentsDialogOpen(false);
-    setSelectedKidForDocuments(null);
-  };
-  
-  // רנדור תצוגת כרטיסיות
- const renderCardsView = () => (
-    <Grid container spacing={3}>
-      {filteredKids.map((kid) => {
-        const process = processesMap[kid.id];
-        return (
-          <Grid item xs={12} sm={6} md={4} key={kid.id}>
-            <Card 
-              sx={{ 
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
-                }
-              }}
+
+  return (
+    <Box sx={{ p: 3 }} dir="rtl">
+      {/* Breadcrumbs */}
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <Box 
+          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          onClick={() => navigate('/')}
+        >
+          <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+          ראשי
+        </Box>
+        <Typography color="text.primary" sx={{ display: 'flex', alignItems: 'center' }}>
+          <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+          ניהול ילדים
+        </Typography>
+      </Breadcrumbs>
+      
+      {/* כותרת ופעולות */}
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+              ניהול ילדים
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              מעקב אחר תהליכי קליטה וניהול פרטי ילדים במערכת
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Tooltip title="רענון נתונים">
+              <IconButton onClick={handleRefresh} disabled={loading}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/kids/onboarding/new')}
             >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar
-                    src={kid.photo ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photo)}` : ''}
-                    alt={`${kid.firstName} ${kid.lastName}`}
-                    sx={{ width: 60, height: 60, ml: 2 }}
-                  >
-                    {!kid.photo && `${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6" component="h3">
-                      {`${kid.firstName || ""} ${kid.lastName || ""}`}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      גיל: {calculateAge(kid.birthDate)} | 
-                      {kid.gender === 'male' ? ' זכר' : kid.gender === 'female' ? ' נקבה' : ' –'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      כיתה: {kid.classId || "–"} | הורה: {kid.parentName1 || "–"}
-                    </Typography>
-                  </Box>
-                </Box>
+              קליטת ילד חדש
+            </Button>
+          </Box>
+        </Box>
+        
+        {/* פילטרים */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            size="small"
+            placeholder="חיפוש לפי שם..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: 300 }}
+          />
+          
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>סטטוס תהליך</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="סטטוס תהליך"
+            >
+              <MenuItem value="">הכל</MenuItem>
+              <MenuItem value="NotStarted">לא התחיל</MenuItem>
+              <MenuItem value="InProgress">בתהליך</MenuItem>
+              <MenuItem value="Completed">הושלם</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+
+      {/* סטטיסטיקות */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', p: 2 }}>
+            <Typography variant="h3" color="primary.main" fontWeight="bold">
+              {stats.total}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              סה"כ ילדים
+            </Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', p: 2 }}>
+            <Typography variant="h3" color="success.main" fontWeight="bold">
+              {stats.completed}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              הושלמו
+            </Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', p: 2 }}>
+            <Typography variant="h3" color="warning.main" fontWeight="bold">
+              {stats.inProgress}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              בתהליך
+            </Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', p: 2 }}>
+            <Typography variant="h3" color="info.main" fontWeight="bold">
+              {stats.notStarted}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              לא התחילו
+            </Typography>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* שגיאות */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* טבלת ילדים */}
+      <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: 'grey.50' }}>
+              <TableCell sx={{ fontWeight: 700 }}>ילד</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>גיל</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>מגדר</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>הורה ראשי</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>סטטוס קליטה</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>התקדמות</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>פעולות</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : filteredKids.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <Typography color="text.secondary">
+                    לא נמצאו ילדים
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredKids.map((kid) => {
+                const onboardingStatus = onboardingStatuses[kid.id];
+                const completionPercentage = onboardingStatus?.completionPercentage || 0;
                 
-                <Box sx={{ mb: 2 }}>
-                  <IntakeStatusBadge 
-                    status={process?.status || 'IN_PROGRESS'} // ברירת מחדל IN_PROGRESS
-                    percentage={process?.completionPercentage || 20} // ברירת מחדל 20%
-                  />
-                </Box>
-                
-                {(process?.completionPercentage || 20) > 0 && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      התקדמות: {process?.completionPercentage || 20}%
-                    </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={process?.completionPercentage || 20} 
-                      sx={{ height: 8, borderRadius: 4 }}
-                    />
-                  </Box>
-                )}
-                
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {/* כפתור צפייה בפרופיל */}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<VisibilityIcon />}
-                    onClick={() => navigate(`/kids/${kid.id}`)}
-                    sx={{ minWidth: 'auto' }}
-                  >
-                    פרופיל
-                  </Button>
-                  
-                  <IntakeActionButtons
-                    kidId={kid.id}
-                    status={process?.status || 'IN_PROGRESS'} // ברירת מחדל IN_PROGRESS
-                    onAction={handleIntakeAction}
-                    compact={false}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        );
-      })}
-    </Grid>
-  );
-  
-  // רנדור תצוגת טבלה משופרת
-  const renderTableView = () => (
-    <TableContainer
-      component={Paper}
-      sx={{
-        maxWidth: "100%",
-        mb: 4,
-        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-        borderRadius: "12px",
-        overflow: "hidden",
-      }}
-    >
-      <Table>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: "#f8f9fa" }}>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              שם מלא
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              גיל
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              מגדר
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              כיתה
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              הורה ראשי
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              טלפון
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              סטטוס קליטה
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              התקדמות
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              פעיל
-            </TableCell>
-            <TableCell sx={{ fontWeight: "700", fontSize: "1rem" }}>
-              פעולות
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {filteredKids.length > 0 ? (
-            filteredKids.map((kid) => {
-              const process = processesMap[kid.id];
-              return (
-                <TableRow
-                  key={kid.id}
-                  sx={{
-                    "&:hover": { backgroundColor: "#f5f9fa" },
-                    borderBottom: "1px solid #eee",
-                  }}
-                >
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <Avatar
-                        src={kid.photo ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photo)}` : ''}
-                        alt={`${kid.firstName} ${kid.lastName}`}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          ml: 1,
-                          border: "2px solid #fff",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        }}
-                      >
-                        {!kid.photo && `${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
-                      </Avatar>
-                      <Typography sx={{ fontWeight: "medium" }}>
-                        {`${kid.firstName || ""} ${kid.lastName || ""}`}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{calculateAge(kid.birthDate)}</TableCell>
-                  <TableCell>
-                    {kid.gender ? (
-                      <Chip
-                        label={kid.gender === 'male' ? 'זכר' : 'נקבה'}
-                        sx={{
-                          backgroundColor: kid.gender === 'male' ? '#e3f2fd' : '#fce4ec',
-                          color: kid.gender === 'male' ? '#1976d2' : '#c2185b',
-                          fontWeight: "medium",
-                          fontSize: '0.75rem'
-                        }}
-                        size="small"
-                      />
-                    ) : (
-                      "–"
-                    )}
-                  </TableCell>
-                  <TableCell>{kid.classId || "–"}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {kid.parentName1 || '–'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {kid.parentPhone1 || '–'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <IntakeStatusBadge 
-                      status={process?.status || 'IN_PROGRESS'} // ברירת מחדל IN_PROGRESS
-                      percentage={process?.completionPercentage || 20} // ברירת מחדל 20%
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {(process?.completionPercentage || 20) > 0 ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={process?.completionPercentage || 20} 
-                          sx={{ width: 100, height: 6, borderRadius: 3 }}
-                        />
-                        <Typography variant="body2" color="text.secondary">
-                          {process?.completionPercentage || 20}%
+                return (
+                  <TableRow key={kid.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ width: 40, height: 40 }}>
+                          {`${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
+                        </Avatar>
+                        <Typography fontWeight="medium">
+                          {`${kid.firstName || ''} ${kid.lastName || ''}`}
                         </Typography>
                       </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">–</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={Boolean(kid.isActive)}
-                      onChange={() => handleToggleActive(kid.id, kid.isActive)}
-                      color="primary"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      {/* כפתור צפייה בפרופיל */}
-                      <Tooltip title="צפייה בפרופיל הילד">
-                        <IconButton
-                          size="small"
-                          onClick={() => navigate(`/kids/${kid.id}`)}
-                          sx={{
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            '&:hover': {
-                              backgroundColor: '#388e3c',
-                            }
-                          }}
-                        >
-                          <VisibilityIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Tooltip>
-                      
-                      {/* כפתורי פעולות תהליך קליטה */}
-                      <IntakeActionButtons
-                        kidId={kid.id}
-                        status={process?.status || 'IN_PROGRESS'} // ברירת מחדל IN_PROGRESS
-                        onAction={handleIntakeAction}
-                        compact={true}
+                    </TableCell>
+                    <TableCell>{calculateAge(kid.birthDate)}</TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={kid.gender === 'זכר' ? 'זכר' : 'נקבה'} 
+                        size="small"
+                        color={kid.gender === 'זכר' ? 'primary' : 'secondary'}
                       />
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
-                <Typography color="text.secondary">
-                  לא נמצאו ילדים המתאימים לקריטריונים
-                </Typography>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                    </TableCell>
+                    <TableCell>{kid.parentName1 || '–'}</TableCell>
+                    <TableCell>
+                      <OnboardingStatusChip
+                        status={onboardingStatus?.process?.processStatus}
+                        percentage={completionPercentage}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {completionPercentage > 0 ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={completionPercentage} 
+                            sx={{ width: 100, height: 8, borderRadius: 4 }}
+                          />
+                          <Typography variant="body2">{completionPercentage}%</Typography>
+                        </Box>
+                      ) : '–'}
+                    </TableCell>
+                    <TableCell>
+                      <OnboardingActions
+                        kid={kid}
+                        onboardingStatus={onboardingStatus}
+                        onAction={handleAction}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* כפתור צף */}
+      <Fab
+        color="primary"
+        onClick={() => navigate('/kids/onboarding/new')}
+        sx={{ position: 'fixed', bottom: 24, left: 24 }}
+      >
+        <AddIcon />
+      </Fab>
+    </Box>
   );
- 
- return (
-   <ThemeProvider theme={theme}>
-     <Box sx={{ p: 3 }} dir="rtl">
-       {/* Breadcrumbs */}
-       <Breadcrumbs sx={{ mb: 2 }}>
-         <Link
-           underline="hover"
-           sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-           color="inherit"
-           onClick={() => navigate('/')}
-         >
-           <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-           ראשי
-         </Link>
-         <Typography color="text.primary" sx={{ fontWeight: 'medium', display: 'flex', alignItems: 'center' }}>
-           <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-           ניהול ילדים
-         </Typography>
-       </Breadcrumbs>
-       
-       {/* כותרת ופעולות עליונות */}
-       <Paper sx={{ p: 3, mb: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-           <Box>
-             <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: '#4cb5c3', mb: 1 }}>
-               ניהול ילדים
-             </Typography>
-             <Typography variant="body1" color="text.secondary">
-               מעקב אחר תהליכי קליטה וניהול פרטי ילדים במערכת
-             </Typography>
-           </Box>
-           
-           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-             {/* כפתור רענון */}
-             <Tooltip title="רענון נתונים">
-               <IconButton 
-                 onClick={handleRefresh} 
-                 disabled={refreshing}
-                 sx={{ 
-                   backgroundColor: '#f5f5f5',
-                   '&:hover': { backgroundColor: '#e0e0e0' }
-                 }}
-               >
-                 <RefreshIcon sx={{ 
-                   animation: refreshing ? 'spin 1s linear infinite' : 'none',
-                   '@keyframes spin': {
-                     '0%': { transform: 'rotate(0deg)' },
-                     '100%': { transform: 'rotate(360deg)' },
-                   }
-                 }} />
-               </IconButton>
-             </Tooltip>
-             
-             {/* מתג תצוגה */}
-             <Box sx={{ display: 'flex', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden' }}>
-               <IconButton
-                 onClick={() => setViewMode('table')}
-                 sx={{
-                   backgroundColor: viewMode === 'table' ? '#4cb5c3' : 'transparent',
-                   color: viewMode === 'table' ? 'white' : '#666',
-                   borderRadius: 0,
-                   '&:hover': {
-                     backgroundColor: viewMode === 'table' ? '#3da1af' : '#f5f5f5'
-                   }
-                 }}
-               >
-                 <ViewListIcon />
-               </IconButton>
-               <IconButton
-                 onClick={() => setViewMode('cards')}
-                 sx={{
-                   backgroundColor: viewMode === 'cards' ? '#4cb5c3' : 'transparent',
-                   color: viewMode === 'cards' ? 'white' : '#666',
-                   borderRadius: 0,
-                   '&:hover': {
-                     backgroundColor: viewMode === 'cards' ? '#3da1af' : '#f5f5f5'
-                   }
-                 }}
-               >
-                 <ViewModuleIcon />
-               </IconButton>
-             </Box>
-           </Box>
-         </Box>
-         
-         {/* סרגל חיפוש וסינון */}
-         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-           {/* חיפוש חופשי */}
-           <TextField
-             variant="outlined"
-             size="small"
-             placeholder="חיפוש לפי שם ילד..."
-             value={searchTerm}
-             onChange={(e) => setSearchTerm(e.target.value)}
-             InputProps={{
-               startAdornment: (
-                 <InputAdornment position="start">
-                   <SearchIcon />
-                 </InputAdornment>
-               ),
-             }}
-             sx={{ width: 300 }}
-           />
-           
-           {/* סינון לפי סטטוס קליטה */}
-           <FormControl sx={{ minWidth: 200 }} size="small">
-             <InputLabel>סטטוס קליטה</InputLabel>
-             <Select
-               value={statusFilter}
-               onChange={(e) => setStatusFilter(e.target.value)}
-               label="סטטוס קליטה"
-             >
-               <MenuItem value="">הכל</MenuItem>
-               <MenuItem value="NOT_STARTED">לא התחיל</MenuItem>
-               <MenuItem value="IN_PROGRESS">בתהליך</MenuItem>
-               <MenuItem value="PENDING_PARENTS">אצל הורים</MenuItem>
-               <MenuItem value="COMPLETED">הושלם</MenuItem>
-               <MenuItem value="PAUSED">מושהה</MenuItem>
-             </Select>
-           </FormControl>
-           
-           {/* סינון לפי כיתה */}
-           <FormControl sx={{ minWidth: 150 }} size="small">
-             <InputLabel>כיתה</InputLabel>
-             <Select
-               value={classFilter}
-               onChange={(e) => setClassFilter(e.target.value)}
-               label="כיתה"
-             >
-               <MenuItem value="">הכל</MenuItem>
-               {classes.map((classId) => (
-                 <MenuItem key={classId} value={classId}>
-                   כיתה {classId}
-                 </MenuItem>
-               ))}
-             </Select>
-           </FormControl>
-           
-           {/* כפתור איפוס סינונים */}
-           {(searchTerm || statusFilter || classFilter) && (
-             <Button
-               variant="outlined"
-               size="small"
-               onClick={() => {
-                 setSearchTerm('');
-                 setStatusFilter('');
-                 setClassFilter('');
-               }}
-               startIcon={<FilterIcon />}
-             >
-               נקה סינונים
-             </Button>
-           )}
-           
-           <Box sx={{ flexGrow: 1 }} />
-           
-           {/* כפתור הוספת ילד */}
-           <Button
-             variant="contained"
-             startIcon={<AddIcon />}
-             onClick={() => navigate('/kids/add')}
-             sx={{
-               fontWeight: "medium",
-               backgroundColor: "#4cb5c3",
-               "&:hover": {
-                 backgroundColor: "#3da1af",
-               },
-               borderRadius: '8px',
-               px: 3
-             }}
-           >
-             הוספת ילד חדש
-           </Button>
-         </Box>
-       </Paper>
-       
-       {/* סטטיסטיקות מהירות */}
-       <Grid container spacing={2} sx={{ mb: 3 }}>
-         <Grid item xs={12} sm={6} md={3}>
-           <Card sx={{ textAlign: 'center', p: 2 }}>
-             <Typography variant="h3" color="primary" fontWeight="bold">
-               {kids.length}
-             </Typography>
-             <Typography variant="body2" color="text.secondary">
-               סה"כ ילדים
-             </Typography>
-           </Card>
-         </Grid>
-         <Grid item xs={12} sm={6} md={3}>
-           <Card sx={{ textAlign: 'center', p: 2 }}>
-             <Typography variant="h3" color="success.main" fontWeight="bold">
-               {processes.filter(p => p.status === 'COMPLETED').length}
-             </Typography>
-             <Typography variant="body2" color="text.secondary">
-               קליטה הושלמה
-             </Typography>
-           </Card>
-         </Grid>
-         <Grid item xs={12} sm={6} md={3}>
-           <Card sx={{ textAlign: 'center', p: 2 }}>
-             <Typography variant="h3" color="warning.main" fontWeight="bold">
-               {processes.filter(p => p.status === 'IN_PROGRESS').length}
-             </Typography>
-             <Typography variant="body2" color="text.secondary">
-               בתהליך קליטה
-             </Typography>
-           </Card>
-         </Grid>
-         <Grid item xs={12} sm={6} md={3}>
-           <Card sx={{ textAlign: 'center', p: 2 }}>
-             <Typography variant="h3" color="info.main" fontWeight="bold">
-               {processes.filter(p => p.status === 'PENDING_PARENTS').length}
-             </Typography>
-             <Typography variant="body2" color="text.secondary">
-               אצל הורים
-             </Typography>
-           </Card>
-         </Grid>
-       </Grid>
-       
-       {/* הודעות שגיאה */}
-       {(error || localError) && (
-         <Alert severity="error" sx={{ mb: 2 }}>
-           {error || localError}
-         </Alert>
-       )}
-       
-       {/* מצב טעינה */}
-       {status === 'loading' && !kids.length && (
-         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-           <CircularProgress size={60} />
-         </Box>
-       )}
-       
-       {/* תצוגת תוכן */}
-       {viewMode === 'table' ? renderTableView() : renderCardsView()}
-       
-       {/* כפתור צף להוספת ילד */}
-       <Fab
-         color="primary"
-         aria-label="add"
-         onClick={() => navigate('/kids/add')}
-         sx={{
-           position: 'fixed',
-           bottom: 24,
-           left: 24,
-           backgroundColor: '#4cb5c3',
-           '&:hover': {
-             backgroundColor: '#3da1af'
-           }
-         }}
-       >
-         <AddIcon />
-       </Fab>
-       
-       {/* דיאלוג מסמכי ילד */}
-       <Dialog
-         open={documentsDialogOpen}
-         onClose={handleCloseDocuments}
-         fullWidth
-         maxWidth="md"
-         dir="rtl"
-         PaperProps={{
-           sx: { borderRadius: "12px" },
-         }}
-       >
-         <DialogTitle
-           sx={{
-             backgroundColor: "#f8f9fa",
-             fontWeight: "bold",
-             borderBottom: "1px solid #eee",
-             fontSize: "1.5rem",
-             color: "#4cb5c3",
-             display: "flex",
-             alignItems: "center",
-             justifyContent: "space-between",
-           }}
-         >
-           <Box>
-             מסמכי ילד: {selectedKidForDocuments?.firstName}{" "}
-             {selectedKidForDocuments?.lastName}
-           </Box>
-           <IconButton onClick={handleCloseDocuments} size="small">
-             <div style={{ fontSize: "1.5rem" }}>&times;</div>
-           </IconButton>
-         </DialogTitle>
-         <DialogContent sx={{ p: 0 }}>
-           <Tabs
-             value={activeTab}
-             onChange={(e, newValue) => setActiveTab(newValue)}
-             variant="fullWidth"
-             sx={{ borderBottom: 1, borderColor: "divider" }}
-           >
-             <Tab label="רשימת מסמכים" value={0} />
-             <Tab label="העלאת מסמך חדש" value={1} />
-           </Tabs>
-           
-           <Box sx={{ p: 3 }}>
-             {activeTab === 0 ? (
-               <>
-                 {documentsStatus === "loading" ? (
-                   <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                     <CircularProgress />
-                   </Box>
-                 ) : (
-                   <FilesList
-                     entityId={selectedKidForDocuments?.id}
-                     entityType="kid"
-                     closeDialog={() => setDocumentsDialogOpen(false)}
-                     openDialog={() => setDocumentsDialogOpen(true)}
-                   />
-                 )}
-               </>
-             ) : (
-               <FileUploader
-                 entityId={selectedKidForDocuments?.id}
-                 entityType="kid"
-                 docType="document"
-                 buttonText="בחר מסמך להעלאה"
-                 onSuccess={() => {
-                   setActiveTab(0);
-                   dispatch(fetchDocumentsByKidId(selectedKidForDocuments?.id));
-                 }}
-                 closeDialog={() => setDocumentsDialogOpen(false)}
-                 openDialog={() => setDocumentsDialogOpen(true)}
-               />
-             )}
-           </Box>
-         </DialogContent>
-         <DialogActions sx={{ padding: 2, borderTop: "1px solid #eee" }}>
-           <Button
-             onClick={handleCloseDocuments}
-             variant="contained"
-             sx={{
-               backgroundColor: "#4cb5c3",
-               "&:hover": {
-                 backgroundColor: "#3da1af",
-               },
-               borderRadius: 2,
-             }}
-           >
-             סגור
-           </Button>
-         </DialogActions>
-       </Dialog>
-     </Box>
-   </ThemeProvider>
- );
 };
 
 export default KidsManagement;
