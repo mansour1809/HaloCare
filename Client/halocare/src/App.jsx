@@ -32,7 +32,7 @@ import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import Profile from './pages/Employees/EmployeeProfile';
 import SystemSettings from './pages/SystemSettings';
-import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
+// import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
 // import KidProfile from './pages/addKid/KidProfile';
 import { DynamicForm } from '@mui/icons-material';
 import KidOnboarding from './pages/kids/KidOnboarding';
@@ -290,7 +290,7 @@ const AppContent = () => {
                 path="/kids/intake/:kidId"
                 element={
                   <PrivateRoute>
-                      <KidRegistrationProcess />
+                      {/* <KidRegistrationProcess /> */}
                   </PrivateRoute>
                 }
               />

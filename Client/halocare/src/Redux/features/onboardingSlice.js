@@ -54,9 +54,9 @@ const onboardingSlice = createSlice({
   },
   reducers: {
     clearOnboardingData: (state) => {
-      state.currentOnboarding = null;
-      state.error = null;
-    },
+    state.currentOnboarding = null;
+    state.error = null;
+  },
     setCurrentKidForOnboarding: (state, action) => {
       state.currentKidId = action.payload;
     }
