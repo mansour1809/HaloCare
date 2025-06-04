@@ -84,6 +84,7 @@ const QuestionRenderer = ({
 
   // רנדור לפי סוג השאלה
   const renderQuestionInput = () => {
+    console.log('Rendering question:', question.questionType, 'with value:', value);
     switch (question.questionType) {
       case 'text':
       case 'textArea':
@@ -254,7 +255,7 @@ const QuestionRenderer = ({
         );
 
       case 'checkbox':
-      case 'multiChoice':
+      case 'multiselect':
         const selectedValues = value ? value.split(',').map(v => v.trim()) : [];
         
         const handleCheckboxChange = (optionValue, checked) => {
@@ -269,8 +270,8 @@ const QuestionRenderer = ({
           }
           
           // בדיקת מגבלת כמות הערכים
-          if (question.howManyValues && newValues.length > question.howManyValues) {
-            newValues = newValues.slice(0, question.howManyValues);
+          if (question.howManyVal && newValues.length > question.howManyVal) {
+            newValues = newValues.slice(0, question.howManyVal);
           }
           
           handleValueChange(newValues.join(', '));
@@ -305,9 +306,10 @@ const QuestionRenderer = ({
                 />
               )}
             </FormGroup>
-            {question.howManyValues && (
+            {console.log('Rendering multiselect with possible values:', question)}
+            {question.howManyVal && (
               <FormHelperText>
-                ניתן לבחור עד {question.howManyValues} אפשרויות
+                ניתן לבחור עד {question.howManyVal} אפשרויות
               </FormHelperText>
             )}
             {error && <FormHelperText>{error}</FormHelperText>}
