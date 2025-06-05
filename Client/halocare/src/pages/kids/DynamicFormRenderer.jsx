@@ -1,16 +1,18 @@
-// src/pages/kids/DynamicFormRenderer.jsx
+// src/pages/kids/DynamicFormRenderer.jsx - גרסה משופרת
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Alert, AlertTitle, CircularProgress,
-  Button, Grid, Divider, Chip, Fade, LinearProgress
+  Button, Grid, Divider, Chip, Fade, LinearProgress, Snackbar
 } from '@mui/material';
 import {
   Save as SaveIcon,
   Send as SendIcon,
   CheckCircle as CheckIcon,
-  Error as ErrorIcon
+  // AutoSave as AutoSaveIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
+import AutoSaveIcon from '@mui/icons-material/AutoSave';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -34,6 +36,9 @@ const DynamicFormRenderer = ({
   const dispatch = useDispatch();
   const [validationSchema, setValidationSchema] = useState(yup.object({}));
   const [progress, setProgress] = useState(0);
+  const [autoSaveStatus, setAutoSaveStatus] = useState('idle'); // idle, saving, saved, error
+  const [lastSaved, setLastSaved] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const { 
     currentFormQuestions, 
@@ -47,7 +52,7 @@ const DynamicFormRenderer = ({
     error: answersError 
   } = useSelector(state => state.answers);
 
-  // טעינת שאלות וtשובות בעת טעינת הקומפוננטה
+  // טעינת שאלות ותשובות בעת טעינת הקומפוננטה
   useEffect(() => {
     if (form?.formId && kidId) {
       loadFormData();
@@ -60,6 +65,17 @@ const DynamicFormRenderer = ({
       calculateProgress();
     }
   }, [currentFormAnswers, currentFormQuestions]);
+
+  // שמירה אוטומטית כל 30 שניות אם יש שינויים
+  useEffect(() => {
+    if (!readOnly && hasUnsavedChanges) {
+      const autoSaveInterval = setInterval(() => {
+        handleAutoSave();
+      }, 30000); // 30 שניות
+
+      return () => clearInterval(autoSaveInterval);
+    }
+  }, [hasUnsavedChanges, readOnly]);
 
   const loadFormData = async () => {
     try {
@@ -126,8 +142,13 @@ const DynamicFormRenderer = ({
     
     const totalAnswered = currentFormAnswers.filter(a => a.answer).length;
     const progressPercent = Math.round((totalAnswered / currentFormQuestions.length) * 100);
+    const mandatoryProgress = mandatoryQuestions.length > 0 ? 
+      Math.round((answeredMandatory.length / mandatoryQuestions.length) * 100) : 100;
     
     setProgress(progressPercent);
+    
+    // בדיקה אם כל השאלות החובה נענו
+    return mandatoryProgress === 100;
   };
 
   // הכנת ערכים ראשוניים לטופס
@@ -163,31 +184,74 @@ const DynamicFormRenderer = ({
     }
   }, [currentFormAnswers]);
 
+  // שמירה אוטומטית
+  const handleAutoSave = async () => {
+    if (!hasUnsavedChanges || readOnly) return;
+    
+    setAutoSaveStatus('saving');
+    try {
+      const answers = prepareAnswersForSaving(formik.values);
+      if (answers.length > 0) {
+        await dispatch(saveFormAnswers({
+          kidId,
+          formId: form.formId,
+          answers
+        })).unwrap();
+        
+        setAutoSaveStatus('saved');
+        setHasUnsavedChanges(false);
+        setLastSaved(new Date());
+        
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      }
+    } catch (error) {
+      setAutoSaveStatus('error');
+      setTimeout(() => setAutoSaveStatus('idle'), 3000);
+    }
+  };
+
+  // הכנת התשובות לשמירה
+  const prepareAnswersForSaving = (values) => {
+    const answers = [];
+    
+    currentFormQuestions.forEach(question => {
+      const answer = values[`question_${question.questionNo}`];
+      const other = values[`question_${question.questionNo}_other`];
+      
+      if (answer) {
+        answers.push({
+          questionNo: question.questionNo,
+          answer: answer,
+          other: other || null,
+          byParent: false
+        });
+      }
+    });
+    
+    return answers;
+  };
+
   const handleFormSubmit = async (values, sendToParent = false) => {
     try {
-      // הכנת התשובות לשמירה
-      const answers = [];
-      
-      currentFormQuestions.forEach(question => {
-        const answer = values[`question_${question.questionNo}`];
-        const other = values[`question_${question.questionNo}_other`];
-        
-        if (answer || (question.isMandatory && answer)) {
-          answers.push({
-            questionNo: question.questionNo,
-            answer: answer,
-            other: other || null,
-            byParent: sendToParent
-          });
-        }
-      });
+      const answers = prepareAnswersForSaving(values);
+
+      if (answers.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'לא נמצאו תשובות',
+          text: 'יש למלא לפחות שאלה אחת לפני השמירה',
+        });
+        return;
+      }
 
       // שמירת התשובות
       await dispatch(saveFormAnswers({
         kidId,
         formId: form.formId,
-        answers
+        answers: answers.map(a => ({ ...a, byParent: sendToParent }))
       })).unwrap();
+
+      setHasUnsavedChanges(false);
 
       if (sendToParent) {
         Swal.fire({
@@ -198,17 +262,30 @@ const DynamicFormRenderer = ({
           showConfirmButton: false
         });
       } else {
-        Swal.fire({
-          icon: 'success',
-          title: 'נשמר בהצלחה!',
-          text: 'תשובות הטופס נשמרו במערכת',
-          timer: 2000,
-          showConfirmButton: false
-        });
+        // בדיקה אם כל השאלות החובה נענו
+        const allMandatoryAnswered = calculateProgress();
         
-        // עדכון ההורה שהטופס הושלם
-        if (onFormComplete) {
-          onFormComplete(form.formId);
+        if (allMandatoryAnswered) {
+          const result = await Swal.fire({
+            icon: 'success',
+            title: 'נשמר בהצלחה!',
+            text: 'כל השאלות החובה נענו. האם תרצה לסמן את הטופס כמושלם?',
+            showCancelButton: true,
+            confirmButtonText: 'כן, סמן כמושלם',
+            cancelButtonText: 'לא, המשך עריכה'
+          });
+          
+          if (result.isConfirmed && onFormComplete) {
+            onFormComplete(form.formId);
+          }
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'נשמר בהצלחה!',
+            text: 'התשובות נשמרו. עדיין יש שאלות חובה שלא נענו.',
+            timer: 2000,
+            showConfirmButton: false
+          });
         }
       }
     } catch (error) {
@@ -250,6 +327,9 @@ const DynamicFormRenderer = ({
     if (otherValue !== null) {
       formik.setFieldValue(`question_${questionNo}_other`, otherValue);
     }
+    
+    // סימון שיש שינויים לא שמורים
+    setHasUnsavedChanges(true);
   };
 
   if (questionsStatus === 'loading') {
@@ -282,8 +362,8 @@ const DynamicFormRenderer = ({
   }
 
   return (
-    <Box>
-      {/* סרגל התקדמות */}
+    <Box dir="rtl">
+      {/* סרגל התקדמות מעודכן */}
       <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <Typography variant="body2" color="text.secondary" sx={{ minWidth: 120 }}>
@@ -300,9 +380,52 @@ const DynamicFormRenderer = ({
             {progress}%
           </Typography>
         </Box>
-        <Typography variant="caption" color="text.secondary">
-          {currentFormAnswers.length} מתוך {currentFormQuestions.length} שאלות נענו
-        </Typography>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            {currentFormAnswers.length} מתוך {currentFormQuestions.length} שאלות נענו
+          </Typography>
+          
+          {/* סטטוס שמירה אוטומטית */}
+          {!readOnly && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {autoSaveStatus === 'saving' && (
+                <>
+                  <CircularProgress size={16} />
+                  <Typography variant="caption" color="text.secondary">
+                    שומר...
+                  </Typography>
+                </>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="caption" color="success.main">
+                    נשמר אוטומטית
+                  </Typography>
+                </>
+              )}
+              {autoSaveStatus === 'error' && (
+                <>
+                  <WarningIcon fontSize="small" color="error" />
+                  <Typography variant="caption" color="error.main">
+                    שגיאה בשמירה
+                  </Typography>
+                </>
+              )}
+              {hasUnsavedChanges && autoSaveStatus === 'idle' && (
+                <Typography variant="caption" color="warning.main">
+                  יש שינויים לא שמורים
+                </Typography>
+              )}
+              {lastSaved && (
+                <Typography variant="caption" color="text.secondary">
+                  נשמר לאחרונה: {lastSaved.toLocaleTimeString('he-IL')}
+                </Typography>
+              )}
+            </Box>
+          )}
+        </Box>
       </Paper>
 
       {/* שגיאות */}
@@ -314,36 +437,75 @@ const DynamicFormRenderer = ({
       )}
 
       <form onSubmit={formik.handleSubmit}>
-        <Grid container spacing={3}>
-          {[...currentFormQuestions]
-            .sort((a, b) => a.questionNo - b.questionNo)
-            .map((question, index) => (
-              <Grid item xs={12} key={question.questionNo}>
-                <Fade in={true} timeout={300 + (index * 100)}>
-                  <div>
-                    <QuestionRenderer
-                      question={question}
-                      value={formik.values[`question_${question.questionNo}`] || ''}
-                      otherValue={formik.values[`question_${question.questionNo}_other`] || ''}
-                      error={formik.touched[`question_${question.questionNo}`] && 
-                             formik.errors[`question_${question.questionNo}`]}
-                      onChange={(value, otherValue) => 
-                        handleQuestionChange(question.questionNo, value, otherValue)
-                      }
-                      onBlur={() => formik.setFieldTouched(`question_${question.questionNo}`, true)}
-                      readOnly={readOnly}
-                    />
-                  </div>
-                </Fade>
-              </Grid>
-            ))}
-        </Grid>
+        {/* רנדור שאלות לפי קטגוריות */}
+        {Object.entries(groupQuestionsByCategory()).map(([category, questions], categoryIndex) => (
+          <Fade in={true} timeout={300 + (categoryIndex * 200)} key={category}>
+            <Paper 
+              sx={{ 
+                mb: 4, 
+                borderRadius: 3,
+                overflow: 'hidden',
+                border: '1px solid',
+                borderColor: 'grey.200'
+              }}
+            >
+              {/* כותרת קטגוריה */}
+              <Box 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'primary.main', 
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <Typography variant="h6" fontWeight="bold">
+                  {category}
+                </Typography>
+                <Chip 
+                  label={`${questions.length} שאלות`}
+                  size="small"
+                  sx={{ 
+                    backgroundColor: 'rgba(255,255,255,0.2)', 
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </Box>
+              
+              {/* שאלות הקטגוריה */}
+              <Box sx={{ p: 3 }}>
+                <Grid container spacing={3}>
+                  {questions
+                    .sort((a, b) => a.questionNo - b.questionNo)
+                    .map((question, index) => (
+                      <Grid item xs={12} key={question.questionNo}>
+                        <QuestionRenderer
+                          question={question}
+                          value={formik.values[`question_${question.questionNo}`] || ''}
+                          otherValue={formik.values[`question_${question.questionNo}_other`] || ''}
+                          error={formik.touched[`question_${question.questionNo}`] && 
+                                 formik.errors[`question_${question.questionNo}`]}
+                          onChange={(value, otherValue) => 
+                            handleQuestionChange(question.questionNo, value, otherValue)
+                          }
+                          onBlur={() => formik.setFieldTouched(`question_${question.questionNo}`, true)}
+                          readOnly={readOnly}
+                        />
+                      </Grid>
+                    ))}
+                </Grid>
+              </Box>
+            </Paper>
+          </Fade>
+        ))}
 
         {!readOnly && (
           <>
             <Divider sx={{ my: 4 }} />
             
-            {/* כפתורי פעולה */}
+            {/* כפתורי פעולה מעודכנים */}
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'space-between',
@@ -359,9 +521,29 @@ const DynamicFormRenderer = ({
                   variant="outlined"
                   size="small"
                 />
+                
+                {hasUnsavedChanges && (
+                  <Chip 
+                    icon={<AutoSaveIcon />}
+                    label="יש שינויים לא שמורים"
+                    color="warning"
+                    variant="outlined"
+                    size="small"
+                  />
+                )}
               </Box>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
+                {/* כפתור שמירה אוטומטית ידנית */}
+                <Button
+                  variant="outlined"
+                  startIcon={<AutoSaveIcon />}
+                  onClick={handleAutoSave}
+                  disabled={!hasUnsavedChanges || autoSaveStatus === 'saving'}
+                >
+                  שמור עכשיו
+                </Button>
+                
                 {showSendToParentOption && (
                   <Button
                     variant="outlined"
@@ -379,7 +561,7 @@ const DynamicFormRenderer = ({
                   variant="contained"
                   startIcon={saveStatus === 'loading' ? <CircularProgress size={20} /> : <SaveIcon />}
                   disabled={saveStatus === 'loading'}
-                  sx={{ minWidth: 120 }}
+                  sx={{ minWidth: 140 }}
                 >
                   {saveStatus === 'loading' ? 'שומר...' : 'שמור והמשך'}
                 </Button>
@@ -388,8 +570,29 @@ const DynamicFormRenderer = ({
           </>
         )}
       </form>
+
+      {/* הודעת שמירה אוטומטית */}
+      <Snackbar
+        open={autoSaveStatus === 'saved'}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        message="נשמר אוטומטית"
+      />
     </Box>
   );
+  
+  // פונקציה לקיבוץ שאלות לפי קטגוריה
+  function groupQuestionsByCategory() {
+    const grouped = {};
+    currentFormQuestions.forEach(question => {
+      const category = question.category || 'כללי';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(question);
+    });
+    return grouped;
+  }
 };
 
 export default DynamicFormRenderer;

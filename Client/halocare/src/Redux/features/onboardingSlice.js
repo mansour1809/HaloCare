@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// קבלת סטטוס תהליך קליטה
+// קבלת סטטוס תהליך קליטה מלא
 export const fetchOnboardingStatus = createAsyncThunk(
   'onboarding/fetchOnboardingStatus',
   async (kidId, { rejectWithValue }) => {
@@ -15,18 +15,34 @@ export const fetchOnboardingStatus = createAsyncThunk(
   }
 );
 
-// השלמת שלב
-export const completeFormStep = createAsyncThunk(
-  'onboarding/completeFormStep',
+// השלמת טופס
+export const completeForm = createAsyncThunk(
+  'onboarding/completeForm',
   async ({ kidId, formId }, { rejectWithValue }) => {
     try {
-      const response = await axios.put('/KidOnboarding/complete-step', {
+      const response = await axios.post('/KidOnboarding/complete-form', {
         kidId,
         formId
       });
       return { kidId, formId, ...response.data };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בהשלמת השלב');
+      return rejectWithValue(error.response?.data || 'שגיאה בהשלמת הטופס');
+    }
+  }
+);
+
+// שליחת טופס להורים
+export const sendFormToParent = createAsyncThunk(
+  'onboarding/sendFormToParent',
+  async ({ kidId, formId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post('/KidOnboarding/send-to-parent', {
+        kidId,
+        formId
+      });
+      return { kidId, formId, ...response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בשליחת הטופס');
     }
   }
 );
@@ -47,18 +63,32 @@ export const fetchAvailableForms = createAsyncThunk(
 const onboardingSlice = createSlice({
   name: 'onboarding',
   initialState: {
-    currentOnboarding: null, // התהליך הנוכחי
+    currentProcess: null, // התהליך הנוכחי עם כל הטפסים
     availableForms: [], // רשימת כל הטפסים
+    selectedFormId: null, // הטופס שנבחר כרגע
     status: 'idle',
     error: null
   },
   reducers: {
     clearOnboardingData: (state) => {
-    state.currentOnboarding = null;
-    state.error = null;
-  },
-    setCurrentKidForOnboarding: (state, action) => {
-      state.currentKidId = action.payload;
+      state.currentProcess = null;
+      state.selectedFormId = null;
+      state.error = null;
+    },
+    setSelectedForm: (state, action) => {
+      state.selectedFormId = action.payload;
+    },
+    updateFormStatus: (state, action) => {
+      const { formId, status, completedAt } = action.payload;
+      if (state.currentProcess && state.currentProcess.forms) {
+        const form = state.currentProcess.forms.find(f => f.formId === formId);
+        if (form) {
+          form.status = status;
+          if (completedAt) {
+            form.completedAt = completedAt;
+          }
+        }
+      }
     }
   },
   extraReducers: (builder) => {
@@ -66,25 +96,43 @@ const onboardingSlice = createSlice({
       // Fetch onboarding status
       .addCase(fetchOnboardingStatus.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchOnboardingStatus.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.currentOnboarding = action.payload;
+        state.currentProcess = action.payload;
       })
       .addCase(fetchOnboardingStatus.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
       
-      // Complete form step
-      .addCase(completeFormStep.fulfilled, (state, action) => {
-        // עדכון הסטטוס המקומי
-        if (state.currentOnboarding) {
-          const formIndex = state.currentOnboarding.forms.findIndex(
-            f => f.form.formId === action.payload.formId
-          );
-          if (formIndex !== -1) {
-            state.currentOnboarding.forms[formIndex].status = 'completed';
+      // Complete form
+      .addCase(completeForm.fulfilled, (state, action) => {
+        const { formId } = action.payload;
+        if (state.currentProcess && state.currentProcess.forms) {
+          const form = state.currentProcess.forms.find(f => f.formId === formId);
+          if (form) {
+            form.status = 'completed';
+            form.completedAt = new Date().toISOString();
+          }
+          // עדכון אחוז ההתקדמות
+          const totalForms = state.currentProcess.forms.length;
+          const completedForms = state.currentProcess.forms.filter(
+            f => f.status === 'completed' || f.status === 'returned_from_parent'
+          ).length;
+          state.currentProcess.completionPercentage = Math.round((completedForms / totalForms) * 100);
+        }
+      })
+      
+      // Send to parent
+      .addCase(sendFormToParent.fulfilled, (state, action) => {
+        const { formId } = action.payload;
+        if (state.currentProcess && state.currentProcess.forms) {
+          const form = state.currentProcess.forms.find(f => f.formId === formId);
+          if (form) {
+            form.status = 'sent_to_parent';
+            form.sentToParentAt = new Date().toISOString();
           }
         }
       })
@@ -96,5 +144,5 @@ const onboardingSlice = createSlice({
   }
 });
 
-export const { clearOnboardingData, setCurrentKidForOnboarding } = onboardingSlice.actions;
+export const { clearOnboardingData, setSelectedForm, updateFormStatus } = onboardingSlice.actions;
 export default onboardingSlice.reducer;

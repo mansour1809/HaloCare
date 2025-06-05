@@ -48,12 +48,12 @@ namespace halocare.BL.Services
             int kidId = _kidRepository.AddKid(kid);
             try
             {
-                _onboardingService.StartOnboardingProcess(kidId);
+                _onboardingService.StartOnboardingProcess(kidId).Wait();
             }
             catch (Exception ex)
             {
-                //do not stop to process-cause the kid already created
-                Console.WriteLine($"שגיאה בהתחלת תהליך קליטה: {ex.Message}");
+                // לוג השגיאה אבל אל תכשיל את כל התהליך
+                Console.WriteLine($"Warning: Could not start onboarding process for kid {kidId}: {ex.Message}");
             }
 
             return kidId;

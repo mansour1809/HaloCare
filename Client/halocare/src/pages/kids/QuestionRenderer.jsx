@@ -16,44 +16,35 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
 
-// עיצוב מותאם לשאלה
-const QuestionContainer = styled(Paper)(({ theme, required }) => ({
-  padding: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  border: required ? `2px solid ${theme.palette.warning.light}` : `1px solid ${theme.palette.divider}`,
-  position: 'relative',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    boxShadow: theme.shadows[4],
-    borderColor: theme.palette.primary.light,
-  },
+// עיצוב מותאם לשאלה - פשוט יותר
+const QuestionContainer = styled(Box)(({ theme, required }) => ({
+  marginBottom: theme.spacing(3),
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(1),
+  border: required ? `1px solid ${theme.palette.warning.light}` : `1px solid ${theme.palette.grey[300]}`,
+  backgroundColor: theme.palette.background.paper,
+  transition: 'all 0.2s ease',
   '&:focus-within': {
     borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 2px ${theme.palette.primary.main}25`,
+    boxShadow: `0 0 0 1px ${theme.palette.primary.main}25`,
   }
-}));
-
-const QuestionHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  marginBottom: theme.spacing(2),
 }));
 
 const QuestionText = styled(Typography)(({ theme, required }) => ({
-  fontWeight: 600,
-  color: required ? theme.palette.text.primary : theme.palette.text.secondary,
-  fontSize: '1.1rem',
-  lineHeight: 1.4,
+  fontWeight: 500,
+  color: theme.palette.text.primary,
+  marginBottom: theme.spacing(1.5),
+  fontSize: '1rem',
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1)
 }));
 
-const RequiredChip = styled(Chip)(({ theme }) => ({
-  fontSize: '0.75rem',
-  height: 20,
-  '& .MuiChip-label': {
-    padding: '0 6px',
-  }
-}));
+const RequiredIndicator = () => (
+  <Typography component="span" sx={{ color: 'error.main', fontWeight: 'bold' }}>
+    *
+  </Typography>
+);
 
 const QuestionRenderer = ({
   question,
@@ -84,7 +75,6 @@ const QuestionRenderer = ({
 
   // רנדור לפי סוג השאלה
   const renderQuestionInput = () => {
-    console.log('Rendering question:', question.questionType, 'with value:', value);
     switch (question.questionType) {
       case 'text':
       case 'textArea':
@@ -255,7 +245,7 @@ const QuestionRenderer = ({
         );
 
       case 'checkbox':
-      case 'multiselect':
+      case 'multiChoice':
         const selectedValues = value ? value.split(',').map(v => v.trim()) : [];
         
         const handleCheckboxChange = (optionValue, checked) => {
@@ -270,8 +260,8 @@ const QuestionRenderer = ({
           }
           
           // בדיקת מגבלת כמות הערכים
-          if (question.howManyVal && newValues.length > question.howManyVal) {
-            newValues = newValues.slice(0, question.howManyVal);
+          if (question.howManyValues && newValues.length > question.howManyValues) {
+            newValues = newValues.slice(0, question.howManyValues);
           }
           
           handleValueChange(newValues.join(', '));
@@ -306,10 +296,9 @@ const QuestionRenderer = ({
                 />
               )}
             </FormGroup>
-            {console.log('Rendering multiselect with possible values:', question)}
-            {question.howManyVal && (
+            {question.howManyValues && (
               <FormHelperText>
-                ניתן לבחור עד {question.howManyVal} אפשרויות
+                ניתן לבחור עד {question.howManyValues} אפשרויות
               </FormHelperText>
             )}
             {error && <FormHelperText>{error}</FormHelperText>}
@@ -376,39 +365,10 @@ const QuestionRenderer = ({
 
   return (
     <QuestionContainer required={question.isMandatory}>
-      <QuestionHeader>
-        <Box sx={{ flexGrow: 1 }}>
-          <QuestionText required={question.isMandatory}>
-            {question.questionText}
-          </QuestionText>
-          {question.category && (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-              קטגוריה: {question.category}
-            </Typography>
-          )}
-        </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {question.isMandatory && (
-            <RequiredChip 
-              label="חובה" 
-              color="warning" 
-              size="small" 
-              variant="filled"
-            />
-          )}
-          {question.questionType && (
-            <Tooltip title={`סוג שאלה: ${question.questionType}`}>
-              <RequiredChip 
-                label={question.questionType} 
-                color="info" 
-                size="small" 
-                variant="outlined"
-              />
-            </Tooltip>
-          )}
-        </Box>
-      </QuestionHeader>
+      <QuestionText required={question.isMandatory}>
+        {question.questionText}
+        {question.isMandatory && <RequiredIndicator />}
+      </QuestionText>
 
       {renderQuestionInput()}
 

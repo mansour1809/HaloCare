@@ -9,7 +9,6 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class KidOnboardingController : ControllerBase
     {
         private readonly KidOnboardingService _onboardingService;
@@ -19,36 +18,13 @@ namespace halocare.Controllers
             _onboardingService = new KidOnboardingService(configuration);
         }
 
-        // POST: api/KidOnboarding/start/{kidId}
-        [HttpPost("start/{kidId}")]
-        public IActionResult StartOnboardingProcess(int kidId)
-        {
-            try
-            {
-                int processId = _onboardingService.StartOnboardingProcess(kidId);
-                return Ok(new { ProcessId = processId, Message = "תהליך הקליטה התחיל בהצלחה" });
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
-            }
-        }
-
-        // GET: api/KidOnboarding/status/{kidId}
+        // GET: api/KidOnboarding/status/5
         [HttpGet("status/{kidId}")]
-        public ActionResult<KidOnboardingStatus> GetOnboardingStatus(int kidId)
+        public async Task<ActionResult<KidOnboardingProcess>> GetOnboardingStatus(int kidId)
         {
             try
             {
-                var status = _onboardingService.GetOnboardingStatus(kidId);
+                var status = await _onboardingService.GetOnboardingStatus(kidId);
                 return Ok(status);
             }
             catch (ArgumentException ex)
@@ -57,58 +33,60 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
 
-        // PUT: api/KidOnboarding/complete-step
-        [HttpPut("complete-step")]
-        public IActionResult CompleteFormStep([FromBody] CompleteStepRequest request)
+        // POST: api/KidOnboarding/start
+        [HttpPost("start/{kidId}")]
+        public async Task<ActionResult<KidOnboardingProcess>> StartOnboarding(int kidId)
         {
             try
             {
-                if (request == null || request.KidId <= 0 || request.FormId <= 0)
-                {
-                    return BadRequest("נתונים שגויים");
-                }
+                var process = await _onboardingService.StartOnboardingProcess(kidId);
+                return Ok(process);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
 
-                bool success = _onboardingService.CompleteFormStep(request.KidId, request.FormId);
-
-                if (success)
-                {
-                    return Ok(new { Message = "השלב הושלם בהצלחה" });
-                }
-                else
-                {
-                    return BadRequest("לא ניתן היה לעדכן את השלב");
-                }
+        // POST: api/KidOnboarding/complete-form
+        [HttpPost("complete-form")]
+        public async Task<IActionResult> CompleteForm([FromBody] CompleteFormRequest request)
+        {
+            try
+            {
+                await _onboardingService.MarkFormAsCompleted(request.KidId, request.FormId);
+                return Ok(new { message = "הטופס הושלם בהצלחה" });
             }
             catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
 
-        // GET: api/KidOnboarding/incomplete-kids
-        [HttpGet("incomplete-kids")]
-        public ActionResult<IEnumerable<Kid>> GetKidsWithIncompleteOnboarding()
+        // POST: api/KidOnboarding/send-to-parent
+        [HttpPost("send-to-parent")]
+        public async Task<IActionResult> SendFormToParent([FromBody] SendToParentRequest request)
         {
             try
             {
-                var kids = _onboardingService.GetKidsWithIncompleteOnboarding();
-                return Ok(kids);
+                await _onboardingService.SendFormToParent(request.KidId, request.FormId);
+                return Ok(new { message = "הטופס נשלח להורים בהצלחה" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
 
-        // GET: api/KidOnboarding/forms
+        // GET: api/KidOnboarding/forms - המתודה שחסרה!
         [HttpGet("forms")]
         public ActionResult<IEnumerable<Form>> GetAvailableForms()
         {
@@ -119,46 +97,19 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
-            }
-        }
-
-        // GET: api/KidOnboarding/current-step/{kidId}
-        [HttpGet("current-step/{kidId}")]
-        public IActionResult GetCurrentStep(int kidId)
-        {
-            try
-            {
-                var status = _onboardingService.GetOnboardingStatus(kidId);
-                var currentForm = status.Forms.FirstOrDefault(f => f.Status == "current");
-
-                if (currentForm == null)
-                {
-                    return Ok(new { Message = "התהליך הושלם", IsCompleted = true });
-                }
-
-                return Ok(new
-                {
-                    CurrentForm = currentForm.Form,
-                    CompletionPercentage = status.CompletionPercentage,
-                    IsCompleted = false
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה: {ex.Message}");
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
     }
+}
+public class CompleteFormRequest
+{
+    public int KidId { get; set; }
+    public int FormId { get; set; }
+}
 
-    // DTO for request
-    public class CompleteStepRequest
-    {
-        public int KidId { get; set; }
-        public int FormId { get; set; }
-    }
+public class SendToParentRequest
+{
+    public int KidId { get; set; }
+    public int FormId { get; set; }
 }
