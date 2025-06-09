@@ -17,10 +17,9 @@ import formsReducer from './features/formsSlice';
 import parentFormsReducer from './features/parentFormsSlice';
 import answersReducer from './features/answersSlice';
 import parentReducer from './features/parentSlice';
-import healthInsurancesSlice from './features/healthinsurancesSlice';
-import onboardingSlice from './features/onboardingSlice'; 
-
-
+import healthInsurancesReducer from './features/healthinsurancesSlice';
+import onboardingReducer from './features/onboardingSlice'; 
+import questionsReducer from './features/questionsSlice';
 // Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
   cities: citiesReducer,
@@ -38,8 +37,9 @@ const rootReducer = combineReducers({
   parentFormsSlice: parentFormsReducer,
   answers: answersReducer,
   parent: parentReducer,
-  healthInsurances: healthInsurancesSlice,
-  onboarding: onboardingSlice,
+  healthInsurances: healthInsurancesReducer,
+  onboarding: onboardingReducer,
+  questions: questionsReducer,
 
 });
 

@@ -1,4 +1,4 @@
-// src/pages/kids/KidsManagement.jsx - גרסה מעודכנת ונקייה
+// src/pages/kids/KidsManagement.jsx - גרסה מעודכנת לגישה החדשה
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -11,26 +11,50 @@ import {
 import { 
   Add as AddIcon, Search as SearchIcon, Visibility as VisibilityIcon,
   Home as HomeIcon, Group as GroupIcon, Refresh as RefreshIcon,
-  PlayArrow as StartIcon, Pause as PauseIcon, Edit as EditIcon,
-  CheckCircle as CompleteIcon
+  PlayArrow as StartIcon, Edit as EditIcon, CheckCircle as CompleteIcon,
+  Dashboard as DashboardIcon, Email as EmailIcon
 } from '@mui/icons-material';
 
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { fetchOnboardingStatus } from '../../Redux/features/onboardingSlice';
 import Swal from 'sweetalert2';
 
-// קומפוננטה לבאדג' סטטוס
-const OnboardingStatusChip = ({ status, percentage = 0 }) => {
+// קומפוננטה לבאדג' סטטוס מעודכן
+const OnboardingStatusChip = ({ onboardingData }) => {
+  if (!onboardingData) {
+    return (
+      <Chip
+        label="○ לא התחיל"
+        color="default"
+        variant="outlined"
+        size="small"
+        sx={{ fontWeight: 'medium', minWidth: '120px' }}
+      />
+    );
+  }
+
+  const { process, completionPercentage, completedForms, totalForms } = onboardingData;
+  
   const getStatusConfig = () => {
-    switch (status) {
+    switch (process.processStatus) {
       case 'Completed':
-        return { color: 'success', label: '✓ הושלם', variant: 'filled' };
+        return { 
+          color: 'success', 
+          label: `✅ הושלם (${completedForms}/${totalForms})`, 
+          variant: 'filled' 
+        };
       case 'InProgress':
-        return { color: 'primary', label: `⚡ בתהליך (${percentage}%)`, variant: 'filled' };
-      case 'Started':
-        return { color: 'info', label: '🚀 התחיל', variant: 'filled' };
+        return { 
+          color: 'primary', 
+          label: `⚡ בתהליך (${completionPercentage}%)`, 
+          variant: 'filled' 
+        };
       default:
-        return { color: 'default', label: '○ ממתין', variant: 'outlined' };
+        return { 
+          color: 'info', 
+          label: '🚀 התחיל', 
+          variant: 'filled' 
+        };
     }
   };
 
@@ -47,10 +71,10 @@ const OnboardingStatusChip = ({ status, percentage = 0 }) => {
   );
 };
 
-// כפתורי פעולות
-const OnboardingActions = ({ kid, onboardingStatus, onAction }) => {
+// קומפוננטה מעודכנת לפעולות
+const OnboardingActions = ({ kid, onboardingData, onAction }) => {
   const getActions = () => {
-    if (!onboardingStatus) {
+    if (!onboardingData) {
       return [
         { 
           action: 'start', 
@@ -62,25 +86,27 @@ const OnboardingActions = ({ kid, onboardingStatus, onAction }) => {
       ];
     }
 
-    switch (onboardingStatus.process?.processStatus) {
+    const { process } = onboardingData;
+
+    switch (process.processStatus) {
       case 'InProgress':
         return [
           { 
-            action: 'continue', 
-            label: 'המשך', 
+            action: 'dashboard', 
+            label: 'ממשק', 
             color: 'primary', 
-            icon: <EditIcon />,
-            tooltip: 'המשך תהליך הקליטה'
+            icon: <DashboardIcon />,
+            tooltip: 'פתח ממשק ניהול הקליטה'
           }
         ];
       case 'Completed':
         return [
           { 
-            action: 'view', 
+            action: 'dashboard', 
             label: 'צפה', 
             color: 'success', 
             icon: <VisibilityIcon />,
-            tooltip: 'צפה בפרופיל הילד'
+            tooltip: 'צפה בסטטוס הקליטה'
           }
         ];
       default:
@@ -138,6 +164,72 @@ const OnboardingActions = ({ kid, onboardingStatus, onAction }) => {
   );
 };
 
+// קומפוננטה חדשה להצגת התקדמות מפורטת
+const DetailedProgress = ({ onboardingData }) => {
+  if (!onboardingData || !onboardingData.forms) {
+    return <Typography variant="body2" color="text.secondary">–</Typography>;
+  }
+
+  const { forms, completionPercentage } = onboardingData;
+  
+  // ספירת סטטוסים
+  const statusCounts = forms.reduce((acc, form) => {
+    const status = form.status;
+    if (status === 'completed' || status === 'completed_by_parent') {
+      acc.completed++;
+    } else if (status === 'in_progress') {
+      acc.inProgress++;
+    } else if (status === 'sent_to_parent') {
+      acc.sentToParent++;
+    } else {
+      acc.notStarted++;
+    }
+    return acc;
+  }, { completed: 0, inProgress: 0, sentToParent: 0, notStarted: 0 });
+
+  return (
+    <Box sx={{ minWidth: 150 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <LinearProgress 
+          variant="determinate" 
+          value={completionPercentage} 
+          sx={{ width: 100, height: 8, borderRadius: 4 }}
+        />
+        <Typography variant="body2" fontWeight="bold">
+          {completionPercentage}%
+        </Typography>
+      </Box>
+      
+      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        {statusCounts.completed > 0 && (
+          <Chip 
+            label={`✅ ${statusCounts.completed}`} 
+            size="small" 
+            color="success" 
+            variant="outlined"
+          />
+        )}
+        {statusCounts.inProgress > 0 && (
+          <Chip 
+            label={`⚡ ${statusCounts.inProgress}`} 
+            size="small" 
+            color="primary" 
+            variant="outlined"
+          />
+        )}
+        {statusCounts.sentToParent > 0 && (
+          <Chip 
+            label={`📧 ${statusCounts.sentToParent}`} 
+            size="small" 
+            color="info" 
+            variant="outlined"
+          />
+        )}
+      </Box>
+    </Box>
+  );
+};
+
 const KidsManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -146,7 +238,7 @@ const KidsManagement = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [onboardingStatuses, setOnboardingStatuses] = useState({});
+  const [onboardingData, setOnboardingData] = useState({});
   const [loading, setLoading] = useState(false);
 
   // טעינה ראשונית
@@ -160,27 +252,32 @@ const KidsManagement = () => {
       // טעינת רשימת ילדים
       const kidsResult = await dispatch(fetchKids()).unwrap();
       
-      // טעינת סטטוסי קליטה לכל ילד
-      const statusPromises = kidsResult.map(async (kid) => {
+      // טעינת נתוני קליטה לכל ילד
+      const onboardingPromises = kidsResult.map(async (kid) => {
         try {
           const statusResult = await dispatch(fetchOnboardingStatus(kid.id)).unwrap();
-          return { kidId: kid.id, status: statusResult };
+          return { kidId: kid.id, data: statusResult };
         } catch (error) {
-          // אם אין תהליך קליטה - החזר null
-          return { kidId: kid.id, status: null };
+          // אין תהליך קליטה - החזר null
+          return { kidId: kid.id, data: null };
         }
       });
       
-      const statuses = await Promise.all(statusPromises);
-      const statusMap = {};
-      statuses.forEach(({ kidId, status }) => {
-        statusMap[kidId] = status;
+      const onboardingResults = await Promise.all(onboardingPromises);
+      const onboardingMap = {};
+      onboardingResults.forEach(({ kidId, data }) => {
+        onboardingMap[kidId] = data;
       });
       
-      setOnboardingStatuses(statusMap);
+      setOnboardingData(onboardingMap);
       
     } catch (error) {
       console.error('Error loading data:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בטעינת נתונים',
+        text: error.message || 'אירעה שגיאה בטעינת הנתונים'
+      });
     } finally {
       setLoading(false);
     }
@@ -195,10 +292,11 @@ const KidsManagement = () => {
   const handleAction = (action, kidId) => {
     switch (action) {
       case 'start':
-      case 'continue':
         navigate(`/kids/onboarding/${kidId}`);
         break;
-      case 'view':
+      case 'dashboard':
+        navigate(`/kids/onboarding/${kidId}`);
+        break;
       case 'profile':
         navigate(`/kids/${kidId}`);
         break;
@@ -228,19 +326,19 @@ const KidsManagement = () => {
       (kid.firstName && kid.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (kid.lastName && kid.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const onboardingStatus = onboardingStatuses[kid.id];
-    const processStatus = onboardingStatus?.process?.processStatus || 'NotStarted';
+    const kidOnboardingData = onboardingData[kid.id];
+    const processStatus = kidOnboardingData?.process?.processStatus || 'NotStarted';
     const statusMatch = !statusFilter || processStatus === statusFilter;
     
     return searchMatch && statusMatch;
   });
 
-  // חישוב סטטיסטיקות
+  // חישוב סטטיסטיקות מעודכן
   const stats = {
     total: kids.length,
-    completed: Object.values(onboardingStatuses).filter(s => s?.process?.processStatus === 'Completed').length,
-    inProgress: Object.values(onboardingStatuses).filter(s => s?.process?.processStatus === 'InProgress').length,
-    notStarted: kids.length - Object.keys(onboardingStatuses).length
+    completed: Object.values(onboardingData).filter(d => d?.process?.processStatus === 'Completed').length,
+    inProgress: Object.values(onboardingData).filter(d => d?.process?.processStatus === 'InProgress').length,
+    notStarted: kids.length - Object.keys(onboardingData).filter(k => onboardingData[k]).length
   };
 
   return (
@@ -383,7 +481,7 @@ const KidsManagement = () => {
               <TableCell sx={{ fontWeight: 700 }}>מגדר</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>הורה ראשי</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>סטטוס קליטה</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>התקדמות</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>התקדמות מפורטת</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>פעולות</TableCell>
             </TableRow>
           </TableHead>
@@ -404,8 +502,7 @@ const KidsManagement = () => {
               </TableRow>
             ) : (
               filteredKids.map((kid) => {
-                const onboardingStatus = onboardingStatuses[kid.id];
-                const completionPercentage = onboardingStatus?.completionPercentage || 0;
+                const kidOnboardingData = onboardingData[kid.id];
                 
                 return (
                   <TableRow key={kid.id} hover>
@@ -429,27 +526,15 @@ const KidsManagement = () => {
                     </TableCell>
                     <TableCell>{kid.parentName1 || '–'}</TableCell>
                     <TableCell>
-                      <OnboardingStatusChip
-                        status={onboardingStatus?.process?.processStatus}
-                        percentage={completionPercentage}
-                      />
+                      <OnboardingStatusChip onboardingData={kidOnboardingData} />
                     </TableCell>
                     <TableCell>
-                      {completionPercentage > 0 ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={completionPercentage} 
-                            sx={{ width: 100, height: 8, borderRadius: 4 }}
-                          />
-                          <Typography variant="body2">{completionPercentage}%</Typography>
-                        </Box>
-                      ) : '–'}
+                      <DetailedProgress onboardingData={kidOnboardingData} />
                     </TableCell>
                     <TableCell>
                       <OnboardingActions
                         kid={kid}
-                        onboardingStatus={onboardingStatus}
+                        onboardingData={kidOnboardingData}
                         onAction={handleAction}
                       />
                     </TableCell>

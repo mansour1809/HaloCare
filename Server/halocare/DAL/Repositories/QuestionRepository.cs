@@ -31,7 +31,9 @@ namespace halocare.DAL.Repositories
                     IsOpen = row["IsOpen"] != DBNull.Value ? Convert.ToBoolean(row["IsOpen"]) : false,
                     HowManyVal = row["HowManyVal"] != DBNull.Value ? Convert.ToInt32(row["HowManyVal"]) : 0,
                     PossibleValues = row["PossibleValues"] != DBNull.Value ? row["PossibleValues"].ToString() : string.Empty,
-                    HasOther = row["HasOther"] != DBNull.Value ? Convert.ToBoolean(row["HasOther"]) : false
+                    HasOther = row["HasOther"] != DBNull.Value ? Convert.ToBoolean(row["HasOther"]) : false,
+                    Category = row["Category"].ToString(),
+                    QuestionType = row["QuestionType"].ToString(),
                 };
 
                 questions.Add(question);
@@ -64,7 +66,9 @@ namespace halocare.DAL.Repositories
                 IsOpen = Convert.ToBoolean(row["IsOpen"]),
                 HowManyVal = Convert.ToInt32(row["HowManyVal"]),
                 PossibleValues = row["PossibleValues"].ToString(),
-                HasOther = Convert.ToBoolean(row["HasOther"])
+                HasOther = Convert.ToBoolean(row["HasOther"]),
+                Category = row["Category"].ToString(),
+                QuestionType = row["QuestionType"].ToString(),
             };
 
             return question;

@@ -1,468 +1,596 @@
-// components/forms/DynamicFormRenderer.jsx
+// src/pages/kids/DynamicFormRenderer.jsx - גרסה משופרת
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  Box, Paper, Typography, Grid, TextField, MenuItem, FormControl,
-  InputLabel, Select, FormGroup, FormControlLabel, Checkbox, 
-  RadioGroup, Radio, Button, FormHelperText, Alert, Chip,
-  Switch, Divider, Stack, InputAdornment, CircularProgress
+import {
+  Box, Paper, Typography, Alert, AlertTitle, CircularProgress,
+  Button, Grid, Divider, Chip, Fade, LinearProgress, Snackbar
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { styled } from '@mui/material/styles';
-import { fetchFormQuestions } from '../../Redux/features/formsSlice';
-import { fetchAnswers, saveAnswers } from '../../Redux/features/answersSlice';
+import {
+  Save as SaveIcon,
+  Send as SendIcon,
+  CheckCircle as CheckIcon,
+  Autorenew as AutoSaveIcon,    // 🔁 Good for autosave
+  Warning as WarningIcon
+} from '@mui/icons-material';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import Swal from 'sweetalert2';
 
-// סטיילינג מותאם אישית
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '5px',
-    background: `linear-gradient(to right, ${theme.palette.primary.light}, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-  }
-}));
+import { fetchQuestionsByFormId } from '../../Redux/features/questionsSlice';
+import { 
+  fetchFormAnswers, 
+  saveFormAnswers, 
+  updateLocalAnswer,
+  setCurrentForm 
+} from '../../Redux/features/answersSlice';
+import QuestionRenderer from './QuestionRenderer';
 
-const CategoryHeading = styled(Typography)(({ theme }) => ({
-  display: 'flex', 
-  alignItems: 'center',
-  marginBottom: theme.spacing(3),
-  paddingBottom: theme.spacing(1),
-  '&::after': {
-    content: '""',
-    flex: 1,
-    borderBottom: '1px solid',
-    borderColor: theme.palette.divider,
-    marginLeft: theme.spacing(2)
-  }
-}));
-
-const DynamicFormRenderer = ({ formId, kidId, onUpdate, isParentView = false }) => {
+const DynamicFormRenderer = ({ 
+  form, 
+  kidId, 
+  onFormComplete, 
+  showSendToParentOption = true,
+  readOnly = false 
+}) => {
   const dispatch = useDispatch();
-  const [formState, setFormState] = useState({});
-  const [errors, setErrors] = useState({});
-  const [groups, setGroups] = useState([]);
+  const [validationSchema, setValidationSchema] = useState(yup.object({}));
+  const [progress, setProgress] = useState(0);
+  const [autoSaveStatus, setAutoSaveStatus] = useState('idle'); // idle, saving, saved, error
+  const [lastSaved, setLastSaved] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
-  const { questions, status: questionsStatus } = useSelector(state => state.forms);
-  const { answers, status: answersStatus, saveStatus } = useSelector(state => state.answers);
+  const { 
+    currentFormQuestions, 
+    status: questionsStatus, 
+    error: questionsError 
+  } = useSelector(state => state.questions);
   
-  // טעינת שאלות הטופס
+  const { 
+    currentFormAnswers, 
+    saveStatus, 
+    error: answersError 
+  } = useSelector(state => state.answers);
+
+  // טעינת שאלות ותשובות בעת טעינת הקומפוננטה
   useEffect(() => {
-    if (formId) {
-      dispatch(fetchFormQuestions(formId));
+    if (form?.formId && kidId) {
+      loadFormData();
     }
-  }, [dispatch, formId]);
-  
-  // טעינת תשובות קיימות (אם יש)
+  }, [form?.formId, kidId]);
+
+  // עדכון progress כאשר התשובות משתנות
   useEffect(() => {
-    if (kidId && formId) {
-      dispatch(fetchAnswers({ kidId, formId }));
+    if (currentFormQuestions.length > 0) {
+      calculateProgress();
     }
-  }, [dispatch, kidId, formId]);
-  
-  // ארגון שאלות לפי קטגוריות
+  }, [currentFormAnswers, currentFormQuestions]);
+
+  // שמירה אוטומטית כל 30 שניות אם יש שינויים
   useEffect(() => {
-    if (questions && questions.length > 0) {
-      const groupedQuestions = {};
-      questions.forEach(question => {
-        if (!groupedQuestions[question.category]) {
-          groupedQuestions[question.category] = [];
-        }
-        groupedQuestions[question.category].push(question);
-      });
+    if (!readOnly && hasUnsavedChanges) {
+      const autoSaveInterval = setInterval(() => {
+        handleAutoSave();
+      }, 30000); // 30 שניות
+
+      return () => clearInterval(autoSaveInterval);
+    }
+  }, [hasUnsavedChanges, readOnly]);
+
+  const loadFormData = async () => {
+    try {
+      // טעינת שאלות הטופס
+      await dispatch(fetchQuestionsByFormId(form.formId));
       
-      const groupArray = Object.keys(groupedQuestions).map(category => ({
-        name: category,
-        questions: groupedQuestions[category]
-      }));
+      // הגדרת הטופס הנוכחי
+      dispatch(setCurrentForm({ kidId, formId: form.formId }));
       
-      setGroups(groupArray);
+      // טעינת תשובות קיימות
+      await dispatch(fetchFormAnswers({ kidId, formId: form.formId }));
+    } catch (error) {
+      console.error('Error loading form data:', error);
+    }
+  };
+
+  // יצירת סכימת validation דינמית
+  useEffect(() => {
+    if (currentFormQuestions.length > 0) {
+      const schema = {};
       
-      // אתחול מצב הטופס עם תשובות קיימות
-      if (answers && answers.length > 0) {
-        const initialState = {};
-        questions.forEach(question => {
-          const existingAnswer = answers.find(a => 
-            a.formId === formId && a.questionNo === question.questionNo
-          );
-          
-          if (existingAnswer) {
-            initialState[question.questionNo] = existingAnswer.answer;
-            if (existingAnswer.other) {
-              initialState[`${question.questionNo}_other`] = existingAnswer.other;
-            }
-          } else {
-            initialState[question.questionNo] = '';
-          }
-        });
+      currentFormQuestions.forEach(question => {
+        let fieldSchema = yup.string();
         
-        setFormState(initialState);
-      } else {
-        // אם אין תשובות קיימות, נאתחל עם ערכים ריקים
-        const initialState = {};
-        questions.forEach(question => {
-          initialState[question.questionNo] = '';
-        });
-        setFormState(initialState);
-      }
-    }
-  }, [questions, answers, formId]);
-  
-  // טיפול בשינוי ערך
-  const handleChange = (questionNo, value) => {
-    setFormState(prev => ({
-      ...prev,
-      [questionNo]: value
-    }));
-    
-    // ניקוי שגיאה אם קיימת
-    if (errors[questionNo]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[questionNo];
-        return newErrors;
-      });
-    }
-  };
-  
-  // טיפול ב-other value
-  const handleOtherChange = (questionNo, value) => {
-    setFormState(prev => ({
-      ...prev,
-      [`${questionNo}_other`]: value
-    }));
-  };
-  
-  // ולידציה
-  const validateForm = () => {
-    const newErrors = {};
-    
-    questions.forEach(question => {
-      if (question.isMandatory && !formState[question.questionNo]) {
-        newErrors[question.questionNo] = 'שדה חובה';
-      }
-      
-      // ולידציה נוספת לפי סוג השאלה
-      if (formState[question.questionNo]) {
-        switch (question.questionType) {
-          case 'email':
-            if (!/\S+@\S+\.\S+/.test(formState[question.questionNo])) {
-              newErrors[question.questionNo] = 'כתובת אימייל לא תקינה';
-            }
-            break;
-          case 'number':
-            if (isNaN(formState[question.questionNo])) {
-              newErrors[question.questionNo] = 'ערך לא תקין';
-            }
-            break;
-          // הוסף כאן בדיקות נוספות לפי הצורך
+        if (question.isMandatory) {
+          fieldSchema = fieldSchema.required(`${question.questionText} הוא שדה חובה`);
         }
+        
+        // תקינות נוספת לפי סוג השאלה
+        if (question.questionType === 'email') {
+          fieldSchema = fieldSchema.email('כתובת דוא״ל לא תקינה');
+        } else if (question.questionType === 'number') {
+          fieldSchema = yup.number().typeError('יש להזין מספר תקין');
+          if (question.isMandatory) {
+            fieldSchema = fieldSchema.required(`${question.questionText} הוא שדה חובה`);
+          }
+        } else if (question.questionType === 'date') {
+          fieldSchema = yup.date().typeError('תאריך לא תקין');
+          if (question.isMandatory) {
+            fieldSchema = fieldSchema.required(`${question.questionText} הוא שדה חובה`);
+          }
+        }
+        
+        schema[`question_${question.questionNo}`] = fieldSchema;
+        
+        // תמיכה בשדה "אחר"
+        if (question.hasOther) {
+          schema[`question_${question.questionNo}_other`] = yup.string();
+        }
+      });
+      
+      setValidationSchema(yup.object(schema));
+    }
+  }, [currentFormQuestions]);
+
+  // חישוב אחוז ההתקדמות
+  const calculateProgress = () => {
+    if (currentFormQuestions.length === 0) return;
+    
+    const mandatoryQuestions = currentFormQuestions.filter(q => q.isMandatory);
+    const answeredMandatory = mandatoryQuestions.filter(q => 
+      currentFormAnswers.some(a => a.questionNo === q.questionNo && a.answer)
+    );
+    
+    const totalAnswered = currentFormAnswers.filter(a => a.answer).length;
+    const progressPercent = Math.round((totalAnswered / currentFormQuestions.length) * 100);
+    const mandatoryProgress = mandatoryQuestions.length > 0 ? 
+      Math.round((answeredMandatory.length / mandatoryQuestions.length) * 100) : 100;
+    
+    setProgress(progressPercent);
+    
+    // בדיקה אם כל השאלות החובה נענו
+    return mandatoryProgress === 100;
+  };
+
+  // הכנת ערכים ראשוניים לטופס
+  const getInitialValues = () => {
+    const values = {};
+    
+    currentFormQuestions.forEach(question => {
+      const existingAnswer = currentFormAnswers.find(a => a.questionNo === question.questionNo);
+      values[`question_${question.questionNo}`] = existingAnswer?.answer || '';
+      
+      if (question.hasOther) {
+        values[`question_${question.questionNo}_other`] = existingAnswer?.other || '';
       }
     });
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return values;
   };
-  
-  // שליחת הטופס
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
+
+  const formik = useFormik({
+    initialValues: getInitialValues(),
+    validationSchema: validationSchema,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      await handleFormSubmit(values, false);
+    },
+  });
+
+  // עדכון ערכי הטופס כאשר התשובות משתנות
+  useEffect(() => {
+    if (currentFormAnswers.length > 0) {
+      const newValues = getInitialValues();
+      formik.setValues(newValues);
+    }
+  }, [currentFormAnswers]);
+
+  // שמירה אוטומטית
+  const handleAutoSave = async () => {
+    if (!hasUnsavedChanges || readOnly) return;
+    
+    setAutoSaveStatus('saving');
+    try {
+      const answers = prepareAnswersForSaving(formik.values);
+      if (answers.length > 0) {
+        await dispatch(saveFormAnswers({
+          kidId,
+          formId: form.formId,
+          answers
+        })).unwrap();
+        
+        setAutoSaveStatus('saved');
+        setHasUnsavedChanges(false);
+        setLastSaved(new Date());
+        
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      }
+    } catch (error) {
+      setAutoSaveStatus('error');
+      setTimeout(() => setAutoSaveStatus('idle'), 3000);
+    }
+  };
+
+  // הכנת התשובות לשמירה
+  const prepareAnswersForSaving = (values) => {
+    const answers = [];
+    
+    currentFormQuestions.forEach(question => {
+      const answer = values[`question_${question.questionNo}`];
+      const other = values[`question_${question.questionNo}_other`];
+      
+      if (answer) {
+        answers.push({
+          questionNo: question.questionNo,
+          answer: answer,
+          other: other || null,
+          byParent: false
+        });
+      }
+    });
+    
+    return answers;
+  };
+
+  const handleFormSubmit = async (values, sendToParent = false) => {
+    try {
+      const answers = prepareAnswersForSaving(values);
+
+      if (answers.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'לא נמצאו תשובות',
+          text: 'יש למלא לפחות שאלה אחת לפני השמירה',
+        });
+        return;
+      }
+
+      // שמירת התשובות
+      await dispatch(saveFormAnswers({
+        kidId,
+        formId: form.formId,
+        answers: answers.map(a => ({ ...a, byParent: sendToParent }))
+      })).unwrap();
+
+      setHasUnsavedChanges(false);
+
+      if (sendToParent) {
+        Swal.fire({
+          icon: 'success',
+          title: 'נשלח בהצלחה!',
+          text: 'הטופס נשלח להורים למילוי',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        // בדיקה אם כל השאלות החובה נענו
+        const allMandatoryAnswered = calculateProgress();
+        
+        if (allMandatoryAnswered) {
+          const result = await Swal.fire({
+            icon: 'success',
+            title: 'נשמר בהצלחה!',
+            text: 'כל השאלות החובה נענו. האם תרצה לסמן את הטופס כמושלם?',
+            showCancelButton: true,
+            confirmButtonText: 'כן, סמן כמושלם',
+            cancelButtonText: 'לא, המשך עריכה'
+          });
+          
+          if (result.isConfirmed && onFormComplete) {
+            onFormComplete(form.formId);
+          }
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'נשמר בהצלחה!',
+            text: 'התשובות נשמרו. עדיין יש שאלות חובה שלא נענו.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בשמירה',
+        text: error.message || 'אירעה שגיאה בשמירת הטופס',
+      });
+    }
+  };
+
+  const handleSendToParent = () => {
+    Swal.fire({
+      title: 'שליחת טופס להורים',
+      text: 'האם ברצונך לשלוח את הטופס להורים למילוי?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'כן, שלח',
+      cancelButtonText: 'ביטול',
+      confirmButtonColor: '#2196f3'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleFormSubmit(formik.values, true);
+      }
+    });
+  };
+
+  // עדכון תשובה מקומית בזמן הקלדה
+  const handleQuestionChange = (questionNo, value, otherValue = null) => {
+    // עדכון הRedux
+    dispatch(updateLocalAnswer({
+      questionNo,
+      answer: value,
+      other: otherValue
+    }));
+    
+    // עדכון הFormik
+    formik.setFieldValue(`question_${questionNo}`, value);
+    if (otherValue !== null) {
+      formik.setFieldValue(`question_${questionNo}_other`, otherValue);
     }
     
-    try {
-      // מבנה הנתונים לשליחה לשרת
-      const answersToSave = questions.map(question => ({
-        kidId,
-        formId: formId,
-        questionNo: question.questionNo,
-        answer: formState[question.questionNo] || '',
-        other: formState[`${question.questionNo}_other`] || null,
-        ansDate: new Date().toISOString(),
-        employeeId: isParentView ? null : undefined, // אם הטופס ממולא ע"י הורה, employeeId יהיה null
-        byParent: isParentView
-      }));
-      
-      await dispatch(saveAnswers(answersToSave)).unwrap();
-      
-      // עדכון ה-parent component
-      if (onUpdate) {
-        onUpdate(formState);
-      }
-      
-    } catch (error) {
-      console.error('שגיאה בשמירת הטופס:', error);
-    }
+    // סימון שיש שינויים לא שמורים
+    setHasUnsavedChanges(true);
   };
-  
-  // רינדור שאלה לפי סוג - אותו קוד כמו קודם
-  const renderQuestion = (question) => {
-    // הקוד לרינדור שאלות לפי סוג - כמו שהיה בדוגמה המקורית 
-  };
-  
-  // מצבי טעינה
+
   if (questionsStatus === 'loading') {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-        <CircularProgress />
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          טוען שאלות הטופס...
+        </Typography>
       </Box>
     );
   }
-  
-  if (questionsStatus === 'failed') {
+
+  if (questionsError) {
     return (
-      <Alert severity="error">אירעה שגיאה בטעינת שאלות הטופס</Alert>
+      <Alert severity="error" sx={{ mb: 3 }}>
+        <AlertTitle>שגיאה בטעינת הטופס</AlertTitle>
+        {questionsError}
+      </Alert>
     );
   }
-  
-  if (!questions || questions.length === 0) {
+
+  if (currentFormQuestions.length === 0) {
     return (
-      <Alert severity="warning">לא נמצאו שאלות עבור טופס זה.</Alert>
+      <Alert severity="warning" sx={{ mb: 3 }}>
+        <AlertTitle>אין שאלות</AlertTitle>
+        לא נמצאו שאלות עבור טופס זה
+      </Alert>
     );
   }
-  
+
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom align="center" sx={{ mb: 4, fontWeight: 'bold', color: 'primary.dark' }}>
-        {isParentView ? "טופס למילוי ע״י הורה" : "טופס למילוי"}
-      </Typography>
-      
-      {groups.map((group) => (
-        <StyledPaper key={group.name}>
-          <CategoryHeading variant="h6" gutterBottom>
-            {group.name}
-          </CategoryHeading>
+    <Box dir="rtl">
+      {/* סרגל התקדמות מעודכן */}
+      <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 120 }}>
+            התקדמות הטופס:
+          </Typography>
+          <Box sx={{ flexGrow: 1, mx: 2 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={progress} 
+              sx={{ height: 8, borderRadius: 4 }}
+            />
+          </Box>
+          <Typography variant="body2" color="primary" fontWeight="bold">
+            {progress}%
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            {currentFormAnswers.length} מתוך {currentFormQuestions.length} שאלות נענו
+          </Typography>
           
-          <Grid container spacing={2}>
-            {group.questions.map((question) => (
-              <Grid item xs={12} sm={question.questionType === 'textarea' ? 12 : 6} key={question.questionNo}>
-                {renderQuestion(question)}
-              </Grid>
-            ))}
-          </Grid>
-        </StyledPaper>
-      ))}
-      
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          disabled={saveStatus === 'loading'}
-          size="large"
-        >
-         {saveStatus === 'loading' ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            isParentView ? "שלח טופס" : "שמור תשובות"
+          {/* סטטוס שמירה אוטומטית */}
+          {!readOnly && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {autoSaveStatus === 'saving' && (
+                <>
+                  <CircularProgress size={16} />
+                  <Typography variant="caption" color="text.secondary">
+                    שומר...
+                  </Typography>
+                </>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <>
+                  <CheckIcon fontSize="small" color="success" />
+                  <Typography variant="caption" color="success.main">
+                    נשמר אוטומטית
+                  </Typography>
+                </>
+              )}
+              {autoSaveStatus === 'error' && (
+                <>
+                  <WarningIcon fontSize="small" color="error" />
+                  <Typography variant="caption" color="error.main">
+                    שגיאה בשמירה
+                  </Typography>
+                </>
+              )}
+              {hasUnsavedChanges && autoSaveStatus === 'idle' && (
+                <Typography variant="caption" color="warning.main">
+                  יש שינויים לא שמורים
+                </Typography>
+              )}
+              {lastSaved && (
+                <Typography variant="caption" color="text.secondary">
+                  נשמר לאחרונה: {lastSaved.toLocaleTimeString('he-IL')}
+                </Typography>
+              )}
+            </Box>
           )}
-        </Button>
-      </Box>
+        </Box>
+      </Paper>
+
+      {/* שגיאות */}
+      {answersError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>שגיאה</AlertTitle>
+          {answersError}
+        </Alert>
+      )}
+
+      <form onSubmit={formik.handleSubmit}>
+        {/* רנדור שאלות לפי קטגוריות */}
+        {Object.entries(groupQuestionsByCategory()).map(([category, questions], categoryIndex) => (
+          <Fade in={true} timeout={300 + (categoryIndex * 200)} key={category}>
+            <Paper 
+              sx={{ 
+                mb: 4, 
+                borderRadius: 3,
+                overflow: 'hidden',
+                border: '1px solid',
+                borderColor: 'grey.200'
+              }}
+            >
+              {/* כותרת קטגוריה */}
+              <Box 
+                sx={{ 
+                  p: 2, 
+                  backgroundColor: 'primary.main', 
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <Typography variant="h6" fontWeight="bold">
+                  {category}
+                </Typography>
+                <Chip 
+                  label={`${questions.length} שאלות`}
+                  size="small"
+                  sx={{ 
+                    backgroundColor: 'rgba(255,255,255,0.2)', 
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                />
+              </Box>
+              
+              {/* שאלות הקטגוריה */}
+              <Box sx={{ p: 3 }}>
+                <Grid container spacing={3}>
+                  {questions
+                    .sort((a, b) => a.questionNo - b.questionNo)
+                    .map((question, index) => (
+                      <Grid item xs={12} key={question.questionNo}>
+                        <QuestionRenderer
+                          question={question}
+                          value={formik.values[`question_${question.questionNo}`] || ''}
+                          otherValue={formik.values[`question_${question.questionNo}_other`] || ''}
+                          error={formik.touched[`question_${question.questionNo}`] && 
+                                 formik.errors[`question_${question.questionNo}`]}
+                          onChange={(value, otherValue) => 
+                            handleQuestionChange(question.questionNo, value, otherValue)
+                          }
+                          onBlur={() => formik.setFieldTouched(`question_${question.questionNo}`, true)}
+                          readOnly={readOnly}
+                        />
+                      </Grid>
+                    ))}
+                </Grid>
+              </Box>
+            </Paper>
+          </Fade>
+        ))}
+
+        {!readOnly && (
+          <>
+            <Divider sx={{ my: 4 }} />
+            
+            {/* כפתורי פעולה מעודכנים */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2 
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Chip 
+                  icon={<CheckIcon />}
+                  label={`${currentFormAnswers.length} תשובות נשמרו`}
+                  color="success"
+                  variant="outlined"
+                  size="small"
+                />
+                
+                {hasUnsavedChanges && (
+                  <Chip 
+                    icon={<AutoSaveIcon />}
+                    label="יש שינויים לא שמורים"
+                    color="warning"
+                    variant="outlined"
+                    size="small"
+                  />
+                )}
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {/* כפתור שמירה אוטומטית ידנית */}
+                <Button
+                  variant="outlined"
+                  startIcon={<AutoSaveIcon />}
+                  onClick={handleAutoSave}
+                  disabled={!hasUnsavedChanges || autoSaveStatus === 'saving'}
+                >
+                  שמור עכשיו
+                </Button>
+                
+                {showSendToParentOption && (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<SendIcon />}
+                    onClick={handleSendToParent}
+                    disabled={saveStatus === 'loading'}
+                  >
+                    שלח להורים
+                  </Button>
+                )}
+                
+                <Button
+                  type="submit"
+                  variant="contained"
+                  startIcon={saveStatus === 'loading' ? <CircularProgress size={20} /> : <SaveIcon />}
+                  disabled={saveStatus === 'loading'}
+                  sx={{ minWidth: 140 }}
+                >
+                  {saveStatus === 'loading' ? 'שומר...' : 'שמור והמשך'}
+                </Button>
+              </Box>
+            </Box>
+          </>
+        )}
+      </form>
+
+      {/* הודעת שמירה אוטומטית */}
+      <Snackbar
+        open={autoSaveStatus === 'saved'}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        message="נשמר אוטומטית"
+      />
     </Box>
   );
-};
-
-// משלים את החלק החסר של renderQuestion
-const renderQuestion = (question) => {
-  const { questionNo, questionText, questionType, isMandatory, isOpen, possibleValues, hasOther } = question;
-  const value = formState[questionNo] || '';
-  const otherValue = formState[`${questionNo}_other`] || '';
-  const error = errors[questionNo];
   
-  // פיצול אפשרויות אם יש
-  const options = possibleValues ? possibleValues.split(',') : [];
-  
-  switch (questionType) {
-    case 'text':
-      return (
-        <TextField
-          fullWidth
-          id={`question-${questionNo}`}
-          label={questionText}
-          value={value}
-          onChange={(e) => handleChange(questionNo, e.target.value)}
-          error={Boolean(error)}
-          helperText={error}
-          required={isMandatory}
-          margin="normal"
-        />
-      );
-      
-    case 'textarea':
-      return (
-        <TextField
-          fullWidth
-          id={`question-${questionNo}`}
-          label={questionText}
-          value={value}
-          onChange={(e) => handleChange(questionNo, e.target.value)}
-          multiline
-          rows={4}
-          error={Boolean(error)}
-          helperText={error}
-          required={isMandatory}
-          margin="normal"
-        />
-      );
-      
-    case 'number':
-      return (
-        <TextField
-          fullWidth
-          id={`question-${questionNo}`}
-          label={questionText}
-          value={value}
-          onChange={(e) => handleChange(questionNo, e.target.value)}
-          type="number"
-          error={Boolean(error)}
-          helperText={error}
-          required={isMandatory}
-          margin="normal"
-        />
-      );
-      
-    case 'date':
-      return (
-        <DatePicker
-          label={questionText}
-          value={value ? new Date(value) : null}
-          onChange={(date) => handleChange(questionNo, date ? date.toISOString() : null)}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              fullWidth
-              error={Boolean(error)}
-              helperText={error}
-              required={isMandatory}
-              margin="normal"
-            />
-          )}
-        />
-      );
-      
-    case 'select':
-      return (
-        <FormControl 
-          fullWidth 
-          error={Boolean(error)}
-          required={isMandatory}
-          margin="normal"
-        >
-          <InputLabel id={`select-label-${questionNo}`}>{questionText}</InputLabel>
-          <Select
-            labelId={`select-label-${questionNo}`}
-            id={`select-${questionNo}`}
-            value={value}
-            onChange={(e) => handleChange(questionNo, e.target.value)}
-            label={questionText}
-          >
-            {options.map((option) => (
-              <MenuItem key={option} value={option}>{option}</MenuItem>
-            ))}
-            {hasOther && (
-              <MenuItem value="אחר">אחר</MenuItem>
-            )}
-          </Select>
-          {error && <FormHelperText>{error}</FormHelperText>}
-          
-          {/* שדה "אחר" אם רלוונטי ונבחר */}
-          {hasOther && value === 'אחר' && (
-            <TextField
-              fullWidth
-              label="פירוט אחר"
-              value={otherValue}
-              onChange={(e) => handleOtherChange(questionNo, e.target.value)}
-              margin="normal"
-              size="small"
-            />
-          )}
-        </FormControl>
-      );
-      
-    case 'multiselect':
-      return (
-        <FormControl 
-          fullWidth 
-          component="fieldset" 
-          error={Boolean(error)}
-          required={isMandatory}
-          margin="normal"
-        >
-          <Typography variant="body1" gutterBottom>{questionText}</Typography>
-          <FormGroup>
-            {options.map((option) => {
-              const isChecked = value.includes(option);
-              return (
-                <FormControlLabel
-                  key={option}
-                  control={
-                    <Checkbox 
-                      checked={isChecked}
-                      onChange={(e) => {
-                        let newValue = [...(value.split(',').filter(v => v))];
-                        if (e.target.checked) {
-                          newValue.push(option);
-                        } else {
-                          newValue = newValue.filter(v => v !== option);
-                        }
-                        handleChange(questionNo, newValue.join(','));
-                      }}
-                    />
-                  }
-                  label={option}
-                />
-              );
-            })}
-            {hasOther && (
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={value.includes('אחר')}
-                    onChange={(e) => {
-                      let newValue = [...(value.split(',').filter(v => v))];
-                      if (e.target.checked) {
-                        newValue.push('אחר');
-                      } else {
-                        newValue = newValue.filter(v => v !== 'אחר');
-                      }
-                      handleChange(questionNo, newValue.join(','));
-                    }}
-                  />
-                }
-                label="אחר"
-              />
-            )}
-          </FormGroup>
-          {error && <FormHelperText>{error}</FormHelperText>}
-          
-          {/* שדה "אחר" אם רלוונטי ונבחר */}
-          {hasOther && value.includes('אחר') && (
-            <TextField
-              fullWidth
-              label="פירוט אחר"
-              value={otherValue}
-              onChange={(e) => handleOtherChange(questionNo, e.target.value)}
-              margin="normal"
-              size="small"
-            />
-          )}
-        </FormControl>
-      );
-      
-    default:
-      return (
-        <Typography variant="body2" color="error">
-          סוג שאלה לא מוכר: {questionType}
-        </Typography>
-      );
+  // פונקציה לקיבוץ שאלות לפי קטגוריה
+  function groupQuestionsByCategory() {
+    const grouped = {};
+    currentFormQuestions.forEach(question => {
+      const category = question.category || 'כללי';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(question);
+    });
+    return grouped;
   }
 };
 

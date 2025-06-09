@@ -10,7 +10,7 @@ namespace halocare.DAL.Models
         public int QuestionNo { get; set; }
         public DateTime AnsDate { get; set; }
         public string Answer { get; set; }
-        public string Other { get; set; }
+        public string? Other { get; set; }
         public int? EmployeeId { get; set; }
         public bool ByParent { get; set; }
     }

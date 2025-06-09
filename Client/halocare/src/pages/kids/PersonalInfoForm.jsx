@@ -848,26 +848,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 </FormControl>
               </Grid>
 
-              {/* נתיב לתיקיה - רלוונטי למערכת הקבצים */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  id="pathToFolder"
-                  name="pathToFolder"
-                  label="נתיב לתיקיה"
-                  placeholder="נתיב לתיקיית המסמכים של הילד"
-                  value={formik.values.pathToFolder}
-                  onChange={formik.handleChange}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <FileIcon color="primary" fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              {console.log(classes)}
+
 
               {/* שדה לבחירת כיתה אם קיים מידע הכיתות */}
               {classes && classes.length > 0 && (

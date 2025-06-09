@@ -10,5 +10,9 @@
         public int HowManyVal { get; set; }
         public string PossibleValues { get; set; }
         public bool HasOther { get; set; }
+        public string Category { get; set; }
+        public string QuestionType { get; set; }
+        
     }
 }
+
