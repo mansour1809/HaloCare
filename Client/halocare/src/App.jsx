@@ -14,7 +14,8 @@ import PrivateRoute from './components/PrivateRoute';
 import Calendar from './pages/calendar/Calendar';
 import EmployeeForm from './pages/Employees/EmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
-import KidsManagment from './pages/kids/KidsManagement';
+// import KidsManagment from './pages/kids/KidsManagement';
+import KidsManagment from './pages/addKid/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
 import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
@@ -35,7 +36,8 @@ import SystemSettings from './pages/SystemSettings';
 // import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
 // import KidProfile from './pages/addKid/KidProfile';
 import { DynamicForm } from '@mui/icons-material';
-import KidOnboarding from './pages/kids/KidOnboarding';
+// import KidOnboarding from './pages/kids/KidOnboarding';
+import KidOnboarding from './pages/addKid/KidOnboarding';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({

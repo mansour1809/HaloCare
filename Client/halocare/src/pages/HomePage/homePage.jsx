@@ -1,389 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+// src/pages/HomePage.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Box,
+  Container,
   Typography,
-  Paper,
   Grid,
-  Checkbox,
-  TextField,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Alert,
   Card,
-  CardContent
+  CardContent,
+  CardActionArea,
+  Box,
+  Avatar,
+  Chip,
+  Button,
+  Paper,
+  LinearProgress
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import EventNoteIcon from '@mui/icons-material/EventNote';
-import GroupsIcon from '@mui/icons-material/Groups';
-
-// נייבא את ה-actions מה-slices
-import { fetchAttendanceByDate } from '../../redux/features/attendanceSlice';
-import { fetchEvents } from '../../redux/features/eventsSlice';
-import { fetchEventTypes } from '../../redux/features/eventTypesSlice';
+import {
+  Group as GroupIcon,
+  PersonAdd as AddIcon,
+  Timeline as ProgressIcon,
+  Assessment as ReportsIcon,
+  TrendingUp as TrendingIcon,
+  CheckCircle as CompleteIcon
+} from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
 const HomePage = () => {
-  const dispatch = useDispatch();
-  
-  // גישה ישירה למבנה הנכון בחנות
-  const attendance = useSelector(state => state.attendance);
-  const events = useSelector(state => state.events);
-  const eventTypes = useSelector(state => state.eventTypes?.eventTypes || []);
-  
-  // משתני מצב מקומיים
-  const [tasks, setTasks] = useState([
-    { text: 'לסדר את הכיתה', done: false },
-    { text: 'לבדוק ציוד יצירה', done: false },
-  ]);
-  const [newTask, setNewTask] = useState('');
-  const [dailyMessage, setDailyMessage] = useState('זכרו שמחר מגיעה מפקחת — נא להכין את לוחות הקיר בהתאם 🙏');
-  const [editOpen, setEditOpen] = useState(false);
-  const [editedMessage, setEditedMessage] = useState('');
-  const [isAdmin, setIsAdmin] = useState(true);
-  const [attendanceSummary, setAttendanceSummary] = useState([]);
-  const [todayEvents, setTodayEvents] = useState([]);
-  const [error, setError] = useState(null);
-  
-  // חישוב התאריך הנוכחי בפורמט YYYY-MM-DD
-  const today = new Date().toISOString().split('T')[0];
+  const navigate = useNavigate();
+  const theme = useTheme();
 
-  // טעינת נתונים ראשוניים
-  useEffect(() => {
-    // טעינת נוכחות להיום
-    dispatch(fetchAttendanceByDate(today));
-    
-    // טעינת כל האירועים
-    dispatch(fetchEvents());
-    
-    // טעינת סוגי אירועים (לצבעים)
-    dispatch(fetchEventTypes());
-  }, [dispatch, today]);
-  
-  // חישוב סיכום נוכחות
-  useEffect(() => {
-    // גישה לנתוני נוכחות בצורה בטוחה
-    const attendanceData = attendance?.attendances || [];
-    
-    if (attendanceData.length > 0) {
-      // חישוב סיכום נוכחות לפי כיתה
-      const summary = {};
-      
-      attendanceData.forEach(record => {
-        // בודק את שדה הסטטוס (יתכן ששם השדה שונה במערכת שלך)
-        if (record.attendanceStatus === 'נוכח' || record.status === 'נוכח') {
-          const className = record.className || record.class?.name || 'לא משויך לכיתה';
-          summary[className] = (summary[className] || 0) + 1;
-        }
-      });
-      
-      // המרה למערך לתצוגה
-      const summaryArray = Object.entries(summary).map(([className, count]) => ({
-        className,
-        count
-      }));
-      
-      setAttendanceSummary(summaryArray);
+  const quickActions = [
+    {
+      title: 'הוסף ילד חדש',
+      description: 'התחל תהליך קליטה לילד חדש',
+      icon: <AddIcon />,
+      color: 'primary',
+      path: '/kids/new'
+    },
+    {
+      title: 'ניהול ילדים',
+      description: 'צפה ונהל את כל הילדים במערכת',
+      icon: <GroupIcon />,
+      color: 'secondary',
+      path: '/kids'
+    },
+    {
+      title: 'דוחות קליטה',
+      description: 'צפה בדוחות והתקדמות',
+      icon: <ReportsIcon />,
+      color: 'success',
+      path: '/reports'
     }
-  }, [attendance]);
-  
-  // עיבוד אירועים עם צבעים
-  useEffect(() => {
-    // בדיקת טעינת אירועים
-    const eventsData = events?.events || [];
-    if (eventsData.length > 0) {
-      // סינון אירועים רק להיום
-      const filteredEvents = eventsData.filter(event => {
-        const eventDate = event.start?.split('T')[0];
-        return eventDate === today;
-      });
-      
-      // הוספת מידע על צבעים מטבלת סוגי אירועים
-      const coloredEvents = filteredEvents.map(event => {
-        // חיפוש סוג האירוע וצבע מתאים
-        const eventType = eventTypes.find(type => 
-          type.id === event.eventTypeId || type.eventTypeId === event.eventTypeId
-        );
-        
-        return {
-          ...event,
-          color: eventType?.color || '#1976d2', // צבע ברירת מחדל אם אין התאמה
-          typeDescription: eventType?.description || event.eventType || 'אירוע'
-        };
-      });
-      
-      // מיון לפי זמן התחלה
-      coloredEvents.sort((a, b) => 
-        new Date(a.start) - new Date(b.start)
-      );
-      
-      setTodayEvents(coloredEvents);
+  ];
+
+  const stats = [
+    {
+      title: 'סה"כ ילדים',
+      value: '24',
+      change: '+3',
+      changeType: 'positive',
+      icon: <GroupIcon />
+    },
+    {
+      title: 'הושלמו השבוע',
+      value: '8',
+      change: '+2',
+      changeType: 'positive',
+      icon: <CompleteIcon />
+    },
+    {
+      title: 'בתהליך כעת',
+      value: '12',
+      change: '-1',
+      changeType: 'negative',
+      icon: <ProgressIcon />
+    },
+    {
+      title: 'אחוז השלמה',
+      value: '85%',
+      change: '+5%',
+      changeType: 'positive',
+      icon: <TrendingIcon />
     }
-  }, [events, eventTypes, today]);
-  
-  // פורמט שעה לתצוגה
-  const formatTime = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('he-IL', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false 
-    });
-  };
-  
-  // פונקציות למשימות
-  const handleTaskToggle = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].done = !updatedTasks[index].done;
-    setTasks(updatedTasks);
-  };
-  
-  const handleAddTask = () => {
-    if (newTask.trim()) {
-      setTasks([...tasks, { text: newTask, done: false }]);
-      setNewTask('');
-    }
-  };
-  
-  // רענון הנתונים
-  const handleRefresh = () => {
-    dispatch(fetchAttendanceByDate(today));
-    dispatch(fetchEvents());
-  };
-  
-  // עריכת הודעה יומית
-  const handleEditMessage = () => {
-    setEditedMessage(dailyMessage);
-    setEditOpen(true);
-  };
-  
-  const handleSaveMessage = () => {
-    setDailyMessage(editedMessage);
-    setEditOpen(false);
-  };
-  
-  // בדיקה אם יש טעינה
-  const isLoading = attendance?.loading || events?.loading;
-  
-  if (isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
+  ];
+
   return (
-    <Box sx={{ p: 4, backgroundColor: '#eaf4fc', minHeight: '100vh' }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-      
-      {/* הודעה יומית מהמנהלת */}
-      <Paper elevation={4} sx={{ p: 3, mb: 4, backgroundColor: '#fff9c4', position: 'relative' }}>
-        <Typography variant="h6" fontWeight="bold">📢 הודעה יומית מהמנהלת:</Typography>
-        <Typography variant="body1" sx={{ mt: 1 }}>{dailyMessage}</Typography>
-        {isAdmin && (
-          <IconButton
-            onClick={handleEditMessage}
-            sx={{ position: 'absolute', top: 8, left: 8 }}
-          >
-            <EditIcon />
-          </IconButton>
-        )}
-      </Paper>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Welcome Section */}
+      <Box sx={{ mb: 6 }}>
+        <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
+          ברוכים הבאים למערכת הקליטה
+        </Typography>
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          ניהול מקצועי ויעיל של תהליכי קליטת ילדים
+        </Typography>
+      </Box>
 
-      {/* דיאלוג עריכת הודעה */}
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-        <DialogTitle>עריכת הודעה יומית</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            value={editedMessage}
-            onChange={(e) => setEditedMessage(e.target.value)}
-            autoFocus
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditOpen(false)}>ביטול</Button>
-          <Button variant="contained" onClick={handleSaveMessage}>שמור</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 6 }}>
+        {stats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography variant="h4" fontWeight="bold" color="primary.main">
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {stat.title}
+                    </Typography>
+                    <Chip
+                      label={stat.change}
+                      size="small"
+                      color={stat.changeType === 'positive' ? 'success' : 'error'}
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: 56,
+                      height: 56
+                    }}
+                  >
+                    {stat.icon}
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
-      <Grid container spacing={4}>
-        {/* לוח משימות */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" fontWeight="bold">📋 לוח משימות</Typography>
-              <IconButton onClick={handleRefresh} size="small" disabled={isLoading}>
-                <RefreshIcon />
-              </IconButton>
-            </Box>
-            <List>
-              {tasks.map((task, index) => (
-                <ListItem key={index}>
-                  <Checkbox
-                    checked={task.done}
-                    onChange={() => handleTaskToggle(index)}
-                  />
-                  <ListItemText
-                    primary={task.text}
-                    sx={{ textDecoration: task.done ? 'line-through' : 'none' }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-            <Box sx={{ display: 'flex', mt: 2 }}>
-              <TextField
-                label="הוסף משימה"
-                size="small"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddTask()}
-                sx={{ flexGrow: 1, mr: 1 }}
-              />
-              <Button variant="contained" onClick={handleAddTask}>הוסף</Button>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* יומן + נוכחות */}
-        <Grid item xs={12} md={6}>
-          {/* יומן יומי - דומה ללוח שנה */}
-          <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-            <Box display="flex" alignItems="center" mb={2}>
-              <EventNoteIcon sx={{ mr: 1, color: '#1976d2' }} />
-              <Typography variant="h6" fontWeight="bold">לוח זמנים יומי</Typography>
-            </Box>
-            
-            {/* תצוגת אירועים בדומה ללוח השנה */}
-            <Box sx={{ position: 'relative', minHeight: '300px', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-              {todayEvents.length > 0 ? (
-                todayEvents.map((event, index) => {
-                  // חישוב מיקום וגובה לפי זמן
-                  const startTime = new Date(event.start);
-                  const endTime = event.end ? new Date(event.end) : new Date(startTime.getTime() + 60 * 60 * 1000);
-                  
-                  const startHour = startTime.getHours() + startTime.getMinutes() / 60;
-                  const endHour = endTime.getHours() + endTime.getMinutes() / 60;
-                  
-                  // מיקום וגודל בוקס האירוע (7:00-18:00 = 11 שעות)
-                  const top = ((startHour - 7) / 11) * 100;
-                  const height = ((endHour - startHour) / 11) * 100;
-                  
-                  return (
-                    <Box
-                      key={event.id || index}
+      {/* Quick Actions */}
+      <Box sx={{ mb: 6 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          פעולות מהירות
+        </Typography>
+        <Grid container spacing={3}>
+          {quickActions.map((action, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card>
+                <CardActionArea
+                  onClick={() => navigate(action.path)}
+                  sx={{ height: '100%', p: 3 }}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Avatar
                       sx={{
-                        position: 'absolute',
-                        top: `${top}%`,
-                        height: `${height}%`,
-                        width: 'calc(100% - 60px)',
-                        right: '60px', // מרחק מציר הזמן
-                        backgroundColor: event.color,
-                        borderRadius: '4px',
-                        padding: '8px',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        opacity: 0.9,
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 1,
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                        }
+                        bgcolor: `${action.color}.main`,
+                        width: 64,
+                        height: 64,
+                        mx: 'auto',
+                        mb: 2
                       }}
                     >
-                      <Typography variant="subtitle2" fontWeight="bold" sx={{ color: '#fff' }}>
-                        {formatTime(event.start)} - {formatTime(event.end)}
-                      </Typography>
-                      <Typography variant="body2" noWrap sx={{ color: '#fff' }}>
-                        {event.typeDescription}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#fff', mt: 'auto' }}>
-                        {event.description || event.title}
-                      </Typography>
-                    </Box>
-                  );
-                })
-              ) : (
-                <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-                  אין אירועים מתוכננים להיום
-                </Typography>
-              )}
-              
-              {/* ציר זמנים */}
-              <Box sx={{ position: 'absolute', top: 0, right: 0, height: '100%', width: '60px' }}>
-                {[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((hour) => (
-                  <Box key={hour} sx={{ 
-                    position: 'absolute', 
-                    top: `${(hour - 7) / 11 * 100}%`, 
-                    right: 0, 
-                    width: '100%',
-                    borderTop: '1px solid #e0e0e0',
-                    paddingRight: '5px',
-                    textAlign: 'right',
-                    fontSize: '0.8rem',
-                    color: '#666'
-                  }}>
-                    {`${hour}:00`}
+                      {action.icon}
+                    </Avatar>
+                    <Typography variant="h6" fontWeight="medium" gutterBottom>
+                      {action.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {action.description}
+                    </Typography>
                   </Box>
-                ))}
-              </Box>
-            </Box>
-          </Paper>
-
-          {/* סיכום נוכחות */}
-          <Paper elevation={3} sx={{ p: 3, backgroundColor: '#e3f2fd' }}>
-            <Box display="flex" alignItems="center" mb={2}>
-              <GroupsIcon sx={{ mr: 1, color: '#1976d2' }} />
-              <Typography variant="h6" fontWeight="bold">סיכום נוכחות יומית</Typography>
-            </Box>
-            
-            {attendanceSummary.length > 0 ? (
-              <Grid container spacing={2}>
-                {attendanceSummary.map((item, index) => (
-                  <Grid item xs={12} sm={6} key={index}>
-                    <Card sx={{ backgroundColor: '#fff', boxShadow: 1 }}>
-                      <CardContent sx={{ py: 1.5 }}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {item.className}
-                        </Typography>
-                        <Typography variant="h4" color="primary">
-                          {item.count}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          ילדים נוכחים
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
-                אין נתוני נוכחות להיום
-              </Typography>
-            )}
-          </Paper>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
+
+      {/* Recent Activity */}
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          פעילות אחרונה
+        </Typography>
+        <Box sx={{ mt: 2 }}>
+          {[
+            { action: 'הושלם תהליך קליטה', kid: 'יוסי כהן', time: 'לפני 2 שעות' },
+            { action: 'נוצר ילד חדש', kid: 'שרה לוי', time: 'לפני 4 שעות' },
+            { action: 'עודכן טופס', kid: 'דוד מזרחי', time: 'לפני יום' }
+          ].map((activity, index) => (
+            <Box 
+              key={index}
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                py: 2,
+                borderBottom: index < 2 ? `1px solid ${theme.palette.divider}` : 'none'
+              }}
+            >
+              <Box>
+                <Typography variant="body1" fontWeight="medium">
+                  {activity.action}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {activity.kid}
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                {activity.time}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

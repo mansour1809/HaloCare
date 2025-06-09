@@ -18,7 +18,6 @@ import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
 import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
-// import { baseURL } from "../../components/common/axiosConfig";
 
 // יצירת תמה מותאמת לעברית
 const rtlTheme = createTheme({

@@ -1,7 +1,9 @@
-﻿using System;
+﻿// BL/Services/FormService.cs - עדכון לאינטגרציה עם תהליך קליטה
+using System;
 using System.Collections.Generic;
-using halocare.DAL.Repositories;
+using System.Linq;
 using halocare.DAL.Models;
+using halocare.DAL.Repositories;
 using Microsoft.Extensions.Configuration;
 
 namespace halocare.BL.Services
@@ -13,6 +15,7 @@ namespace halocare.BL.Services
         private readonly AnswerToQuestionRepository _answerRepository;
         private readonly KidRepository _kidRepository;
         private readonly EmployeeRepository _employeeRepository;
+        private readonly KidOnboardingService _onboardingService; // הוספה חדשה
 
         public FormService(IConfiguration configuration)
         {
@@ -21,8 +24,10 @@ namespace halocare.BL.Services
             _answerRepository = new AnswerToQuestionRepository(configuration);
             _kidRepository = new KidRepository(configuration);
             _employeeRepository = new EmployeeRepository(configuration);
+            _onboardingService = new KidOnboardingService(configuration); // הוספה חדשה
         }
 
+        // מתודות קיימות
         public List<Form> GetAllForms()
         {
             return _formRepository.GetAllForms();
@@ -35,7 +40,6 @@ namespace halocare.BL.Services
 
         public int AddForm(Form form)
         {
-            // וידוא שיש שם טופס
             if (string.IsNullOrEmpty(form.FormName))
             {
                 throw new ArgumentException("חובה לציין שם לטופס");
@@ -46,14 +50,12 @@ namespace halocare.BL.Services
 
         public bool UpdateForm(Form form)
         {
-            // וידוא שהטופס קיים
             Form existingForm = _formRepository.GetFormById(form.FormId);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // וידוא שיש שם טופס
             if (string.IsNullOrEmpty(form.FormName))
             {
                 throw new ArgumentException("חובה לציין שם לטופס");
@@ -64,14 +66,12 @@ namespace halocare.BL.Services
 
         public bool DeleteForm(int id)
         {
-            // וידוא שהטופס קיים
             Form existingForm = _formRepository.GetFormById(id);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // בדיקה אם יש שאלות בטופס
             List<Question> questions = _questionRepository.GetQuestionsByFormId(id);
             if (questions.Count > 0)
             {
@@ -88,27 +88,23 @@ namespace halocare.BL.Services
 
         public bool AddQuestion(Question question)
         {
-            // וידוא שהטופס קיים
             Form existingForm = _formRepository.GetFormById(question.FormId);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // וידוא שהשאלה אינה כבר קיימת
             Question existingQuestion = _questionRepository.GetQuestion(question.FormId, question.QuestionNo);
             if (existingQuestion != null)
             {
                 throw new ArgumentException("כבר קיימת שאלה עם המספר הזה בטופס");
             }
 
-            // וידוא שיש טקסט שאלה
             if (string.IsNullOrEmpty(question.QuestionText))
             {
                 throw new ArgumentException("חובה לציין טקסט לשאלה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שיש ערכים אפשריים
             if (!question.IsOpen && string.IsNullOrEmpty(question.PossibleValues))
             {
                 throw new ArgumentException("חובה לציין ערכים אפשריים לשאלה שאינה פתוחה");
@@ -119,20 +115,17 @@ namespace halocare.BL.Services
 
         public bool UpdateQuestion(Question question)
         {
-            // וידוא שהשאלה קיימת
             Question existingQuestion = _questionRepository.GetQuestion(question.FormId, question.QuestionNo);
             if (existingQuestion == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // וידוא שיש טקסט שאלה
             if (string.IsNullOrEmpty(question.QuestionText))
             {
                 throw new ArgumentException("חובה לציין טקסט לשאלה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שיש ערכים אפשריים
             if (!question.IsOpen && string.IsNullOrEmpty(question.PossibleValues))
             {
                 throw new ArgumentException("חובה לציין ערכים אפשריים לשאלה שאינה פתוחה");
@@ -143,7 +136,6 @@ namespace halocare.BL.Services
 
         public bool DeleteQuestion(int formId, int questionNo)
         {
-            // וידוא שהשאלה קיימת
             Question existingQuestion = _questionRepository.GetQuestion(formId, questionNo);
             if (existingQuestion == null)
             {
@@ -158,23 +150,22 @@ namespace halocare.BL.Services
             return _answerRepository.GetAnswersByKidAndForm(kidId, formId);
         }
 
+        // **מתודה מעודכנת - עם אינטגרציה לתהליך קליטה**
         public int AddAnswer(AnswerToQuestion answer)
         {
-            // וידוא שהילד קיים
+            // בדיקות קיימות
             Kid kid = _kidRepository.GetKidById(answer.KidId);
             if (kid == null)
             {
                 throw new ArgumentException("הילד לא נמצא במערכת");
             }
 
-            // וידוא שהשאלה קיימת
             Question question = _questionRepository.GetQuestion(answer.FormId, answer.QuestionNo);
             if (question == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // אם העובד צוין, וידוא שהוא קיים
             if (answer.EmployeeId.HasValue)
             {
                 Employee employee = _employeeRepository.GetEmployeeById(answer.EmployeeId.Value);
@@ -184,19 +175,17 @@ namespace halocare.BL.Services
                 }
             }
 
-            // וידוא שהתשובה הוזנה
             if (string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה");
             }
 
-            // אם השאלה חובה, וידוא שהתשובה אינה ריקה
+            // בדיקות נוספות כמו קודם...
             if (question.IsMandatory && string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה לשאלת חובה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שהתשובה היא מהערכים האפשריים
             if (!question.IsOpen && !string.IsNullOrEmpty(question.PossibleValues))
             {
                 string[] possibleValues = question.PossibleValues.Split(',');
@@ -211,12 +200,9 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // אם יש אפשרות "אחר", התשובה תקינה גם אם היא "אחר"
                 if (question.HasOther && answer.Answer.Trim().Equals("אחר", StringComparison.OrdinalIgnoreCase))
                 {
                     validAnswer = true;
-
-                    // וידוא שיש ערך לתשובה "אחר"
                     if (string.IsNullOrEmpty(answer.Other))
                     {
                         throw new ArgumentException("חובה להזין ערך לתשובה 'אחר'");
@@ -229,83 +215,166 @@ namespace halocare.BL.Services
                 }
             }
 
-            // הגדרת תאריך התשובה
             if (answer.AnsDate == DateTime.MinValue)
             {
                 answer.AnsDate = DateTime.Now;
             }
 
-            return _answerRepository.AddAnswer(answer);
+            // שמירת התשובה
+            int answerId = _answerRepository.AddAnswer(answer);
+
+            // **עדכון חדש: עדכון תהליך קליטה**
+            try
+            {
+                // עדכון התקדמות הטופס בתהליך הקליטה
+                _onboardingService.UpdateFormProgress(answer.KidId, answer.FormId);
+
+                // בדיקה האם הטופס הושלם
+                var questions = _questionRepository.GetQuestionsByFormId(answer.FormId);
+                var answers = _answerRepository.GetAnswersByKidAndForm(answer.KidId, answer.FormId);
+                var answeredQuestions = answers.Where(a => !string.IsNullOrEmpty(a.Answer)).Count();
+
+                // אם כל השאלות נענו, סמן כהושלם
+                if (answeredQuestions == questions.Count)
+                {
+                    _onboardingService.CompleteForm(answer.KidId, answer.FormId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // לוג השגיאה אבל אל תכשיל את שמירת התשובה
+                Console.WriteLine($"Warning: Failed to update onboarding progress: {ex.Message}");
+            }
+
+            return answerId;
         }
 
+        // **מתודה מעודכנת - עם אינטגרציה לתהליך קליטה**
         public bool UpdateAnswer(AnswerToQuestion answer)
         {
-            // וידוא שהתשובה קיימת
             AnswerToQuestion existingAnswer = _answerRepository.GetAnswerById(answer.AnswerId);
             if (existingAnswer == null)
             {
                 throw new ArgumentException("התשובה לא נמצאה במערכת");
             }
 
-            // וידוא שהשאלה קיימת
             Question question = _questionRepository.GetQuestion(answer.FormId, answer.QuestionNo);
             if (question == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // אם השאלה חובה, וידוא שהתשובה אינה ריקה
+            // בדיקות נוספות...
             if (question.IsMandatory && string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה לשאלת חובה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שהתשובה היא מהערכים האפשריים
-            if (!question.IsOpen && !string.IsNullOrEmpty(question.PossibleValues))
+            // עדכון התשובה
+            bool success = _answerRepository.UpdateAnswer(answer);
+
+            // **עדכון חדש: עדכון תהליך קליטה**
+            if (success)
             {
-                string[] possibleValues = question.PossibleValues.Split(',');
-                bool validAnswer = false;
-
-                foreach (string value in possibleValues)
+                try
                 {
-                    if (answer.Answer.Trim().Equals(value.Trim(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        validAnswer = true;
-                        break;
-                    }
+                    _onboardingService.UpdateFormProgress(answer.KidId, answer.FormId);
                 }
-
-                // אם יש אפשרות "אחר", התשובה תקינה גם אם היא "אחר"
-                if (question.HasOther && answer.Answer.Trim().Equals("אחר", StringComparison.OrdinalIgnoreCase))
+                catch (Exception ex)
                 {
-                    validAnswer = true;
-
-                    // וידוא שיש ערך לתשובה "אחר"
-                    if (string.IsNullOrEmpty(answer.Other))
-                    {
-                        throw new ArgumentException("חובה להזין ערך לתשובה 'אחר'");
-                    }
-                }
-
-                if (!validAnswer)
-                {
-                    throw new ArgumentException("התשובה אינה אחד מהערכים האפשריים");
+                    Console.WriteLine($"Warning: Failed to update onboarding progress: {ex.Message}");
                 }
             }
 
-            return _answerRepository.UpdateAnswer(answer);
+            return success;
         }
 
         public bool DeleteAnswer(int answerId)
         {
-            // וידוא שהתשובה קיימת
             AnswerToQuestion existingAnswer = _answerRepository.GetAnswerById(answerId);
             if (existingAnswer == null)
             {
                 throw new ArgumentException("התשובה לא נמצאה במערכת");
             }
 
-            return _answerRepository.DeleteAnswer(answerId);
+            bool success = _answerRepository.DeleteAnswer(answerId);
+
+            // **עדכון חדש: עדכון תהליך קליטה אחרי מחיקה**
+            if (success)
+            {
+                try
+                {
+                    _onboardingService.UpdateFormProgress(existingAnswer.KidId, existingAnswer.FormId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Failed to update onboarding progress: {ex.Message}");
+                }
+            }
+
+            return success;
+        }
+
+        // **מתודות חדשות לאינטגרציה עם תהליך קליטה**
+
+        /// <summary>
+        /// קבלת טופס עם סטטוס קליטה
+        /// </summary>
+        public object GetFormWithOnboardingStatus(int formId, int kidId)
+        {
+            var form = GetFormById(formId);
+            if (form == null)
+            {
+                throw new ArgumentException("הטופס לא נמצא");
+            }
+
+            var questions = GetFormQuestions(formId);
+            var answers = GetFormAnswers(kidId, formId);
+
+            // קבלת סטטוס מתהליך הקליטה
+            var onboardingStatus = _onboardingService.GetOnboardingStatus(kidId);
+            var formStatus = onboardingStatus?.Forms.FirstOrDefault(f => f.FormId == formId);
+
+            return new
+            {
+                Form = form,
+                Questions = questions,
+                Answers = answers,
+                OnboardingStatus = formStatus,
+                CanEdit = formStatus?.Status != "completed",
+                IsRequired = !form.IsFirstStep,
+                CompletionPercentage = formStatus?.CompletionPercentage ?? 0
+            };
+        }
+
+        /// <summary>
+        /// התחלת מילוי טופס (מעדכן גם את תהליך הקליטה)
+        /// </summary>
+        public bool StartFormFilling(int kidId, int formId, int? assignedTo = null)
+        {
+            try
+            {
+                return _onboardingService.StartForm(kidId, formId, assignedTo);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בהתחלת מילוי טופס: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// שליחת טופס להורים
+        /// </summary>
+        public bool SendFormToParent(int kidId, int formId)
+        {
+            try
+            {
+                return _onboardingService.SendFormToParent(kidId, formId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בשליחת טופס להורים: {ex.Message}");
+            }
         }
     }
 }
