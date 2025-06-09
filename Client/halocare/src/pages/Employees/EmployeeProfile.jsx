@@ -753,13 +753,12 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useEmployees } from './EmployeesContext';
-import { useAuth } from './AuthContext'; // הוספתי את זה
+import { useAuth } from '../../components/login/AuthContext'; // הוספתי את זה
 import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
 import Swal from 'sweetalert2';
+import { baseURL } from "../../components/common/axiosConfig";
 
-// TODO: החליפי את זה עם ה-baseUrl האמיתי שלך
-const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // יצירת תמה מותאמת לעברית
 const rtlTheme = createTheme({
