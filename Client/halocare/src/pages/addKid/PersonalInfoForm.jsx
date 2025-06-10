@@ -402,9 +402,11 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     enableReinitialize: true,
     onSubmit: async (values) => {
       try {
+        console.log(isEditMode);
         // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
         if (!isEditMode) {
           const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
+          console.log(existingKid);
           if (existingKid) {
             Swal.fire({
               icon: 'warning',

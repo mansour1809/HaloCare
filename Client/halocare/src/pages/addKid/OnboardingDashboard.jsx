@@ -1,470 +1,416 @@
-// components/kids/OnboardingDashboard.jsx - עדכון מלא
+// components/kids/OnboardingDashboard.jsx - גרסה מעודכנת עם Redux החדש
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Grid, Card, CardContent, Typography, Chip, Button,
-  LinearProgress, Alert, AlertTitle, Dialog, DialogTitle,
-  DialogContent, DialogActions, CircularProgress, Paper,
-  Divider, List, ListItem, ListItemIcon, ListItemText,
-  ListItemButton, Tooltip, IconButton
+  Box, Grid, Card, CardContent, CardActions, Typography, Button,
+  Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Alert, CircularProgress, Tooltip, LinearProgress
 } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
 import {
-  CheckCircle as CheckIcon,
-  Schedule as ScheduleIcon,
   Edit as EditIcon,
   Send as SendIcon,
-  PlayArrow as StartIcon,
-  Info as InfoIcon,
-  Assignment as AssignmentIcon,
-  Person as PersonIcon,
+  CheckCircle as CheckIcon,
+  Schedule as ScheduleIcon,
   Email as EmailIcon,
-  Warning as WarningIcon
+  VerifiedUser as CompletedByParentIcon,
+  HourglassEmpty as PendingIcon,
+  Visibility as ViewIcon
 } from '@mui/icons-material';
 
-import {
-  startForm,
-  completeForm,
-  sendFormToParent,
-  clearError
+// 🔥 Redux החדש
+import { 
+  updateFormStatus,
+  fetchOnboardingStatus 
 } from '../../Redux/features/onboardingSlice';
-
-// Styled Components
-const StyledCard = styled(Card)(({ theme, formStatus }) => {
-  const getCardStyles = () => {
-    switch (formStatus) {
-      case 'completed':
-      case 'completed_by_parent':
-        return {
-          borderLeft: `6px solid ${theme.palette.success.main}`,
-          backgroundColor: theme.palette.success.light + '10',
-        };
-      case 'in_progress':
-        return {
-          borderLeft: `6px solid ${theme.palette.primary.main}`,
-          backgroundColor: theme.palette.primary.light + '10',
-        };
-      case 'sent_to_parent':
-        return {
-          borderLeft: `6px solid ${theme.palette.info.main}`,
-          backgroundColor: theme.palette.info.light + '10',
-        };
-      default:
-        return {
-          borderLeft: `6px solid ${theme.palette.grey[300]}`,
-          backgroundColor: theme.palette.grey[50],
-        };
-    }
-  };
-
-  return {
-    height: '100%',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer',
-    ...getCardStyles(),
-    '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: theme.shadows[8],
-    }
-  };
-});
-
-const StatsCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  borderRadius: theme.spacing(2),
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-  color: 'white',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(255,255,255,0.1)',
-    transform: 'skewY(-12deg) translateY(-50%)',
-  }
-}));
+import { 
+  sendFormToParent,
+  markFormCompletedByParent 
+} from '../../Redux/features/formsSlice';
 
 const OnboardingDashboard = ({ 
-  kidId, 
   onboardingData, 
-  onFormSelect,
-  loading = false 
+  selectedKid, 
+  onFormClick, 
+  onRefresh 
 }) => {
   const dispatch = useDispatch();
-  const theme = useTheme();
+  
+  // State מקומי
   const [sendDialog, setSendDialog] = useState({ open: false, form: null });
-  const { formActions, error } = useSelector(state => state.onboarding);
+  const [parentEmail, setParentEmail] = useState('');
+  const [sendingToParent, setSendingToParent] = useState(false);
 
-  if (!onboardingData) {
-    return (
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <AlertTitle>אין נתוני קליטה</AlertTitle>
-        לא נמצא תהליך קליטה עבור ילד זה
-      </Alert>
-    );
-  }
-
-  const { process, forms, stats, reminders } = onboardingData;
-
-  // פונקציות עזר
-  const getStatusConfig = (form) => {
-    switch (form.status) {
-      case 'completed':
-        return {
-          icon: <CheckIcon />,
-          label: 'הושלם',
-          color: 'success',
-          variant: 'filled'
-        };
-      case 'completed_by_parent':
-        return {
-          icon: <CheckIcon />,
-          label: 'הושלם ע"י הורה',
-          color: 'success',
-          variant: 'outlined'
-        };
-      case 'in_progress':
-        return {
-          icon: <EditIcon />,
-          label: 'בתהליך',
-          color: 'primary',
-          variant: 'filled'
-        };
-      case 'sent_to_parent':
-        return {
-          icon: <EmailIcon />,
-          label: 'נשלח להורים',
-          color: 'info',
-          variant: 'filled'
-        };
+  // 🔥 פונקציות מעודכנות לעבודה עם Redux החדש
+  
+  // קבלת אייקון סטטוס
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Completed':
+        return <CheckIcon color="success" />;
+      case 'CompletedByParent':
+        return <CompletedByParentIcon color="success" />;
+      case 'InProgress':
+        return <EditIcon color="primary" />;
+      case 'SentToParent':
+        return <EmailIcon color="info" />;
+      case 'NotStarted':
       default:
-        return {
-          icon: <ScheduleIcon />,
-          label: 'ממתין',
-          color: 'default',
-          variant: 'outlined'
-        };
+        return <PendingIcon color="disabled" />;
     }
   };
 
-  const canStartForm = (form) => {
-    return form.status === 'not_started' && form.canStart;
-  };
-
-  const canEditForm = (form) => {
-    return ['not_started', 'in_progress'].includes(form.status) && form.canStart;
-  };
-
-  const canSendToParent = (form) => {
-    return form.status === 'in_progress' && form.completionPercentage > 0;
-  };
-
-  // טיפול בפעולות טפסים
-  const handleStartForm = async (form) => {
-    try {
-      await dispatch(startForm({ kidId, formId: form.formId })).unwrap();
-      onFormSelect(form);
-    } catch (error) {
-      console.error('Error starting form:', error);
+  // קבלת צבע סטטוס
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Completed':
+      case 'CompletedByParent':
+        return 'success';
+      case 'InProgress':
+        return 'primary';
+      case 'SentToParent':
+        return 'info';
+      case 'NotStarted':
+      default:
+        return 'default';
     }
   };
 
-  const handleEditForm = (form) => {
-    onFormSelect(form);
+  // קבלת טקסט סטטוס
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'Completed':
+        return 'הושלם';
+      case 'CompletedByParent':
+        return 'הושלם ע"י הורים';
+      case 'InProgress':
+        return 'בתהליך';
+      case 'SentToParent':
+        return 'נשלח להורים';
+      case 'NotStarted':
+      default:
+        return 'לא התחיל';
+    }
   };
 
+  // 🔥 שליחת טופס להורה - מעודכן
   const handleSendToParent = (form) => {
+    // השלמת האימייל אוטומטית מנתוני ההורה
+    const defaultEmail = selectedKid?.parentEmail || '';
+    setParentEmail(defaultEmail);
     setSendDialog({ open: true, form });
   };
 
   const confirmSendToParent = async () => {
-    if (!sendDialog.form) return;
+    if (!sendDialog.form || !parentEmail.trim()) {
+      return;
+    }
 
     try {
+      setSendingToParent(true);
+      
+      // 🔥 שליחה עם עדכון סטטוס אוטומטי
       await dispatch(sendFormToParent({
-        kidId,
-        formId: sendDialog.form.formId
+        kidId: selectedKid.id,
+        formId: sendDialog.form.formId,
+        parentEmail: parentEmail.trim()
       })).unwrap();
 
+      // סגירת הדיאלוג ורענון
       setSendDialog({ open: false, form: null });
+      setParentEmail('');
+      
+      // רענון אוטומטי
+      setTimeout(() => {
+        onRefresh && onRefresh();
+      }, 1000);
+
     } catch (error) {
-      console.error('Error sending form to parent:', error);
+      console.error('שגיאה בשליחת הטופס:', error);
+    } finally {
+      setSendingToParent(false);
     }
   };
 
-  // קבלת הצבע לפי אחוז השלמה
-  const getProgressColor = (percentage) => {
-    if (percentage >= 80) return 'success';
-    if (percentage >= 50) return 'primary';
-    if (percentage >= 25) return 'warning';
-    return 'error';
+  // 🔥 סימון טופס כהושלם על ידי הורה
+  const handleMarkCompletedByParent = async (form) => {
+    try {
+      await dispatch(markFormCompletedByParent({
+        kidId: selectedKid.id,
+        formId: form.formId,
+        notes: `סומן כהושלם ע"י הורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
+      })).unwrap();
+
+      // רענון אוטומטי
+      setTimeout(() => {
+        onRefresh && onRefresh();
+      }, 1000);
+
+    } catch (error) {
+      console.error('שגיאה בעדכון סטטוס:', error);
+    }
   };
+
+  // 🔥 איפוס טופס לתחילה
+  const handleResetForm = async (form) => {
+    try {
+      await dispatch(updateFormStatus({
+        kidId: selectedKid.id,
+        formId: form.formId,
+        newStatus: 'NotStarted',
+        notes: `אופס בתאריך ${new Date().toLocaleDateString('he-IL')}`
+      })).unwrap();
+
+      // רענון אוטומטי
+      setTimeout(() => {
+        onRefresh && onRefresh();
+      }, 1000);
+
+    } catch (error) {
+      console.error('שגיאה באיפוס הטופס:', error);
+    }
+  };
+
+  // בדיקה אם ניתן לערוך טופס
+  const canEditForm = (form) => {
+    return ['NotStarted', 'InProgress'].includes(form.status);
+  };
+
+  // בדיקה אם ניתן לשלוח להורה
+  const canSendToParent = (form) => {
+    return ['NotStarted', 'InProgress', 'Completed'].includes(form.status);
+  };
+
+  if (!onboardingData || !onboardingData.forms) {
+    return (
+      <Alert severity="info">
+        אין נתוני קליטה זמינים
+      </Alert>
+    );
+  }
 
   return (
     <Box>
-      {/* שגיאות */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => dispatch(clearError())}>
-          <AlertTitle>שגיאה</AlertTitle>
-          {typeof error === 'string' ? error : error.message || 'שגיאה לא ידועה'}
-        </Alert>
-      )}
-
-      {/* סטטיסטיקות כלליות */}
+      {/* 🔥 סטטיסטיקות כלליות */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={3}>
-          <StatsCard>
-            <Typography variant="h3" fontWeight="bold" sx={{ zIndex: 1, position: 'relative' }}>
-              {stats.completionPercentage}%
-            </Typography>
-            <Typography variant="body1" sx={{ zIndex: 1, position: 'relative' }}>
-              התקדמות כללית
-            </Typography>
-          </StatsCard>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white' }}>
+            <CardContent>
+              <Typography variant="h3" fontWeight="bold">
+                {onboardingData.completedForms}
+              </Typography>
+              <Typography variant="body2">
+                הושלמו
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-        
-        <Grid item xs={12} md={9}>
-          <Paper sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              סיכום תהליך
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="success.main">
-                    {stats.completedForms}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    טפסים הושלמו
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="primary.main">
-                    {stats.inProgressForms}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    בתהליך
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="info.main">
-                    {stats.sentToParentForms}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    נשלחו להורים
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="text.secondary">
-                    {stats.daysInProcess}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    ימים בתהליך
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Paper>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'primary.light', color: 'white' }}>
+            <CardContent>
+              <Typography variant="h3" fontWeight="bold">
+                {onboardingData.forms.filter(f => f.status === 'InProgress').length}
+              </Typography>
+              <Typography variant="body2">
+                בתהליך
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white' }}>
+            <CardContent>
+              <Typography variant="h3" fontWeight="bold">
+                {onboardingData.forms.filter(f => f.status === 'SentToParent').length}
+              </Typography>
+              <Typography variant="body2">
+                אצל הורים
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white' }}>
+            <CardContent>
+              <Typography variant="h3" fontWeight="bold">
+                {onboardingData.forms.filter(f => f.status === 'NotStarted').length}
+              </Typography>
+              <Typography variant="body2">
+                לא התחילו
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
 
-      {/* רשימת טפסים */}
-      <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-        טפסי קליטה
-      </Typography>
-
+      {/* 🔥 כרטיסי הטפסים */}
       <Grid container spacing={3}>
-        {forms.map((form) => {
-          const statusConfig = getStatusConfig(form);
-          
+        {onboardingData.forms.map((form) => {
+          const progress = form.totalQuestions > 0 
+            ? Math.round((form.answeredQuestions / form.totalQuestions) * 100) 
+            : 0;
+
           return (
-            <Grid item xs={12} lg={6} key={form.formId}>
-              <StyledCard formStatus={form.status}>
-                <CardContent>
-                  {/* כותרת הטופס */}
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <Box flex={1}>
-                      <Typography variant="h6" gutterBottom>
-                        {form.formName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" paragraph>
-                        {form.formDescription}
-                      </Typography>
-                    </Box>
-                    
+            <Grid item xs={12} md={6} lg={4} key={form.formId}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 4
+                  }
+                }}
+              >
+                <CardContent sx={{ flex: 1 }}>
+                  {/* כותרת וסטטוס */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
+                      {form.formName}
+                    </Typography>
                     <Chip
-                      icon={statusConfig.icon}
-                      label={statusConfig.label}
-                      color={statusConfig.color}
-                      variant={statusConfig.variant}
+                      icon={getStatusIcon(form.status)}
+                      label={getStatusText(form.status)}
+                      color={getStatusColor(form.status)}
                       size="small"
+                      variant="outlined"
                     />
                   </Box>
 
+                  {/* תיאור */}
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {form.formDescription}
+                  </Typography>
+
                   {/* התקדמות */}
-                  {form.status !== 'not_started' && (
+                  {form.status === 'InProgress' && form.totalQuestions > 0 && (
                     <Box sx={{ mb: 2 }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
                           התקדמות
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold">
-                          {form.answeredQuestions}/{form.totalQuestions}
+                        <Typography variant="caption" color="primary" fontWeight="bold">
+                          {progress}%
                         </Typography>
                       </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={form.completionPercentage}
-                        color={getProgressColor(form.completionPercentage)}
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={progress} 
                         sx={{ height: 6, borderRadius: 3 }}
                       />
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                        {form.answeredQuestions} מתוך {form.totalQuestions} שאלות
+                      </Typography>
                     </Box>
                   )}
 
-                  {/* מידע נוסף */}
-                  {(form.assignedToName || form.notes) && (
-                    <Box sx={{ mb: 2 }}>
-                      {form.assignedToName && (
-                        <Typography variant="body2" color="text.secondary">
-                          <PersonIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                          אחראי: {form.assignedToName}
-                        </Typography>
-                      )}
-                      {form.notes && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                          <InfoIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                          {form.notes}
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-
-                  <Divider sx={{ my: 2 }} />
-
-                  {/* כפתורי פעולה */}
-                  <Box display="flex" gap={1} flexWrap="wrap">
-                    {/* התחל/ערוך טופס */}
-                    {canEditForm(form) && (
-                      <Button
-                        variant={form.status === 'not_started' ? 'contained' : 'outlined'}
-                        size="small"
-                        startIcon={form.status === 'not_started' ? <StartIcon /> : <EditIcon />}
-                        onClick={() => form.status === 'not_started' ? handleStartForm(form) : handleEditForm(form)}
-                        disabled={formActions.starting}
-                      >
-                        {form.status === 'not_started' ? 'התחל' : 'ערוך'}
-                      </Button>
+                  {/* תאריכים */}
+                  <Box sx={{ mt: 'auto' }}>
+                    {form.startDate && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        התחיל: {new Date(form.startDate).toLocaleDateString('he-IL')}
+                      </Typography>
                     )}
+                    {form.completedDate && (
+                      <Typography variant="caption" color="success.main" display="block" fontWeight="bold">
+                        הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
 
-                    {/* שלח להורים */}
+                {/* פעולות */}
+                <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
+                  <Box>
+                    {/* 🔥 כפתורים מתוקנים - תמיד אפשר לצפות ולערוך */}
+                    {canEditForm(form) ? (
+                      <Button
+                        startIcon={<EditIcon />}
+                        onClick={() => onFormClick(form, 'edit')}
+                        color="primary"
+                      >
+                        {form.status === 'NotStarted' ? 'התחל' : 'המשך עריכה'}
+                      </Button>
+                    ) : (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          startIcon={<ViewIcon />}
+                          onClick={() => onFormClick(form, 'view')}
+                          color="secondary"
+                          size="small"
+                        >
+                          צפייה
+                        </Button>
+                        <Button
+                          startIcon={<EditIcon />}
+                          onClick={() => onFormClick(form, 'edit')}
+                          color="primary"
+                          size="small"
+                        >
+                          עריכה
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+
+                  <Box>
+                    {/* שליחה להורה */}
                     {canSendToParent(form) && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<SendIcon />}
-                        onClick={() => handleSendToParent(form)}
-                        disabled={formActions.sendingToParent}
-                      >
-                        שלח להורים
-                      </Button>
+                      <Tooltip title="שלח טופס להורה">
+                        <IconButton
+                          onClick={() => handleSendToParent(form)}
+                          color="info"
+                        >
+                          <SendIcon />
+                        </IconButton>
+                      </Tooltip>
                     )}
 
-                    {/* צפייה (לטפסים שהושלמו) */}
-                    {['completed', 'completed_by_parent'].includes(form.status) && (
-                      <Button
-                        variant="text"
-                        size="small"
-                        startIcon={<InfoIcon />}
-                        onClick={() => handleEditForm(form)}
-                      >
-                        צפייה
-                      </Button>
-                    )}
-
-                    {/* אינדיקטור אם הטופס לא יכול להתחיל */}
-                    {form.status === 'not_started' && !form.canStart && (
-                      <Tooltip title="יש להשלים תחילה את הטופס הראשון">
-                        <IconButton size="small" disabled>
-                          <WarningIcon />
+                    {/* סימון כהושלם על ידי הורה */}
+                    {form.status === 'SentToParent' && (
+                      <Tooltip title="סמן כהושלם ע״י הורה">
+                        <IconButton
+                          onClick={() => handleMarkCompletedByParent(form)}
+                          color="success"
+                        >
+                          <CompletedByParentIcon />
                         </IconButton>
                       </Tooltip>
                     )}
                   </Box>
-                </CardContent>
-              </StyledCard>
+                </CardActions>
+              </Card>
             </Grid>
           );
         })}
       </Grid>
 
-      {/* תזכורות פעילות */}
-      {reminders && reminders.length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            תזכורות פעילות
-          </Typography>
-          <Paper sx={{ borderRadius: 2 }}>
-            <List>
-              {reminders.slice(0, 5).map((reminder, index) => (
-                <React.Fragment key={reminder.reminderId}>
-                  <ListItem>
-                    <ListItemIcon>
-                      <ScheduleIcon color={reminder.isOverdue ? 'error' : 'primary'} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={reminder.title}
-                      secondary={
-                        <Box>
-                          {reminder.description && (
-                            <Typography variant="body2" color="text.secondary">
-                              {reminder.description}
-                            </Typography>
-                          )}
-                          {reminder.dueDate && (
-                            <Typography 
-                              variant="caption" 
-                              color={reminder.isOverdue ? 'error' : 'text.secondary'}
-                            >
-                              יעד: {new Date(reminder.dueDate).toLocaleDateString('he-IL')}
-                            </Typography>
-                          )}
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                  {index < Math.min(reminders.length, 5) - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
-          </Paper>
-        </Box>
-      )}
-
-      {/* דיאלוג שליחה להורים */}
-      <Dialog
-        open={sendDialog.open}
+      {/* 🔥 דיאלוג שליחה להורה */}
+      <Dialog 
+        open={sendDialog.open} 
         onClose={() => setSendDialog({ open: false, form: null })}
         maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
-          שליחת טופס להורים
+          שליחת טופס להורה
         </DialogTitle>
         <DialogContent>
-          <Typography paragraph>
-            האם אתה בטוח שברצונך לשלוח את הטופס "{sendDialog.form?.formName}" להורים?
+          <Typography variant="body1" gutterBottom>
+            שליחת הטופס "{sendDialog.form?.formName}" להורה של {selectedKid?.firstName}
           </Typography>
+          <TextField
+            fullWidth
+            label="כתובת דוא״ל של ההורה"
+            type="email"
+            value={parentEmail}
+            onChange={(e) => setParentEmail(e.target.value)}
+            margin="normal"
+            required
+            placeholder="example@email.com"
+            helperText="הטופס יישלח עם קישור למילוי אונליין"
+          />
           <Alert severity="info" sx={{ mt: 2 }}>
             הטופס יישלח להורים באימייל/SMS עם קישור למילוי
           </Alert>
@@ -472,17 +418,17 @@ const OnboardingDashboard = ({
         <DialogActions>
           <Button 
             onClick={() => setSendDialog({ open: false, form: null })}
-            disabled={formActions.sendingToParent}
+            disabled={sendingToParent}
           >
             ביטול
           </Button>
           <Button 
             onClick={confirmSendToParent}
             variant="contained"
-            disabled={formActions.sendingToParent}
-            startIcon={formActions.sendingToParent ? <CircularProgress size={20} /> : <SendIcon />}
+            disabled={sendingToParent || !parentEmail.trim()}
+            startIcon={sendingToParent ? <CircularProgress size={20} /> : <SendIcon />}
           >
-            {formActions.sendingToParent ? 'שולח...' : 'שלח'}
+            {sendingToParent ? 'שולח...' : 'שלח'}
           </Button>
         </DialogActions>
       </Dialog>

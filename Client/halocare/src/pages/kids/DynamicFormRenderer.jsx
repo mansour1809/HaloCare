@@ -186,7 +186,7 @@ const DynamicFormRenderer = ({
   // שמירה אוטומטית
   const handleAutoSave = async () => {
     if (!hasUnsavedChanges || readOnly) return;
-    
+    console.log('Auto-saving form answers...');
     setAutoSaveStatus('saving');
     try {
       const answers = prepareAnswersForSaving(formik.values);

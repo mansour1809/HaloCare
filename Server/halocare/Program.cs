@@ -47,10 +47,9 @@ namespace halocare
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<TreatmentInsightService>();
-            //builder.Services.AddSingleton<AITSHAService>();
-            //builder.Services.AddSingleton<TSHAFormatterService>();
-            //builder.Services.AddSingleton<TSHALearningService>();
 
+            builder.Services.AddScoped<IKidOnboardingRepository, KidOnboardingRepository>();
+            builder.Services.AddScoped<IKidOnboardingService, KidOnboardingService>();
             //builder.Services.AddTransient<ErrorHandlingMiddleware>();
 
             builder.Services.AddHttpClient();

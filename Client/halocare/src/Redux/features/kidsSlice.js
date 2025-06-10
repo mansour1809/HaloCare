@@ -2,6 +2,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 import { createParent, updateParent } from './parentSlice';
+import { initializeKidOnboarding } from './onboardingSlice';
+
 
 export const fetchKids = createAsyncThunk(
   'kids/fetchKids',
@@ -102,12 +104,20 @@ export const createKidWithParents = createAsyncThunk(
         photoPath: formData.photoPath || null
       };
 
-      let response;
-        response = await axios.post('/Kids', kidData);
+      const kidResponse = await axios.post('/Kids', kidData);
+      const newKid = kidResponse.data;
 
+      // // 🔥 4. יצירת תהליך קליטה אוטומטית לילד החדש
+      // try {
+      //   await dispatch(initializeKidOnboarding(newKid.id)).unwrap();
+      //   console.log(`תהליך קליטה נוצר בהצלחה לילד ${newKid.id}`);
+      // } catch (onboardingError) {
+      //   console.error('שגיאה ביצירת תהליך קליטה:', onboardingError);
+      //   // לא נכשיל את כל התהליך בגלל זה - הילד נוצר בהצלחה
+      // }
 
       return {
-        kid: response.data,
+        kid: newKid,
         parent1: parent1Result,
         parent2: parent2Result
       };
@@ -221,6 +231,8 @@ const kidsSlice = createSlice({
     clearSelectedKid: (state) => {
       state.selectedKid = null;
       state.selectedKidWithParents = null;
+      state.error = null;
+
     }
   },
   extraReducers: (builder) => {

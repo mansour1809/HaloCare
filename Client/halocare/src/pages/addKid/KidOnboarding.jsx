@@ -1,28 +1,35 @@
-// components/kids/KidOnboarding.jsx - עדכון מלא
+// src/pages/kids/KidOnboarding.jsx - גרסה מתוקנת עם אפשרות צפייה ועריכה
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Container, Box, Typography, CircularProgress, Alert, AlertTitle,
-  Breadcrumbs, Button, Fade, Paper
+  Container, Box, Paper, Typography, CircularProgress, Breadcrumbs,
+  Button, Alert, AlertTitle, Fade, Snackbar, Chip
 } from '@mui/material';
 import {
   Home as HomeIcon,
   Group as GroupIcon,
   Refresh as RefreshIcon,
-  Assignment as AssignmentIcon
+  CheckCircle as SuccessIcon,
+  Edit as EditIcon,
+  Visibility as ViewIcon
 } from '@mui/icons-material';
 
+// Redux החדש
 import { 
   fetchOnboardingStatus, 
-  startOnboardingProcess,
+  setCurrentKid,
   clearOnboardingData,
-  clearError
+  selectCurrentKidOnboarding,
+  selectOnboardingStatus,
+  selectOnboardingError
 } from '../../Redux/features/onboardingSlice';
 import { 
   fetchKidById, 
   clearSelectedKid
 } from '../../Redux/features/kidsSlice';
+
+// קומפוננטים
 import PersonalInfoForm from './PersonalInfoForm';
 import DynamicFormRenderer from './DynamicFormRenderer';
 import OnboardingDashboard from './OnboardingDashboard';
@@ -35,142 +42,157 @@ const KidOnboarding = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const { currentProcess, status, error, formActions } = useSelector(state => state.onboarding);
-  const { selectedKid, status: kidStatus } = useSelector(state => state.kids);
+  // Redux state
+  const currentOnboarding = useSelector(selectCurrentKidOnboarding);
+  const onboardingStatus = useSelector(selectOnboardingStatus);
+  const onboardingError = useSelector(selectOnboardingError);
+  const { selectedKid } = useSelector(state => state.kids);
   
-  const [viewMode, setViewMode] = useState('loading'); // 'loading' | 'personal_info' | 'dashboard' | 'form' | 'no_process'
+  // State מקומי
+  const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard' | 'form' | 'personalInfo'
   const [selectedForm, setSelectedForm] = useState(null);
-  const [initializing, setInitializing] = useState(true);
+  const [formReadOnly, setFormReadOnly] = useState(false); // 🔥 מצב צפייה/עריכה
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
-  const isNewKid = kidId === undefined || kidId === 'new';
+  const isNewKid = kidId === undefined;
 
   // טעינה ראשונית
   useEffect(() => {
     initializeOnboarding();
     
-    // ניקוי בעת יציאה
     return () => {
       dispatch(clearOnboardingData());
-      dispatch(clearError());
+      dispatch(clearSelectedKid());
     };
-  }, [kidId, dispatch]);
-
-  // האזנה לשינויים בסטטוס
-  useEffect(() => {
-    if (status === 'succeeded' && currentProcess) {
-      setViewMode('dashboard');
-    } else if (status === 'failed' && !isNewKid) {
-      setViewMode('no_process');
-    }
-    setInitializing(false);
-  }, [status, currentProcess, isNewKid]);
+  }, [kidId]);
 
   const initializeOnboarding = async () => {
     try {
-      setInitializing(true);
-      dispatch(clearOnboardingData());
-      dispatch(clearSelectedKid());
+      setLoading(true);
       
-      if (!isNewKid) {
-        // טעינת נתוני ילד קיים
-        await dispatch(fetchKidById(kidId)).unwrap();
-        
-        // ניסיון לטעון תהליך קליטה
-        try {
-          await dispatch(fetchOnboardingStatus(kidId)).unwrap();
-        } catch (error) {
-          console.log('No onboarding process found:', error);
-          // אין תהליך קליטה - יוצג מצב מתאים
-        }
+      if (isNewKid) {
+        setViewMode('personalInfo');
       } else {
-        // ילד חדש - הצגת טופס פרטים אישיים
-        setViewMode('personal_info');
-        setInitializing(false);
+        await Promise.all([
+          dispatch(fetchKidById(kidId)),
+          dispatch(setCurrentKid(kidId)),
+          dispatch(fetchOnboardingStatus(kidId))
+        ]);
+        setViewMode('dashboard');
       }
-      
     } catch (error) {
-      console.error('Error initializing onboarding:', error);
-      setInitializing(false);
+      console.error('שגיאה בטעינת נתוני קליטה:', error);
+      showNotification('שגיאה בטעינת נתוני קליטה', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   // רענון נתונים
   const handleRefresh = async () => {
-    if (isNewKid) return;
+    if (!kidId || isNewKid) return;
     
-    setRefreshing(true);
     try {
-      await dispatch(fetchOnboardingStatus(kidId)).unwrap();
+      setRefreshing(true);
+      await dispatch(fetchOnboardingStatus(kidId));
+      showNotification('הנתונים עודכנו בהצלחה', 'success');
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      showNotification('שגיאה ברענון הנתונים', 'error');
     } finally {
       setRefreshing(false);
     }
   };
 
-  // יצירת ילד חדש הושלמה
-  const handleKidCreated = async (newKid) => {
+  // יצירת ילד חדש
+  const handleKidCreated = async (newKidData) => {
     try {
-      // מעבר לתהליך קליטה של הילד החדש
-      navigate(`/kids/onboarding/${newKid.id}`, { replace: true });
+      showNotification('ילד נוצר בהצלחה! מעביר לתהליך קליטה...', 'success');
       
-      // תהליך הקליטה כבר התחיל אוטומטית בשרת
-      // נטען את הסטטוס
-      await new Promise(resolve => setTimeout(resolve, 500)); // המתנה קטנה לשרת
-      await dispatch(fetchOnboardingStatus(newKid.id)).unwrap();
-      
-      setViewMode('dashboard');
+      setTimeout(() => {
+        navigate(`/kids/onboarding/${newKidData.id}`);
+      }, 1500);
     } catch (error) {
-      console.error('Error after kid creation:', error);
-      // אם נכשל לטעון את התהליך, ננסה ליצור אותו ידנית
-      try {
-        await dispatch(startOnboardingProcess(newKid.id)).unwrap();
-        await dispatch(fetchOnboardingStatus(newKid.id)).unwrap();
-        setViewMode('dashboard');
-      } catch (startError) {
-        console.error('Failed to start onboarding process:', startError);
-      }
+      console.error('שגיאה ביצירת ילד:', error);
+      showNotification('שגיאה ביצירת הילד', 'error');
     }
   };
 
-  // בחירת טופס לעריכה
-  const handleFormSelect = (form) => {
-    setSelectedForm(form);
+  // 🔥 פתיחת טופס למילוי/צפייה - מתוקן
+  const handleFormClick = (form, mode = 'auto') => {
+    let readOnlyMode = false;
+    let buttonText = '';
+
+    // 🔥 קביעת מצב לפי סטטוס הטופס ובקשת המשתמש
+    if (mode === 'view') {
+      readOnlyMode = true;
+      buttonText = 'צפייה';
+    } else if (mode === 'edit') {
+      readOnlyMode = false;
+      buttonText = 'עריכה';
+    } else {
+      // מצב אוטומטי לפי סטטוס
+      if (['Completed', 'CompletedByParent'].includes(form.status)) {
+        readOnlyMode = true;
+        buttonText = 'צפייה';
+      } else {
+        readOnlyMode = false;
+        buttonText = ['NotStarted'].includes(form.status) ? 'התחלה' : 'המשך';
+      }
+    }
+
+    setSelectedForm({ ...form, buttonText });
+    setFormReadOnly(readOnlyMode);
     setViewMode('form');
   };
 
   // השלמת טופס
-  const handleFormComplete = async () => {
+  const handleFormComplete = async (formId) => {
+    showNotification('הטופס נשמר בהצלחה!', 'success');
     setViewMode('dashboard');
     setSelectedForm(null);
-    await handleRefresh();
+    setFormReadOnly(false);
+    
+    // רענון אוטומטי
+    setTimeout(() => {
+      dispatch(fetchOnboardingStatus(kidId));
+    }, 500);
   };
 
-  // חזרה ל-Dashboard
+  // חזרה לדשבורד
   const handleBackToDashboard = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
+    setFormReadOnly(false);
   };
 
-  // התחלת תהליך קליטה ידני
-  const handleStartOnboardingProcess = async () => {
-    try {
-      await dispatch(startOnboardingProcess(kidId)).unwrap();
-      await dispatch(fetchOnboardingStatus(kidId)).unwrap();
-      setViewMode('dashboard');
-    } catch (error) {
-      console.error('Error starting onboarding process:', error);
-    }
+  // 🔥 מעבר ממצב צפייה לעריכה
+  const switchToEditMode = () => {
+    setFormReadOnly(false);
+    setSelectedForm(prev => ({ ...prev, buttonText: 'עריכה' }));
+    showNotification('עברת למצב עריכה', 'info');
   };
 
-  // טעינה ראשונית
-  if (initializing || viewMode === 'loading') {
+  // שליחה להורים
+  const handleSendToParent = (form) => {
+    console.log('שליחה להורים:', form);
+  };
+
+  const showNotification = (message, severity = 'success') => {
+    setNotification({ open: true, message, severity });
+  };
+
+  const closeNotification = () => {
+    setNotification({ ...notification, open: false });
+  };
+
+  if (loading) {
     return (
       <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          {isNewKid ? 'מכין טופס קליטה...' : 'טוען תהליך קליטה...'}
+          טוען תהליך קליטה...
         </Typography>
       </Container>
     );
@@ -200,18 +222,18 @@ const KidOnboarding = () => {
           </Typography>
         </Breadcrumbs>
 
-        {/* שגיאות כלליות */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => dispatch(clearError())}>
+        {/* שגיאות */}
+        {onboardingError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
             <AlertTitle>שגיאה</AlertTitle>
-            {typeof error === 'string' ? error : error.message || 'שגיאה לא ידועה'}
+            {onboardingError}
           </Alert>
         )}
 
-        {/* הלוגו עם הפרוגרס - רק לילדים עם תהליך קליטה */}
-        {!isNewKid && currentProcess && viewMode !== 'no_process' && (
+        {/* הלוגו עם הפרוגרס */}
+        {!isNewKid && currentOnboarding && (
           <ProgressLogo 
-            onboardingData={currentProcess}
+            onboardingData={currentOnboarding}
             kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : null}
             showFormsSummary={viewMode === 'dashboard'}
             compact={viewMode !== 'dashboard'}
@@ -221,14 +243,14 @@ const KidOnboarding = () => {
         {/* תוכן דינמי לפי מצב */}
         <Fade in={true} timeout={500}>
           <Box>
-            {/* טופס פרטים אישיים לילד חדש */}
-            {viewMode === 'personal_info' && (
+            {/* טופס פרטים אישיים */}
+            {viewMode === 'personalInfo' && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
-                <Box sx={{ p: 3, backgroundColor: 'primary.main', color: 'white' }}>
+                <Box sx={{ p: 3, backgroundColor: 'grey.50' }}>
                   <Typography variant="h5" gutterBottom>
                     פרטים אישיים
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography variant="body2" color="text.secondary">
                     מילוי פרטי הילד וההורים
                   </Typography>
                 </Box>
@@ -243,8 +265,8 @@ const KidOnboarding = () => {
               </Paper>
             )}
 
-            {/* Dashboard תהליך קליטה */}
-            {viewMode === 'dashboard' && currentProcess && (
+            {/* דשבורד תהליך קליטה */}
+            {viewMode === 'dashboard' && currentOnboarding && (
               <>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                   <Typography variant="h4" fontWeight="bold">
@@ -260,63 +282,100 @@ const KidOnboarding = () => {
                   </Button>
                 </Box>
 
-                <OnboardingDashboard 
-                  kidId={kidId}
-                  onboardingData={currentProcess}
-                  onFormSelect={handleFormSelect}
-                  loading={status === 'loading'}
+                <OnboardingDashboard
+                  onboardingData={currentOnboarding}
+                  selectedKid={selectedKid}
+                  onFormClick={handleFormClick}
+                  onSendToParent={handleSendToParent}
+                  onRefresh={handleRefresh}
                 />
               </>
             )}
 
-            {/* מילוי טופס */}
+            {/* 🔥 מילוי/צפייה בטופס דינמי - מתוקן */}
             {viewMode === 'form' && selectedForm && (
-              <>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleBackToDashboard}
-                    sx={{ mr: 2 }}
-                  >
-                    חזרה לסקירה
-                  </Button>
-                  <Typography variant="h5">
-                    {selectedForm.formName}
-                  </Typography>
+              <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box>
+                    <Typography variant="h5" gutterBottom>
+                      {selectedForm.formName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedForm.formDescription}
+                    </Typography>
+                    
+                    {/* 🔥 אינדיקטור מצב */}
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
+                        label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
+                        color={formReadOnly ? 'info' : 'primary'}
+                        size="small"
+                      />
+                      {selectedForm.status && (
+                        <Chip
+                          label={`סטטוס: ${selectedForm.status}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* 🔥 כפתור מעבר בין מצבים */}
+                    {formReadOnly && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<EditIcon />}
+                        onClick={switchToEditMode}
+                        color="primary"
+                      >
+                        עבר לעריכה
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outlined"
+                      onClick={handleBackToDashboard}
+                      sx={{ minWidth: 120 }}
+                    >
+                      חזרה לדשבורד
+                    </Button>
+                  </Box>
                 </Box>
-
-                <DynamicFormRenderer
-                  kidId={kidId}
-                  form={selectedForm}
-                  onComplete={handleFormComplete}
-                  onCancel={handleBackToDashboard}
-                />
-              </>
-            )}
-
-            {/* אין תהליך קליטה */}
-            {viewMode === 'no_process' && !isNewKid && (
-              <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-                <AssignmentIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
-                <Typography variant="h5" gutterBottom>
-                  לא נמצא תהליך קליטה
-                </Typography>
-                <Typography variant="body1" color="text.secondary" paragraph>
-                  לילד זה עדיין אין תהליך קליטה פעיל במערכת.
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={handleStartOnboardingProcess}
-                  disabled={status === 'loading'}
-                  startIcon={status === 'loading' ? <CircularProgress size={20} /> : <AssignmentIcon />}
-                >
-                  {status === 'loading' ? 'יוצר תהליך...' : 'התחל תהליך קליטה'}
-                </Button>
+                
+                <Box sx={{ p: 3 }}>
+                  <DynamicFormRenderer
+                    kidId={parseInt(kidId)}
+                    formId={selectedForm.formId}
+                    formData={selectedForm}
+                    onComplete={handleFormComplete}
+                    onBack={handleBackToDashboard}
+                    readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
+                  />
+                </Box>
               </Paper>
             )}
           </Box>
         </Fade>
+
+        {/* התראות */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={4000}
+          onClose={closeNotification}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={closeNotification} 
+            severity={notification.severity}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </LocalizationProvider>
   );

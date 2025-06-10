@@ -288,7 +288,7 @@ namespace halocare.Controllers
 
                 if (updated)
                 {
-                    return NoContent();
+                    return Ok();
                 }
                 else
                 {

@@ -1,538 +1,447 @@
-// components/kids/DynamicFormRenderer.jsx - עדכון מלא
+// components/kids/DynamicFormRenderer.jsx - גרסה מתוקנת ללא שמירה אוטומטית
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Paper, Typography, Grid, TextField, FormControl,
-  FormLabel, RadioGroup, FormControlLabel, Radio, Checkbox,
-  FormGroup, Button, Alert, AlertTitle, LinearProgress,
-  Divider, Chip, Tooltip, IconButton, Snackbar
+  Box, Typography, Paper, Grid, Button, LinearProgress,
+  CircularProgress, Alert, Snackbar, Chip, Fade, Divider
 } from '@mui/material';
 import {
   Save as SaveIcon,
-  CheckCircle as CompleteIcon,
-  ArrowBack as BackIcon,
-  Info as InfoIcon,
+  CheckCircle as CheckIcon,
   Warning as WarningIcon,
-  CheckCircleOutline
+  ArrowBack as BackIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 
-import {
-  fetchQuestionsByFormId,
-  clearQuestions
-} from '../../Redux/features/questionsSlice';
-import {
+// 🔥 Redux החדש
+import { 
+  fetchFormQuestions 
+} from '../../Redux/features/formsSlice';
+import { 
   fetchFormAnswers,
-  saveAnswer,
-  updateAnswer,
   setCurrentForm,
-  updateLocalAnswer
+  selectCurrentFormAnswers,
+  selectSaveStatus,
+  selectSaveError
 } from '../../Redux/features/answersSlice';
-import {
-  updateFormProgress,
-  completeForm
-} from '../../Redux/features/onboardingSlice';
+import axios from '../../components/common/axiosConfig';
+import QuestionRenderer from '../kids/QuestionRenderer';
 
-// Styled Components
-const FormContainer = styled(Paper)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  overflow: 'hidden',
-  marginBottom: theme.spacing(3)
-}));
-
-const FormHeader = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-  color: 'white',
-  padding: theme.spacing(3),
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(255,255,255,0.1)',
-    transform: 'skewY(-2deg)',
-    transformOrigin: 'top left',
-  }
-}));
-
-const QuestionCard = styled(Paper)(({ theme, isMandatory, isAnswered }) => ({
-  padding: theme.spacing(2.5),
-  marginBottom: theme.spacing(2),
-  borderRadius: theme.spacing(1.5),
-  border: `2px solid ${
-    isAnswered ? theme.palette.success.light : 
-    isMandatory ? theme.palette.warning.light : 
-    theme.palette.grey[200]
-  }`,
-  backgroundColor: isAnswered ? theme.palette.success.light + '08' : 'white',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    boxShadow: theme.shadows[4],
-  }
-}));
-
-const ProgressSection = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: theme.palette.grey[50],
-  borderRadius: theme.spacing(1),
-  marginBottom: theme.spacing(3)
-}));
-
-const DynamicFormRenderer = ({ kidId, form, onComplete, onCancel }) => {
+const DynamicFormRenderer = ({ 
+  kidId, 
+  formId, 
+  formData,
+  onComplete,
+  onBack,
+  readOnly = false 
+}) => {
   const dispatch = useDispatch();
-  const { currentFormQuestions, status: questionsStatus } = useSelector(state => state.questions);
-  const { currentFormAnswers, savingAnswer } = useSelector(state => state.answers);
-  const { formActions } = useSelector(state => state.onboarding);
-
+  
+  // Redux state
+  const currentFormAnswers = useSelector(selectCurrentFormAnswers);
+  const saveStatus = useSelector(selectSaveStatus);
+  const saveError = useSelector(selectSaveError);
+  const { questions: currentFormQuestions, status: questionsStatus } = useSelector(state => state.forms);
+  
+  // 🔥 State מקומי לניהול תשובות (במקום שמירה אוטומטית)
   const [localAnswers, setLocalAnswers] = useState({});
-  const [validationErrors, setValidationErrors] = useState({});
-  const [autoSaveStatus, setAutoSaveStatus] = useState('');
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [hasChanges, setHasChanges] = useState(false);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
   // טעינה ראשונית
   useEffect(() => {
-    if (form?.formId && kidId) {
-      loadFormData();
-    }
-    
-    return () => {
-      dispatch(clearQuestions());
-    };
-  }, [form?.formId, kidId]);
+    loadFormData();
+  }, [kidId, formId]);
 
-  // עדכון תשובות מקומיות כשנטענות תשובות מהשרת
+  // 🔥 טעינת תשובות קיימות ל-state מקומי
   useEffect(() => {
-    const answersMap = {};
-    currentFormAnswers.forEach(answer => {
-      answersMap[answer.questionNo] = {
-        answer: answer.answer || '',
-        other: answer.other || '',
-        answerId: answer.answerId
-      };
-    });
-    setLocalAnswers(answersMap);
+    if (currentFormAnswers.length > 0) {
+      const answersMap = {};
+      currentFormAnswers.forEach(answer => {
+        answersMap[answer.questionNo] = {
+          answer: answer.answer || '',
+          other: answer.other || '',
+          answerId: answer.answerId // 🔥 חשוב לעדכון במקום הוספה
+        };
+      });
+      setLocalAnswers(answersMap);
+    }
   }, [currentFormAnswers]);
 
   const loadFormData = async () => {
     try {
-      // טעינת שאלות הטופס
-      await dispatch(fetchQuestionsByFormId(form.formId)).unwrap();
+      dispatch(setCurrentForm({ kidId, formId }));
       
-      // הגדרת הטופס הנוכחי
-      dispatch(setCurrentForm({ kidId, formId: form.formId }));
-      
-      // טעינת תשובות קיימות
-      await dispatch(fetchFormAnswers({ kidId, formId: form.formId })).unwrap();
-      
+      await Promise.all([
+        dispatch(fetchFormQuestions(formId)),
+        dispatch(fetchFormAnswers({ kidId, formId }))
+      ]);
     } catch (error) {
-      console.error('Error loading form data:', error);
+      console.error('שגיאה בטעינת נתוני הטופס:', error);
+      showNotification('שגיאה בטעינת הטופס', 'error');
     }
   };
 
-  // טיפול בשינוי תשובה
-  const handleAnswerChange = (questionNo, value, otherValue = '') => {
-    const newAnswers = {
-      ...localAnswers,
+  // 🔥 עדכון תשובה מקומית ללא שמירה מיידית
+  const handleQuestionChange = (questionNo, answer, otherValue = '') => {
+    setLocalAnswers(prev => ({
+      ...prev,
       [questionNo]: {
-        ...localAnswers[questionNo],
-        answer: value,
+        ...prev[questionNo],
+        answer,
         other: otherValue
       }
-    };
-    setLocalAnswers(newAnswers);
-
-    // עדכון Redux מקומי
-    dispatch(updateLocalAnswer({
-      questionNo,
-      answer: value,
-      other: otherValue
     }));
-
-    // ניקוי שגיאות תקינות
-    if (validationErrors[questionNo]) {
-      const newErrors = { ...validationErrors };
-      delete newErrors[questionNo];
-      setValidationErrors(newErrors);
-    }
-
-    // שמירה אוטומטית (דיליי קצר)
-    clearTimeout(window.autoSaveTimeout);
-    window.autoSaveTimeout = setTimeout(() => {
-      handleAutoSave(questionNo, value, otherValue);
-    }, 1000);
+    
+    setHasChanges(true);
   };
 
-  // שמירה אוטומטית
-  const handleAutoSave = async (questionNo, answer, other = '') => {
-    if (!answer.trim()) return; // לא שומרים תשובות ריקות
+  // 🔥 שמירת כל התשובות (רק כשלוחצים "שמור")
+  const handleSaveAll = async () => {
+    if (readOnly) return;
 
     try {
-      setAutoSaveStatus('saving');
+      // הכנת מערך תשובות לשמירה
+      const answersToSave = currentFormQuestions.map(question => {
+        console.log(currentFormQuestions)
+        const localAnswer = localAnswers[question.questionNo];
+        console.log(localAnswers)
+        return {
+          // 🔥 אם יש answerId - זה עדכון, אם לא - זה הוספה חדשה
+          answerId: localAnswer?.answerId || null,
+          questionNo: question.questionNo,
+          answer: localAnswer?.answer || '',
+          other: localAnswer?.other || '',
+          byParent: false
+        };
+      }).filter(answer => answer.answer && answer.answer.trim() !== ''); // רק תשובות שלא ריקות
+
+      if (answersToSave.length === 0) {
+        showNotification('אין תשובות לשמירה', 'warning');
+        return;
+      }
+
+      // 🔥 שמירה עם לוגיקה חכמה של עדכון/הוספה
+      await saveAnswersWithUpsert(answersToSave);
+
+      showNotification('הטופס נשמר בהצלחה!', 'success');
+      setHasChanges(false);
       
-      const existingAnswer = localAnswers[questionNo];
-      const answerData = {
-        kidId: parseInt(kidId),
-        formId: form.formId,
-        questionNo: parseInt(questionNo),
-        answer: answer.trim(),
-        other: other.trim(),
+      // קריאה לפונקציה להשלמה
+      if (onComplete) {
+        setTimeout(() => onComplete(formId), 1000);
+      }
+
+    } catch (error) {
+      console.error('שגיאה בשמירת הטופס:', error);
+      showNotification('שגיאה בשמירת הטופס', 'error');
+    }
+  };
+
+  // 🔥 פונקציה חדשה לשמירה חכמה (עדכון או הוספה)
+  const saveAnswersWithUpsert = async (answersToSave) => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user?.id;
+
+    for (const answerData of answersToSave) {
+      const fullAnswerData = {
+        answerId: answerData.answerId || 0,
+        kidId,
+        formId,
+        questionNo: answerData.questionNo,
+        answer: answerData.answer,
+        other: answerData.other,
         ansDate: new Date().toISOString(),
-        byParent: false
+        byParent: false,
+        employeeId: userId
       };
 
-      if (existingAnswer?.answerId) {
-        // עדכון תשובה קיימת
-        await dispatch(updateAnswer({
-          answerId: existingAnswer.answerId,
-          answerData
-        })).unwrap();
-      } else {
-        // יצירת תשובה חדשה
-        const savedAnswer = await dispatch(saveAnswer(answerData)).unwrap();
-        
-        // עדכון התשובה המקומית עם ה-ID החדש
-        setLocalAnswers(prev => ({
-          ...prev,
-          [questionNo]: {
-            ...prev[questionNo],
-            answerId: savedAnswer.answerId
-          }
-        }));
+      try {
+        if (answerData.answerId) {
+          // עדכון תשובה קיימת
+          await axios.put(`/Forms/answers/${answerData.answerId}`, fullAnswerData);
+        } else {
+          // 🔥 הוספת תשובה חדשה
+          const response = await axios.post('/Forms/answers', fullAnswerData);
+
+          const newAnswer = response.data;
+          // עדכון ה-answerId ב-state המקומי
+          setLocalAnswers(prev => ({
+            ...prev,
+            [answerData.questionNo]: {
+              ...prev[answerData.questionNo],
+              answerId: newAnswer.answerId,
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('שגיאה בשמירת תשובה:', error);
+        throw error;
       }
-
-      setAutoSaveStatus('saved');
-      setTimeout(() => setAutoSaveStatus(''), 2000);
-
-    } catch (error) {
-      console.error('Auto-save error:', error);
-      setAutoSaveStatus('error');
-      setTimeout(() => setAutoSaveStatus(''), 3000);
     }
+    // 🔥 בדיקת השלמת טופס אחרי השמירה
+    await checkFormCompletion();
   };
 
-  // תקינות טופס
-  const validateForm = () => {
-    const errors = {};
-    const mandatoryQuestions = currentFormQuestions.filter(q => q.isMandatory);
-
-    mandatoryQuestions.forEach(question => {
-      const answer = localAnswers[question.questionNo];
-      if (!answer?.answer?.trim()) {
-        errors[question.questionNo] = 'שאלה חובה - נדרשת תשובה';
-      }
-    });
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // השלמת טופס
-  const handleCompleteForm = async () => {
-    if (!validateForm()) {
-      setSnackbarMessage('יש להשלים את כל השאלות החובה');
-      setShowSnackbar(true);
-      return;
-    }
-
+  // 🔥 בדיקת השלמה ידנית (במקום אוטומטית)
+  const checkFormCompletion = async () => {
     try {
-      // שמירת כל התשובות שטרם נשמרו
-      const unsavedAnswers = currentFormQuestions.filter(q => {
-        const answer = localAnswers[q.questionNo];
-        return answer?.answer?.trim() && !answer.answerId;
+      const response = await axios.post('/KidOnboarding/check-completion', {
+        kidId,
+        formId
       });
 
-      for (const question of unsavedAnswers) {
-        const answer = localAnswers[question.questionNo];
-        await handleAutoSave(question.questionNo, answer.answer, answer.other);
+      if (response.ok) {
+        // רענון נתוני הקליטה
+        setTimeout(() => {
+          // כאן תקרא לרענון נתוני הקליטה אם נדרש
+        }, 500);
       }
-
-      // השלמת הטופס
-      await dispatch(completeForm({ kidId, formId: form.formId })).unwrap();
-
-      setSnackbarMessage('הטופס הושלם בהצלחה!');
-      setShowSnackbar(true);
-
-      // חזרה לדשבורד אחרי זמן קצר
-      setTimeout(() => {
-        onComplete();
-      }, 1500);
-
     } catch (error) {
-      console.error('Error completing form:', error);
-      setSnackbarMessage('שגיאה בהשלמת הטופס');
-      setShowSnackbar(true);
+      console.warn('שגיאה בבדיקת השלמה:', error);
     }
   };
 
-  // רינדור שאלה לפי סוג
-  const renderQuestion = (question) => {
-    const answer = localAnswers[question.questionNo] || { answer: '', other: '' };
-    const isAnswered = !!answer.answer?.trim();
-    const hasError = validationErrors[question.questionNo];
-
-    return (
-      <QuestionCard 
-        key={question.questionNo}
-        isMandatory={question.isMandatory}
-        isAnswered={isAnswered}
-      >
-        {/* כותרת השאלה */}
-        <Box display="flex" alignItems="flex-start" mb={2}>
-          <Box flex={1}>
-            <Typography variant="h6" gutterBottom>
-              שאלה {question.questionNo}
-              {question.isMandatory && (
-                <Chip 
-                  label="חובה" 
-                  size="small" 
-                  color="warning" 
-                  sx={{ ml: 1, fontSize: '0.7rem' }} 
-                />
-              )}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {question.questionText}
-            </Typography>
-          </Box>
-          
-          {isAnswered && (
-            <Tooltip title="נענתה">
-              <CheckCircleOutline color="success" />
-            </Tooltip>
-          )}
-        </Box>
-
-        {/* תוכן השאלה */}
-        {question.isOpen ? (
-          // שאלה פתוחה
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            value={answer.answer}
-            onChange={(e) => handleAnswerChange(question.questionNo, e.target.value)}
-            placeholder="הכנס את תשובתך כאן..."
-            error={!!hasError}
-            helperText={hasError}
-            variant="outlined"
-          />
-        ) : (
-          // שאלה סגורה
-          <FormControl component="fieldset" error={!!hasError}>
-            <FormLabel component="legend">בחר תשובה:</FormLabel>
-            
-            {question.howManyValues === 1 ? (
-              // רדיו (בחירה יחידה)
-              <RadioGroup
-                value={answer.answer}
-                onChange={(e) => handleAnswerChange(question.questionNo, e.target.value)}
-              >
-                {question.possibleValues?.split(',').map((value, index) => (
-                  <FormControlLabel
-                    key={index}
-                    value={value.trim()}
-                    control={<Radio />}
-                    label={value.trim()}
-                  />
-                ))}
-                
-                {question.hasOther && (
-                  <FormControlLabel
-                    value="אחר"
-                    control={<Radio />}
-                    label={
-                      <Box display="flex" alignItems="center" gap={1}>
-                        אחר:
-                        <TextField
-                          size="small"
-                          value={answer.other}
-                          onChange={(e) => {
-                            handleAnswerChange(question.questionNo, 'אחר', e.target.value);
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (answer.answer !== 'אחר') {
-                              handleAnswerChange(question.questionNo, 'אחר', '');
-                            }
-                          }}
-                          disabled={answer.answer !== 'אחר'}
-                          placeholder="פרט..."
-                        />
-                      </Box>
-                    }
-                  />
-                )}
-              </RadioGroup>
-            ) : (
-              // צ'קבוקס (בחירה מרובה)
-              <FormGroup>
-                {question.possibleValues?.split(',').map((value, index) => (
-                  <FormControlLabel
-                    key={index}
-                    control={
-                      <Checkbox
-                        checked={answer.answer.includes(value.trim())}
-                        onChange={(e) => {
-                          const currentAnswers = answer.answer ? answer.answer.split(',') : [];
-                          let newAnswers;
-                          
-                          if (e.target.checked) {
-                            newAnswers = [...currentAnswers, value.trim()];
-                          } else {
-                            newAnswers = currentAnswers.filter(a => a !== value.trim());
-                          }
-                          
-                          handleAnswerChange(question.questionNo, newAnswers.join(','));
-                        }}
-                      />
-                    }
-                    label={value.trim()}
-                  />
-                ))}
-              </FormGroup>
-            )}
-            
-            {hasError && (
-              <Typography variant="caption" color="error" sx={{ mt: 1 }}>
-                {hasError}
-              </Typography>
-            )}
-          </FormControl>
-        )}
-      </QuestionCard>
-    );
+  // חישוב התקדמות על בסיס התשובות המקומיות
+  const calculateProgress = () => {
+    if (!currentFormQuestions.length) return 0;
+    
+    const mandatoryQuestions = currentFormQuestions.filter(q => q.isMandatory);
+    const answeredMandatory = mandatoryQuestions.filter(q => {
+      const localAnswer = localAnswers[q.questionNo];
+      return localAnswer && localAnswer.answer && localAnswer.answer.trim() !== '';
+    });
+    
+    return mandatoryQuestions.length > 0 
+      ? Math.round((answeredMandatory.length / mandatoryQuestions.length) * 100) 
+      : 0;
   };
 
-  // חישוב התקדמות
-  const calculateProgress = () => {
-    const totalQuestions = currentFormQuestions.length;
-    const answeredQuestions = currentFormQuestions.filter(q => 
-      localAnswers[q.questionNo]?.answer?.trim()
-    ).length;
-    
-    return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+  // קבלת ערך תשובה מ-state מקומי
+  const getAnswerValue = (questionNo) => {
+    const localAnswer = localAnswers[questionNo];
+    return {
+      answer: localAnswer?.answer || '',
+      other: localAnswer?.other || ''
+    };
+  };
+
+  // פונקציה לקיבוץ שאלות לפי קטגוריה
+  const groupQuestionsByCategory = () => {
+    const grouped = {};
+    currentFormQuestions.forEach(question => {
+      const category = question.category || 'כללי';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(question);
+    });
+    return grouped;
+  };
+
+  const showNotification = (message, severity = 'success') => {
+    setNotification({ open: true, message, severity });
+  };
+
+  const closeNotification = () => {
+    setNotification({ ...notification, open: false });
   };
 
   const progress = calculateProgress();
-  const mandatoryQuestions = currentFormQuestions.filter(q => q.isMandatory);
-  const answeredMandatory = mandatoryQuestions.filter(q => 
-    localAnswers[q.questionNo]?.answer?.trim()
-  ).length;
 
   if (questionsStatus === 'loading') {
     return (
-      <Box textAlign="center" py={4}>
-        <LinearProgress sx={{ mb: 2 }} />
-        <Typography>טוען שאלות הטופס...</Typography>
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          טוען שאלות הטופס...
+        </Typography>
       </Box>
+    );
+  }
+
+  if (!currentFormQuestions.length) {
+    return (
+      <Alert severity="info">
+        <Typography variant="h6">אין שאלות בטופס זה</Typography>
+        <Typography variant="body2">
+          נראה שהטופס עדיין לא הוגדר או שאין בו שאלות.
+        </Typography>
+      </Alert>
     );
   }
 
   return (
     <Box>
-      {/* כותרת הטופס */}
-      <FormContainer>
-        <FormHeader>
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Typography variant="h4" gutterBottom fontWeight="bold">
-              {form.formName}
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
-              {form.formDescription}
-            </Typography>
+      {/* 🔥 סרגל התקדמות */}
+      <Paper sx={{ p: 2, mb: 3, backgroundColor: 'grey.50' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Typography variant="body2" fontWeight="medium">
+            התקדמות הטופס:
+          </Typography>
+          <Box sx={{ flexGrow: 1, mx: 2 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={progress} 
+              sx={{ height: 8, borderRadius: 4 }}
+            />
           </Box>
-        </FormHeader>
-
-        {/* סקירת התקדמות */}
-        <ProgressSection>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                התקדמות: {progress}%
+          <Typography variant="body2" color="primary" fontWeight="bold">
+            {progress}%
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            {Object.keys(localAnswers).filter(qNo => localAnswers[qNo]?.answer).length} מתוך {currentFormQuestions.length} שאלות נענו
+          </Typography>
+          
+          {/* 🔥 אינדיקטור שינויים */}
+          {!readOnly && hasChanges && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <WarningIcon fontSize="small" color="warning" />
+              <Typography variant="caption" color="warning.main">
+                יש שינויים שלא נשמרו
               </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                color={progress >= 75 ? 'success' : progress >= 50 ? 'primary' : 'warning'}
-                sx={{ height: 8, borderRadius: 4 }}
+            </Box>
+          )}
+        </Box>
+      </Paper>
+
+      {/* שאלות הטופס */}
+      {Object.entries(groupQuestionsByCategory()).map(([category, questions], categoryIndex) => (
+        <Fade in={true} timeout={300 + (categoryIndex * 200)} key={category}>
+          <Paper 
+            sx={{ 
+              mb: 4, 
+              borderRadius: 3,
+              overflow: 'hidden',
+              border: '1px solid',
+              borderColor: 'grey.200'
+            }}
+          >
+            {/* כותרת קטגוריה */}
+            <Box 
+              sx={{ 
+                p: 2, 
+                backgroundColor: 'primary.main', 
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold">
+                {category}
+              </Typography>
+              <Chip 
+                label={`${questions.length} שאלות`}
+                size="small"
+                sx={{ 
+                  backgroundColor: 'rgba(255,255,255,0.2)', 
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}
               />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                נענו {currentFormQuestions.filter(q => localAnswers[q.questionNo]?.answer?.trim()).length} מתוך {currentFormQuestions.length} שאלות
-              </Typography>
-            </Grid>
+            </Box>
             
-            <Grid item xs={12} md={6}>
-              <Box display="flex" gap={1} flexWrap="wrap">
-                <Chip 
-                  icon={<InfoIcon />}
-                  label={`${answeredMandatory}/${mandatoryQuestions.length} שאלות חובה`}
-                  color={answeredMandatory === mandatoryQuestions.length ? 'success' : 'warning'}
-                  variant="filled"
-                />
-                
-                {autoSaveStatus === 'saving' && (
-                  <Chip label="שומר..." color="primary" size="small" />
-                )}
-                {autoSaveStatus === 'saved' && (
-                  <Chip label="נשמר" color="success" size="small" />
-                )}
-                {autoSaveStatus === 'error' && (
-                  <Chip label="שגיאה בשמירה" color="error" size="small" />
-                )}
-              </Box>
-            </Grid>
-          </Grid>
-        </ProgressSection>
-      </FormContainer>
-
-      {/* השאלות */}
-      <Box>
-        {currentFormQuestions.map(renderQuestion)}
-      </Box>
+            {/* שאלות הקטגוריה */}
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3}>
+                {questions
+                  .sort((a, b) => a.questionNo - b.questionNo)
+                  .map((question, index) => {
+                    const { answer, other } = getAnswerValue(question.questionNo);
+                    
+                    return (
+                      <Grid item xs={12} key={question.questionNo}>
+                        <QuestionRenderer
+                          question={question}
+                          value={answer}
+                          otherValue={other}
+                          onChange={(value, otherValue) => 
+                            handleQuestionChange(question.questionNo, value, otherValue)
+                          }
+                          readOnly={readOnly}
+                        />
+                      </Grid>
+                    );
+                  })}
+              </Grid>
+            </Box>
+          </Paper>
+        </Fade>
+      ))}
 
       {/* כפתורי פעולה */}
-      <Paper sx={{ p: 3, mt: 3, borderRadius: 2 }}>
-        <Box display="flex" gap={2} justifyContent="space-between">
+      <Divider sx={{ my: 4 }} />
+      
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 2
+      }}>
+        {onBack && (
           <Button
             variant="outlined"
             startIcon={<BackIcon />}
-            onClick={onCancel}
+            onClick={onBack}
           >
             חזרה
           </Button>
-
-          <Box display="flex" gap={2}>
+        )}
+        
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          {/* 🔥 אפשרות עריכה גם אחרי השלמה */}
+          {readOnly && (
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => window.location.reload()} // פתרון זמני - יעבור למצב עריכה
+              color="primary"
+            >
+              עריכה
+            </Button>
+          )}
+          
+          {!readOnly && (
             <Button
               variant="contained"
+              startIcon={saveStatus === 'loading' ? <CircularProgress size={20} /> : <SaveIcon />}
+              onClick={handleSaveAll}
+              disabled={saveStatus === 'loading' || !hasChanges}
               size="large"
-              startIcon={<CompleteIcon />}
-              onClick={handleCompleteForm}
-              disabled={formActions.completing || progress < 100}
+              sx={{ minWidth: 140 }}
             >
-              {formActions.completing ? 'משלים...' : 'השלם טופס'}
+              {saveStatus === 'loading' ? 'שומר...' : 'שמור והמשך'}
             </Button>
-          </Box>
+          )}
         </Box>
+      </Box>
 
-        {progress < 100 && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <AlertTitle>להשלמת הטופס</AlertTitle>
-            יש להשלים את כל השאלות החובה. התקדמות נוכחית: {progress}%
-          </Alert>
-        )}
-      </Paper>
+      {/* שגיאות שמירה */}
+      {saveError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {saveError}
+        </Alert>
+      )}
 
-      {/* הודעות */}
+      {/* התראות */}
       <Snackbar
-        open={showSnackbar}
+        open={notification.open}
         autoHideDuration={4000}
-        onClose={() => setShowSnackbar(false)}
-        message={snackbarMessage}
-      />
+        onClose={closeNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={closeNotification} 
+          severity={notification.severity}
+          variant="filled"
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

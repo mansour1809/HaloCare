@@ -1,244 +1,248 @@
-// src/Redux/features/onboardingSlice.js - עדכון מלא לשרת החדש
+
+// src/Redux/features/onboardingSlice.js - גרסה חדשה לחלוטין
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// קבלת סטטוס תהליך קליטה
+// 🔥 ACTIONS החדשים - מותאמים לAPI החדש שבנינו
+
+// יצירת תהליך קליטה לילד חדש
+export const initializeKidOnboarding = createAsyncThunk(
+  'onboarding/initializeKidOnboarding',
+  async (kidId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`/KidOnboarding/initialize/${kidId}`);
+      return { kidId, ...response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'שגיאה ביצירת תהליך קליטה');
+    }
+  }
+);
+
+// קבלת סטטוס קליטה מלא
 export const fetchOnboardingStatus = createAsyncThunk(
   'onboarding/fetchOnboardingStatus',
   async (kidId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Onboarding/status/${kidId}`);
+      const response = await axios.get(`/KidOnboarding/status/${kidId}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בטעינת סטטוס התהליך');
+      return rejectWithValue(error.response?.data?.message || 'שגיאה בטעינת סטטוס התהליך');
     }
   }
 );
 
-// התחלת תהליך קליטה חדש
-export const startOnboardingProcess = createAsyncThunk(
-  'onboarding/startOnboardingProcess',
-  async (kidId, { rejectWithValue }) => {
+// עדכון סטטוס טופס
+export const updateFormStatus = createAsyncThunk(
+  'onboarding/updateFormStatus',
+  async ({ kidId, formId, newStatus, completedBy = null, notes = null }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/Onboarding/start', { kidId });
-      return response.data;
+      const response = await axios.put('/KidOnboarding/form-status', {
+        kidId,
+        formId,
+        newStatus,
+        completedBy,
+        notes
+      });
+      return { kidId, formId, newStatus, ...response.data };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בהתחלת תהליך קליטה');
+      return rejectWithValue(error.response?.data?.message || 'שגיאה בעדכון סטטוס');
     }
   }
 );
 
-// התחלת מילוי טופס
-export const startForm = createAsyncThunk(
-  'onboarding/startForm',
+// בדיקת השלמת טופס (אוטומטי)
+export const checkFormCompletion = createAsyncThunk(
+  'onboarding/checkFormCompletion',
   async ({ kidId, formId }, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/Onboarding/forms/start', {
+      const response = await axios.post('/KidOnboarding/check-completion', {
         kidId,
         formId
       });
-      return response.data;
+      return { kidId, formId, ...response.data };
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בהתחלת טופס');
+      return rejectWithValue(error.response?.data?.message || 'שגיאה בבדיקת השלמה');
     }
   }
 );
 
-// עדכון התקדמות טופס
-export const updateFormProgress = createAsyncThunk(
-  'onboarding/updateFormProgress',
-  async ({ kidId, formId }, { rejectWithValue }) => {
-    try {
-      const response = await axios.put('/Onboarding/forms/progress', {
-        kidId,
-        formId
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בעדכון התקדמות');
-    }
-  }
-);
-
-// השלמת טופס
-export const completeForm = createAsyncThunk(
-  'onboarding/completeForm',
-  async ({ kidId, formId }, { rejectWithValue }) => {
-    try {
-      const response = await axios.put('/Onboarding/forms/complete', {
-        kidId,
-        formId
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בהשלמת טופס');
-    }
-  }
-);
-
-// שליחת טופס להורים
-export const sendFormToParent = createAsyncThunk(
-  'onboarding/sendFormToParent',
-  async ({ kidId, formId }, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/Onboarding/forms/send-to-parent', {
-        kidId,
-        formId
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בשליחת טופס להורים');
-    }
-  }
-);
-
-// קבלת סיכום תהליך קליטה
-export const fetchOnboardingSummary = createAsyncThunk(
-  'onboarding/fetchOnboardingSummary',
-  async (kidId, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`/Onboarding/summary/${kidId}`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בטעינת סיכום');
-    }
-  }
-);
-
+// 🎯 STATE החדש - פשוט ויעיל
 const onboardingSlice = createSlice({
   name: 'onboarding',
   initialState: {
-    currentProcess: null, // התהליך הנוכחי (OnboardingStatusDto)
-    processId: null,
+    // נתוני קליטה לפי ילד
+    onboardingData: {}, // { kidId: KidOnboardingStatusDto }
+    
+    // מצב נוכחי
+    currentKidId: null,
+    currentFormId: null,
+    
+    // מצבי טעינה
     status: 'idle', // idle, loading, succeeded, failed
+    initializingKids: [], // רשימת ילדים שנמצאים בתהליך יצירה
     error: null,
-    formActions: {
-      starting: false,
-      completing: false,
-      sendingToParent: false,
-      updating: false
+    
+    // סטטיסטיקות מהירות
+    stats: {
+      totalKids: 0,
+      completed: 0,
+      inProgress: 0,
+      notStarted: 0
     }
   },
   reducers: {
-    clearOnboardingData: (state) => {
-      state.currentProcess = null;
-      state.processId = null;
-      state.error = null;
-      state.status = 'idle';
-    },
+    // 🧹 ניקוי שגיאות
     clearError: (state) => {
       state.error = null;
     },
-    updateLocalFormStatus: (state, action) => {
-      const { formId, status: newStatus } = action.payload;
-      if (state.currentProcess?.forms) {
-        const formIndex = state.currentProcess.forms.findIndex(f => f.formId === formId);
-        if (formIndex !== -1) {
-          state.currentProcess.forms[formIndex].status = newStatus;
-          state.currentProcess.forms[formIndex].lastUpdated = new Date().toISOString();
-          
-          // עדכון סטטיסטיקות
-          const completedForms = state.currentProcess.forms.filter(
-            f => f.status === 'completed' || f.status === 'completed_by_parent'
-          ).length;
-          state.currentProcess.stats.completedForms = completedForms;
-          state.currentProcess.stats.completionPercentage = Math.round(
-            (completedForms / state.currentProcess.stats.totalForms) * 100
-          );
-        }
-      }
+    
+    // 🎯 הגדרת ילד נוכחי
+    setCurrentKid: (state, action) => {
+      state.currentKidId = action.payload;
+    },
+    
+    // 🎯 הגדרת טופס נוכחי
+    setCurrentForm: (state, action) => {
+      state.currentFormId = action.payload;
+    },
+    
+    // 🧹 ניקוי נתוני קליטה (למשל כשיוצאים מהמסך)
+    clearOnboardingData: (state) => {
+      state.onboardingData = {};
+      state.currentKidId = null;
+      state.currentFormId = null;
+      state.error = null;
+    },
+    
+    // 📊 עדכון סטטיסטיקות
+    updateStats: (state) => {
+      const allData = Object.values(state.onboardingData);
+      state.stats = {
+        totalKids: allData.length,
+        completed: allData.filter(data => data.overallStatus === 'Completed').length,
+        inProgress: allData.filter(data => data.overallStatus === 'InProgress').length,
+        notStarted: allData.filter(data => data.overallStatus === 'NotStarted').length
+      };
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch onboarding status
+      // 🔥 יצירת תהליך קליטה
+      .addCase(initializeKidOnboarding.pending, (state, action) => {
+        state.status = 'loading';
+        state.initializingKids.push(action.meta.arg); // kidId
+        state.error = null;
+      })
+      .addCase(initializeKidOnboarding.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        const { kidId } = action.payload;
+        
+        // הסרה מרשימת היצירה
+        state.initializingKids = state.initializingKids.filter(id => id !== kidId);
+        
+        // הודעת הצלחה - הנתונים יטענו בנפרד
+        console.log(`תהליך קליטה נוצר בהצלחה לילד ${kidId}`);
+      })
+      .addCase(initializeKidOnboarding.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+        
+        // הסרה מרשימת היצירה
+        const kidId = action.meta.arg;
+        state.initializingKids = state.initializingKids.filter(id => id !== kidId);
+      })
+      
+      // 📊 טעינת סטטוס קליטה
       .addCase(fetchOnboardingStatus.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
       .addCase(fetchOnboardingStatus.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.currentProcess = action.payload;
-        state.processId = action.payload.process.processId;
+        const data = action.payload;
+        
+        // שמירת הנתונים
+        state.onboardingData[data.kidId] = data;
+        
+        // עדכון סטטיסטיקות
+        onboardingSlice.caseReducers.updateStats(state);
       })
       .addCase(fetchOnboardingStatus.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-        state.currentProcess = null;
       })
       
-      // Start onboarding process
-      .addCase(startOnboardingProcess.pending, (state) => {
+      // ✅ עדכון סטטוס טופס
+      .addCase(updateFormStatus.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
-      .addCase(startOnboardingProcess.fulfilled, (state, action) => {
+      .addCase(updateFormStatus.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.processId = action.payload.processId;
+        const { kidId } = action.payload;
+        
+        // הנתונים יתעדכנו בטעינה הבאה - או שנוכל לעדכן מקומית
+        console.log(`סטטוס טופס עודכן בהצלחה לילד ${kidId}`);
       })
-      .addCase(startOnboardingProcess.rejected, (state, action) => {
+      .addCase(updateFormStatus.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
       
-      // Start form
-      .addCase(startForm.pending, (state) => {
-        state.formActions.starting = true;
+      // 🔍 בדיקת השלמה
+      .addCase(checkFormCompletion.pending, (state) => {
+        // לא משנים סטטוס כי זו פעולה ברקע
+        state.error = null;
       })
-      .addCase(startForm.fulfilled, (state, action) => {
-        state.formActions.starting = false;
-        // הסטטוס יתעדכן ברענון הבא
+      .addCase(checkFormCompletion.fulfilled, (state, action) => {
+        const { kidId } = action.payload;
+        console.log(`בדיקת השלמה בוצעה לילד ${kidId}`);
+        
+        // אפשר לטעון מחדש את הסטטוס אוטומטית
+        // או לעדכן מקומית אם יש לנו את המידע
       })
-      .addCase(startForm.rejected, (state, action) => {
-        state.formActions.starting = false;
-        state.error = action.payload;
-      })
-      
-      // Complete form
-      .addCase(completeForm.pending, (state) => {
-        state.formActions.completing = true;
-      })
-      .addCase(completeForm.fulfilled, (state, action) => {
-        state.formActions.completing = false;
-        // עדכון מקומי של הסטטוס
-        // הנתונים המדויקים יתעדכנו ברענון הבא
-      })
-      .addCase(completeForm.rejected, (state, action) => {
-        state.formActions.completing = false;
-        state.error = action.payload;
-      })
-      
-      // Send form to parent
-      .addCase(sendFormToParent.pending, (state) => {
-        state.formActions.sendingToParent = true;
-      })
-      .addCase(sendFormToParent.fulfilled, (state, action) => {
-        state.formActions.sendingToParent = false;
-      })
-      .addCase(sendFormToParent.rejected, (state, action) => {
-        state.formActions.sendingToParent = false;
-        state.error = action.payload;
-      })
-      
-      // Update form progress
-      .addCase(updateFormProgress.pending, (state) => {
-        state.formActions.updating = true;
-      })
-      .addCase(updateFormProgress.fulfilled, (state, action) => {
-        state.formActions.updating = false;
-      })
-      .addCase(updateFormProgress.rejected, (state, action) => {
-        state.formActions.updating = false;
-        state.error = action.payload;
+      .addCase(checkFormCompletion.rejected, (state, action) => {
+        // שגיאה בבדיקה - לא קריטי
+        console.warn('שגיאה בבדיקת השלמת טופס:', action.payload);
       });
   }
 });
 
+// 🎯 SELECTORS - לגישה נוחה לנתונים
+export const selectOnboardingData = (state) => state.onboarding.onboardingData;
+export const selectCurrentKidOnboarding = (state) => {
+  const { currentKidId, onboardingData } = state.onboarding;
+  return currentKidId ? onboardingData[currentKidId] : null;
+};
+export const selectOnboardingStats = (state) => state.onboarding.stats;
+export const selectCurrentKidId = (state) => state.onboarding.currentKidId;
+export const selectCurrentFormId = (state) => state.onboarding.currentFormId;
+export const selectOnboardingStatus = (state) => state.onboarding.status;
+export const selectOnboardingError = (state) => state.onboarding.error;
+
+// בדיקה אם ילד נמצא בתהליך יצירה
+export const selectIsKidInitializing = (kidId) => (state) => 
+  state.onboarding.initializingKids.includes(kidId);
+
+// קבלת טופס ספציפי לילד הנוכחי
+export const selectCurrentKidForm = (formId) => (state) => {
+  const currentData = selectCurrentKidOnboarding(state);
+  return currentData?.forms?.find(form => form.formId === formId);
+};
+
+// בדיקה אם טופס זמין למילוי
+export const selectIsFormAvailable = (formId) => (state) => {
+  const form = selectCurrentKidForm(formId)(state);
+  return form && ['NotStarted', 'InProgress'].includes(form.status);
+};
+
 export const { 
-  clearOnboardingData, 
   clearError, 
-  updateLocalFormStatus 
+  setCurrentKid, 
+  setCurrentForm, 
+  clearOnboardingData,
+  updateStats 
 } = onboardingSlice.actions;
 
 export default onboardingSlice.reducer;
-
 

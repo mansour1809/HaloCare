@@ -1,6 +1,6 @@
-// src/Redux/features/formsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
+import { updateFormStatus, fetchOnboardingStatus } from './onboardingSlice'; // 🔥 הוספה
 
 export const fetchForms = createAsyncThunk(
   'forms/fetchForms',
@@ -13,7 +13,7 @@ export const fetchForms = createAsyncThunk(
     }
   }
 );
-// אסינק ת'אנק לשליפת שאלות הטופס
+
 export const fetchFormQuestions = createAsyncThunk(
   'forms/fetchFormQuestions',
   async (formId, { rejectWithValue }) => {
@@ -26,17 +26,59 @@ export const fetchFormQuestions = createAsyncThunk(
   }
 );
 
+// 🔥 שליחת טופס להורה - מעודכן עם עדכון סטטוס קליטה
 export const sendFormToParent = createAsyncThunk(
   'forms/sendFormToParent',
-  async ({ kidId, formId }, { rejectWithValue }) => {
+  async ({ kidId, formId, parentEmail }, { dispatch, rejectWithValue }) => {
     try {
+      // 1. שליחת הטופס (הAPI הקיים שלך)
       const response = await axios.post('/Forms/send-to-parent', {
         kidId,
-        formId
+        formId,
+        parentEmail
       });
-      return response.data;
+
+      // 2. עדכון סטטוס בתהליך קליטה
+      await dispatch(updateFormStatus({
+        kidId,
+        formId,
+        newStatus: 'SentToParent',
+        notes: `נשלח להורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
+      }));
+
+      // 3. רענון סטטוס קליטה
+      setTimeout(() => {
+        dispatch(fetchOnboardingStatus(kidId));
+      }, 100);
+
+      return { kidId, formId, ...response.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בשליחת הטופס להורה');
+    }
+  }
+);
+
+// 🔥 סימון טופס כהושלם על ידי הורה
+export const markFormCompletedByParent = createAsyncThunk(
+  'forms/markFormCompletedByParent',
+  async ({ kidId, formId, notes }, { dispatch, rejectWithValue }) => {
+    try {
+      // עדכון סטטוס לטופס שהושלם על ידי הורה
+      await dispatch(updateFormStatus({
+        kidId,
+        formId,
+        newStatus: 'CompletedByParent',
+        notes: notes || `הושלם על ידי הורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
+      }));
+
+      // רענון סטטוס קליטה
+      setTimeout(() => {
+        dispatch(fetchOnboardingStatus(kidId));
+      }, 100);
+
+      return { kidId, formId, status: 'CompletedByParent' };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון סטטוס הטופס');
     }
   }
 );
@@ -45,7 +87,7 @@ export const fetchFormData = createAsyncThunk(
   'forms/fetchFormData',
   async ({ formId, kidId }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Forms/${formId}/kid/${kidId}`);
+      const response = await axios.get(`/Forms/${formId}/data/${kidId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת נתוני הטופס');
@@ -55,9 +97,9 @@ export const fetchFormData = createAsyncThunk(
 
 export const submitFormData = createAsyncThunk(
   'forms/submitFormData',
-  async ({ formId, kidId, formData }, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`/Forms/${formId}/kid/${kidId}`, formData);
+      const response = await axios.post('/Forms/submit', formData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בשמירת נתוני הטופס');
@@ -69,29 +111,43 @@ const formsSlice = createSlice({
   name: 'forms',
   initialState: {
     forms: [],
+    questions: [],
     selectedForm: null,
     formData: null,
     status: 'idle',
     error: null,
-    sendStatus: 'idle',
-    sendError: null
+    
+    // 🔥 מצבי שליחה להורים
+    sendingToParent: false,
+    sentForms: {}, // { kidId_formId: { sentDate, status } }
   },
   reducers: {
     clearSelectedForm: (state) => {
       state.selectedForm = null;
+      state.questions = [];
       state.formData = null;
+      state.error = null;
     },
     clearFormData: (state) => {
       state.formData = null;
     },
     clearErrors: (state) => {
       state.error = null;
-      state.sendError = null;
+    },
+    
+    // 🔥 מעקב אחרי טפסים שנשלחו
+    markFormAsSent: (state, action) => {
+      const { kidId, formId } = action.payload;
+      const key = `${kidId}_${formId}`;
+      state.sentForms[key] = {
+        sentDate: new Date().toISOString(),
+        status: 'sent'
+      };
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch forms info
+      // Fetch forms
       .addCase(fetchForms.pending, (state) => {
         state.status = 'loading';
       })
@@ -103,7 +159,8 @@ const formsSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload || 'שגיאה בטעינת רשימת הטפסים';
       })
-       // FetchFormQuestions
+      
+      // Fetch form questions
       .addCase(fetchFormQuestions.pending, (state) => {
         state.status = 'loading';
       })
@@ -116,17 +173,40 @@ const formsSlice = createSlice({
         state.error = action.payload || 'שגיאה בטעינת שאלות הטופס';
       })
       
-      // Send form to parent
+      // 🔥 Send form to parent
       .addCase(sendFormToParent.pending, (state) => {
-        state.sendStatus = 'loading';
-        state.sendError = null;
+        state.sendingToParent = true;
+        state.error = null;
       })
       .addCase(sendFormToParent.fulfilled, (state, action) => {
-        state.sendStatus = 'succeeded';
+        state.sendingToParent = false;
+        const { kidId, formId } = action.payload;
+        
+        // סימון הטופס כנשלח
+        const key = `${kidId}_${formId}`;
+        state.sentForms[key] = {
+          sentDate: new Date().toISOString(),
+          status: 'sent'
+        };
+        
+        console.log(`טופס ${formId} נשלח בהצלחה להורה של ילד ${kidId}`);
       })
       .addCase(sendFormToParent.rejected, (state, action) => {
-        state.sendStatus = 'failed';
-        state.sendError = action.payload || 'שגיאה בשליחת הטופס להורה';
+        state.sendingToParent = false;
+        state.error = action.payload || 'שגיאה בשליחת הטופס להורה';
+      })
+      
+      // 🔥 Mark form completed by parent
+      .addCase(markFormCompletedByParent.fulfilled, (state, action) => {
+        const { kidId, formId } = action.payload;
+        const key = `${kidId}_${formId}`;
+        
+        if (state.sentForms[key]) {
+          state.sentForms[key].status = 'completed_by_parent';
+          state.sentForms[key].completedDate = new Date().toISOString();
+        }
+        
+        console.log(`טופס ${formId} סומן כהושלם על ידי הורה של ילד ${kidId}`);
       })
       
       // Fetch form data
@@ -157,6 +237,11 @@ const formsSlice = createSlice({
   }
 });
 
-export const { clearSelectedForm, clearFormData, clearErrors } = formsSlice.actions;
+export const { 
+  clearSelectedForm, 
+  clearFormData, 
+  clearErrors,
+  markFormAsSent
+} = formsSlice.actions;
 
 export default formsSlice.reducer;

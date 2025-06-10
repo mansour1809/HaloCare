@@ -8,9 +8,8 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({serializableCheck: {
       // Ignore these action types
-      ignoredActions: ['onboarding/fetchOnboardingStatus/fulfilled',
-          'kids/fetchKidsWithOnboarding/fulfilled',
-           'forms/setFormData'],
+              ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+
       // Ignore these field paths in all actions
       ignoredPaths: ['forms.formData'],
     },}).concat(errorMiddleware)
