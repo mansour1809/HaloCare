@@ -3,38 +3,109 @@ import {
   Container, Paper, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   CircularProgress, InputAdornment, IconButton, Divider, Alert,
-  Avatar
+  Avatar, Chip, Card, CardContent
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
-import { Visibility, VisibilityOff, CloudUpload, Person, Email, Phone, LocationOn, Edit } from '@mui/icons-material';
+import { format } from 'date-fns';
+import { 
+  Visibility, VisibilityOff, CloudUpload, Person, Email, Phone, 
+  LocationOn, Edit, Check, Close, Cake, Lock, CameraAlt, Save
+} from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useEmployees } from './EmployeesContext';
+import { useAuth } from '../../components/login/AuthContext';
 import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
-import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
+import { baseURL } from "../../components/common/axiosConfig";
 
-// יצירת תמה מותאמת לעברית
+// תמה מותאמת עם פונט שונה ועיצוב מודרני
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
-    fontFamily: 'Rubik, Arial, sans-serif',
+    fontFamily: '"Heebo", "Segoe UI", "Roboto", sans-serif',
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.2rem',
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: '1.6rem',
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1.3rem',
+    },
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.6,
+    },
+    subtitle1: {
+      fontWeight: 500,
+      fontSize: '1.1rem',
+    },
+    subtitle2: {
+      fontWeight: 500,
+      fontSize: '0.95rem',
+    }
   },
   palette: {
     primary: {
       main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
+    },
+    secondary: {
+      main: '#ff7043',
+      light: '#ff9575',
+      dark: '#c63f17',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#2d3748',
+      secondary: '#718096',
+    }
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          boxShadow: '0 4px 20px 0 rgba(0,0,0,0.08)',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          textTransform: 'none',
+          fontWeight: 600,
+          padding: '10px 24px',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 12,
+          },
+        },
+      },
     },
   },
 });
 
-const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
+const EmployeeProfile = ({ onUpdateSuccess }) => {
   const dispatch = useDispatch();
+  const { currentUser } = useAuth();
   
   const { 
     updateEmployee,
@@ -43,48 +114,151 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
   } = useEmployees();
   
   // מצב טופס
-  const [formData, setFormData] = useState({
-    employeeId: currentEmployee?.employeeId || '',
-    firstName: currentEmployee?.firstName || '',
-    lastName: currentEmployee?.lastName || '',
-    email: currentEmployee?.email || '',
-    mobilePhone: currentEmployee?.mobilePhone || '',
-    cityName: currentEmployee?.cityName || '',
-    birthDate: currentEmployee?.birthDate ? new Date(currentEmployee.birthDate) : null,
-    photo: currentEmployee?.photo || '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+  const [formData, setFormData] = useState(() => {
+    // השתמש בקוד שלך שעובד
+    const employeeId = currentUser?.employeeId ||
+                      JSON.parse(localStorage.getItem('user'))?.id;
+    
+    return {
+      employeeId: employeeId || '',
+      firstName: currentUser?.firstName || '',
+      lastName: currentUser?.lastName || '',
+      email: currentUser?.email || '',
+      mobilePhone: currentUser?.mobilePhone || '',
+      cityName: currentUser?.cityName || '',
+      birthDate: currentUser?.birthDate ? new Date(currentUser.birthDate) : null,
+      photo: currentUser?.photo || '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      // הוספת השדות הנדרשים
+      password: currentUser?.password || '',
+      roleName: currentUser?.roleName || currentUser?.role || '',
+      licenseNum: currentUser?.licenseNum || currentUser?.license || ''
+    };
   });
 
-  // מצבי טופס
+  // מצבי עריכה
+  const [editingField, setEditingField] = useState(null);
+  const [tempValue, setTempValue] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [editMode, setEditMode] = useState(false);
   const [changePasswordMode, setChangePasswordMode] = useState(false);
-  
-  // קבצים ותמונות
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [uploadingFiles, setUploadingFiles] = useState(false);
-  
-  // פונקציות טיפול בטופס
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    validateField(name, value);
+
+  // עדכון נתונים כשהמשתמש משתנה
+  useEffect(() => {
+    if (currentUser) {
+      console.log('currentUser נתונים:', currentUser); // בדיקה מה יש במשתמש
+      
+      // נסה לקחת employeeId השתמש בקוד שלך שעובד
+      const employeeId = currentUser.employeeId ||
+                        JSON.parse(localStorage.getItem('user'))?.id;
+      
+      setFormData({
+        employeeId: employeeId || '',
+        firstName: currentUser.firstName || '',
+        lastName: currentUser.lastName || '',
+        email: currentUser.email || '',
+        mobilePhone: currentUser.mobilePhone || '',
+        cityName: currentUser.cityName || '',
+        birthDate: currentUser.birthDate ? new Date(currentUser.birthDate) : null,
+        photo: currentUser.photo || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        // הוספת השדות הנדרשים
+        password: currentUser.password || '',
+        roleName: currentUser.roleName || currentUser.role || '',
+        licenseNum: currentUser.licenseNum || currentUser.license || ''
+      });
+    }
+  }, [currentUser]);
+
+  // פונקציות עריכה
+  const startEditingField = (fieldName) => {
+    setEditingField(fieldName);
+    setTempValue(formData[fieldName] || '');
   };
-  
-  const handleDateChange = (name, date) => {
-    setFormData(prev => ({ ...prev, [name]: date }));
-    validateField(name, date);
+
+  const cancelEditingField = () => {
+    setEditingField(null);
+    setTempValue('');
+    setErrors({});
   };
-  
+
+  // שמירת שדה בודד - משתמש ב-CONTEXT הקיים
+  const saveField = async (fieldName) => {
+    if (!validateField(fieldName, tempValue)) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      // וידוא שיש employeeId - השתמש בקוד שלך שעובד
+      const employeeId = currentUser.employeeId ||
+                        JSON.parse(localStorage.getItem('user'))?.id;
+      
+      if (!employeeId) {
+        console.error('currentUser:', currentUser);
+        console.error('formData:', formData);
+        console.error('localStorage user:', JSON.parse(localStorage.getItem('user')));
+        throw new Error('לא נמצא מזהה עובד - בדקי את נתוני המשתמש המחובר או localStorage');
+      }
+      
+      console.log('employeeId שנמצא:', employeeId);
+      
+      // הכנת נתוני העדכון - כל הנתונים הנדרשים כולל השדה שהשתנה
+      const updateData = {
+        employeeId: parseInt(employeeId),
+        firstName: fieldName === 'firstName' ? tempValue : formData.firstName,
+        lastName: fieldName === 'lastName' ? tempValue : formData.lastName,
+        email: fieldName === 'email' ? tempValue : formData.email,
+        mobilePhone: fieldName === 'mobilePhone' ? tempValue : formData.mobilePhone,
+        cityName: fieldName === 'cityName' ? tempValue : formData.cityName,
+        birthDate: fieldName === 'birthDate' ? tempValue : formData.birthDate,
+        photo: formData.photo,
+        // הוספת השדות הנדרשים מהמשתמש הקיים
+        password: currentUser.password || '', // אם יש
+        roleName: currentUser.roleName || currentUser.role || '',
+        licenseNum: currentUser.licenseNum || currentUser.license || ''
+      };
+
+      console.log('נתוני עדכון:', updateData); // להבנת הבעיה
+      
+      // שימוש בפונקציה מה-CONTEXT הקיים
+      const result = await updateEmployee(updateData);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      // עדכון המצב המקומי
+      setFormData(prev => ({ ...prev, [fieldName]: tempValue }));
+      setEditingField(null);
+      setTempValue('');
+
+      // הודעת הצלחה נשלחת כבר מה-CONTEXT, אז לא צריך כאן
+      
+      if (onUpdateSuccess) {
+        onUpdateSuccess(result.data);
+      }
+
+    } catch (err) {
+      console.error('שגיאה בעדכון שדה:', err);
+      // השגיאה כבר מטופלת ב-CONTEXT עם Swal
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // טיפול בתמונת פרופיל
-  const handleProfilePhotoChange = (e) => {
+  const handleProfilePhotoChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
@@ -109,22 +283,12 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
       }
       
       setProfilePhoto(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const previewElement = document.getElementById('profile-preview');
-        if (previewElement) {
-          previewElement.src = e.target.result;
-          previewElement.style.display = 'block';
-        }
-      };
-      reader.readAsDataURL(file);
+      await uploadProfilePhoto(formData.employeeId, file);
     }
   };
 
   // העלאת תמונת פרופיל
-  const uploadProfilePhoto = async (employeeId) => {
-    if (!profilePhoto) return true;
-    
+  const uploadProfilePhoto = async (employeeId, file) => {
     try {
       setUploadingFiles(true);
       
@@ -139,24 +303,47 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
         document: {
           EmployeeId: employeeId.toString(),
           DocType: "profile",
-          DocName: profilePhoto.name,
+          DocName: file.name,
         },
-        file: profilePhoto,
+        file: file,
       };
 
       const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
 
       if (uploadResult && uploadResult.docPath) {
-        await updateEmployee({
-          ...formData,
-          photo: uploadResult.docPath
-        });
+        // קבלת employeeId השתמש בקוד שלך שעובד
+        const employeeId = currentUser.employeeId ||
+                          JSON.parse(localStorage.getItem('user'))?.id;
         
-        // עדכון המצב המקומי
+        // עדכון התמונה באמצעות הפונקציה מה-CONTEXT
+        const updateData = {
+          employeeId: parseInt(employeeId),
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          mobilePhone: formData.mobilePhone,
+          cityName: formData.cityName,
+          birthDate: formData.birthDate,
+          photo: uploadResult.docPath,
+          // הוספת השדות הנדרשים
+          password: currentUser.password || formData.password || '',
+          roleName: currentUser.roleName || currentUser.role || formData.roleName || '',
+          licenseNum: currentUser.licenseNum || currentUser.license || formData.licenseNum || ''
+        };
+
+        console.log('נתוני עדכון תמונה:', updateData); // להבנת הבעיה
+        
+        await updateEmployee(updateData);
         setFormData(prev => ({ ...prev, photo: uploadResult.docPath }));
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'התמונה עודכנה בהצלחה',
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
       
-      return true;
     } catch (error) {
       console.error('שגיאה בהעלאת תמונה:', error);
       Swal.fire({
@@ -165,12 +352,11 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
         text: 'אירעה שגיאה בהעלאת התמונה. אנא נסה שוב.',
         confirmButtonText: 'אישור'
       });
-      return false;
     } finally {
       setUploadingFiles(false);
     }
   };
-  
+
   // ייצור סיסמה אקראית
   const handleGeneratePassword = () => {
     const newPassword = generateRandomPassword();
@@ -179,11 +365,9 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
       newPassword: newPassword,
       confirmPassword: newPassword
     }));
-    validateField('newPassword', newPassword);
-    validateField('confirmPassword', newPassword);
   };
-  
-  // פונקציות ולידציה
+
+  // ולידציה
   const validateField = (name, value) => {
     let error = '';
     
@@ -209,87 +393,71 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
       }
     }
     
-    if (name === 'newPassword' && changePasswordMode) {
-      if (!value) {
-        error = 'יש להזין סיסמה חדשה';
-      } else if (value.length < 6) {
-        error = 'סיסמה חייבת להכיל לפחות 6 תווים';
-      }
-    }
-    
-    if (name === 'confirmPassword' && changePasswordMode) {
-      if (!value) {
-        error = 'יש לאשר את הסיסמה החדשה';
-      } else if (value !== formData.newPassword) {
-        error = 'הסיסמאות אינן תואמות';
-      }
-    }
-    
-    if (name === 'currentPassword' && changePasswordMode) {
-      if (!value) {
-        error = 'יש להזין את הסיסמה הנוכחית';
-      }
-    }
-    
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-    
+    setErrors(prev => ({ ...prev, [name]: error }));
     return !error;
   };
 
-  const validateForm = () => {
-    const fieldsToValidate = ['firstName', 'lastName'];
-    
-    if (changePasswordMode) {
-      fieldsToValidate.push('currentPassword', 'newPassword', 'confirmPassword');
-    }
+  // שינוי סיסמה - משתמש ב-CONTEXT הקיים
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
     
     let isValid = true;
     const newErrors = {};
     
-    for (const field of fieldsToValidate) {
-      if (!validateField(field, formData[field])) {
-        isValid = false;
-      }
+    if (!formData.currentPassword) {
+      newErrors.currentPassword = 'יש להזין את הסיסמה הנוכחית';
+      isValid = false;
+    }
+    
+    if (!formData.newPassword) {
+      newErrors.newPassword = 'יש להזין סיסמה חדשה';
+      isValid = false;
+    } else if (formData.newPassword.length < 6) {
+      newErrors.newPassword = 'סיסמה חייבת להכיל לפחות 6 תווים';
+      isValid = false;
+    }
+    
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'יש לאשר את הסיסמה החדשה';
+      isValid = false;
+    } else if (formData.confirmPassword !== formData.newPassword) {
+      newErrors.confirmPassword = 'הסיסמאות אינן תואמות';
+      isValid = false;
     }
     
     setErrors(newErrors);
-    return isValid;
-  };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     
-    if (!validateForm()) {
-      Swal.fire({
-        title: 'שגיאה בטופס',
-        text: 'יש לתקן את השגיאות המסומנות',
-        icon: 'error',
-        confirmButtonText: 'אישור'
-      });
-      return;
-    }
-    
+    if (!isValid) return;
+
     try {
       setSubmitting(true);
       
-      // עדכון פרטים אישיים
+      // קבלת employeeId השתמש בקוד שלך שעובד
+      const employeeId = currentUser.employeeId ||
+                        JSON.parse(localStorage.getItem('user'))?.id;
+      
+      if (!employeeId) {
+        throw new Error('לא נמצא מזהה עובד');
+      }
+      
+      // שימוש בפונקציה מה-CONTEXT הקיים
       const updateData = {
-        employeeId: formData.employeeId,
+        employeeId: parseInt(employeeId),
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         mobilePhone: formData.mobilePhone,
         cityName: formData.cityName,
         birthDate: formData.birthDate,
+        photo: formData.photo,
+        currentPassword: formData.currentPassword,
+        password: formData.newPassword,
+        // הוספת השדות הנדרשים
+        roleName: currentUser.roleName || currentUser.role || formData.roleName || '',
+        licenseNum: currentUser.licenseNum || currentUser.license || formData.licenseNum || ''
       };
-      
-      // אם משנים סיסמה, הוסף אותה לעדכון
-      if (changePasswordMode && formData.newPassword) {
-        updateData.password = formData.newPassword;
-      }
+
+      console.log('נתוני עדכון סיסמה:', updateData); // להבנת הבעיה
       
       const result = await updateEmployee(updateData);
       
@@ -297,19 +465,8 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
         throw new Error(result.error);
       }
       
-      // העלאת תמונת פרופיל אם נבחרה
-      await uploadProfilePhoto(formData.employeeId);
+      // הודעת הצלחה נשלחת כבר מה-CONTEXT
       
-      // הודעת הצלחה
-      Swal.fire({
-        title: 'הפרטים עודכנו בהצלחה!',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
-      
-      // איפוס מצבי עריכה
-      setEditMode(false);
       setChangePasswordMode(false);
       setFormData(prev => ({
         ...prev,
@@ -318,418 +475,491 @@ const EmployeeProfile = ({ currentEmployee, onUpdateSuccess }) => {
         confirmPassword: ''
       }));
       
-      // קריאה לפונקציית קולבק אם קיימת
-      if (onUpdateSuccess) {
-        onUpdateSuccess(result.data);
-      }
-      
     } catch (err) {
-      Swal.fire({
-        title: 'שגיאה בעדכון הפרטים',
-        text: err.message || 'אנא בדוק את הנתונים ונסה שוב',
-        icon: 'error',
-        confirmButtonText: 'אישור'
-      });
+      console.error('שגיאה בשינוי סיסמה:', err);
+      // השגיאה כבר מטופלת ב-CONTEXT עם Swal
     } finally {
       setSubmitting(false);
     }
   };
 
-  // פונקציות עזר להצגת שגיאות
-  const getFieldError = (fieldName) => errors[fieldName] || '';
-  const hasFieldError = (fieldName) => Boolean(errors[fieldName]);
+  // עיצוב תאריך
+  const formatDate = (date) => {
+    if (!date) return 'לא הוזן';
+    try {
+      return format(new Date(date), 'dd/MM/yyyy');
+    } catch {
+      return 'לא הוזן';
+    }
+  };
+
+  // רכיב שדה עם עריכה
+  const EditableField = ({ label, fieldName, value, icon, type = 'text' }) => {
+    const isEditing = editingField === fieldName;
+    
+    return (
+      <Card 
+        sx={{ 
+          mb: 2, 
+          border: isEditing ? '2px solid #4cb5c3' : '1px solid #e2e8f0',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
+            transform: 'translateY(-2px)'
+          }
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: '50%', 
+              backgroundColor: '#f0f9ff',
+              color: '#4cb5c3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {icon}
+            </Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#2d3748' }}>
+              {label}
+            </Typography>
+          </Box>
+          
+          {isEditing ? (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              {fieldName === 'cityName' ? (
+                <FormControl fullWidth size="small" error={!!errors[fieldName]}>
+                  <Select
+                    value={tempValue}
+                    onChange={(e) => setTempValue(e.target.value)}
+                    disabled={submitting}
+                  >
+                    {cities.map((city) => (
+                      <MenuItem key={city.cityName} value={city.cityName}>
+                        {city.cityName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : fieldName === 'birthDate' ? (
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+                  <DatePicker
+                    value={tempValue}
+                    onChange={(date) => setTempValue(date)}
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        fullWidth: true,
+                        error: !!errors[fieldName]
+                      }
+                    }}
+                    disabled={submitting}
+                  />
+                </LocalizationProvider>
+              ) : (
+                <TextField
+                  fullWidth
+                  size="small"
+                  type={type}
+                  value={tempValue}
+                  onChange={(e) => setTempValue(e.target.value)}
+                  error={!!errors[fieldName]}
+                  helperText={errors[fieldName]}
+                  disabled={submitting}
+                />
+              )}
+              
+              <IconButton 
+                color="primary" 
+                onClick={() => saveField(fieldName)}
+                disabled={submitting}
+                size="small"
+                sx={{ 
+                  backgroundColor: '#4cb5c3',
+                  color: 'white',
+                  '&:hover': { backgroundColor: '#2a8a95' },
+                  '&:disabled': { backgroundColor: '#e2e8f0' }
+                }}
+              >
+                {submitting ? <CircularProgress size={20} color="inherit" /> : <Save />}
+              </IconButton>
+              
+              <IconButton 
+                color="error" 
+                onClick={cancelEditingField}
+                disabled={submitting}
+                size="small"
+                sx={{ 
+                  backgroundColor: '#fee2e2',
+                  color: '#dc2626',
+                  '&:hover': { backgroundColor: '#fecaca' }
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="body1" sx={{ fontSize: '1.1rem', color: '#4a5568' }}>
+                {fieldName === 'birthDate' ? formatDate(value) : (value || 'לא הוזן')}
+              </Typography>
+              <IconButton 
+                size="small" 
+                onClick={() => startEditingField(fieldName)}
+                sx={{ 
+                  backgroundColor: '#f7fafc',
+                  color: '#4cb5c3',
+                  '&:hover': { 
+                    backgroundColor: '#edf2f7',
+                    transform: 'scale(1.1)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  if (!currentUser) {
+    return (
+      <Container maxWidth="lg" dir="rtl" sx={{ py: 6, textAlign: 'center' }}>
+        <CircularProgress size={50} />
+        <Typography sx={{ mt: 3, fontSize: '1.2rem' }}>טוען פרטי משתמש...</Typography>
+      </Container>
+    );
+  }
 
   return (
     <ThemeProvider theme={rtlTheme}>
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-        <Container maxWidth="md" dir="rtl" sx={{ py: 4 }}>
-          {/* כרטיס פרופיל עליון */}
-          <Paper
-            elevation={3}
-            sx={{ 
-              padding: 3, 
-              marginBottom: 3,
-              background: 'linear-gradient(135deg, #4cb5c3 0%, #3a8a95 100%)',
-              color: 'white',
-              textAlign: 'center'
-            }}
-          >
+      <Container maxWidth="lg" dir="rtl" sx={{ py: 4, minHeight: '100vh' }}>
+        {/* כרטיס פרופיל עליון */}
+        <Paper
+          elevation={8}
+          sx={{ 
+            padding: 4, 
+            marginBottom: 4,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            textAlign: 'center',
+            borderRadius: 3
+          }}
+        >
+          <Box sx={{ position: 'relative', display: 'inline-block' }}>
             <Avatar
               sx={{ 
-                width: 120, 
-                height: 120, 
-                margin: '0 auto 16px',
-                border: '4px solid white',
-                fontSize: '3rem'
+                width: 140, 
+                height: 140, 
+                margin: '0 auto 20px',
+                border: '5px solid rgba(255,255,255,0.3)',
+                fontSize: '3.5rem',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
               }}
-              src={formData.photo ? `${baseUrl}/api/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}` : undefined}
+              src={formData.photo ? `${baseURL}/api/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}` : undefined}
             >
               {!formData.photo && (formData.firstName?.[0] || '') + (formData.lastName?.[0] || '')}
             </Avatar>
             
-            <Typography variant="h4" gutterBottom>
-              {formData.firstName} {formData.lastName}
-            </Typography>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 2 }}>
-              {formData.email && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Email />
-                  <Typography>{formData.email}</Typography>
-                </Box>
-              )}
-              {formData.mobilePhone && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Phone />
-                  <Typography>{formData.mobilePhone}</Typography>
-                </Box>
-              )}
-              {formData.cityName && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocationOn />
-                  <Typography>{formData.cityName}</Typography>
-                </Box>
-              )}
-            </Box>
-          </Paper>
+            <IconButton
+              component="label"
+              sx={{
+                position: 'absolute',
+                bottom: 20,
+                right: -15,
+                backgroundColor: 'rgba(255,255,255,0.9)',
+                color: '#4cb5c3',
+                '&:hover': { 
+                  backgroundColor: 'white',
+                  transform: 'scale(1.1)'
+                },
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease'
+              }}
+              disabled={uploadingFiles}
+            >
+              {uploadingFiles ? <CircularProgress size={24} /> : <CameraAlt />}
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleProfilePhotoChange}
+              />
+            </IconButton>
+          </Box>
+          
+          <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
+            {formData.firstName} {formData.lastName}
+          </Typography>
+          
+          <Chip 
+            label={`עובד/ת מספר: ${formData.employeeId}`}
+            sx={{ 
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              fontSize: '1rem',
+              fontWeight: 600
+            }}
+          />
+        </Paper>
 
-          {/* כפתורי עריכה */}
-          <Paper elevation={2} sx={{ padding: 2, marginBottom: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-              <Button
-                variant={editMode ? "contained" : "outlined"}
-                startIcon={<Edit />}
-                onClick={() => setEditMode(!editMode)}
-                color="primary"
-              >
-                {editMode ? "ביטול עריכה" : "עריכת פרטים"}
-              </Button>
+        <Grid container spacing={4}>
+          {/* פרטים אישיים */}
+          <Grid item xs={12} lg={8}>
+            <Paper elevation={4} sx={{ padding: 4, borderRadius: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+                <Person sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#2d3748' }}>
+                  פרטים אישיים
+                </Typography>
+              </Box>
               
-              <Button
-                variant={changePasswordMode ? "contained" : "outlined"}
-                onClick={() => setChangePasswordMode(!changePasswordMode)}
-                color="secondary"
-              >
-                {changePasswordMode ? "ביטול שינוי סיסמה" : "שינוי סיסמה"}
-              </Button>
-            </Box>
-          </Paper>
-
-          {/* טופס עריכה */}
-          {(editMode || changePasswordMode) && (
-            <Paper elevation={3} sx={{ padding: 3 }}>
-              <Typography
-                variant="h5"
-                component="h1"
-                gutterBottom
-                align="center"
-                sx={{ fontWeight: "bold", color: "#333", mb: 3 }}
-              >
-                עריכת פרטי פרופיל
-              </Typography>
-
-              {successMessage && (
-                <Alert
-                  severity="success"
-                  sx={{ mb: 3 }}
-                  onClose={() => setSuccessMessage("")}
-                >
-                  {successMessage}
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit}>
-                {editMode && (
-                  <>
-                    {/* פרטים אישיים */}
-                    <Box sx={{ marginBottom: 3 }}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ color: "#4cb5c3", fontWeight: "bold", marginBottom: 2 }}
-                      >
-                        פרטים אישיים
-                      </Typography>
-                      <Divider sx={{ mb: 2 }} />
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="שם פרטי"
-                            name="firstName"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            variant="outlined"
-                            required
-                            error={hasFieldError("firstName")}
-                            helperText={getFieldError("firstName")}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="שם משפחה"
-                            name="lastName"
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            variant="outlined"
-                            required
-                            error={hasFieldError("lastName")}
-                            helperText={getFieldError("lastName")}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="דוא״ל"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            variant="outlined"
-                            error={hasFieldError("email")}
-                            helperText={getFieldError("email")}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <TextField
-                            fullWidth
-                            label="טלפון נייד"
-                            name="mobilePhone"
-                            type="tel"
-                            value={formData.mobilePhone}
-                            onChange={handleChange}
-                            variant="outlined"
-                            error={hasFieldError("mobilePhone")}
-                            helperText={getFieldError("mobilePhone")}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <DatePicker
-                            label="תאריך לידה"
-                            value={formData.birthDate}
-                            onChange={(date) => handleDateChange("birthDate", date)}
-                            slotProps={{
-                              textField: {
-                                fullWidth: true,
-                                variant: "outlined",
-                                error: hasFieldError("birthDate"),
-                                helperText: getFieldError("birthDate"),
-                              },
-                            }}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                          <FormControl fullWidth variant="outlined">
-                            <InputLabel>עיר</InputLabel>
-                            <Select
-                              name="cityName"
-                              value={formData.cityName}
-                              onChange={handleChange}
-                              label="עיר"
-                            >
-                              {!cities.length ? (
-                                <MenuItem disabled>טוען ערים...</MenuItem>
-                              ) : (
-                                cities.map((city) => (
-                                  <MenuItem key={city.cityName} value={city.cityName}>
-                                    {city.cityName}
-                                  </MenuItem>
-                                ))
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-
-                        {/* העלאת תמונת פרופיל */}
-                        <Grid item xs={12}>
-                          <Button
-                            variant="outlined"
-                            component="label"
-                            startIcon={<CloudUpload />}
-                            sx={{ height: "56px", width: "100%" }}
-                          >
-                            {profilePhoto ? "תמונה חדשה נבחרה" : "שינוי תמונת פרופיל"}
-                            <input
-                              type="file"
-                              hidden
-                              accept="image/*"
-                              onChange={handleProfilePhotoChange}
-                            />
-                          </Button>
-                          
-                          {profilePhoto && (
-                            <Box mt={2} textAlign="center">
-                              <Typography variant="caption" display="block" sx={{ mb: 1 }}>
-                                תצוגה מקדימה:
-                              </Typography>
-                              <img 
-                                id="profile-preview"
-                                src="" 
-                                alt="תצוגה מקדימה" 
-                                style={{ 
-                                  maxHeight: '150px', 
-                                  maxWidth: '150px', 
-                                  borderRadius: '50%',
-                                  border: '2px solid #4cb5c3'
-                                }} 
-                              />
-                            </Box>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </>
-                )}
-
-                {changePasswordMode && (
-                  <Box sx={{ marginBottom: 3 }}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ color: "#4cb5c3", fontWeight: "bold", marginBottom: 2 }}
-                    >
-                      שינוי סיסמה
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="סיסמה נוכחית"
-                          name="currentPassword"
-                          type={showCurrentPassword ? "text" : "password"}
-                          value={formData.currentPassword}
-                          onChange={handleChange}
-                          variant="outlined"
-                          required
-                          error={hasFieldError("currentPassword")}
-                          helperText={getFieldError("currentPassword")}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                  edge="end"
-                                >
-                                  {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="סיסמה חדשה"
-                          name="newPassword"
-                          type={showNewPassword ? "text" : "password"}
-                          value={formData.newPassword}
-                          onChange={handleChange}
-                          variant="outlined"
-                          required
-                          error={hasFieldError("newPassword")}
-                          helperText={getFieldError("newPassword")}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={() => setShowNewPassword(!showNewPassword)}
-                                  edge="end"
-                                >
-                                  {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="אישור סיסמה חדשה"
-                          name="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={formData.confirmPassword}
-                          onChange={handleChange}
-                          variant="outlined"
-                          required
-                          error={hasFieldError("confirmPassword")}
-                          helperText={getFieldError("confirmPassword")}
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                  edge="end"
-                                >
-                                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Button
-                          onClick={handleGeneratePassword}
-                          variant="outlined"
-                          fullWidth
-                          sx={{ mt: 1 }}
-                        >
-                          ייצור סיסמה אקראית
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                )}
-
-                {/* כפתורי שמירה */}
-                <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setEditMode(false);
-                      setChangePasswordMode(false);
-                    }}
-                    disabled={submitting || uploadingFiles}
-                  >
-                    ביטול
-                  </Button>
-                  
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                      paddingX: 4,
-                      paddingY: 1,
-                      fontSize: "1rem",
-                      borderRadius: 2,
-                    }}
-                    disabled={submitting || uploadingFiles}
-                  >
-                    {submitting || uploadingFiles ? (
-                      <CircularProgress size={24} />
-                    ) : (
-                      "שמור שינויים"
-                    )}
-                  </Button>
-                </Box>
-              </form>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="שם פרטי"
+                    fieldName="firstName"
+                    value={formData.firstName}
+                    icon={<Person fontSize="small" />}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="שם משפחה"
+                    fieldName="lastName"
+                    value={formData.lastName}
+                    icon={<Person fontSize="small" />}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="דואר אלקטרוני"
+                    fieldName="email"
+                    value={formData.email}
+                    icon={<Email fontSize="small" />}
+                    type="email"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="טלפון נייד"
+                    fieldName="mobilePhone"
+                    value={formData.mobilePhone}
+                    icon={<Phone fontSize="small" />}
+                    type="tel"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="עיר מגורים"
+                    fieldName="cityName"
+                    value={formData.cityName}
+                    icon={<LocationOn fontSize="small" />}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <EditableField
+                    label="תאריך לידה"
+                    fieldName="birthDate"
+                    value={formData.birthDate}
+                    icon={<Cake fontSize="small" />}
+                  />
+                </Grid>
+              </Grid>
             </Paper>
-          )}
-        </Container>
-      </LocalizationProvider>
+          </Grid>
+
+          {/* שינוי סיסמה */}
+          <Grid item xs={12} lg={4}>
+            <Paper elevation={4} sx={{ padding: 4, borderRadius: 3, height: 'fit-content' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Lock sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#2d3748' }}>
+                  אבטחה
+                </Typography>
+              </Box>
+              
+              {!changePasswordMode ? (
+                <Button
+                  variant="contained"
+                  onClick={() => setChangePasswordMode(true)}
+                  fullWidth
+                  sx={{ 
+                    py: 2,
+                    fontSize: '1.1rem',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #2a8a95 0%, #1a6b75 100%)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)'
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  שינוי סיסמה
+                </Button>
+              ) : (
+                <form onSubmit={handlePasswordChange}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="סיסמה נוכחית"
+                        name="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={formData.currentPassword}
+                        onChange={(e) => setFormData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        variant="outlined"
+                        required
+                        error={!!errors.currentPassword}
+                        helperText={errors.currentPassword}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                edge="end"
+                              >
+                                {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="סיסמה חדשה"
+                        name="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={formData.newPassword}
+                        onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
+                        variant="outlined"
+                        required
+                        error={!!errors.newPassword}
+                        helperText={errors.newPassword}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                edge="end"
+                              >
+                                {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="אישור סיסמה חדשה"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        variant="outlined"
+                        required
+                        error={!!errors.confirmPassword}
+                        helperText={errors.confirmPassword}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                edge="end"
+                              >
+                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Button
+                        onClick={handleGeneratePassword}
+                        variant="outlined"
+                        fullWidth
+                        sx={{ mb: 2 }}
+                      >
+                        ייצור סיסמה אקראית
+                      </Button>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            setChangePasswordMode(false);
+                            setFormData(prev => ({
+                              ...prev,
+                              currentPassword: '',
+                              newPassword: '',
+                              confirmPassword: ''
+                            }));
+                            setErrors({});
+                          }}
+                          fullWidth
+                          sx={{
+                            borderColor: '#e2e8f0',
+                            color: '#718096',
+                            '&:hover': {
+                              borderColor: '#cbd5e0',
+                              backgroundColor: '#f7fafc'
+                            }
+                          }}
+                        >
+                          ביטול
+                        </Button>
+                        
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          fullWidth
+                          disabled={submitting}
+                          sx={{
+                            background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)',
+                              transform: 'translateY(-1px)',
+                              boxShadow: '0 6px 20px rgba(72, 187, 120, 0.3)'
+                            },
+                            '&:disabled': {
+                              background: '#e2e8f0',
+                              color: '#a0aec0'
+                            },
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {submitting ? <CircularProgress size={24} color="inherit" /> : 'שמור סיסמה'}
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </form>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      </Container>
     </ThemeProvider>
   );
 };

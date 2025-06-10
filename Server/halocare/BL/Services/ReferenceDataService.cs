@@ -83,5 +83,25 @@ namespace halocare.BL.Services
         {
             return _roleRepository.AddRole(role);
         }
+
+        // Cities Update
+        public bool UpdateCity(string oldCityName, string newCityName)
+        {
+            return _cityRepository.UpdateCity(oldCityName, newCityName);
+        }
+
+        // Health Insurances Update  
+        public bool UpdateHealthInsurance(string oldHName, string newHName)
+        {
+            return _healthInsuranceRepository.UpdateHealthInsurance(oldHName, newHName);
+        }
+
+        // Treatment Types Update
+        public bool UpdateTreatmentType(int treatmentTypeId, string newTreatmentTypeName)
+        {
+            return _treatmentTypeRepository.UpdateTreatmentType(treatmentTypeId, newTreatmentTypeName);
+        }
+
+     
     }
 }

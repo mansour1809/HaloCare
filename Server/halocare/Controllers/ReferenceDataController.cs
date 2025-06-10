@@ -260,5 +260,126 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+
+
+
+        // הוסף את ה-endpoints האלה לקונטרולר ReferenceDataController הקיים
+
+        // PUT: api/ReferenceData/cities/{oldName}
+        [HttpPut("cities/{oldName}")]
+        public ActionResult<City> UpdateCity(string oldName, [FromBody] UpdateCityRequest request)
+        {
+            try
+            {
+                bool updated = _referenceDataService.UpdateCity(oldName, request.NewCityName);
+
+                if (updated)
+                {
+                    var updatedCity = new City { CityName = request.NewCityName };
+                    return Ok(updatedCity);
+                }
+                else
+                {
+                    return NotFound($"עיר בשם {oldName} לא נמצאה");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // PUT: api/ReferenceData/healthinsurances/{oldName}
+        [HttpPut("healthinsurances/{oldName}")]
+        public ActionResult<HealthInsurance> UpdateHealthInsurance(string oldName, [FromBody] UpdateHealthInsuranceRequest request)
+        {
+            try
+            {
+                bool updated = _referenceDataService.UpdateHealthInsurance(oldName, request.NewHName);
+
+                if (updated)
+                {
+                    var updatedHealthInsurance = new HealthInsurance { HName = request.NewHName };
+                    return Ok(updatedHealthInsurance);
+                }
+                else
+                {
+                    return NotFound($"קופת חולים בשם {oldName} לא נמצאה");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // PUT: api/ReferenceData/treatmenttypes/{id}
+        [HttpPut("treatmenttypes/{id}")]
+        public ActionResult<TreatmentType> UpdateTreatmentType(int id, [FromBody] UpdateTreatmentTypeRequest request)
+        {
+            try
+            {
+                bool updated = _referenceDataService.UpdateTreatmentType(id, request.NewTreatmentTypeName);
+
+                if (updated)
+                {
+                    var updatedTreatmentType = _referenceDataService.GetTreatmentTypeById(id);
+                    return Ok(updatedTreatmentType);
+                }
+                else
+                {
+                    return NotFound($"סוג טיפול עם מזהה {id} לא נמצא");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        //// PUT: api/ReferenceData/roles/{oldName}
+        //[HttpPut("roles/{oldName}")]
+        //public ActionResult<Role> UpdateRole(string oldName, [FromBody] UpdateRoleRequest request)
+        //{
+        //    try
+        //    {
+        //        bool updated = _referenceDataService.UpdateRole(oldName, request.NewRoleName);
+
+        //        if (updated)
+        //        {
+        //            var updatedRole = new Role { RoleName = request.NewRoleName };
+        //            return Ok(updatedRole);
+        //        }
+        //        else
+        //        {
+        //            return NotFound($"תפקיד בשם {oldName} לא נמצא");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+        //    }
+        //}
+
+        // הוסף את המחלקות האלה לפרויקט
+        public class UpdateCityRequest
+        {
+            public string NewCityName { get; set; }
+        }
+
+        public class UpdateHealthInsuranceRequest
+        {
+            public string NewHName { get; set; }
+        }
+
+        public class UpdateTreatmentTypeRequest
+        {
+            public string NewTreatmentTypeName { get; set; }
+        }
+
+        public class UpdateRoleRequest
+        {
+            public string NewRoleName { get; set; }
+        }
     }
 }
