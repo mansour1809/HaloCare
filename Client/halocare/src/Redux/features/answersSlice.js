@@ -1,4 +1,4 @@
-// src/Redux/features/answersSlice.js - גרסה מתוקנת ללא שמירה אוטומטית
+// src/Redux/features/answersSlice.js - גרסה שלמה ומעודכנת
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
@@ -22,69 +22,109 @@ export const fetchFormAnswers = createAsyncThunk(
   }
 );
 
-// 🔥 שמירת תשובה יחידה - מתוקן להתמודד עם עדכונים
-export const saveOrUpdateAnswer = createAsyncThunk(
-  'answers/saveOrUpdateAnswer',
-  async ({ kidId, formId, questionNo, answer, other = '' }, { rejectWithValue, getState }) => {
+// שמירת תשובה יחידה (ללא עדכון סטטוס)
+export const saveAnswer = createAsyncThunk(
+  'answers/saveAnswer',
+  async (answerData, { rejectWithValue }) => {
     try {
-      const state = getState();
-      
-      // בדיקה אם כבר יש תשובה לשאלה הזו
-      const existingAnswer = state.answers.currentFormAnswers.find(
-        a => a.kidId === kidId && a.formId === formId && a.questionNo === questionNo
-      );
-
-      const answerData = {
-        kidId,
-        formId,
-        questionNo,
-        answer,
-        other,
-        ansDate: new Date().toISOString(),
-        byParent: false,
-        employeeId: getCurrentUserId()
-      };
-
-      let response;
-      
-      if (existingAnswer && existingAnswer.answerId) {
-        // 🔥 עדכון תשובה קיימת
-        response = await axios.put(`/Forms/answers/${existingAnswer.answerId}`, answerData);
-        return { ...response.data, isUpdate: true };
-      } else {
-        // 🔥 יצירת תשובה חדשה
-        response = await axios.post('/Forms/answers', answerData);
-        return { ...response.data, isUpdate: false };
-      }
+      const response = await axios.post('/Forms/answers', answerData);
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בשמירת התשובה');
     }
   }
 );
 
-// 🔥 שמירת טופס שלם - מתוקן
-export const saveFormAnswers = createAsyncThunk(
-  'answers/saveFormAnswers',
-  async ({ kidId, formId, answers }, { dispatch, rejectWithValue, getState }) => {
+// 🔥 שמירת תשובה עם עדכון אוטומטי של סטטוס קליטה
+export const saveAnswerWithStatusCheck = createAsyncThunk(
+  'answers/saveAnswerWithStatusCheck',
+  async (answerData, { dispatch, rejectWithValue }) => {
+    try {
+      // 1. שמירת התשובה
+      const response = await axios.post('/Forms/answers', answerData);
+      
+      // 2. בדיקת השלמת טופס אוטומטית
+      await dispatch(checkFormCompletion({
+        kidId: answerData.kidId,
+        formId: answerData.formId
+      }));
+      
+      // 3. טעינה מחדש של סטטוס קליטה (בשביל העדכון בזמן אמת)
+      setTimeout(() => {
+        dispatch(fetchOnboardingStatus(answerData.kidId));
+      }, 100); // מעט דיליי כדי שהשרת יספיק לעדכן
+      
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בשמירת התשובה');
+    }
+  }
+);
+
+// עדכון תשובה קיימת
+export const updateAnswer = createAsyncThunk(
+  'answers/updateAnswer',
+  async ({ answerId, answerData }, { rejectWithValue }) => {
+    console.log('Updating answer:', answerId, answerData);
+    try {
+      const response = await axios.put(`/Forms/answers/${answerId}`, answerData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון התשובה');
+    }
+  }
+);
+
+// 🔥 עדכון תשובה עם בדיקת סטטוס
+export const updateAnswerWithStatusCheck = createAsyncThunk(
+  'answers/updateAnswerWithStatusCheck',
+  async ({ answerId, answerData }, { dispatch, rejectWithValue }) => {
+    try {
+      // 1. עדכון התשובה
+      const response = await axios.put(`/Forms/answers/${answerId}`, answerData);
+      
+      // 2. בדיקת השלמת טופס
+      await dispatch(checkFormCompletion({
+        kidId: answerData.kidId,
+        formId: answerData.formId
+      }));
+      
+      // 3. עדכון סטטוס קליטה
+      setTimeout(() => {
+        dispatch(fetchOnboardingStatus(answerData.kidId));
+      }, 100);
+      
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון התשובה');
+    }
+  }
+);
+
+// 🔥 שמירת טופס שלם עם עדכון סטטוס
+export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
+  'answers/saveFormAnswersWithStatusUpdate',
+  async ({ kidId, formId, answers }, { dispatch, rejectWithValue }) => {
     try {
       const savedAnswers = [];
-      
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.id;
+
       // שמירת כל התשובות אחת אחת
-      for (const answerData of answers) {
-        try {
-          const result = await dispatch(saveOrUpdateAnswer({
-            kidId,
-            formId,
-            questionNo: answerData.questionNo,
-            answer: answerData.answer,
-            other: answerData.other || ''
-          })).unwrap();
-          
-          savedAnswers.push(result);
-        } catch (error) {
-          console.error(`שגיאה בשמירת שאלה ${answerData.questionNo}:`, error);
-          // ממשיכים עם השאר גם אם אחת נכשלה
-        }
+      for (const answer of answers) {
+        const answerData = {
+          kidId,
+          formId,
+          questionNo: answer.questionNo,
+          ansDate: new Date().toISOString(),
+          answer: answer.answer,
+          other: answer.other || "",
+          employeeId: answer.byParent ? null : userId,
+          byParent: answer.byParent || false
+        };
+
+        const response = await axios.post('/Forms/answers', answerData);
+        savedAnswers.push(response.data);
       }
 
       // בדיקת השלמה אוטומטית אחרי שמירת כל התשובות
@@ -93,7 +133,7 @@ export const saveFormAnswers = createAsyncThunk(
       // עדכון סטטוס קליטה
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
-      }, 500);
+      }, 200);
 
       return { kidId, formId, answers: savedAnswers };
     } catch (error) {
@@ -105,17 +145,31 @@ export const saveFormAnswers = createAsyncThunk(
 // מחיקת תשובה
 export const deleteAnswer = createAsyncThunk(
   'answers/deleteAnswer',
-  async ({ answerId, kidId, formId }, { dispatch, rejectWithValue }) => {
+  async (answerId, { rejectWithValue }) => {
     try {
       await axios.delete(`/Forms/answers/${answerId}`);
+      return answerId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה במחיקת התשובה');
+    }
+  }
+);
+
+// 🔥 מחיקת תשובה עם עדכון סטטוס
+export const deleteAnswerWithStatusCheck = createAsyncThunk(
+  'answers/deleteAnswerWithStatusCheck',
+  async ({ answerId, kidId, formId }, { dispatch, rejectWithValue }) => {
+    try {
+      // 1. מחיקת התשובה
+      await axios.delete(`/Forms/answers/${answerId}`);
       
-      // בדיקת השלמה אחרי מחיקה
+      // 2. בדיקת השלמת טופס
       await dispatch(checkFormCompletion({ kidId, formId }));
       
-      // עדכון סטטוס קליטה
+      // 3. עדכון סטטוס קליטה
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
-      }, 500);
+      }, 100);
       
       return answerId;
     } catch (error) {
@@ -139,15 +193,14 @@ const answersSlice = createSlice({
     currentKidId: null,
     currentFormId: null,
     
-    // 🔥 שינויים מקומיים (לא נשמרו עדיין)
-    localAnswers: {}, // { questionNo: { answer, other } }
-    hasLocalChanges: false,
-    
     // מצבי טעינה
     status: 'idle', // idle, loading, succeeded, failed
     saveStatus: 'idle', // מצב שמירה נפרד
     error: null,
     saveError: null,
+    
+    // מטמון מקומי לעדכונים
+    localChanges: {}, // שינויים שטרם נשמרו
   },
   reducers: {
     // 🧹 ניקוי שגיאות
@@ -165,62 +218,54 @@ const answersSlice = createSlice({
       // טעינת התשובות לטופס הנוכחי
       const key = `${kidId}_${formId}`;
       state.currentFormAnswers = state.answersByKidAndForm[key] || [];
-      
-      // איפוס שינויים מקומיים כשעוברים לטופס חדש
-      state.localAnswers = {};
-      state.hasLocalChanges = false;
     },
     
-    // 🔥 עדכון תשובה מקומית (ללא שמירה)
+    // ✏️ עדכון תשובה מקומית (לפני שמירה)
     updateLocalAnswer: (state, action) => {
       const { questionNo, answer, other } = action.payload;
+      const key = `${state.currentKidId}_${state.currentFormId}_${questionNo}`;
       
-      state.localAnswers[questionNo] = {
-        answer: answer || '',
-        other: other || ''
-      };
-      
-      state.hasLocalChanges = true;
-    },
-    
-    // 🔥 איפוס שינוי מקומי לשאלה ספציפית
-    resetLocalAnswer: (state, action) => {
-      const questionNo = action.payload;
-      delete state.localAnswers[questionNo];
-      
-      // בדיקה אם נשארו שינויים
-      state.hasLocalChanges = Object.keys(state.localAnswers).length > 0;
-    },
-    
-    // 🔥 איפוס כל השינויים המקומיים
-    resetAllLocalAnswers: (state) => {
-      state.localAnswers = {};
-      state.hasLocalChanges = false;
-    },
-    
-    // 🔥 קבלת ערך תשובה (מקומי או שמור)
-    getCurrentAnswerValue: (state, action) => {
-      const questionNo = action.payload;
-      
-      // אם יש ערך מקומי - נחזיר אותו
-      if (state.localAnswers[questionNo]) {
-        return state.localAnswers[questionNo];
-      }
-      
-      // אחרת נחזיר את הערך השמור
-      const savedAnswer = state.currentFormAnswers.find(a => a.questionNo === questionNo);
-      return {
-        answer: savedAnswer?.answer || '',
-        other: savedAnswer?.other || ''
+      state.localChanges[key] = {
+        questionNo,
+        answer,
+        other,
+        timestamp: Date.now()
       };
     },
     
-    // 🧹 ניקוי תשובות
-    clearAnswers: (state) => {
+    // 💾 שמירת שינויים מקומיים לעדכון
+    applyLocalChanges: (state) => {
+      Object.values(state.localChanges).forEach(change => {
+        const existingAnswer = state.currentFormAnswers.find(
+          a => a.questionNo === change.questionNo
+        );
+        
+        if (existingAnswer) {
+          existingAnswer.answer = change.answer;
+          existingAnswer.other = change.other;
+        } else {
+          // תשובה חדשה - נוסיף אותה זמנית
+          state.currentFormAnswers.push({
+            questionNo: change.questionNo,
+            answer: change.answer,
+            other: change.other,
+            kidId: state.currentKidId,
+            formId: state.currentFormId,
+            isLocal: true // סימון שזה עדכון מקומי
+          });
+        }
+      });
+      
+      // ניקוי השינויים המקומיים
+      state.localChanges = {};
+    },
+    
+    // 🧹 ניקוי תשובות נוכחיות (כשעוזבים טופס)
+    clearCurrentFormAnswers: (state) => {
       state.currentFormAnswers = [];
-      state.answersByKidAndForm = {};
-      state.localAnswers = {};
-      state.hasLocalChanges = false;
+      state.currentKidId = null;
+      state.currentFormId = null;
+      state.localChanges = {};
       state.error = null;
       state.saveError = null;
     },
@@ -237,8 +282,7 @@ const answersSlice = createSlice({
       // אם זה הילד הנוכחי, נקה גם את הנתונים הנוכחיים
       if (state.currentKidId === kidId) {
         state.currentFormAnswers = [];
-        state.localAnswers = {};
-        state.hasLocalChanges = false;
+        state.localChanges = {};
       }
     }
   },
@@ -266,12 +310,12 @@ const answersSlice = createSlice({
         state.error = action.payload;
       })
       
-      // 💾 שמירת/עדכון תשובה יחידה
-      .addCase(saveOrUpdateAnswer.pending, (state) => {
+      // 💾 שמירת תשובה יחידה
+      .addCase(saveAnswer.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
       })
-      .addCase(saveOrUpdateAnswer.fulfilled, (state, action) => {
+      .addCase(saveAnswer.fulfilled, (state, action) => {
         state.saveStatus = 'succeeded';
         const answer = action.payload;
         
@@ -281,49 +325,134 @@ const answersSlice = createSlice({
           state.answersByKidAndForm[key] = [];
         }
         
-        // 🔥 בדיקה אם זה עדכון או הוספה
-        if (answer.isUpdate) {
-          // עדכון תשובה קיימת
-          const existingIndex = state.answersByKidAndForm[key].findIndex(
-            a => a.questionNo === answer.questionNo
-          );
-          if (existingIndex !== -1) {
-            state.answersByKidAndForm[key][existingIndex] = answer;
-          }
+        // בדיקה אם התשובה כבר קיימת (עדכון) או חדשה (הוספה)
+        const existingIndex = state.answersByKidAndForm[key].findIndex(
+          a => a.questionNo === answer.questionNo
+        );
+        
+        if (existingIndex !== -1) {
+          state.answersByKidAndForm[key][existingIndex] = answer;
         } else {
-          // הוספת תשובה חדשה
           state.answersByKidAndForm[key].push(answer);
         }
         
         // עדכון בטופס הנוכחי אם רלוונטי
         if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
-          if (answer.isUpdate) {
-            const currentIndex = state.currentFormAnswers.findIndex(
-              a => a.questionNo === answer.questionNo
-            );
-            if (currentIndex !== -1) {
-              state.currentFormAnswers[currentIndex] = answer;
-            }
+          const currentIndex = state.currentFormAnswers.findIndex(
+            a => a.questionNo === answer.questionNo
+          );
+          
+          if (currentIndex !== -1) {
+            state.currentFormAnswers[currentIndex] = answer;
           } else {
             state.currentFormAnswers.push(answer);
           }
-          
-          // 🔥 ניקוי השינוי המקומי שנשמר
-          delete state.localAnswers[answer.questionNo];
-          state.hasLocalChanges = Object.keys(state.localAnswers).length > 0;
         }
       })
-      .addCase(saveOrUpdateAnswer.rejected, (state, action) => {
+      .addCase(saveAnswer.rejected, (state, action) => {
         state.saveStatus = 'failed';
         state.saveError = action.payload;
       })
       
-      // 💾 שמירת טופס שלם
-      .addCase(saveFormAnswers.pending, (state) => {
+      // 🔥 שמירת תשובה עם עדכון סטטוס
+      .addCase(saveAnswerWithStatusCheck.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
       })
-      .addCase(saveFormAnswers.fulfilled, (state, action) => {
+      .addCase(saveAnswerWithStatusCheck.fulfilled, (state, action) => {
+        state.saveStatus = 'succeeded';
+        // אותה לוגיקה כמו saveAnswer.fulfilled
+        const answer = action.payload;
+        
+        const key = `${answer.kidId}_${answer.formId}`;
+        if (!state.answersByKidAndForm[key]) {
+          state.answersByKidAndForm[key] = [];
+        }
+        
+        const existingIndex = state.answersByKidAndForm[key].findIndex(
+          a => a.questionNo === answer.questionNo
+        );
+        
+        if (existingIndex !== -1) {
+          state.answersByKidAndForm[key][existingIndex] = answer;
+        } else {
+          state.answersByKidAndForm[key].push(answer);
+        }
+        
+        if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
+          const currentIndex = state.currentFormAnswers.findIndex(
+            a => a.questionNo === answer.questionNo
+          );
+          
+          if (currentIndex !== -1) {
+            state.currentFormAnswers[currentIndex] = answer;
+          } else {
+            state.currentFormAnswers.push(answer);
+          }
+        }
+      })
+      .addCase(saveAnswerWithStatusCheck.rejected, (state, action) => {
+        state.saveStatus = 'failed';
+        state.saveError = action.payload;
+      })
+      
+      // ✏️ עדכון תשובה
+      .addCase(updateAnswer.fulfilled, (state, action) => {
+        const answer = action.payload;
+        const key = `${answer.kidId}_${answer.formId}`;
+        
+        // עדכון ברשת התשובות
+        if (state.answersByKidAndForm[key]) {
+          const index = state.answersByKidAndForm[key].findIndex(
+            a => a.answerId === answer.answerId
+          );
+          if (index !== -1) {
+            state.answersByKidAndForm[key][index] = answer;
+          }
+        }
+        
+        // עדכון בטופס הנוכחי
+        if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
+          const currentIndex = state.currentFormAnswers.findIndex(
+            a => a.answerId === answer.answerId
+          );
+          if (currentIndex !== -1) {
+            state.currentFormAnswers[currentIndex] = answer;
+          }
+        }
+      })
+      
+      // 🔥 עדכון תשובה עם בדיקת סטטוס
+      .addCase(updateAnswerWithStatusCheck.fulfilled, (state, action) => {
+        // אותה לוגיקה כמו updateAnswer.fulfilled
+        const answer = action.payload;
+        const key = `${answer.kidId}_${answer.formId}`;
+        
+        if (state.answersByKidAndForm[key]) {
+          const index = state.answersByKidAndForm[key].findIndex(
+            a => a.answerId === answer.answerId
+          );
+          if (index !== -1) {
+            state.answersByKidAndForm[key][index] = answer;
+          }
+        }
+        
+        if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
+          const currentIndex = state.currentFormAnswers.findIndex(
+            a => a.answerId === answer.answerId
+          );
+          if (currentIndex !== -1) {
+            state.currentFormAnswers[currentIndex] = answer;
+          }
+        }
+      })
+      
+      // 💾 שמירת טופס שלם
+      .addCase(saveFormAnswersWithStatusUpdate.pending, (state) => {
+        state.saveStatus = 'loading';
+        state.saveError = null;
+      })
+      .addCase(saveFormAnswersWithStatusUpdate.fulfilled, (state, action) => {
         state.saveStatus = 'succeeded';
         const { kidId, formId, answers } = action.payload;
         const key = `${kidId}_${formId}`;
@@ -336,11 +465,10 @@ const answersSlice = createSlice({
           state.currentFormAnswers = answers;
         }
         
-        // 🔥 ניקוי כל השינויים המקומיים
-        state.localAnswers = {};
-        state.hasLocalChanges = false;
+        // ניקוי שינויים מקומיים
+        state.localChanges = {};
       })
-      .addCase(saveFormAnswers.rejected, (state, action) => {
+      .addCase(saveFormAnswersWithStatusUpdate.rejected, (state, action) => {
         state.saveStatus = 'failed';
         state.saveError = action.payload;
       })
@@ -357,6 +485,22 @@ const answersSlice = createSlice({
         });
         
         // מחיקה מהטופס הנוכחי
+        state.currentFormAnswers = state.currentFormAnswers.filter(
+          a => a.answerId !== answerId
+        );
+      })
+      
+      // 🔥 מחיקת תשובה עם בדיקת סטטוס
+      .addCase(deleteAnswerWithStatusCheck.fulfilled, (state, action) => {
+        // אותה לוגיקה כמו deleteAnswer.fulfilled
+        const answerId = action.payload;
+        
+        Object.keys(state.answersByKidAndForm).forEach(key => {
+          state.answersByKidAndForm[key] = state.answersByKidAndForm[key].filter(
+            a => a.answerId !== answerId
+          );
+        });
+        
         state.currentFormAnswers = state.currentFormAnswers.filter(
           a => a.answerId !== answerId
         );
@@ -377,41 +521,23 @@ export const selectAnswersStatus = (state) => state.answers.status;
 export const selectSaveStatus = (state) => state.answers.saveStatus;
 export const selectAnswersError = (state) => state.answers.error;
 export const selectSaveError = (state) => state.answers.saveError;
-export const selectLocalAnswers = (state) => state.answers.localAnswers;
-export const selectHasLocalChanges = (state) => state.answers.hasLocalChanges;
+export const selectLocalChanges = (state) => state.answers.localChanges;
 
-// 🔥 בדיקה אם יש שינויים מקומיים לשאלה ספציפית
-export const selectHasLocalAnswerForQuestion = (questionNo) => (state) => 
-  !!state.answers.localAnswers[questionNo];
+// בדיקה אם יש שינויים מקומיים שטרם נשמרו
+export const selectHasUnsavedChanges = (state) => 
+  Object.keys(state.answers.localChanges).length > 0;
 
-// 🔥 קבלת ערך תשובה לשאלה ספציפית (מקומי או שמור)
-export const selectAnswerForQuestion = (questionNo) => (state) => {
-  // אם יש ערך מקומי - נחזיר אותו
-  if (state.answers.localAnswers[questionNo]) {
-    return state.answers.localAnswers[questionNo];
-  }
-  
-  // אחרת נחזיר את הערך השמור
-  const savedAnswer = state.answers.currentFormAnswers.find(a => a.questionNo === questionNo);
-  return {
-    answer: savedAnswer?.answer || '',
-    other: savedAnswer?.other || ''
-  };
-};
-
-// Helper function
-const getCurrentUserId = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  return user?.id || null;
-};
+// קבלת תשובה לשאלה ספציפית
+export const selectAnswerForQuestion = (questionNo) => (state) => 
+  state.answers.currentFormAnswers.find(a => a.questionNo === questionNo);
 
 export const { 
   clearError, 
   setCurrentForm, 
-  updateLocalAnswer,
-  resetLocalAnswer,
-  resetAllLocalAnswers,
+  updateLocalAnswer, 
+  applyLocalChanges,
   clearAnswers,
+  clearCurrentFormAnswers, // 🔥 הוספה
   clearKidAnswers
 } = answersSlice.actions;
 

@@ -1,4 +1,4 @@
-// components/kids/DynamicFormRenderer.jsx - גרסה מתוקנת ללא שמירה אוטומטית
+// components/kids/DynamicFormRenderer.jsx 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -13,18 +13,18 @@ import {
   Edit as EditIcon
 } from '@mui/icons-material';
 
-// 🔥 Redux החדש
 import { 
   fetchFormQuestions 
 } from '../../Redux/features/formsSlice';
 import { 
   fetchFormAnswers,
   setCurrentForm,
+  clearCurrentFormAnswers, 
   selectCurrentFormAnswers,
   selectSaveStatus,
   selectSaveError
 } from '../../Redux/features/answersSlice';
-import axios from '../../components/common/axiosConfig';
+import axios from '../../components/common/axiosConfig'; 
 import QuestionRenderer from '../kids/QuestionRenderer';
 
 const DynamicFormRenderer = ({ 
@@ -70,6 +70,9 @@ const DynamicFormRenderer = ({
 
   const loadFormData = async () => {
     try {
+      // 🔥 ניקוי תשובות קודמות לפני טעינת טופס חדש
+      dispatch(clearCurrentFormAnswers());
+      
       dispatch(setCurrentForm({ kidId, formId }));
       
       await Promise.all([
@@ -103,9 +106,8 @@ const DynamicFormRenderer = ({
     try {
       // הכנת מערך תשובות לשמירה
       const answersToSave = currentFormQuestions.map(question => {
-        console.log(currentFormQuestions)
         const localAnswer = localAnswers[question.questionNo];
-        console.log(localAnswers)
+        
         return {
           // 🔥 אם יש answerId - זה עדכון, אם לא - זה הוספה חדשה
           answerId: localAnswer?.answerId || null,
@@ -145,7 +147,7 @@ const DynamicFormRenderer = ({
 
     for (const answerData of answersToSave) {
       const fullAnswerData = {
-        answerId: answerData.answerId || 0,
+        answerId: answerData.answerId || 0, 
         kidId,
         formId,
         questionNo: answerData.questionNo,
@@ -158,19 +160,20 @@ const DynamicFormRenderer = ({
 
       try {
         if (answerData.answerId) {
-          // עדכון תשובה קיימת
-          await axios.put(`/Forms/answers/${answerData.answerId}`, fullAnswerData);
+          // 🔥 עדכון תשובה קיימת
+           await axios.put(`/Forms/answers/${answerData.answerId}`, fullAnswerData);
+
         } else {
           // 🔥 הוספת תשובה חדשה
           const response = await axios.post('/Forms/answers', fullAnswerData);
 
-          const newAnswer = response.data;
+          const newAnswer =  response.data;
           // עדכון ה-answerId ב-state המקומי
           setLocalAnswers(prev => ({
             ...prev,
             [answerData.questionNo]: {
               ...prev[answerData.questionNo],
-              answerId: newAnswer.answerId,
+              answerId: newAnswer.answerId
             }
           }));
         }
@@ -179,6 +182,7 @@ const DynamicFormRenderer = ({
         throw error;
       }
     }
+
     // 🔥 בדיקת השלמת טופס אחרי השמירה
     await checkFormCompletion();
   };
@@ -186,17 +190,17 @@ const DynamicFormRenderer = ({
   // 🔥 בדיקת השלמה ידנית (במקום אוטומטית)
   const checkFormCompletion = async () => {
     try {
-      const response = await axios.post('/KidOnboarding/check-completion', {
+      await axios.post('/KidOnboarding/check-completion', {
         kidId,
         formId
       });
 
-      if (response.ok) {
-        // רענון נתוני הקליטה
-        setTimeout(() => {
-          // כאן תקרא לרענון נתוני הקליטה אם נדרש
-        }, 500);
-      }
+      // if (response.status) {
+      //   // רענון נתוני הקליטה
+      //   setTimeout(() => {
+      //     // כאן תקרא לרענון נתוני הקליטה אם נדרש
+      //   }, 500);
+      // }
     } catch (error) {
       console.warn('שגיאה בבדיקת השלמה:', error);
     }

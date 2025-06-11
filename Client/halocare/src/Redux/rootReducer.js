@@ -14,7 +14,6 @@ import treatmentsReducer from './features/treatmentsSlice';
 import treatmentTypesReducer from './features/treatmentTypesSlice';
 import attendanceReducer from './features/attendanceSlice';
 import formsReducer from './features/formsSlice';
-import parentFormsReducer from './features/parentFormsSlice';
 import answersReducer from './features/answersSlice';
 import parentReducer from './features/parentSlice';
 import healthInsurancesReducer from './features/healthinsurancesSlice';
@@ -34,7 +33,6 @@ const rootReducer = combineReducers({
   treatmentTypes: treatmentTypesReducer,
   attendance: attendanceReducer,
   forms: formsReducer,
-  parentFormsSlice: parentFormsReducer,
   answers: answersReducer,
   parent: parentReducer,
   healthInsurances: healthInsurancesReducer,

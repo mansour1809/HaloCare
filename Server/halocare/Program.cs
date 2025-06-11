@@ -7,6 +7,7 @@ using halocare.Middleware;
 using Microsoft.Extensions.FileProviders;
 using halocare.DAL.Models;
 using Mailjet.Client.Resources;
+using halocare.DAL.Repositories;
 
 
 namespace halocare
@@ -50,10 +51,22 @@ namespace halocare
 
             builder.Services.AddScoped<IKidOnboardingRepository, KidOnboardingRepository>();
             builder.Services.AddScoped<IKidOnboardingService, KidOnboardingService>();
-            //builder.Services.AddTransient<ErrorHandlingMiddleware>();
+
+            builder.Services.AddScoped<KidRepository>();
+            builder.Services.AddScoped<AnswerToQuestionRepository>();
+            builder.Services.AddScoped<ParentService>(); // אם זה לא רשום כבר
+
+            builder.Services.AddScoped<FormService>();
+            builder.Services.AddScoped<EmailService>();
+            builder.Services.AddScoped<KidOnboardingService>();
+
+            builder.Services.AddScoped<ParentFormService>();
+
+
+
+
 
             builder.Services.AddHttpClient();
-            //builder.Services.AddScoped<AIWritingAssistantService>();// ai services
 
             var app = builder.Build();
 

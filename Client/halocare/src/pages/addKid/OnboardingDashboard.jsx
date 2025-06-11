@@ -16,16 +16,17 @@ import {
   HourglassEmpty as PendingIcon,
   Visibility as ViewIcon
 } from '@mui/icons-material';
-
+import axios from '../../components/common/axiosConfig';
 // 🔥 Redux החדש
 import { 
   updateFormStatus,
-  fetchOnboardingStatus 
+  // fetchOnboardingStatus 
 } from '../../Redux/features/onboardingSlice';
 import { 
-  sendFormToParent,
+  // sendFormToParent,
   markFormCompletedByParent 
 } from '../../Redux/features/formsSlice';
+import { fetchParentById } from '../../Redux/features/parentSlice';
 
 const OnboardingDashboard = ({ 
   onboardingData, 
@@ -39,6 +40,7 @@ const OnboardingDashboard = ({
   const [sendDialog, setSendDialog] = useState({ open: false, form: null });
   const [parentEmail, setParentEmail] = useState('');
   const [sendingToParent, setSendingToParent] = useState(false);
+   const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
   // 🔥 פונקציות מעודכנות לעבודה עם Redux החדש
   
@@ -93,14 +95,69 @@ const OnboardingDashboard = ({
   };
 
   // 🔥 שליחת טופס להורה - מעודכן
-  const handleSendToParent = (form) => {
-    // השלמת האימייל אוטומטית מנתוני ההורה
-    const defaultEmail = selectedKid?.parentEmail || '';
-    setParentEmail(defaultEmail);
-    setSendDialog({ open: true, form });
+  // const handleSendToParent = (form) => {
+  //   // השלמת האימייל אוטומטית מנתוני ההורה
+  //   const defaultEmail = selectedKid?.parentEmail || '';
+  //   setParentEmail(defaultEmail);
+  //   setSendDialog({ open: true, form });
+  // };
+
+  // const confirmSendToParent = async () => {
+  //   if (!sendDialog.form || !parentEmail.trim()) {
+  //     return;
+  //   }
+
+  //   try {
+  //     setSendingToParent(true);
+      
+  //     // 🔥 שליחה עם עדכון סטטוס אוטומטי
+  //     await dispatch(sendFormToParent({
+  //       kidId: selectedKid.id,
+  //       formId: sendDialog.form.formId,
+  //       parentEmail: parentEmail.trim()
+  //     })).unwrap();
+
+  //     // סגירת הדיאלוג ורענון
+  //     setSendDialog({ open: false, form: null });
+  //     setParentEmail('');
+      
+  //     // רענון אוטומטי
+  //     setTimeout(() => {
+  //       onRefresh && onRefresh();
+  //     }, 1000);
+
+  //   } catch (error) {
+  //     console.error('שגיאה בשליחת הטופס:', error);
+  //   } finally {
+  //     setSendingToParent(false);
+  //   }
+  // };
+const handleSendToParent = async (form) => {
+    try {
+      setLoadingParentEmail(true);
+      
+      // טעינת נתוני ההורה הראשון
+      if (selectedKid?.parentId1) {
+        const parentResult = await dispatch(fetchParentById(selectedKid.parentId1)).unwrap();
+        const defaultEmail = parentResult?.email || '';
+        setParentEmail(defaultEmail);
+      } else {
+        // fallback אם אין parentId1
+        setParentEmail('');
+      }
+      
+      setSendDialog({ open: true, form });
+    } catch (error) {
+      console.error('שגיאה בטעינת נתוני הורה:', error);
+      // פתח את הדיאלוג גם אם נכשל בטעינת המייל
+      setParentEmail('');
+      setSendDialog({ open: true, form });
+    } finally {
+      setLoadingParentEmail(false);
+    }
   };
 
-  const confirmSendToParent = async () => {
+    const confirmSendToParent = async () => {
     if (!sendDialog.form || !parentEmail.trim()) {
       return;
     }
@@ -108,24 +165,28 @@ const OnboardingDashboard = ({
     try {
       setSendingToParent(true);
       
-      // 🔥 שליחה עם עדכון סטטוס אוטומטי
-      await dispatch(sendFormToParent({
+      const response = await axios.post('/ParentForm/send', {
         kidId: selectedKid.id,
         formId: sendDialog.form.formId,
         parentEmail: parentEmail.trim()
-      })).unwrap();
+      });
 
-      // סגירת הדיאלוג ורענון
-      setSendDialog({ open: false, form: null });
-      setParentEmail('');
-      
-      // רענון אוטומטי
-      setTimeout(() => {
-        onRefresh && onRefresh();
-      }, 1000);
+      if (response.data.success) {
+        setSendDialog({ open: false, form: null });
+        setParentEmail('');
+        
+        alert('הטופס נשלח בהצלחה להורה!');
+        
+        setTimeout(() => {
+          onRefresh && onRefresh();
+        }, 1000);
+      } else {
+        alert('שגיאה בשליחת הטופס');
+      }
 
     } catch (error) {
       console.error('שגיאה בשליחת הטופס:', error);
+      alert('שגיאה בשליחת הטופס');
     } finally {
       setSendingToParent(false);
     }
@@ -245,6 +306,7 @@ const OnboardingDashboard = ({
       {/* 🔥 כרטיסי הטפסים */}
       <Grid container spacing={3}>
         {onboardingData.forms.map((form) => {
+          console.log(onboardingData);
           const progress = form.totalQuestions > 0 
             ? Math.round((form.answeredQuestions / form.totalQuestions) * 100) 
             : 0;
@@ -317,6 +379,8 @@ const OnboardingDashboard = ({
                         הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
                       </Typography>
                     )}
+                                        {console.log(form)}
+
                   </Box>
                 </CardContent>
 
@@ -400,6 +464,17 @@ const OnboardingDashboard = ({
           <Typography variant="body1" gutterBottom>
             שליחת הטופס "{sendDialog.form?.formName}" להורה של {selectedKid?.firstName}
           </Typography>
+          
+          {/* 🔥 אינדיקטור טעינה למייל */}
+          {loadingParentEmail && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <CircularProgress size={20} />
+              <Typography variant="body2" color="text.secondary">
+                טוען פרטי הורה...
+              </Typography>
+            </Box>
+          )}
+          
           <TextField
             fullWidth
             label="כתובת דוא״ל של ההורה"
@@ -410,22 +485,23 @@ const OnboardingDashboard = ({
             required
             placeholder="example@email.com"
             helperText="הטופס יישלח עם קישור למילוי אונליין"
+            disabled={loadingParentEmail} // 🔥 השבתה בזמן טעינה
           />
           <Alert severity="info" sx={{ mt: 2 }}>
-            הטופס יישלח להורים באימייל/SMS עם קישור למילוי
+            הטופס יישלח להורים באימייל עם קישור למילוי
           </Alert>
         </DialogContent>
         <DialogActions>
           <Button 
             onClick={() => setSendDialog({ open: false, form: null })}
-            disabled={sendingToParent}
+            disabled={sendingToParent || loadingParentEmail}
           >
             ביטול
           </Button>
           <Button 
             onClick={confirmSendToParent}
             variant="contained"
-            disabled={sendingToParent || !parentEmail.trim()}
+            disabled={sendingToParent || !parentEmail.trim() || loadingParentEmail}
             startIcon={sendingToParent ? <CircularProgress size={20} /> : <SendIcon />}
           >
             {sendingToParent ? 'שולח...' : 'שלח'}

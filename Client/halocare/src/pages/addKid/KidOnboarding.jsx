@@ -28,6 +28,9 @@ import {
   fetchKidById, 
   clearSelectedKid
 } from '../../Redux/features/kidsSlice';
+import { 
+  clearCurrentFormAnswers 
+} from '../../Redux/features/answersSlice'; // 🔥 הוספה
 
 // קומפוננטים
 import PersonalInfoForm from './PersonalInfoForm';
@@ -154,6 +157,9 @@ const KidOnboarding = () => {
     setSelectedForm(null);
     setFormReadOnly(false);
     
+    // 🔥 ניקוי תשובות כשמשלימים טופס
+    dispatch(clearCurrentFormAnswers());
+    
     // רענון אוטומטי
     setTimeout(() => {
       dispatch(fetchOnboardingStatus(kidId));
@@ -165,6 +171,9 @@ const KidOnboarding = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
+    
+    // 🔥 ניקוי תשובות כשחוזרים לדשבורד
+    dispatch(clearCurrentFormAnswers());
   };
 
   // 🔥 מעבר ממצב צפייה לעריכה

@@ -43,6 +43,37 @@ namespace halocare.DAL.Repositories
             return answers;
         }
 
+        public AnswerToQuestion GetAnswerByKidFormQuestion(int kidId, int formId, int questionNo)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId },
+                { "@FormId", formId },
+                { "@QuestionNo", questionNo },           
+            };
+
+            DataTable dataTable = ExecuteQuery("SP_GetAnswerByKidFormQuestion", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            DataRow row = dataTable.Rows[0];
+
+            AnswerToQuestion answer = new AnswerToQuestion
+            {
+                AnswerId = Convert.ToInt32(row["AnswerId"]),
+                KidId = Convert.ToInt32(row["KidId"]),
+                FormId = Convert.ToInt32(row["FormId"]),
+                QuestionNo = Convert.ToInt32(row["QuestionNo"]),
+                AnsDate = Convert.ToDateTime(row["AnsDate"]),
+                Answer = row["Answer"].ToString(),
+                Other = row["Other"].ToString(),
+                EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
+                ByParent = Convert.ToBoolean(row["ByParent"])
+            };
+
+            return answer;
+        }
         public AnswerToQuestion GetAnswerById(int answerId)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -65,7 +96,7 @@ namespace halocare.DAL.Repositories
                 QuestionNo = Convert.ToInt32(row["QuestionNo"]),
                 AnsDate = Convert.ToDateTime(row["AnsDate"]),
                 Answer = row["Answer"].ToString(),
-                Other = row["Other"].ToString(),
+                Other = row["Other"] != DBNull.Value ? row["Other"].ToString() : null,
                 EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
                 ByParent = Convert.ToBoolean(row["ByParent"])
             };
@@ -82,8 +113,8 @@ namespace halocare.DAL.Repositories
                 { "@QuestionNo", answer.QuestionNo },
                 { "@AnsDate", answer.AnsDate },
                 { "@Answer", answer.Answer },
-                { "@Other", answer.Other },
-                { "@EmployeeId", answer.EmployeeId },
+                { "@Other", answer.Other ?? (object)DBNull.Value },
+                { "@EmployeeId", answer.EmployeeId ?? (object)DBNull.Value },
                 { "@ByParent", answer.ByParent }
             };
 
@@ -100,8 +131,8 @@ namespace halocare.DAL.Repositories
                 { "@QuestionNo", answer.QuestionNo },
                 { "@AnsDate", answer.AnsDate },
                 { "@Answer", answer.Answer },
-                { "@Other", answer.Other },
-                { "@EmployeeId", answer.EmployeeId },
+                { "@Other",answer.Other ?? (object)DBNull.Value },
+                { "@EmployeeId", answer.EmployeeId ?? (object)DBNull.Value },
                 { "@ByParent", answer.ByParent }
             };
 

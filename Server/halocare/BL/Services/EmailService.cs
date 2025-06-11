@@ -78,4 +78,65 @@ public class EmailService
         MailjetResponse response = await client.PostAsync(request);
         return response.IsSuccessStatusCode;
     }
+    public async Task<bool> SendFormToParent(string parentEmail, string parentName, string kidName,
+    string formName, string parentFormUrl, string kidIdNumber)
+    {
+        MailjetClient client = new MailjetClient(_apiKey, _apiSecret);
+
+        // הודעה בעברית עם הסבר על הצורך בתעודת זהות
+        MailjetRequest request = new MailjetRequest
+        {
+            Resource = Send.Resource,
+        }
+        .Property(Send.FromEmail, _fromEmail)
+        .Property(Send.FromName, _fromName)
+        .Property(Send.Subject, $"טופס {formName} עבור {kidName} - גן הילד")
+        .Property(Send.HtmlPart, $@"
+        <div dir='rtl' style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+            <h2 style='color: #2196F3;'>שלום {parentName},</h2>
+            
+            <p>התקבל טופס <strong>{formName}</strong> למילוי עבור {kidName}.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;'>
+                <h3 style='color: #666; margin-top: 0;'>הוראות למילוי:</h3>
+                <ol>
+                    <li>לחץ על הקישור למטה</li>
+                    <li>הזן את תעודת הזהות של הילד/ה לאימות</li>
+                    <li>מלא את הטופס (תוכל לראות תשובות קיימות אם יש)</li>
+                    <li>שמור את הטופס בסיום</li>
+                </ol>
+            </div>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='{parentFormUrl}' 
+                   style='background-color: #4CAF50; color: white; padding: 15px 30px; 
+                          text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold;'>
+                    למילוי הטופס - לחץ כאן
+                </a>
+            </div>
+            
+            <div style='background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; margin: 20px 0;'>
+                <strong>חשוב:</strong> לצורכי אבטחה, תתבקש להזין את תעודת הזהות של הילד/ה.
+            </div>
+            
+            <p style='color: #666; font-size: 14px;'>
+                הקישור בתוקף למשך 7 ימים.<br/>
+                לשאלות ובעיות, צור קשר עם המעון: [מספר טלפון]
+            </p>
+            
+            <hr style='margin: 30px 0; border: none; border-top: 1px solid #eee;'/>
+            <p style='color: #999; font-size: 12px; text-align: center;'>
+                הודעה זו נשלחה ממערכת גן הילד
+            </p>
+        </div>")
+        .Property(Send.Recipients, new JArray {
+        new JObject {
+            {"Email", parentEmail},
+            {"Name", parentName}
+        }
+        });
+
+        MailjetResponse response = await client.PostAsync(request);
+        return response.IsSuccessStatusCode;
+    }
 }
