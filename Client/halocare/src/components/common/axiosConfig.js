@@ -28,8 +28,10 @@ axios.interceptors.response.use(
       // בדיקה שאנחנו לא מנסים להיכנס לדף ההתחברות כבר
       if (!window.location.pathname.includes("/login")) {
         if (!window.location.pathname.includes("/reset-password")) {
+          if( !window.location.pathname.includes("/parent-form")) {
           window.location.href = "/bgroup3/test2/halocare/#/login";
           // window.location.href = '/#/login';
+          }
         }
       }
       // החזרת שגיאה ריקה להמשך זרימת התוכנית

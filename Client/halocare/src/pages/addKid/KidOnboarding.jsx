@@ -209,7 +209,7 @@ const KidOnboarding = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container dir="rtl" maxWidth="lg" sx={{ py: 3 }}>
         {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 3 }}>
           <Box 
@@ -221,7 +221,7 @@ const KidOnboarding = () => {
           </Box>
           <Box 
             sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-            onClick={() => navigate('/kids')}
+            onClick={() => navigate('/kids/list')}
           >
             <GroupIcon sx={{ mr: 0.5 }} />
             ניהול ילדים
@@ -355,14 +355,24 @@ const KidOnboarding = () => {
                 </Box>
                 
                 <Box sx={{ p: 3 }}>
-                  <DynamicFormRenderer
-                    kidId={parseInt(kidId)}
-                    formId={selectedForm.formId}
-                    formData={selectedForm}
-                    onComplete={handleFormComplete}
-                    onBack={handleBackToDashboard}
-                    readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
-                  />
+                  {selectedForm.formName === 'פרטים אישיים' ? (
+                    <PersonalInfoForm
+                      // data={null}
+                      onUpdate={handleKidCreated}
+                      // isEditMode={false}
+                    />
+                  ) : (
+                    <DynamicFormRenderer
+                      kidId={parseInt(kidId)}
+                      formId={selectedForm.formId}
+                      formData={selectedForm}
+                      onComplete={handleFormComplete}
+                      onBack={handleBackToDashboard}
+                      readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
+                    />
+                  )}
+
+                  
                 </Box>
               </Paper>
             )}

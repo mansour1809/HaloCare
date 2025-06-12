@@ -250,11 +250,11 @@ const handleSendToParent = async (form) => {
   }
 
   return (
-    <Box>
+    <Box dir="rtl" >
       {/* 🔥 סטטיסטיקות כלליות */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container  spacing={3} sx={{ mb: 4, }} >
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white' }}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white',borderRadius: 20 ,width: '90px'}}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.completedForms}
@@ -266,7 +266,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'primary.light', color: 'white' }}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'white',borderRadius: 20 ,width: '90px'}}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'InProgress').length}
@@ -278,7 +278,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white' }}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white',borderRadius: 20 ,width: '90px'}}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'SentToParent').length}
@@ -290,7 +290,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white' }}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white' ,borderRadius: 20,width: '90px'}}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'NotStarted').length}
@@ -306,7 +306,6 @@ const handleSendToParent = async (form) => {
       {/* 🔥 כרטיסי הטפסים */}
       <Grid container spacing={3}>
         {onboardingData.forms.map((form) => {
-          console.log(onboardingData);
           const progress = form.totalQuestions > 0 
             ? Math.round((form.answeredQuestions / form.totalQuestions) * 100) 
             : 0;
@@ -319,6 +318,8 @@ const handleSendToParent = async (form) => {
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'all 0.2s ease',
+                  borderRadius: 4,
+                  boxShadow: 5,
                   '&:hover': {
                     transform: 'translateY(-2px)',
                     boxShadow: 4
@@ -331,13 +332,13 @@ const handleSendToParent = async (form) => {
                     <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
                       {form.formName}
                     </Typography>
-                    <Chip
+                    {/* <Chip
                       icon={getStatusIcon(form.status)}
                       label={getStatusText(form.status)}
                       color={getStatusColor(form.status)}
                       size="small"
                       variant="outlined"
-                    />
+                    /> */}
                   </Box>
 
                   {/* תיאור */}

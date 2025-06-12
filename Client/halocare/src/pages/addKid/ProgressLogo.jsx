@@ -181,132 +181,176 @@ const ProgressLogo = ({
         <LogoWrapper>
           {/* הלוגו האפור (רקע) */}
           <LogoOutline
-            xmlns="http://www.w3.org/2000/svg" 
+            xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 824.009 734.597"
           >
-            <path 
+            <path
               d={logoPath}
-              transform="translate(1.003 1.007)" 
+              transform="translate(1.003 1.007)"
               fill="#f5f5f5"
               stroke="#e0e0e0"
               strokeWidth="2"
             />
           </LogoOutline>
-          
+
           {/* הלוגו הצבעוני (מתמלא) */}
           <LogoFill
-            xmlns="http://www.w3.org/2000/svg" 
+            xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 824.009 734.597"
             progress={progress}
           >
             <defs>
-              <linearGradient id="logoGradient" x1="100%" y1="100%" x2="100%" y2="0%">
-                 <stop offset="0%" stopColor="#3F5AA7" />
-                 <stop offset="25%" stopColor="#3E5BA1" />
-                 <stop offset="50%" stopColor="#71C8DD" />
-                 <stop offset="75%" stopColor="#8BCCC6" />
-                 <stop offset="100%" stopColor="#73BFB5" />
-               </linearGradient>
-               <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
-                 <feGaussianBlur stdDeviation="5" result="blur" />
-                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
-               </filter>
-             </defs>
-             <path 
-               d={logoPath}
-               transform="translate(1.003 1.007)" 
-               fill="url(#logoGradient)"
-               stroke="#4A8897"
-               strokeWidth="2"
-               filter="url(#logoGlow)"
+              <linearGradient
+                id="logoGradient"
+                x1="100%"
+                y1="100%"
+                x2="100%"
+                y2="0%"
+              >
+                <stop offset="0%" stopColor="#3F5AA7" />
+                <stop offset="25%" stopColor="#3E5BA1" />
+                <stop offset="50%" stopColor="#71C8DD" />
+                <stop offset="75%" stopColor="#8BCCC6" />
+                <stop offset="100%" stopColor="#73BFB5" />
+              </linearGradient>
+              <filter
+                id="logoGlow"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <path
+              d={logoPath}
+              transform="translate(1.003 1.007)"
+              fill="url(#logoGradient)"
+              stroke="#4A8897"
+              strokeWidth="2"
+              filter="url(#logoGlow)"
             />
           </LogoFill>
-          
+
           {/* הצגת אחוז ההתקדמות */}
           <ProgressText>{progress}%</ProgressText>
-          
+
           {/* שם הילד אם יש */}
           {kidName && <KidName>{kidName}</KidName>}
         </LogoWrapper>
       </LogoArea>
-      
+
       {/* 🔥 סיכום טפסים מעודכן */}
       {showFormsSummary && onboardingData && (
         <FormsSummary elevation={3}>
           {compact ? (
             // תצוגה מצומצמת
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: "center" }}>
               <Typography variant="h6" gutterBottom>
                 התקדמות קליטה
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {onboardingData.completedForms} מתוך {onboardingData.totalForms} טפסים הושלמו
+                {onboardingData.completedForms} מתוך {onboardingData.totalForms}{" "}
+                טפסים הושלמו
               </Typography>
-              <LinearProgress 
-                variant="determinate" 
-                value={progress} 
+              <LinearProgress
+                variant="determinate"
+                value={progress}
                 sx={{ mt: 1, height: 8, borderRadius: 4 }}
               />
             </Box>
           ) : (
             // תצוגה מלאה
             <>
-              <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ textAlign: "center", mb: 3 }}
+              >
                 סטטוס טפסי הקליטה
               </Typography>
-              
-              <Grid container spacing={2}>
+
+              <Grid
+                container
+                spacing={2}
+                justifyContent="center"
+              >
                 {onboardingData.forms?.map((form, index) => (
                   <Grid item xs={12} sm={6} md={4} key={form.formId}>
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 1,
-                        p: 1.5,
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        textAlign: "center",
+                        height: "100%",
+                        minHeight: 100,
+                        width: '180px',
+                        maxWidth: 2000,
+                        p: 2,
                         borderRadius: 2,
-                        backgroundColor: 'white',
-                        border: '1px solid',
-                        borderColor: 'grey.200',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          borderColor: 'primary.main',
-                          transform: 'translateY(-1px)'
-                        }
+                        backgroundColor: "white",
+                        border: "1px solid",
+                        borderColor: "grey.200",
+                        boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                          transform: "translateY(-2px)",
+                        },
                       }}
                     >
-                      {getStatusIcon(form.status)}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="body2" 
-                          fontWeight="medium"
-                          sx={{ 
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {form.formName}
-                        </Typography>
-                        {form.status === 'InProgress' && form.totalQuestions > 0 && (
-                          <Typography variant="caption" color="text.secondary">
-                            {form.answeredQuestions}/{form.totalQuestions} שאלות
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          mb: 1,
+                        }}
+                      >
+                        {getStatusIcon(form.status)}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="body1"
+                            fontWeight="medium"
+                            sx={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {form.formName}
                           </Typography>
-                        )}
+                          {form.status === "InProgress" &&
+                            form.totalQuestions > 0 && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {form.answeredQuestions}/{form.totalQuestions}{" "}
+                                שאלות
+                              </Typography>
+                            )}
+                        </Box>
                       </Box>
-                      <Chip
-                        size="small"
-                        label={getStatusText(form.status)}
-                        color={getStatusColor(form.status)}
-                        variant="outlined"
-                      />
+                      <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <Chip
+                          size="small"
+                          label={getStatusText(form.status)}
+                          color={getStatusColor(form.status)}
+                          variant="outlined"
+                        />
+                      </Box>
                     </Box>
                   </Grid>
                 ))}
               </Grid>
 
               {/* 🔥 סטטיסטיקות כלליות */}
-              <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'grey.200' }}>
+              {/* <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'grey.200' }}>
                 <Grid container spacing={2} justifyContent="center">
                   <Grid item>
                     <Box sx={{ textAlign: 'center' }}>
@@ -339,7 +383,7 @@ const ProgressLogo = ({
                     </Box>
                   </Grid>
                 </Grid>
-              </Box>
+              </Box> */}
             </>
           )}
         </FormsSummary>
