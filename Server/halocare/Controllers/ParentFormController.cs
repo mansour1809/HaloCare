@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using halocare.BL.Services;
 using halocare.DAL.Models;
+using Microsoft.AspNetCore.Authorization;
 
 
 
@@ -18,6 +19,7 @@ namespace halocare.Controllers
         }
 
         [HttpPost("send")]
+        [Authorize]
         public async Task<IActionResult> SendFormToParent([FromBody] SendFormToParentRequest request)
         {
             var result = await _parentFormService.SendFormToParent(
@@ -28,6 +30,7 @@ namespace halocare.Controllers
         }
 
         [HttpPost("validate")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateAccess([FromBody] ValidateAccessRequest request)
         {
             var isValid = await _parentFormService.ValidateParentAccess(request.Token, request.KidIdNumber);
@@ -37,6 +40,7 @@ namespace halocare.Controllers
         }
 
         [HttpGet("form/{token}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetFormData(string token)
         {
             var formData = await _parentFormService.GetParentFormData(token);
@@ -46,6 +50,7 @@ namespace halocare.Controllers
         }
 
         [HttpPost("submit")]
+        [AllowAnonymous]
         public async Task<IActionResult> SubmitForm([FromBody] SubmitParentFormRequest request)
         {
             Console.WriteLine(request);
