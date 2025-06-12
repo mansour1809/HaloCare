@@ -38,7 +38,7 @@ import SystemSettings from './pages/SystemSetting/SystemSettings';
 import { DynamicForm } from '@mui/icons-material';
 // import KidOnboarding from './pages/kids/KidOnboarding';
 import KidOnboarding from './pages/addKid/KidOnboarding';
-import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
+// import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
 
 // יצירת ערכת נושא מותאמת אישית
 const theme = createTheme({
@@ -129,12 +129,12 @@ const AppContent = () => {
                 path="/login"
                 element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
               />
-<Route
+{/* <Route
                 path="/parent-form/:token"
                 element={
                    <PublicParentFormPage />
                 }
-              />
+              /> */}
               <Route
                 path="/reset-password"
                 element={
