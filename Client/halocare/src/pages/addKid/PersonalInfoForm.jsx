@@ -382,15 +382,38 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   }, [data, isEditMode]);
 
   // טיפול בהעלאת תמונה
-  const handlePhotoChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
+  const handlePhotoChange = (e) => {
+     if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          
+          // בדיקה שאכן מדובר בתמונה
+          if (!file.type.startsWith('image/')) {
+            Swal.fire({
+              icon: 'error',
+              title: 'קובץ לא מתאים',
+              text: 'יש לבחור קובץ תמונה בלבד (jpg, png, etc.)',
+              confirmButtonText: 'אישור'
+            });
+            return;
+          }
+          
+          // checking file size - max 5MB
+          if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+              icon: 'error',
+              title: 'קובץ גדול מדי',
+              text: 'גודל התמונה המקסימלי הוא 5MB',
+              confirmButtonText: 'אישור'
+            });
+            return;
+          }
       setPhotoFile(file);
       
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target.result);
       };
+      
       reader.readAsDataURL(file);
     }
   };
@@ -402,11 +425,9 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     enableReinitialize: true,
     onSubmit: async (values) => {
       try {
-        console.log(isEditMode);
         // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
         if (!isEditMode) {
           const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
-          console.log(existingKid);
           if (existingKid) {
             Swal.fire({
               icon: 'warning',
@@ -430,7 +451,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           cityName: values.cityName,
           address: values.address,
           hName: values.hName,
-          photo: values.photo,
+          photo: photoFile || values.photo,
           classId: values.classId || null,
           pathToFolder: values.pathToFolder,
           isActive: values.isActive,

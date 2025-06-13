@@ -13,6 +13,8 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import QuestionRenderer from '../kids/QuestionRenderer';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const PublicParentFormPage = () => {
   const { token } = useParams();
@@ -144,7 +146,8 @@ const PublicParentFormPage = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <Container dir="rtl" maxWidth="md" sx={{ py: 4 }}>
       {/* כותרת */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom color="primary">
@@ -356,6 +359,7 @@ const PublicParentFormPage = () => {
         </DialogActions>
       </Dialog>
     </Container>
+    </LocalizationProvider>
   );
 };
 

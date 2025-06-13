@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
 
-  
 
   // בדיקת אם המשתמש מחובר בטעינה הראשונית
   useEffect(() => {
@@ -38,7 +37,6 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
           } catch (e) {
             console.error("שגיאה בפענוח המשתמש:", e);
-            // ניקוי במקרה של שגיאה
             localStorage.removeItem('token');
             localStorage.removeItem('user');
           }
@@ -73,6 +71,7 @@ export const AuthProvider = ({ children }) => {
         // עדכון המצב
         setCurrentUser(userData);
         setIsAuthenticated(true);
+
       }
       
       return response.data;
@@ -87,7 +86,6 @@ export const AuthProvider = ({ children }) => {
     // ניקוי localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // ניקוי state
     setCurrentUser(null);
     setIsAuthenticated(false);
     // window.location.href = '/bgroup3/test2/halocare/#/login';

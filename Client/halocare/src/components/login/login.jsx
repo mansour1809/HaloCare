@@ -43,9 +43,11 @@ const LoginPage = () => {
   useEffect(() => {
     // Clear localStorage when user navigates to the login page
     localStorage.clear();
-    const params = new URLSearchParams(window.location.search);
-    const emailParam = params.get('email');
-    
+  const hash = window.location.hash; 
+  const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+  const params = new URLSearchParams(queryString);
+  const emailParam = params.get('email');
+
     if (emailParam) {
       setEmail(emailParam);
       passwordRef.current?.focus();
@@ -151,6 +153,7 @@ const LoginPage = () => {
             </Alert>
           )}
 
+
           <TextField
             fullWidth
             label="אימייל"
@@ -242,8 +245,9 @@ const LoginPage = () => {
         </Alert>
       </Snackbar>
 
+
       {/* דיאלוג איפוס סיסמה - מועבר ל-AuthContext */}
-      <Dialog open={showForgotPassword} onClose={() => setShowForgotPassword(false)}>
+      <Dialog  open={showForgotPassword} onClose={() => setShowForgotPassword(false)}  fullWidth >  
         <DialogTitle>איפוס סיסמה</DialogTitle>
         <DialogContent>
           <TextField
@@ -270,7 +274,7 @@ const LoginPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+      </Box>
   );
 };
 

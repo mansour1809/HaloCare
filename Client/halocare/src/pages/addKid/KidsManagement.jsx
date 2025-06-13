@@ -156,7 +156,7 @@ const OnboardingActions = ({ kid, onboardingData, onAction }) => {
           התחל קליטה
         </Button>
       )}
-      
+{/*       
       {canContinue && (
         <Button
           size="small"
@@ -168,7 +168,7 @@ const OnboardingActions = ({ kid, onboardingData, onAction }) => {
           המשך
         </Button>
       )}
-      
+       */}
       {onboardingData && (
         <Button
           size="small"
@@ -177,7 +177,7 @@ const OnboardingActions = ({ kid, onboardingData, onAction }) => {
           startIcon={<ViewIcon />}
           onClick={() => onAction('view', kid)}
         >
-          צפייה
+          צפייה בקליטה
         </Button>
       )}
     </Box>

@@ -44,55 +44,55 @@ const OnboardingDashboard = ({
 
   // 🔥 פונקציות מעודכנות לעבודה עם Redux החדש
   
-  // קבלת אייקון סטטוס
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Completed':
-        return <CheckIcon color="success" />;
-      case 'CompletedByParent':
-        return <CompletedByParentIcon color="success" />;
-      case 'InProgress':
-        return <EditIcon color="primary" />;
-      case 'SentToParent':
-        return <EmailIcon color="info" />;
-      case 'NotStarted':
-      default:
-        return <PendingIcon color="disabled" />;
-    }
-  };
+  // // קבלת אייקון סטטוס
+  // const getStatusIcon = (status) => {
+  //   switch (status) {
+  //     case 'Completed':
+  //       return <CheckIcon color="success" />;
+  //     case 'CompletedByParent':
+  //       return <CompletedByParentIcon color="success" />;
+  //     case 'InProgress':
+  //       return <EditIcon color="primary" />;
+  //     case 'SentToParent':
+  //       return <EmailIcon color="info" />;
+  //     case 'NotStarted':
+  //     default:
+  //       return <PendingIcon color="disabled" />;
+  //   }
+  // };
 
-  // קבלת צבע סטטוס
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Completed':
-      case 'CompletedByParent':
-        return 'success';
-      case 'InProgress':
-        return 'primary';
-      case 'SentToParent':
-        return 'info';
-      case 'NotStarted':
-      default:
-        return 'default';
-    }
-  };
+  // // קבלת צבע סטטוס
+  // const getStatusColor = (status) => {
+  //   switch (status) {
+  //     case 'Completed':
+  //     case 'CompletedByParent':
+  //       return 'success';
+  //     case 'InProgress':
+  //       return 'primary';
+  //     case 'SentToParent':
+  //       return 'info';
+  //     case 'NotStarted':
+  //     default:
+  //       return 'default';
+  //   }
+  // };
 
-  // קבלת טקסט סטטוס
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'Completed':
-        return 'הושלם';
-      case 'CompletedByParent':
-        return 'הושלם ע"י הורים';
-      case 'InProgress':
-        return 'בתהליך';
-      case 'SentToParent':
-        return 'נשלח להורים';
-      case 'NotStarted':
-      default:
-        return 'לא התחיל';
-    }
-  };
+  // // קבלת טקסט סטטוס
+  // const getStatusText = (status) => {
+  //   switch (status) {
+  //     case 'Completed':
+  //       return 'הושלם';
+  //     case 'CompletedByParent':
+  //       return 'הושלם ע"י הורים';
+  //     case 'InProgress':
+  //       return 'בתהליך';
+  //     case 'SentToParent':
+  //       return 'נשלח להורים';
+  //     case 'NotStarted':
+  //     default:
+  //       return 'לא התחיל';
+  //   }
+  // };
 
   // 🔥 שליחת טופס להורה - מעודכן
   // const handleSendToParent = (form) => {
@@ -189,25 +189,6 @@ const handleSendToParent = async (form) => {
       alert('שגיאה בשליחת הטופס');
     } finally {
       setSendingToParent(false);
-    }
-  };
-
-  // 🔥 סימון טופס כהושלם על ידי הורה
-  const handleMarkCompletedByParent = async (form) => {
-    try {
-      await dispatch(markFormCompletedByParent({
-        kidId: selectedKid.id,
-        formId: form.formId,
-        notes: `סומן כהושלם ע"י הורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
-      })).unwrap();
-
-      // רענון אוטומטי
-      setTimeout(() => {
-        onRefresh && onRefresh();
-      }, 1000);
-
-    } catch (error) {
-      console.error('שגיאה בעדכון סטטוס:', error);
     }
   };
 
@@ -314,7 +295,8 @@ const handleSendToParent = async (form) => {
             <Grid item xs={12} md={6} lg={4} key={form.formId}>
               <Card 
                 sx={{ 
-                  height: '100%',
+                  height: '200px',
+                  width: '200px',
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'all 0.2s ease',
@@ -332,13 +314,7 @@ const handleSendToParent = async (form) => {
                     <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
                       {form.formName}
                     </Typography>
-                    {/* <Chip
-                      icon={getStatusIcon(form.status)}
-                      label={getStatusText(form.status)}
-                      color={getStatusColor(form.status)}
-                      size="small"
-                      variant="outlined"
-                    /> */}
+
                   </Box>
 
                   {/* תיאור */}
@@ -380,7 +356,6 @@ const handleSendToParent = async (form) => {
                         הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
                       </Typography>
                     )}
-                                        {console.log(form)}
 
                   </Box>
                 </CardContent>
@@ -432,17 +407,6 @@ const handleSendToParent = async (form) => {
                       </Tooltip>
                     )}
 
-                    {/* סימון כהושלם על ידי הורה */}
-                    {form.status === 'SentToParent' && (
-                      <Tooltip title="סמן כהושלם ע״י הורה">
-                        <IconButton
-                          onClick={() => handleMarkCompletedByParent(form)}
-                          color="success"
-                        >
-                          <CompletedByParentIcon />
-                        </IconButton>
-                      </Tooltip>
-                    )}
                   </Box>
                 </CardActions>
               </Card>
@@ -456,6 +420,7 @@ const handleSendToParent = async (form) => {
         open={sendDialog.open} 
         onClose={() => setSendDialog({ open: false, form: null })}
         maxWidth="sm"
+        dir='rtl'
         fullWidth
       >
         <DialogTitle>

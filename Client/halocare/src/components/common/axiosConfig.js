@@ -5,17 +5,38 @@ import axios from 'axios';
 axios.defaults.baseURL = 'https://localhost:7225/api';
 // axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/test2/tar1/api';
 
-// הוסף interceptor שיוסיף את הטוקן לכל בקשה
+
+// 🔥 רשימת endpoints ציבוריים שלא צריכים token
+const publicEndpoints = [
+  '/ParentForm/validate',
+  '/ParentForm/form/',
+  '/ParentForm/submit',
+  '/Auth/reset-password', 
+  '/Auth/forgot-password', // אם יש
+  '/Auth/login' 
+
+];
+
+// 🔥 בדיקה אם הנתיב ציבורי
+const isPublicEndpoint = (url) => {
+  return publicEndpoints.some(endpoint => url.includes(endpoint));
+};
+
+
+
+// הוסף interceptor שיוסיף את הטוקן רק לבקשות פרטיות
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    //  הוסף token רק אם זה לא endpoint ציבורי
+    if (!isPublicEndpoint(config.url)) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
   (error) => {
-    
     return Promise.reject(error);
   }
 );
@@ -25,16 +46,16 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // בדיקה שאנחנו לא מנסים להיכנס לדף ההתחברות כבר
-      if (!window.location.pathname.includes("/login")) {
-        if (!window.location.pathname.includes("/reset-password")) {
-          if( !window.location.pathname.includes("/parent-form")) {
-          window.location.href = "/bgroup3/test2/halocare/#/login";
-          // window.location.href = '/#/login';
-          }
-        }
+      // 🔥 בדיקה מורחבת לדפים ציבוריים
+      const currentPath = window.location.pathname + window.location.hash;
+      const publicPaths = ["/login", "/reset-password", "/parent-form"];
+      const isPublicPage = publicPaths.some(path => currentPath.includes(path));
+      
+      // 🔥 הפנה ל-login רק אם זה לא דף ציבורי
+      if (!isPublicPage) {
+        window.location.href = "/bgroup3/test2/halocare/#/login";
       }
-      // החזרת שגיאה ריקה להמשך זרימת התוכנית
+      
       return Promise.reject({ silent: true });
     }
     return Promise.reject(error);

@@ -281,14 +281,14 @@ const KidOnboarding = () => {
                   <Typography variant="h4" fontWeight="bold">
                     תהליך קליטה
                   </Typography>
-                  <Button
+                  {/* <Button
                     variant="outlined"
                     startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
                     onClick={handleRefresh}
                     disabled={refreshing}
                   >
                     {refreshing ? 'מרענן...' : 'רענן'}
-                  </Button>
+                  </Button> */}
                 </Box>
 
                 <OnboardingDashboard
@@ -355,14 +355,7 @@ const KidOnboarding = () => {
                 </Box>
                 
                 <Box sx={{ p: 3 }}>
-                  {selectedForm.formName === 'פרטים אישיים' ? (
-                    <PersonalInfoForm
-                      // data={null}
-                      onUpdate={handleKidCreated}
-                      // isEditMode={false}
-                    />
-                  ) : (
-                    <DynamicFormRenderer
+                  <DynamicFormRenderer
                       kidId={parseInt(kidId)}
                       formId={selectedForm.formId}
                       formData={selectedForm}
@@ -370,8 +363,6 @@ const KidOnboarding = () => {
                       onBack={handleBackToDashboard}
                       readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
                     />
-                  )}
-
                   
                 </Box>
               </Paper>

@@ -1,11 +1,11 @@
-// App.jsx
-import { HashRouter   as Router, Routes, Route, Navigate } from 'react-router-dom';
+// App.jsx - גרסה מתוקנת:
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { rtlCache } from './components/common/rtlCache';
 import { CacheProvider } from '@emotion/react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 
-// קומפוננטים
+// כל הimports שלך...
 import Navbar from './components/layout/Navbar/Navbar';
 import ProSidebar from './components/layout/Sidebar/Sidebar';
 import PrivateRoute from './components/PrivateRoute';
@@ -14,12 +14,10 @@ import PrivateRoute from './components/PrivateRoute';
 import Calendar from './pages/calendar/Calendar';
 import EmployeeForm from './pages/Employees/EmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
-// import KidsManagment from './pages/kids/KidsManagement';
 import KidsManagment from './pages/addKid/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
 import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
-// import AttendanceTable from './pages/Kids/KidsAttendance';
 import EventsList from './pages/calendar/EventsList';
 import ResetPassword from './components/login/ResetPassword';
 
@@ -33,14 +31,10 @@ import { AttendanceProvider } from './components/context/AttendanceContext';
 import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
 import Profile from './pages/Employees/EmployeeProfile';
 import SystemSettings from './pages/SystemSetting/SystemSettings';
-// import KidRegistrationProcess from './pages/kids/KidRegistrationProcess';
-// import KidProfile from './pages/addKid/KidProfile';
-import { DynamicForm } from '@mui/icons-material';
-// import KidOnboarding from './pages/kids/KidOnboarding';
 import KidOnboarding from './pages/addKid/KidOnboarding';
 import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
 
-// יצירת ערכת נושא מותאמת אישית
+// יצירת ערכת נושא
 const theme = createTheme({
   direction: 'rtl',
   palette: {
@@ -81,71 +75,88 @@ const theme = createTheme({
   },
 });
 
-// רוחב הסרגל הצדדי
 const DRAWER_WIDTH = 240;
 const NAVBAR_HEIGHT = 64;
+
+// 🔥 פונקציה לבדיקת דף ציבורי - פשוטה ויעילה
+const isCurrentPathPublic = () => {
+  const hash = window.location.hash;
+  const publicPaths = [ '/reset-password', '/parent-form'];
+  return publicPaths.some(path => hash.includes(path));
+};
 
 // רכיב פנימי שמשתמש בקונטקסט האותנטיקציה
 const AppContent = () => {
   const { isAuthenticated } = useAuth();
   
+  // 🔥 בדיקת דף ציבורי בכל render
+  const isPublicPath = isCurrentPathPublic();
+
+  const showLayout = isAuthenticated && !isPublicPath;
+  
+  console.log('Debug:', {
+    pathname: location.pathname,
+    isPublicPath,
+    isAuthenticated,
+    showLayout
+  });
+  
+  // 🔥 הדפסה לדיבוג
+  console.log('Current hash:', window.location.hash, 'Is public:', isPublicPath, 'Is authenticated:', isAuthenticated);
+  
   return (
     <Router>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-        {isAuthenticated && <Navbar />}
-
+        {/* 🔥 הצג navbar רק אם מחובר ולא בדף ציבורי */}
+{showLayout && <Navbar />}
         <Box
           sx={{
             display: "flex",
             flexGrow: 1,
             position: "relative",
-            pt: isAuthenticated ? `${NAVBAR_HEIGHT}px` : 0,
+            pt: (isAuthenticated && !isPublicPath) ? `${NAVBAR_HEIGHT}px` : 0,
           }}
         >
-          {isAuthenticated && <ProSidebar />}
+          {/* 🔥 הצג sidebar רק אם מחובר ולא בדף ציבורי */}
+          {isAuthenticated && !isPublicPath && <ProSidebar />}
 
           <Box
             component="main"
             sx={{
               flexGrow: 1,
-              p: 3,
-              backgroundColor: "#f5f5f5",
-              ml: isAuthenticated
+              p: isPublicPath ? 0 : 3,
+              backgroundColor: isPublicPath ? "#ffffff" : "#f5f5f5",
+              ml: (isAuthenticated && !isPublicPath)
                 ? `${DRAWER_WIDTH}px !important`
                 : "0 !important",
               mr: "0 !important",
-              width: isAuthenticated
+              width: (isAuthenticated && !isPublicPath)
                 ? `calc(100% - ${DRAWER_WIDTH}px)`
                 : "100%",
-              minHeight: isAuthenticated
+              minHeight: (isAuthenticated && !isPublicPath)
                 ? `calc(100vh - ${NAVBAR_HEIGHT}px)`
                 : "100vh",
               overflow: "auto",
             }}
           >
             <Routes>
-              {/* login page*/}
+              {/* דפים ציבוריים */}
               <Route
                 path="/login"
-                element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
+                element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
               />
-                <Route
-                path="/parent-form/:token"
-                element={
-                   <PublicParentFormPage />
-                }
-              />
+              
               <Route
                 path="/reset-password"
-                element={
-                  // <PrivateRoute>
-
-                  <ResetPassword />
-                  // </PrivateRoute>
-                }
+                element={<ResetPassword />}
+              />
+              
+              <Route
+                path="/parent-form/:token"
+                element={<PublicParentFormPage />}
               />
 
-              {/* homepage*/}
+              {/* דף הבית */}
               <Route
                 path="/"
                 element={
@@ -155,7 +166,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* kids managment*/}
+              {/* ניהול ילדים */}
               <Route
                 path="/kids/list"
                 element={
@@ -198,29 +209,7 @@ const AppContent = () => {
                 }
               />
 
-              <Route
-                path="/kid-profile/:id"
-                element={
-                  <PrivateRoute>
-                    {/* <KidProfile /> */}
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/forms/:formId/:kidId?"
-                element={
-                  <PrivateRoute>
-                    <DynamicForm />
-                  </PrivateRoute>
-                }
-              />
-              
-
-
-
-
-
-              {/* employees managment*/}
+              {/* ניהול עובדים */}
               <Route
                 path="/employees/list"
                 element={
@@ -238,7 +227,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* calendar*/}
+              {/* לוח שנה */}
               <Route
                 path="/calendar/schedule"
                 element={
@@ -265,36 +254,17 @@ const AppContent = () => {
                 }
               />
 
-              {/* reports*/}
+              {/* דוחות */}
               <Route
                 path="/reports/attendance"
                 element={
                   <PrivateRoute>
-                    {/* <AttendanceTable /> */}
                     <AttendanceDashboard/>
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/reports/treatments"
-                element={
-                  <PrivateRoute>
-                      {/* <TreatmentsList /> */}
-                      {/* <KidProfile/> */}
-                  </PrivateRoute>
-                }
-              />
-            
-              <Route
-                path="/kids/intake/:kidId"
-                element={
-                  <PrivateRoute>
-                      {/* <KidRegistrationProcess /> */}
-                  </PrivateRoute>
-                }
-              />
 
- <Route
+              <Route
                 path="/profile"
                 element={
                   <PrivateRoute>
@@ -302,7 +272,8 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              {/* error 404*/}
+
+              {/* 404 */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Box>

@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
+import DigitalSignature from '../addKid/DigitalSignature';
 
 // עיצוב מותאם לשאלה - פשוט יותר
 const QuestionContainer = styled(Box)(({ theme, required }) => ({
@@ -215,6 +216,17 @@ const QuestionRenderer = ({
             {error && <FormHelperText>{error}</FormHelperText>}
           </FormControl>
         );
+        case 'signature':
+    case 'digitalSignature':
+      return (
+        <DigitalSignature
+          value={value}
+          onChange={(signatureData) => onChange(signatureData)}
+          readOnly={readOnly}
+          required={question.isMandatory}
+          label={question.questionText}
+        />
+      );
 
       case 'radio':
       case 'singleChoice':
