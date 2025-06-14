@@ -295,7 +295,7 @@ const handleSendToParent = async (form) => {
             <Grid item xs={12} md={6} lg={4} key={form.formId}>
               <Card 
                 sx={{ 
-                  height: '200px',
+                  height: '100%',
                   width: '200px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -374,6 +374,8 @@ const handleSendToParent = async (form) => {
                       </Button>
                     ) : (
                       <Box sx={{ display: 'flex', gap: 1 }}>
+                        {form.formId != '1002' && (
+                          
                         <Button
                           startIcon={<ViewIcon />}
                           onClick={() => onFormClick(form, 'view')}
@@ -382,6 +384,7 @@ const handleSendToParent = async (form) => {
                         >
                           צפייה
                         </Button>
+                        )}
                         <Button
                           startIcon={<EditIcon />}
                           onClick={() => onFormClick(form, 'edit')}
@@ -396,7 +399,8 @@ const handleSendToParent = async (form) => {
 
                   <Box>
                     {/* שליחה להורה */}
-                    {canSendToParent(form) && (
+                  
+                    {canSendToParent(form) && form.formId != '1002' && (
                       <Tooltip title="שלח טופס להורה">
                         <IconButton
                           onClick={() => handleSendToParent(form)}
@@ -451,7 +455,7 @@ const handleSendToParent = async (form) => {
             required
             placeholder="example@email.com"
             helperText="הטופס יישלח עם קישור למילוי אונליין"
-            disabled={loadingParentEmail} // 🔥 השבתה בזמן טעינה
+            disabled={true} // 🔥 השבתה בזמן טעינה
           />
           <Alert severity="info" sx={{ mt: 2 }}>
             הטופס יישלח להורים באימייל עם קישור למילוי

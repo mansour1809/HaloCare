@@ -114,10 +114,10 @@ namespace halocare.DAL.Repositories
                 { "@IsActive", kid.IsActive },
                 { "@HName", kid.HName },
                 { "@PathToFolder", kid.PathToFolder },
-                { "@Photo", kid.PhotoPath },
+                { "@Photo", kid.PhotoPath ?? (object)DBNull.Value },
                 { "@ClassId", kid.ClassId },
                 { "@ParentId1", kid.ParentId1 },
-                { "@ParentId2", kid.ParentId2 }
+                { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value }
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateKid", parameters);

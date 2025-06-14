@@ -154,7 +154,6 @@ export const updateKidWithParents = createAsyncThunk(
 
       // 2. Update parent 2 (if provided)
       let parent2Result = null;
-      if (formData.parent2FirstName && formData.parent2LastName) {
         const parent2Data = {
           parentId: formData.parent2Id || 0,
           firstName: formData.parent2FirstName,
@@ -165,6 +164,7 @@ export const updateKidWithParents = createAsyncThunk(
           homePhone: formData.homePhone,
           email: formData.parent2Email
         };
+      if (formData.parent2FirstName && formData.parent2LastName) {
 
         if (parent2Data.parentId === 0) {
           parent2Result = await dispatch(createParent(parent2Data)).unwrap();
@@ -172,6 +172,7 @@ export const updateKidWithParents = createAsyncThunk(
           parent2Result = await dispatch(updateParent(parent2Data)).unwrap();
         }
       }
+
 
       // 3. Update the kid with parent references
       const kidData = {
@@ -183,8 +184,8 @@ export const updateKidWithParents = createAsyncThunk(
         cityName: formData.cityName,
         address: formData.address,
         isActive: formData.isActive,
-        parentId1: parent1Result.parentId,
-        parentId2: parent2Result?.parentId || null,
+        parentId1: parent1Data.parentId,
+        parentId2: parent2Data?.parentId || null,
         hName: formData.hName,
         pathToFolder: formData.pathToFolder,
         classId: formData.classId,

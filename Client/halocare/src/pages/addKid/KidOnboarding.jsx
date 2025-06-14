@@ -28,9 +28,6 @@ import {
   fetchKidById, 
   clearSelectedKid
 } from '../../Redux/features/kidsSlice';
-import { 
-  clearCurrentFormAnswers 
-} from '../../Redux/features/answersSlice'; // 🔥 הוספה
 
 // קומפוננטים
 import PersonalInfoForm from './PersonalInfoForm';
@@ -122,12 +119,20 @@ const KidOnboarding = () => {
     }
   };
 
-  // 🔥 פתיחת טופס למילוי/צפייה - מתוקן
+  // 🔥 פתיחת טופס למילוי/צפייה - מתוקן עם טיפול בטופס פרטים אישיים
   const handleFormClick = (form, mode = 'auto') => {
+    // 🔥 טיפול מיוחד בטופס פרטים אישיים (formId = 1002)
+    if (form.formId === 1002) {
+      setSelectedForm({ ...form, buttonText: mode === 'view' ? 'צפייה' : 'עריכה' });
+      setFormReadOnly(mode === 'view');
+      setViewMode('personalInfo'); // 🔥 מצב מיוחד לטופס פרטים אישיים
+      return;
+    }
+
     let readOnlyMode = false;
     let buttonText = '';
 
-    // 🔥 קביעת מצב לפי סטטוס הטופס ובקשת המשתמש
+    // קביעת מצב לפי סטטוס הטופס ובקשת המשתמש
     if (mode === 'view') {
       readOnlyMode = true;
       buttonText = 'צפייה';
@@ -157,9 +162,6 @@ const KidOnboarding = () => {
     setSelectedForm(null);
     setFormReadOnly(false);
     
-    // 🔥 ניקוי תשובות כשמשלימים טופס
-    dispatch(clearCurrentFormAnswers());
-    
     // רענון אוטומטי
     setTimeout(() => {
       dispatch(fetchOnboardingStatus(kidId));
@@ -171,9 +173,6 @@ const KidOnboarding = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
-    
-    // 🔥 ניקוי תשובות כשחוזרים לדשבורד
-    dispatch(clearCurrentFormAnswers());
   };
 
   // 🔥 מעבר ממצב צפייה לעריכה
@@ -209,7 +208,7 @@ const KidOnboarding = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container dir="rtl" maxWidth="lg" sx={{ py: 3 }}>
+      <Container dir="rtl" maxWidth="lg" sx={{ py: 4 }}>
         {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 3 }}>
           <Box 
@@ -252,8 +251,8 @@ const KidOnboarding = () => {
         {/* תוכן דינמי לפי מצב */}
         <Fade in={true} timeout={500}>
           <Box>
-            {/* טופס פרטים אישיים */}
-            {viewMode === 'personalInfo' && (
+            {/* 🔥 טופס פרטים אישיים לילד חדש */}
+            {viewMode === 'personalInfo' && !selectedForm && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50' }}>
                   <Typography variant="h5" gutterBottom>
@@ -269,6 +268,72 @@ const KidOnboarding = () => {
                     data={null}
                     onUpdate={handleKidCreated}
                     isEditMode={false}
+                  />
+                </Box>
+              </Paper>
+            )}
+            {viewMode === 'personalInfo' && selectedForm && (
+              <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
+                <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box>
+                    <Typography variant="h5" gutterBottom>
+                      {selectedForm.formName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedForm.formDescription}
+                    </Typography>
+                    
+                    {/* אינדיקטור מצב */}
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
+                        label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
+                        color={formReadOnly ? 'info' : 'primary'}
+                        size="small"
+                      />
+                      {selectedForm.status && (
+                        <Chip
+                          label={`סטטוס: ${selectedForm.status}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* כפתור מעבר בין מצבים */}
+                    {formReadOnly && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<EditIcon />}
+                        onClick={switchToEditMode}
+                        color="primary"
+                      >
+                        עבר לעריכה
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outlined"
+                      onClick={handleBackToDashboard}
+                      sx={{ minWidth: 120 }}
+                    >
+                      חזרה לדשבורד
+                    </Button>
+                  </Box>
+                </Box>
+                
+                <Box sx={{ p: 3 }}>
+                  <PersonalInfoForm
+                    data={selectedKid} // 🔥 העברת נתוני הילד הקיימים
+                    onUpdate={(updatedData) => {
+                      // עדכון לאחר שמירה
+                      showNotification('פרטי הילד עודכנו בהצלחה', 'success');
+                      handleBackToDashboard();
+                    }}
+                    isEditMode={true} // 🔥 תמיד במצב עריכה (PersonalInfoForm מטפל בצפייה פנימית)
+                    readOnly={formReadOnly} // 🔥 נעביר את זה אם PersonalInfoForm יתמוך בזה
                   />
                 </Box>
               </Paper>
@@ -356,14 +421,13 @@ const KidOnboarding = () => {
                 
                 <Box sx={{ p: 3 }}>
                   <DynamicFormRenderer
-                      kidId={parseInt(kidId)}
-                      formId={selectedForm.formId}
-                      formData={selectedForm}
-                      onComplete={handleFormComplete}
-                      onBack={handleBackToDashboard}
-                      readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
-                    />
-                  
+                    kidId={parseInt(kidId)}
+                    formId={selectedForm.formId}
+                    formData={selectedForm}
+                    onComplete={handleFormComplete}
+                    onBack={handleBackToDashboard}
+                    readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
+                  />
                 </Box>
               </Paper>
             )}

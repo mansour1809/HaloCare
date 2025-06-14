@@ -486,7 +486,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           Swal.fire({
             icon: 'success',
             title: 'עודכן בהצלחה!',
-            text: `פרטי הילד ${result.kid.firstName} ${result.kid.lastName} עודכנו בהצלחה`,
+            text: `פרטי הילד ${formDataForSlice.firstName} ${formDataForSlice.lastName} עודכנו בהצלחה`,
             timer: 2000,
             showConfirmButton: false
           });
@@ -1559,7 +1559,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         }}
       >
         <ActionButtonsContainer>
-          <AnimatedButton
+          {!isEditMode && ( <AnimatedButton
             variant="outlined"
             color="error"
             onClick={() => {
@@ -1590,7 +1590,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           >
             נקה טופס
           </AnimatedButton>
-
+          )}
           <Box>
             <AnimatedButton
               type="submit"
