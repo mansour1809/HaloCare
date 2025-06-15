@@ -1,4 +1,6 @@
-﻿using System;
+﻿// KidsController - עדכון עם תמיכה ביצירת מבנה תיקיות ושילוב עם DocumentService
+
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,14 +13,15 @@ namespace halocare.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class KidsController : ControllerBase
     {
         private readonly KidService _kidService;
+        private readonly DocumentService _documentService;
 
         public KidsController(IConfiguration configuration)
         {
             _kidService = new KidService(configuration);
+            _documentService = new DocumentService(configuration);
         }
 
         // GET: api/Kids
@@ -124,11 +127,30 @@ namespace halocare.Controllers
         [HttpPost]
         public ActionResult<Kid> PostKid([FromBody] Kid kid)
         {
-            Console.WriteLine(kid);
             try
             {
+                // יצירת הילד במסד הנתונים
                 int kidId = _kidService.AddKid(kid);
                 kid.Id = kidId;
+
+                // יצירת מבנה תיקיות עבור הילד החדש
+                try
+                {
+                    string folderPath = _documentService.CreateKidFolderStructure(
+                        kidId,
+                        kid.FirstName,
+                        kid.LastName
+                    );
+
+                    // עדכון נתיב התיקייה בילד
+                    kid.PathToFolder = folderPath;
+                    _kidService.UpdateKid(kid);
+                }
+                catch (Exception folderEx)
+                {
+                    // לוג השגיאה אבל לא נכשיל את יצירת הילד
+                    Console.WriteLine($"שגיאה ביצירת תיקיית ילד: {folderEx.Message}");
+                }
 
                 return CreatedAtAction(nameof(GetKid), new { id = kidId }, kid);
             }
@@ -139,6 +161,44 @@ namespace halocare.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+
+        // POST: api/Kids/create-folder-structure
+        [HttpPost("create-folder-structure")]
+        public ActionResult CreateKidFolderStructure([FromBody] CreateFolderRequest request)
+        {
+            try
+            {
+                // יצירת מבנה תיקיות
+                string folderPath = _documentService.CreateKidFolderStructure(
+                    request.KidId,
+                    request.FirstName,
+                    request.LastName
+                );
+
+                // עדכון הילד עם נתיב התיקייה החדש
+                var kid = _kidService.GetKidById(request.KidId);
+                if (kid != null)
+                {
+                    kid.PathToFolder = folderPath;
+                    _kidService.UpdateKid(kid);
+                }
+
+                return Ok(new
+                {
+                    kidId = request.KidId,
+                    folderPath = folderPath,
+                    message = "מבנה תיקיות נוצר בהצלחה"
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה ביצירת מבנה תיקיות: {ex.Message}");
             }
         }
 
@@ -153,11 +213,29 @@ namespace halocare.Controllers
 
             try
             {
+                // בדיקה אם נדרש ליצור מבנה תיקיות (אם PathToFolder ריק)
+                if (string.IsNullOrEmpty(kid.PathToFolder))
+                {
+                    try
+                    {
+                        string folderPath = _documentService.CreateKidFolderStructure(
+                            kid.Id,
+                            kid.FirstName,
+                            kid.LastName
+                        );
+                        kid.PathToFolder = folderPath;
+                    }
+                    catch (Exception folderEx)
+                    {
+                        Console.WriteLine($"שגיאה ביצירת תיקיית ילד בעדכון: {folderEx.Message}");
+                    }
+                }
+
                 bool updated = _kidService.UpdateKid(kid);
 
                 if (updated)
                 {
-                    return NoContent();
+                    return Ok(kid); // החזרת הילד המעודכן
                 }
                 else
                 {
@@ -200,5 +278,53 @@ namespace halocare.Controllers
                 return StatusCode(500, $"Error: {ex.Message}");
             }
         }
+
+        // PATCH: api/Kids/5/photo
+        [HttpPatch("{id}/photo")]
+        public IActionResult UpdateKidPhoto(int id, [FromBody] UpdatePhotoRequest request)
+        {
+            try
+            {
+                var kid = _kidService.GetKidById(id);
+                if (kid == null)
+                {
+                    return NotFound($"kid with id {id} not found");
+                }
+
+                // עדכון נתיב התמונה
+                kid.PhotoPath = request.PhotoPath;
+                bool updated = _kidService.UpdateKid(kid);
+
+                if (updated)
+                {
+                    return Ok(kid);
+                }
+                else
+                {
+                    return StatusCode(500, "שגיאה בעדכון תמונת הפרופיל");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error: {ex.Message}");
+            }
+        }
+    }
+
+    // מחלקות עזר לבקשות
+    public class CreateFolderRequest
+    {
+        public int KidId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class UpdatePhotoRequest
+    {
+        public string PhotoPath { get; set; }
     }
 }

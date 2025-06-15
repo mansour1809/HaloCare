@@ -26,6 +26,8 @@ import {
   selectOnboardingData,
   selectOnboardingStats 
 } from '../../Redux/features/onboardingSlice';
+import { baseURL } from "../../components/common/axiosConfig";
+
 
 // קומפוננטים עזר
 const OnboardingStatusChip = ({ onboardingData }) => {
@@ -459,8 +461,25 @@ const KidsManagement = () => {
                   <TableRow key={kid.id} hover>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ width: 40, height: 40 }}>
-                          {`${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
+                        <Avatar
+                        src={
+                          kid.photoPath
+                            ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}`
+                            : ''
+                        }  alt={`${kid.firstName} ${kid.lastName}`}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            ml: 1,
+                            border: "2px solid #fff",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          }}
+                        >
+                          {!kid.photoPath && (
+                            <>
+                              {`${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
+                            </>
+                          )}
                         </Avatar>
                         <Typography fontWeight="medium">
                           {`${kid.firstName || ''} ${kid.lastName || ''}`}

@@ -49,7 +49,7 @@ import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlice';
 import { fetchParentById } from '../../Redux/features/parentSlice';
 import { createKidWithParents, updateKidWithParents, fetchKids } from '../../Redux/features/kidsSlice';
-
+import { uploadDocument, deleteDocument, fetchDocumentsByKidId } from '../../Redux/features/documentsSlice';
 // עיצוב משופר לאווטאר עם אפקט הבלטה וזוהר
 const EnhancedAvatar = styled(Avatar)(({ theme }) => ({
   width: 150,
@@ -230,6 +230,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const theme = useTheme();
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(data?.photoPath || null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   // מצבי התרחבות הסקשנים
   const [expandedSections, setExpandedSections] = useState({
@@ -382,106 +383,116 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   }, [data, isEditMode]);
 
   // טיפול בהעלאת תמונה
-  const handlePhotoChange = (e) => {
-     if (e.target.files && e.target.files[0]) {
-          const file = e.target.files[0];
-          
-          // בדיקה שאכן מדובר בתמונה
-          if (!file.type.startsWith('image/')) {
-            Swal.fire({
-              icon: 'error',
-              title: 'קובץ לא מתאים',
-              text: 'יש לבחור קובץ תמונה בלבד (jpg, png, etc.)',
-              confirmButtonText: 'אישור'
-            });
-            return;
-          }
-          
-          // checking file size - max 5MB
-          if (file.size > 5 * 1024 * 1024) {
-            Swal.fire({
-              icon: 'error',
-              title: 'קובץ גדול מדי',
-              text: 'גודל התמונה המקסימלי הוא 5MB',
-              confirmButtonText: 'אישור'
-            });
-            return;
-          }
-      setPhotoFile(file);
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreview(e.target.result);
-      };
-      
-      reader.readAsDataURL(file);
+ const handlePhotoChange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // בדיקת סוג קובץ
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'קובץ לא מתאים',
+        text: 'יש לבחור קובץ תמונה בלבד (jpg, png, etc.)',
+        confirmButtonText: 'אישור'
+      });
+      return;
     }
+
+    // בדיקת גודל קובץ (מקס 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'קובץ גדול מדי',
+        text: 'גודל התמונה המקסימלי הוא 5MB',
+        confirmButtonText: 'אישור'
+      });
+      return;
+    }
+
+    setPhotoFile(file);
+
+    // יצירת תצוגה מקדימה
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPhotoPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
   };
-  
+
+  // פונקציה להעלאת תמונת פרופיל
+const uploadProfilePhoto = async (kidId) => {
+  if (!photoFile) return null;
+
+  try {
+    setUploadingPhoto(true);
+
+    // מחיקת תמונת פרופיל קיימת אם יש
+    if (isEditMode) {
+      const existingDocs = await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
+      const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
+      
+      if (existingProfilePic) {
+        await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+      }
+    }
+
+    // הכנת נתוני ההעלאה
+    const profileData = {
+      document: {
+        KidId: kidId.toString(),
+        DocType: "profile",
+        DocName: photoFile.name,
+      },
+      file: photoFile
+    };
+
+    // העלאת התמונה
+    const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
+    
+    return uploadResult.docPath; // החזרת הנתיב להטמעה בילד
+    
+  } catch (error) {
+    console.error('שגיאה בהעלאת תמונת פרופיל:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'שגיאה בהעלאת התמונה',
+      text: 'אירעה שגיאה בהעלאת תמונת הפרופיל. אנא נסה שוב.',
+      confirmButtonText: 'אישור'
+    });
+    return null;
+  } finally {
+    setUploadingPhoto(false);
+  }
+};
   // מימוש ה-Formik
-  const formik = useFormik({
+ const formik = useFormik({
     initialValues: getInitialValues(),
     validationSchema: validationSchema,
-    enableReinitialize: true,
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
       try {
-        // בדיקה אם ילד כבר קיים במערכת (רק במצב יצירה חדשה)
-        if (!isEditMode) {
-          const existingKid = kids.find(kid => kid.id === Number(values.idNumber));
-          if (existingKid) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'הילד קיים במערכת',
-              text: 'במידה וברצונך לעדכן את פרטי הילד, תיגש לרשימת ילדים',
-              confirmButtonText: 'אוקי'
-            });
-            return;
-          }
-        }
-
-        // הכנת הנתונים לשמירה בפורמט שה-slice מצפה לו
-        const formDataForSlice = {
-          // נתוני ילד
-          id: values.id,
-          idNumber: values.idNumber || values.id,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          birthDate: values.birthDate,
-          gender: values.gender,
-          cityName: values.cityName,
-          address: values.address,
-          hName: values.hName,
-          photo: photoFile || values.photo,
-          classId: values.classId || null,
-          pathToFolder: values.pathToFolder,
-          isActive: values.isActive,
-          
-          // נתוני הורה ראשי
-          parent1Id: values.parent1Id,
-          parent1FirstName: values.parent1FirstName,
-          parent1LastName: values.parent1LastName,
-          parent1Mobile: values.parent1Mobile,
-          parent1Email: values.parent1Email,
-          parent1Address: values.parent1Address,
-          parent1CityName: values.parent1CityName,
-          
-          // נתוני הורה משני
-          parent2Id: values.parent2Id,
-          parent2FirstName: values.parent2FirstName,
-          parent2LastName: values.parent2LastName,
-          parent2Mobile: values.parent2Mobile,
-          parent2Email: values.parent2Email,
-          parent2Address: values.parent2Address,
-          parent2CityName: values.parent2CityName,
-          
-          // נתוני קשר נוספים
-          homePhone: values.homePhone,
-        };
-
+        setSubmitting(true);
+        
+        // הכנת נתונים לשליחה
+        const formDataForSlice = { ...values };
+        
         let result;
         
         if (isEditMode) {
+          // עדכון ילד קיים
           result = await dispatch(updateKidWithParents(formDataForSlice)).unwrap();
+          
+          // העלאת תמונת פרופיל אם נבחרה
+         let updatedKid = result.kid;
+if (photoFile) {
+  const photoPath = await uploadProfilePhoto(result.kid.id);
+  if (photoPath) {
+    // ✅ יצירת אובייקט חדש במקום שינוי הקיים
+    updatedKid = {
+      ...result.kid,
+      photoPath: photoPath
+    };
+  }
+}
           
           Swal.fire({
             icon: 'success',
@@ -491,7 +502,21 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
             showConfirmButton: false
           });
         } else {
+          // יצירת ילד חדש
           result = await dispatch(createKidWithParents(formDataForSlice)).unwrap();
+          
+          // העלאת תמונת פרופיל אם נבחרה
+          let updatedKid = result.kid;
+         if (photoFile) {
+  const photoPath = await uploadProfilePhoto(result.kid.id);
+  if (photoPath) {
+    // ✅ יצירת אובייקט חדש במקום שינוי הקיים
+    updatedKid = {
+      ...result.kid,
+      photoPath: photoPath
+    };
+  }
+}
           
           Swal.fire({
             icon: 'success',
@@ -512,9 +537,12 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           title: 'שגיאה בשמירת הנתונים',
           text: error.message || 'אירעה שגיאה בלתי צפויה, אנא נסה שנית',
         });
+      } finally {
+        setSubmitting(false);
       }
     },
   });
+
   
   const isFormFilled = formik.dirty && Object.values(formik.values).some(val => val !== '');
 
@@ -540,54 +568,73 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       )}
 
       {/* תמונת פרופיל */}
-      <ProfileImageContainer>
-        <Badge
-          overlap="circular"
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          badgeContent={
-            <Tooltip title="העלאת תמונה">
-              <label htmlFor="kid-photo-upload">
-                <IconButton
-                  aria-label="העלאת תמונה"
-                  component="span"
-                  sx={{
-                    bgcolor: "primary.main",
-                    color: "white",
-                    "&:hover": { bgcolor: "primary.dark" },
-                  }}
-                  size="small"
-                >
-                  <UploadIcon fontSize="small" />
-                </IconButton>
-              </label>
-            </Tooltip>
-          }
-        >
-          <EnhancedAvatar src={photoPreview}>
-            {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
-          </EnhancedAvatar>
-        </Badge>
-
-        <input
-          accept="image/*"
-          style={{ display: "none" }}
-          id="kid-photo-upload"
-          type="file"
-          onChange={handlePhotoChange}
-        />
-
-        <Fade in={true} timeout={800}>
-          <UploadButton
-            variant="contained"
-            component="label"
-            htmlFor="kid-photo-upload"
-            startIcon={<UploadIcon />}
+    {/* תמונת פרופיל */}
+<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+  <Badge
+    overlap="circular"
+    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+    badgeContent={
+      <Tooltip title="העלאת תמונה">
+        <label htmlFor="kid-photo-upload">
+          <IconButton
+            aria-label="העלאת תמונה"
+            component="span"
+            sx={{
+              bgcolor: "primary.main",
+              color: "white",
+              "&:hover": { bgcolor: "primary.dark" },
+            }}
             size="small"
+            disabled={uploadingPhoto}
           >
-            {photoPreview ? "החלף תמונה" : "העלאת תמונה"}
-          </UploadButton>
-        </Fade>
-      </ProfileImageContainer>
+            {uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon fontSize="small" />}
+          </IconButton>
+        </label>
+      </Tooltip>
+    }
+  >
+    <Avatar 
+      src={photoPreview}
+      sx={{ 
+        width: 150, 
+        height: 150,
+        border: '4px solid',
+        borderColor: 'background.paper',
+        boxShadow: 3
+      }}
+    >
+      {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
+    </Avatar>
+  </Badge>
+
+  <input
+    accept="image/*"
+    style={{ display: "none" }}
+    id="kid-photo-upload"
+    type="file"
+    onChange={handlePhotoChange}
+    disabled={uploadingPhoto}
+  />
+
+  <Button
+    variant="contained"
+    component="label"
+    htmlFor="kid-photo-upload"
+    startIcon={uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
+    size="small"
+    disabled={uploadingPhoto}
+    sx={{ mt: 1 }}
+  >
+    {photoPreview ? "החלף תמונה" : "העלאת תמונה"}
+  </Button>
+
+  {/* הצגת שם הקובץ אם נבחר */}
+  {photoFile && (
+    <Typography variant="caption" display="block" sx={{ mt: 1, textAlign: 'center' }}>
+      {photoFile.name} ({Math.round(photoFile.size / 1024)} KB)
+    </Typography>
+  )}
+</Box>
 
       {/* קטע 1: פרטי הילד */}
       <AnimatedSection expanded={expandedSections.childDetails}>
