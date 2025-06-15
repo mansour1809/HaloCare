@@ -20,8 +20,5 @@ namespace halocare.DAL.Models
         public string RoleName { get; set; }
         public string CityName { get; set; }
 
-
-
-
     }
 }

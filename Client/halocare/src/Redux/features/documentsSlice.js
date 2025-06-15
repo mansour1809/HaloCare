@@ -2,77 +2,108 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// אסינק תנקס לטעינת מסמכים
+// אסינק תנקס לטעינת מסמכים לפי ישות
 export const fetchDocumentsByEntityId = createAsyncThunk(
   'documents/fetchByEntityId',
   async ({ entityId, entityType }, { rejectWithValue }) => {
     try {
       // שימוש בנתיב דינמי בהתאם לסוג הישות
-      const endpoint = 
-        `/Documents/${entityType}/${entityId}`;
+      const endpoint = `/Documents/${entityType}/${entityId}`;
       const response = await axios.get(endpoint);
       return response.data;
     } catch (error) {
+      console.error('שגיאה בטעינת מסמכים:', error);
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת מסמכים');
     }
   }
 );
 
+// אסינק תנקס לטעינת מסמך בודד
 export const fetchDocumentsById = createAsyncThunk(
   'documents/fetchById',
   async ({ documentId }, { rejectWithValue }) => {
     try {
-      // שימוש בנתיב דינמי בהתאם לסוג הישות
-      const endpoint = 
-        `/Documents/${documentId}`;
+      const endpoint = `/Documents/${documentId}`;
       const response = await axios.get(endpoint);
       return response.data;
     } catch (error) {
+      console.error('שגיאה בטעינת מסמך:', error);
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת מסמך');
     }
   }
 );
 
-// אסינק תנקס להעלאת מסמך
+// אסינק תנקס להעלאת מסמך - **תיקון קריטי**
 export const uploadDocument = createAsyncThunk(
   'documents/upload',
   async ({ document, file }, { rejectWithValue }) => {
     try {
+      // בדיקות תקינות בסיסיות
+      if (!file) {
+        throw new Error('לא נבחר קובץ');
+      }
+      
+      if (!document || (!document.KidId && !document.EmployeeId)) {
+        throw new Error('חובה לציין ילד או עובד');
+      }
+
       const formData = new FormData();
       
       // הוספת הקובץ
       formData.append('File', file);
       
-      // הוספת פרטי המסמך בתצורה שהשרת מצפה
+      // **תיקון הקריטי - הוספת פרטי המסמך בפורמט שהשרת מצפה**
       if (document.KidId) {
-        formData.append('Document.KidId', document.KidId);
+        formData.append('Document.KidId', document.KidId.toString());
       }
       
-      formData.append('Document.DocName', file.name);
-
-      
       if (document.EmployeeId) {
-        formData.append('Document.EmployeeId', document.EmployeeId);
+        formData.append('Document.EmployeeId', document.EmployeeId.toString());
       }
       
       if (document.DocType) {
         formData.append('Document.DocType', document.DocType);
       }
 
-      // שליחת הבקשה
+      // וידוא שיש שם למסמך
+      const docName = document.DocName || file.name;
+      formData.append('Document.DocName', docName);
+
+      console.log('שליחת מסמך:', {
+        fileName: file.name,
+        fileSize: file.size,
+        docType: document.DocType,
+        entityId: document.KidId || document.EmployeeId,
+        entityType: document.KidId ? 'Kid' : 'Employee'
+      });
+
+      // שליחת הבקשה עם headers מתאימים
       const response = await axios.post('/Documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 30000 // 30 שניות timeout
       });
       
+      console.log('מסמך הועלה בהצלחה:', response.data);
       return response.data;
     } catch (error) {
       console.error('שגיאה בהעלאת מסמך:', error);
-      if (error.response && error.response.data) {
-        console.error('פרטי שגיאה:', error.response.data);
+      
+      // לוגינג מפורט של השגיאה
+      if (error.response) {
+        console.error('פרטי שגיאה מהשרת:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
       }
-      return rejectWithValue(error.response?.data || 'שגיאה בהעלאת מסמך');
+      
+      return rejectWithValue(
+        error.response?.data || 
+        error.message || 
+        'שגיאה בהעלאת מסמך'
+      );
     }
   }
 );
@@ -85,6 +116,7 @@ export const deleteDocument = createAsyncThunk(
       await axios.delete(`/Documents/${docId}`);
       return docId;
     } catch (error) {
+      console.error('שגיאה במחיקת מסמך:', error);
       return rejectWithValue(error.response?.data || 'שגיאה במחיקת מסמך');
     }
   }
@@ -103,13 +135,17 @@ const documentsSlice = createSlice({
       state.documents = [];
       state.status = 'idle';
       state.error = null;
+    },
+    clearError: (state) => {
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
     builder
-      // טעינת מסמכים
+      // טעינת מסמכים לפי ישות
       .addCase(fetchDocumentsByEntityId.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchDocumentsByEntityId.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -124,6 +160,7 @@ const documentsSlice = createSlice({
       // העלאת מסמך
       .addCase(uploadDocument.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(uploadDocument.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -133,11 +170,13 @@ const documentsSlice = createSlice({
       .addCase(uploadDocument.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+        console.error('Redux: העלאת מסמך נכשלה:', action.payload);
       })
       
       // מחיקת מסמך
       .addCase(deleteDocument.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(deleteDocument.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -151,10 +190,10 @@ const documentsSlice = createSlice({
   }
 });
 
-export const { clearDocuments } = documentsSlice.actions;
+export const { clearDocuments, clearError } = documentsSlice.actions;
 export default documentsSlice.reducer;
 
-// נייצא את הפונקציות המקוריות לצורך תאימות לאחור
+// פונקציות עזר לתאימות לאחור
 export const fetchDocumentsByEmployeeId = (employeeId) => 
   fetchDocumentsByEntityId({ entityId: employeeId, entityType: 'employee' });
   

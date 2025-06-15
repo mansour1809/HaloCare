@@ -199,83 +199,106 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   };
   
   // upload files after adding the employee
-  const uploadFiles = async (employeeId) => {
-    if (!profilePhoto && !documents.length) return true;
+ const uploadFiles = async (employeeId) => {
+  if (!profilePhoto && !documents.length) return true;
+  
+  try {
+    setUploadingFiles(true);
     
-    try {
-      setUploadingFiles(true);
-      // checking if there is a profile pic
-      if (profilePhoto) {
+    // טיפול בתמונת פרופיל
+    if (profilePhoto) {
+      try {
+        // בדיקה אם יש תמונת פרופיל קיימת
         const existingDocs = await dispatch(fetchDocumentsByEmployeeId(employeeId)).unwrap();
-        const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
+        const existingProfilePic = existingDocs.find(doc => 
+          doc.docType === 'profile' || doc.docType === 'picture'
+        );
         
         // מחיקת התמונה הקודמת אם קיימת
         if (existingProfilePic) {
-          await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+          try {
+            await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+            console.log('תמונת פרופיל קודמת נמחקה');
+          } catch (deleteError) {
+            console.warn('שגיאה במחיקת תמונה קודמת:', deleteError);
+            // לא נעצור את התהליך בגלל זה
+          }
         }
         
-
         const profileData = {
           document: {
-            EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
+            EmployeeId: employeeId, // לא צריך toString() - Redux יטפל בזה
             DocType: "profile",
             DocName: profilePhoto.name,
           },
           file: profilePhoto,
         };
 
-        const uploadResult = await dispatch(
-          uploadDocument(profileData)
-        ).unwrap();
+        console.log('מעלה תמונת פרופיל:', profileData);
+        
+        const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
+        
+        console.log('תמונת פרופיל הועלתה:', uploadResult);
 
-        // עדכון שדה photoPath בטבלת העובדים
+        // עדכון נתיב התמונה בפרופיל העובד
         if (uploadResult && uploadResult.docPath) {
-          // במצב עריכה, יש להשתמש ב-formData המלא
-          if (isEditMode) {
-            await updateEmployee({
-              ...formData,
-              photo: uploadResult.docPath
-            });
-          } else {
-            // במצב הוספת עובד חדש, נעדכן רק את שדה התמונה
-            await updateEmployee({
-              employeeId: employeeId,
-              photo: uploadResult.docPath
-            });
+          const updateData = {
+            employeeId: employeeId,
+            ...formData,
+            photo: uploadResult.docPath
+          };
+          
+          console.log('מעדכן נתיב תמונה בפרופיל העובד:', updateData);
+          
+          try {
+            await updateEmployee(updateData);
+            console.log('נתיב התמונה עודכן בפרופיל העובד');
+          } catch (updateError) {
+            console.error('שגיאה בעדכון נתיב התמונה:', updateError);
+            // לא נכשיל את כל התהליך בגלל זה
           }
         }
+      } catch (profileError) {
+        console.error('שגיאה בהעלאת תמונת פרופיל:', profileError);
+        throw new Error(`שגיאה בהעלאת תמונת פרופיל: ${profileError.message || profileError}`);
       }
+    }
+    
+    // טיפול במסמכים נוספים
+    if (documents.length > 0) {
+      console.log(`מעלה ${documents.length} מסמכים נוספים`);
       
-      // העלאת המסמכים אם קיימים
-      if (documents.length > 0) {
-        for (const file of documents) {
+      for (let i = 0; i < documents.length; i++) {
+        const file = documents[i];
+        try {
           const documentData = {
             document: {
-              EmployeeId: employeeId.toString(), // וודא שזה מחרוזת
+              EmployeeId: employeeId,
               DocType: 'document',
               DocName: file.name
             },
             file: file
           };
           
-          await dispatch(uploadDocument(documentData)).unwrap();
+          console.log(`מעלה מסמך ${i + 1}/${documents.length}:`, documentData);
+          
+          const result = await dispatch(uploadDocument(documentData)).unwrap();
+          console.log(`מסמך ${i + 1} הועלה בהצלחה:`, result);
+        } catch (docError) {
+          console.error(`שגיאה בהעלאת מסמך ${i + 1}:`, docError);
+          // נמשיך עם שאר המסמכים
         }
       }
-      
-      return true;
-    } catch (error) {
-      console.error('שגיאה בהעלאת קבצים:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'שגיאה בהעלאת קבצים',
-        text: 'אירעה שגיאה בהעלאת הקבצים. אנא נסה שוב.',
-        confirmButtonText: 'אישור'
-      });
-      return false;
-    } finally {
-      setUploadingFiles(false);
     }
-  };
+    
+    return true;
+  } catch (error) {
+    console.error('שגיאה כללית בהעלאת קבצים:', error);
+    throw error; // נזרוק את השגיאה כדי שהטופס יטפל בה
+  } finally {
+    setUploadingFiles(false);
+  }
+};
   
   // פונקציות ולידציה
   const validateField = (name, value) => {
@@ -342,82 +365,106 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    Swal.fire({
+      title: 'שגיאה בטופס',
+      text: 'יש לתקן את השגיאות המסומנות',
+      icon: 'error',
+      confirmButtonText: 'אישור'
+    });
+    return;
+  }
+  
+  try {
+    setSubmitting(true);
     
-    if (!validateForm()) {
-      Swal.fire({
-        title: 'שגיאה בטופס',
-        text: 'יש לתקן את השגיאות המסומנות',
-        icon: 'error',
-        confirmButtonText: 'אישור'
-      });
-      return;
+    let result;
+    
+    if (isEditMode) {
+      // מצב עריכה - עדכון עובד קיים
+      console.log('עדכון עובד קיים:', formData);
+      result = await updateEmployee(formData);
+    } else {
+      // מצב הוספה - הוספת עובד חדש
+      console.log('הוספת עובד חדש:', formData);
+      result = await addEmployee(formData);
     }
     
-    try {
-      setSubmitting(true);
-      
-      let result;
-      
-      if (isEditMode) {
-        // מצב עריכה - עדכון עובד קיים
-        result = await updateEmployee(formData);
-      } else {
-        // מצב הוספה - הוספת עובד חדש
-        result = await addEmployee(formData);
-      }
-      
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      
-      // אם זו הוספה חדשה, שלח מייל אם צריך
-      if (!isEditMode && sendEmail && formData.email) {
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+    
+    console.log('עובד נשמר בהצלחה:', result);
+    
+    // קבלת מזהה העובד
+    const employeeId = isEditMode ? formData.employeeId : result.data.employeeId;
+    
+    // שליחת אימייל (רק במצב הוספה חדשה)
+    if (!isEditMode && sendEmail && formData.email) {
+      try {
+        console.log('שולח אימייל ברוכים הבאים');
         await sendWelcomeEmail(
           formData.email, 
           formData.password,
           formData.firstName,
           formData.lastName
         );
+        console.log('אימייל נשלח בהצלחה');
+      } catch (emailError) {
+        console.warn('שגיאה בשליחת אימייל:', emailError);
+        // לא נכשיל את כל התהליך בגלל זה
       }
+    }
+    
+    // העלאת קבצים
+    try {
+      console.log('מתחיל העלאת קבצים לעובד:', employeeId);
+      await uploadFiles(employeeId);
+      console.log('קבצים הועלו בהצלחה');
+    } catch (uploadError) {
+      console.error('שגיאה בהעלאת קבצים:', uploadError);
       
-      // אם זו הוספה חדשה, העלה קבצים
-      if (!isEditMode) {
-        const employeeId = result.data.employeeId;
-        await uploadFiles(employeeId);
-      }
-      else
-      await uploadFiles(formData.employeeId);
-      
-      // הודעת הצלחה  
+      // נציג אזהרה אבל לא נכשיל את כל התהליך
       Swal.fire({
-        title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      });
-      
-      // אם יש קולבק מוצלח, הפעל אותו
-      if (onSubmitSuccess) {
-        onSubmitSuccess(result.data);
-      } else {
-        // אחרת, נווט לרשימת העובדים
-        setTimeout(() => {
-          navigate('/employees');
-        }, 2000);
-      }
-      
-    } catch (err) {
-      Swal.fire({
-        title: 'שגיאה בשליחת הטופס',
-        text: err.message || 'אנא בדוק את הנתונים ונסה שוב',
-        icon: 'error',
+        icon: 'warning',
+        title: 'העובד נשמר בהצלחה',
+        text: 'אולם אירעה שגיאה בהעלאת הקבצים. אנא נסה להעלות אותם שוב מעמוד עריכת העובד.',
         confirmButtonText: 'אישור'
       });
-    } finally {
-      setSubmitting(false);
     }
-  };
+    
+    // הודעת הצלחה  
+    Swal.fire({
+      title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
+      text: isEditMode ? 'פרטי העובד עודכנו במערכת' : 'העובד נוסף למערכת בהצלחה',
+      icon: 'success',
+      confirmButtonText: 'אישור'
+    }).then(() => {
+      // מעבר לעמוד הרשימה או סגירת הטופס
+      if (onSubmitSuccess) {
+        onSubmitSuccess(result.data);
+      } else if (onClose) {
+        onClose();
+      } else {
+        navigate("/employees/list");
+      }
+    });
+    
+  } catch (error) {
+    console.error('שגיאה בשמירת העובד:', error);
+    
+    Swal.fire({
+      title: 'שגיאה!',
+      text: error.message || 'אירעה שגיאה בשמירת העובד. אנא נסה שוב.',
+      icon: 'error',
+      confirmButtonText: 'אישור'
+    });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   // פונקציות עזר להצגת שגיאות
   const getFieldError = (fieldName) => errors[fieldName] || '';

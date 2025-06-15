@@ -107,15 +107,6 @@ export const createKidWithParents = createAsyncThunk(
       const kidResponse = await axios.post('/Kids', kidData);
       const newKid = kidResponse.data;
 
-      // // 🔥 4. יצירת תהליך קליטה אוטומטית לילד החדש
-      // try {
-      //   await dispatch(initializeKidOnboarding(newKid.id)).unwrap();
-      //   console.log(`תהליך קליטה נוצר בהצלחה לילד ${newKid.id}`);
-      // } catch (onboardingError) {
-      //   console.error('שגיאה ביצירת תהליך קליטה:', onboardingError);
-      //   // לא נכשיל את כל התהליך בגלל זה - הילד נוצר בהצלחה
-      // }
-
       return {
         kid: newKid,
         parent1: parent1Result,
