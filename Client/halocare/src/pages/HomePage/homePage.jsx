@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx - עיצוב מקצועי RTL
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,7 +16,11 @@ import {
   useTheme,
   alpha,
   ThemeProvider,
-  createTheme
+  createTheme,
+  Stack,
+  Fade,
+  Zoom,
+  Divider
 } from '@mui/material';
 import {
   Group as GroupIcon,
@@ -34,114 +37,290 @@ import {
   Description as FormIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
-  CheckCircle
+  CheckCircle,
+  Star as StarIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Celebration as CelebrationIcon,
+  EmojiEvents as TrophyIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
-// יצירת theme עם תמיכה ב-RTL
+// יצירת theme מדהים עם תמיכה ב-RTL
 const rtlTheme = createTheme({
   direction: 'rtl',
-  palette: {
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0'
+  typography: {
+    fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
+    h1: {
+      fontWeight: 800,
+      fontSize: '3.5rem',
     },
-    secondary: {
-      main: '#9c27b0',
-      light: '#ba68c8',
-      dark: '#7b1fa2'
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.2rem',
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: '1.8rem',
     }
   },
-  typography: {
-    fontFamily: '"Segoe UI", "Helvetica Neue", Arial, sans-serif'
+  palette: {
+    primary: {
+      main: '#667eea',
+      light: '#818cf8',
+      dark: '#4338ca',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#f093fb',
+      light: '#fbbf24',
+      dark: '#c2410c',
+    },
+    success: {
+      main: '#10b981',
+      light: '#34d399',
+      dark: '#059669',
+    },
+    warning: {
+      main: '#f59e0b',
+      light: '#fbbf24',
+      dark: '#d97706',
+    },
+    error: {
+      main: '#ef4444',
+      light: '#f87171',
+      dark: '#dc2626',
+    },
+    background: {
+      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #667eea 100%)',
+      paper: '#ffffff',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(20px)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          overflow: 'visible',
+          position: 'relative',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          }
+        }
+      }
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          textTransform: 'none',
+          fontWeight: 600,
+          padding: '12px 24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+          }
+        },
+        contained: {
+          background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+          '&:hover': {
+            background: 'linear-gradient(45deg, #5a67d8 30%, #6b46c1 90%)',
+          }
+        }
+      }
+    }
   }
 });
 
-// מסך מלא מותאם RTL
+// מסך מלא מותאם RTL עם רקע מדהים
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: `linear-gradient(135deg, 
-    ${alpha(theme.palette.primary.light, 0.06)} 0%, 
-    ${alpha(theme.palette.background.default, 0.98)} 50%,
-    ${alpha(theme.palette.secondary.light, 0.03)} 100%)`,
-  display: 'flex',
-  flexDirection: 'column'
-}));
-
-// כותרת עם עיצוב נקי
-const ModernHeader = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.98)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: 0,
-  boxShadow: '0 2px 20px rgba(0, 0, 0, 0.06)',
-  borderBottom: `2px solid ${theme.palette.primary.main}`,
-  position: 'sticky',
-  top: 0,
-  zIndex: 1000
-}));
-
-// כרטיס סטטיסטיקה מקצועי
-const StatCard = styled(Card)(({ theme, color }) => ({
-  padding: '32px 24px',
-  textAlign: 'center',
-  background: '#ffffff',
-  borderRadius: '16px',
-  border: `1px solid ${alpha(theme.palette.grey[200], 0.8)}`,
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-  transition: 'all 0.3s ease',
-  position: 'relative',
-  height: '160px',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #10b981 75%, #667eea 100%)',
+  backgroundSize: '400% 400%',
+  animation: 'gradientShift 15s ease infinite',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center',
-  '&:hover': {
-    transform: 'translateY(-6px)',
-    boxShadow: `0 12px 40px rgba(0, 0, 0, 0.12)`,
-    borderColor: theme.palette[color]?.main
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.3) 0%, transparent 50%)',
+    pointerEvents: 'none',
+    zIndex: 1,
   },
+  '@keyframes gradientShift': {
+    '0%': { backgroundPosition: '0% 50%' },
+    '50%': { backgroundPosition: '100% 50%' },
+    '100%': { backgroundPosition: '0% 50%' },
+  }
+}));
+
+// כותרת עם עיצוב זכוכית ואפקטים
+const ModernHeader = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.15)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 0,
+  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  position: 'sticky',
+  top: 0,
+  zIndex: 1000,
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '4px',
-    background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
-    borderRadius: '16px 16px 0 0'
+    height: '2px',
+    background: 'linear-gradient(90deg, #667eea, #f093fb, #10b981, #667eea)',
   }
 }));
 
-// כרטיס תכונה מקצועי
-const FeatureCard = styled(Card)(({ theme }) => ({
-  height: '280px',
-  transition: 'all 0.3s ease',
+// כרטיס סטטיסטיקה מדהים
+const StatCard = styled(Card)(({ theme, color }) => ({
+  padding: '32px 24px',
+  textAlign: 'center',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: '24px',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  height: '180px',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '6px',
+    background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
+    borderRadius: '24px 24px 0 0',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '200%',
+    height: '200%',
+    background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
+    transform: 'translate(-50%, -50%)',
+    pointerEvents: 'none',
+  }
+}));
+
+// כרטיס תכונה מעוצב עם זוהר
+const FeatureCard = styled(Card)(({ theme, color }) => ({
+  height: '320px',
   cursor: 'pointer',
   position: 'relative',
   overflow: 'hidden',
-  borderRadius: '20px',
-  background: '#ffffff',
-  border: `1px solid ${alpha(theme.palette.grey[200], 0.6)}`,
-  boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: '0 16px 48px rgba(0, 0, 0, 0.12)',
-    '& .feature-icon': {
-      transform: 'scale(1.1)',
-    }
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '6px',
+    background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
+    borderRadius: '20px 20px 0 0',
+  },
+  '&:hover .feature-icon': {
+    transform: 'scale(1.2) rotate(10deg)',
+  },
+  '&:hover::after': {
+    opacity: 1,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(135deg, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 100%)`,
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
+    pointerEvents: 'none',
   }
 }));
 
-// אייקון מעוצב
+// אייקון מעוצב עם אנימציות
 const StyledIcon = styled(Avatar)(({ theme, color }) => ({
-  width: 72,
-  height: 72,
+  width: 80,
+  height: 80,
   margin: '0 auto 20px',
   background: `linear-gradient(135deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.dark})`,
   color: 'white',
-  fontSize: '2rem',
-  transition: 'transform 0.3s ease',
-  boxShadow: `0 8px 24px ${alpha(theme.palette[color]?.main, 0.3)}`
+  fontSize: '2.5rem',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: `0 8px 24px ${alpha(theme.palette[color]?.main, 0.4)}`,
+  position: 'relative',
+  overflow: 'visible',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-4px',
+    left: '-4px',
+    right: '-4px',
+    bottom: '-4px',
+    background: `linear-gradient(45deg, ${theme.palette[color]?.light}, ${theme.palette[color]?.main})`,
+    borderRadius: '50%',
+    zIndex: -1,
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
+  },
+  '&:hover::before': {
+    opacity: 1,
+  }
+}));
+
+// כרטיס דשבורד מעוצב
+const DashboardCard = styled(Card)(({ theme, gradientColor }) => ({
+  height: '320px',
+  background: gradientColor,
+  border: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+  }
+}));
+
+// כפתור פעולה מהירה
+const QuickActionCard = styled(Card)(({ theme }) => ({
+  height: '160px',
+  cursor: 'pointer',
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 1)',
+    '& .action-icon': {
+      transform: 'scale(1.1)',
+    }
+  }
 }));
 
 const HomePage = () => {
@@ -151,7 +330,7 @@ const HomePage = () => {
     { label: 'ילדים פעילים', value: '24', icon: <GroupIcon fontSize="large" />, color: 'primary' },
     { label: 'הושלמו השבוע', value: '8', icon: <CompleteIcon fontSize="large" />, color: 'success' },
     { label: 'בתהליך כעת', value: '12', icon: <ProgressIcon fontSize="large" />, color: 'warning' },
-    { label: 'אחוז השלמה', value: '85%', icon: <TrendingIcon fontSize="large" />, color: 'info' }
+    { label: 'אחוז השלמה', value: '85%', icon: <TrendingIcon fontSize="large" />, color: 'error' }
   ];
 
   const features = [
@@ -180,7 +359,7 @@ const HomePage = () => {
       title: 'דוחות ואנליטיקה',
       description: 'מערכת דוחות מתקדמת עם ויזואליזציה של נתונים וניתוח טרנדים להתפתחות הילדים',
       icon: <ReportsIcon />,
-      color: 'info',
+      color: 'error',
       path: '/reports'
     },
     {
@@ -194,7 +373,7 @@ const HomePage = () => {
       title: 'התראות ועדכונים',
       description: 'מערכת התראות חכמה להורים והצוות עם עדכונים בזמן אמת על אירועים חשובים',
       icon: <NotificationsIcon />,
-      color: 'error',
+      color: 'primary',
       path: '/notifications'
     }
   ];
@@ -218,7 +397,7 @@ const HomePage = () => {
       title: 'יצירת דוחות',
       description: 'דוחות מפורטים וסטטיסטיקות',
       icon: <FormIcon />,
-      color: 'info',
+      color: 'warning',
       path: '/reports'
     },
     {
@@ -234,389 +413,400 @@ const HomePage = () => {
     <ThemeProvider theme={rtlTheme}>
       <Box sx={{ direction: 'rtl' }}>
         <FullScreenContainer>
-          {/* כותרת מקצועית */}
-          <ModernHeader elevation={0}>
-            <Container maxWidth="lg">
-              <Box 
-                sx={{ 
-                  py: 2.5, 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 2
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar 
-                    sx={{ 
-                      bgcolor: 'primary.main', 
-                      width: 48, 
-                      height: 48,
-                      fontSize: '1.5rem',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    🌟
-                  </Avatar>
-                  <Box>
-                    <Typography 
-                      variant="h5" 
-                      fontWeight="bold" 
-                      color="primary.main"
-                      sx={{ lineHeight: 1.2 }}
+          {/* כותרת מקצועית עם אפקטי זכוכית */}
+          <Fade in timeout={800}>
+            <ModernHeader elevation={0}>
+              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+                <Stack 
+                  direction={{ xs: 'column', md: 'row' }}
+                  justifyContent="space-between" 
+                  alignItems="center"
+                  spacing={2}
+                  sx={{ py: 3 }}
+                >
+                  <Stack direction="row" spacing={3} alignItems="center">
+                    <Avatar 
+                      sx={{ 
+                        background: 'linear-gradient(45deg, #667eea 30%, #f093fb 90%)',
+                        width: 64, 
+                        height: 64,
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
+                        animation: 'pulse 2s infinite'
+                      }}
                     >
-                      Halo Care
-                    </Typography>
-                  </Box>
-                </Box>
-                
-                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                  <Button
-                    variant="text"
-                    startIcon={<ContactIcon />}
-                    sx={{ 
-                      borderRadius: 2,
-                      textTransform: 'none'
-                    }}
-                  >
-                    צור קשר
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<LoginIcon />}
-                    sx={{ 
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 'medium'
-                    }}
-                  >
-                    כניסה למערכת
-                  </Button>
-                </Box>
-              </Box>
-            </Container>
-          </ModernHeader>
-
-          {/* תוכן ראשי */}
-          <Container maxWidth="lg" sx={{ flex: 1, py: 6 }}>
-            {/* סטטיסטיקות מרכזיות */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              mb: 8 
-            }}>
-              <Grid container spacing={3} sx={{ maxWidth: '800px' }}>
-                {stats.map((stat, index) => (
-                  <Grid item xs={6} md={3} key={index}>
-                    <StatCard color={stat.color}>
-                      <Avatar
+                      🌟
+                    </Avatar>
+                    <Box>
+                      <Typography 
+                        variant="h4"
                         sx={{
-                          bgcolor: `${stat.color}.main`,
-                          width: 56,
-                          height: 56,
-                          mx: 'auto',
-                          mb: 2
+                          fontWeight: 800,
+                          background: 'linear-gradient(45deg, #ffffff 30%, rgba(255,255,255,0.8) 90%)',
+                          backgroundClip: 'text',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                          lineHeight: 1.2
                         }}
                       >
-                        {stat.icon}
-                      </Avatar>
-                      <Typography variant="h3" fontWeight="bold" color="text.primary" sx={{ mb: 1 }}>
-                        {stat.value}
+                        Halo Care
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                        {stat.label}
+                      <Typography 
+                        variant="subtitle1"
+                        sx={{ 
+                          color: 'rgba(255,255,255,0.9)',
+                          fontWeight: 500,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }}
+                      >
+                        מערכת ניהול מתקדמת לגן ילדים מיוחד
                       </Typography>
-                    </StatCard>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            {/* לוח פעילות יומי */}
-            <Box sx={{ mb: 6 }}>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                textAlign="center" 
-                sx={{ mb: 4 }}
-                color="text.primary"
-              >
-                מה קורה בגן שלנו היום 🌟
-              </Typography>
-              <Grid container spacing={3}>
-                {/* אירועים השבוע */}
-                <Grid item xs={12} md={6} lg={3}>
-                  <Card sx={{ 
-                    height: '320px', 
-                    background: 'linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%)',
-                    border: '1px solid #e1f5fe',
-                    borderRadius: '16px',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: 'translateY(-4px)' }
-                  }}>
-                    <CardContent sx={{ p: 3, height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                          📅
-                        </Avatar>
-                        <Typography variant="h6" fontWeight="bold">
-                          אירועים השבוע
-                        </Typography>
-                      </Box>
-                      <Box sx={{ space: 2 }}>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
-                            היום - יום שני
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            🎨 פעילות יצירה - 10:00
-                          </Typography>
-                        </Box>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="success.main">
-                            מחר - יום שלישי
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            🏃‍♂️ ספורט וחינוך גופני - 11:00
-                          </Typography>
-                        </Box>
-                        <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.7)', borderRadius: 2 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="warning.main">
-                            יום חמישי
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            🎭 הצגת תיאטרון - 14:00
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {/* מילוי נוכחות */}
-                <Grid item xs={12} md={6} lg={3}>
-                  <Card sx={{ 
-                    height: '320px', 
-                    background: 'linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%)',
-                    border: '1px solid #c8e6c9',
-                    borderRadius: '16px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: 'translateY(-4px)' }
-                  }}
-                  onClick={() => navigate('/attendance')}
-                  >
-                    <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                        <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                          ✅
-                        </Avatar>
-                        <Typography variant="h6" fontWeight="bold">
-                          נוכחות יומית
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
-                        <Typography variant="h2" fontWeight="bold" color="success.main" sx={{ mb: 1 }}>
-                          18/24
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                          ילדים נוכחים היום
-                        </Typography>
-                        
-                        <Button 
-                          variant="contained" 
-                          color="success"
-                          size="large"
-                          startIcon={<CheckCircle />}
-                          fullWidth
-                          sx={{ borderRadius: 3 }}
-                        >
-                          עדכן נוכחות
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {/* הישגים אחרונים */}
-                <Grid item xs={12} md={6} lg={3}>
-                  <Card sx={{ 
-                    height: '320px', 
-                    background: 'linear-gradient(135deg, #fff3e0 0%, #ffffff 100%)',
-                    border: '1px solid #ffcc02',
-                    borderRadius: '16px',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: 'translateY(-4px)' }
-                  }}>
-                    <CardContent sx={{ p: 3, height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
-                          🏆
-                        </Avatar>
-                        <Typography variant="h6" fontWeight="bold">
-                          הישגים אחרונים
-                        </Typography>
-                      </Box>
-                      <Box sx={{ space: 1.5 }}>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #ffe082' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="warning.dark">
-                            🌟 יוסי - צעד ראשון!
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            לפני 2 ימים
-                          </Typography>
-                        </Box>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #ffe082' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="warning.dark">
-                            🎨 שרה - יצירה מדהימה
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            לפני 3 ימים
-                          </Typography>
-                        </Box>
-                        <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #ffe082' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="warning.dark">
-                            🗣️ דוד - מילה חדשה
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            לפני שבוע
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {/* הודעות חשובות */}
-                <Grid item xs={12} md={6} lg={3}>
-                  <Card sx={{ 
-                    height: '320px', 
-                    background: 'linear-gradient(135deg, #fce4ec 0%, #ffffff 100%)',
-                    border: '1px solid #f8bbd9',
-                    borderRadius: '16px',
-                    transition: 'transform 0.2s ease',
-                    '&:hover': { transform: 'translateY(-4px)' }
-                  }}>
-                    <CardContent sx={{ p: 3, height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
-                          📢
-                        </Avatar>
-                        <Typography variant="h6" fontWeight="bold">
-                          הודעות חשובות
-                        </Typography>
-                      </Box>
-                      <Box sx={{ space: 1.5 }}>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #f48fb1' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="secondary.dark">
-                            🔔 תזכורת חיסונים
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            3 ילדים צריכים עדכון חיסונים
-                          </Typography>
-                          <Chip label="דחוף" size="small" color="error" sx={{ mt: 1 }} />
-                        </Box>
-                        <Box sx={{ mb: 2, p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #f48fb1' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="secondary.dark">
-                            📝 טפסים חסרים
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            5 הורים לא מילאו טפסי בריאות
-                          </Typography>
-                        </Box>
-                        <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 2, border: '1px solid #f48fb1' }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="secondary.dark">
-                            🎉 חדש במערכת
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            עדכון תכונות חדשות זמין
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* פעולות מהירות */}
-            <Box sx={{ mb: 6 }}>
-              <Typography 
-                variant="h5" 
-                fontWeight="bold" 
-                sx={{ mb: 3 }}
-                color="text.primary"
-              >
-                פעולות מהירות
-              </Typography>
-              <Grid container spacing={3}>
-                {quickActions.map((action, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={index}>
-                    <Card 
+                    </Box>
+                  </Stack>
+                  
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<ContactIcon />}
                       sx={{ 
-                        height: '140px',
-                        transition: 'all 0.2s ease',
-                        cursor: 'pointer',
-                        borderRadius: '12px',
-                        background: '#ffffff',
-                        border: '1px solid rgba(0, 0, 0, 0.08)',
+                        color: 'white',
+                        borderColor: 'rgba(255,255,255,0.3)',
+                        background: 'rgba(255,255,255,0.1)',
+                        backdropFilter: 'blur(10px)',
                         '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: 3
+                          borderColor: 'white',
+                          background: 'rgba(255,255,255,0.2)',
                         }
                       }}
-                      onClick={() => navigate(action.path)}
                     >
-                      <CardActionArea sx={{ p: 3, height: '100%' }}>
-                        <Box sx={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      צור קשר
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<LoginIcon />}
+                      sx={{ 
+                        background: 'linear-gradient(45deg, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.1) 90%)',
+                        backdropFilter: 'blur(10px)',
+                        color: 'white',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.2) 90%)',
+                        }
+                      }}
+                    >
+                      כניסה למערכת
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Container>
+            </ModernHeader>
+          </Fade>
+
+          {/* תוכן ראשי */}
+          <Container maxWidth="lg" sx={{ flex: 1, py: 6, position: 'relative', zIndex: 2 }}>
+            {/* סטטיסטיקות מרכזיות */}
+            <Zoom in timeout={1000}>
+              <Box sx={{ mb: 8 }}>
+                <Typography 
+                  variant="h4" 
+                  fontWeight="bold" 
+                  textAlign="center" 
+                  sx={{ 
+                    mb: 6,
+                    color: 'white',
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  ✨ המצב כרגע בגן שלנו ✨
+                </Typography>
+                <Grid container spacing={4} justifyContent="center">
+                  {stats.map((stat, index) => (
+                    <Grid item xs={6} sm={3} key={index}>
+                      <Fade in timeout={1200 + (index * 200)}>
+                        <StatCard color={stat.color}>
                           <Avatar
                             sx={{
-                              bgcolor: `${action.color}.main`,
-                              width: 48,
-                              height: 48,
+                              background: `linear-gradient(135deg, ${rtlTheme.palette[stat.color]?.main}, ${rtlTheme.palette[stat.color]?.dark})`,
+                              width: 64,
+                              height: 64,
                               mx: 'auto',
-                              mb: 1.5
+                              mb: 2,
+                              boxShadow: `0 8px 24px ${alpha(rtlTheme.palette[stat.color]?.main, 0.4)}`,
+                              position: 'relative',
+                              zIndex: 2
                             }}
                           >
-                            {action.icon}
+                            {stat.icon}
                           </Avatar>
-                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                            {action.title}
+                          <Typography variant="h3" fontWeight="bold" color="text.primary" sx={{ mb: 1, position: 'relative', zIndex: 2 }}>
+                            {stat.value}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {action.description}
+                          <Typography variant="body1" color="text.secondary" fontWeight="medium" sx={{ position: 'relative', zIndex: 2 }}>
+                            {stat.label}
                           </Typography>
-                        </Box>
-                      </CardActionArea>
-                    </Card>
+                        </StatCard>
+                      </Fade>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            </Zoom>
+
+            {/* לוח פעילות יומי מעוצב */}
+            <Fade in timeout={1400}>
+              <Box sx={{ mb: 8 }}>
+                <Typography 
+                  variant="h4" 
+                  fontWeight="bold" 
+                  textAlign="center" 
+                  sx={{ 
+                    mb: 6,
+                    color: 'white',
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  🎯 מה קורה בגן שלנו היום
+                </Typography>
+                <Grid container spacing={4}>
+                  {/* אירועים השבוע */}
+                  <Grid item xs={12} md={6} lg={3}>
+                    <DashboardCard gradientColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                      <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                          <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+                            📅
+                          </Avatar>
+                          <Typography variant="h6" fontWeight="bold" color="white">
+                            אירועים השבוע
+                          </Typography>
+                        </Stack>
+                        <Stack spacing={2}>
+                          {[
+                            { day: 'היום - יום שני', activity: '🎨 פעילות יצירה - 10:00', color: 'rgba(255,255,255,0.9)' },
+                            { day: 'מחר - יום שלישי', activity: '🏃‍♂️ ספורט וחינוך גופני - 11:00', color: 'rgba(255,255,255,0.8)' },
+                            { day: 'יום חמישי', activity: '🎭 הצגת תיאטרון - 14:00', color: 'rgba(255,255,255,0.7)' }
+                          ].map((event, index) => (
+                            <Card key={index} sx={{ background: event.color, backdropFilter: 'blur(10px)', borderRadius: 2 }}>
+                              <CardContent sx={{ p: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="primary.main">
+                                  {event.day}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {event.activity}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </Stack>
+                      </CardContent>
+                    </DashboardCard>
                   </Grid>
-                ))}
-              </Grid>
-            </Box>
+
+                  {/* מילוי נוכחות */}
+                  <Grid item xs={12} md={6} lg={3}>
+                    <DashboardCard gradientColor="linear-gradient(135deg, #10b981 0%, #34d399 100%)">
+                      <CardActionArea 
+                        onClick={() => navigate('/attendance')}
+                        sx={{ height: '100%' }}
+                      >
+                        <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                            <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+                              ✅
+                            </Avatar>
+                            <Typography variant="h6" fontWeight="bold" color="white">
+                              נוכחות יומית
+                            </Typography>
+                          </Stack>
+                          
+                          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
+                            <Typography variant="h2" fontWeight="bold" color="white" sx={{ mb: 1, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                              18/24
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)', mb: 3 }}>
+                              ילדים נוכחים היום
+                            </Typography>
+                            
+                            <Button 
+                              variant="contained" 
+                              size="large"
+                              startIcon={<CheckCircle />}
+                              fullWidth
+                              sx={{ 
+                                background: 'rgba(255,255,255,0.2)',
+                                backdropFilter: 'blur(10px)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                '&:hover': {
+                                  background: 'rgba(255,255,255,0.3)',
+                                }
+                              }}
+                            >
+                              עדכן נוכחות
+                            </Button>
+                          </Box>
+                        </CardContent>
+                      </CardActionArea>
+                    </DashboardCard>
+                  </Grid>
+
+                  {/* הישגים אחרונים */}
+                  <Grid item xs={12} md={6} lg={3}>
+                    <DashboardCard gradientColor="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)">
+                      <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                          <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+                            🏆
+                          </Avatar>
+                          <Typography variant="h6" fontWeight="bold" color="white">
+                            הישגים אחרונים
+                          </Typography>
+                        </Stack>
+                        <Stack spacing={2}>
+                          {[
+                            { achievement: '🌟 יוסי - צעד ראשון!', time: 'לפני 2 ימים' },
+                            { achievement: '🎨 שרה - יצירה מדהימה', time: 'לפני 3 ימים' },
+                            { achievement: '🗣️ דוד - מילה חדשה', time: 'לפני שבוע' }
+                          ].map((item, index) => (
+                            <Card key={index} sx={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderRadius: 2 }}>
+                              <CardContent sx={{ p: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="warning.dark">
+                                  {item.achievement}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {item.time}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </Stack>
+                      </CardContent>
+                    </DashboardCard>
+                  </Grid>
+
+                  {/* הודעות חשובות */}
+                  <Grid item xs={12} md={6} lg={3}>
+                    <DashboardCard gradientColor="linear-gradient(135deg, #f093fb 0%, #e879f9 100%)">
+                      <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                          <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
+                            📢
+                          </Avatar>
+                          <Typography variant="h6" fontWeight="bold" color="white">
+                            הודעות חשובות
+                          </Typography>
+                        </Stack>
+                        <Stack spacing={2}>
+                          {[
+                            { message: '🔔 תזכורת חיסונים', detail: '3 ילדים צריכים עדכון חיסונים', urgent: true },
+                            { message: '📝 טפסים חסרים', detail: '5 הורים לא מילאו טפסי בריאות', urgent: false },
+                            { message: '🎉 חדש במערכת', detail: 'עדכון תכונות חדשות זמין', urgent: false }
+                          ].map((item, index) => (
+                            <Card key={index} sx={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', borderRadius: 2 }}>
+                              <CardContent sx={{ p: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="secondary.dark">
+                                  {item.message}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                  {item.detail}
+                                </Typography>
+                                {item.urgent && (
+                                  <Chip label="דחוף" size="small" color="error" />
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </Stack>
+                      </CardContent>
+                    </DashboardCard>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Fade>
+
+            {/* פעולות מהירות */}
+            <Zoom in timeout={1600}>
+              <Box sx={{ mb: 8 }}>
+                <Typography 
+                  variant="h5" 
+                  fontWeight="bold" 
+                  textAlign="center"
+                  sx={{ 
+                    mb: 4,
+                    color: 'white',
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  ⚡ פעולות מהירות
+                </Typography>
+                <Grid container spacing={3}>
+                  {quickActions.map((action, index) => (
+                    <Grid item xs={6} sm={3} key={index}>
+                      <Fade in timeout={1800 + (index * 100)}>
+                        <QuickActionCard onClick={() => navigate(action.path)}>
+                          <CardActionArea sx={{ p: 3, height: '100%' }}>
+                            <Box sx={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                              <Avatar
+                                className="action-icon"
+                                sx={{
+                                  background: `linear-gradient(135deg, ${rtlTheme.palette[action.color]?.main}, ${rtlTheme.palette[action.color]?.dark})`,
+                                  width: 56,
+                                  height: 56,
+                                  mx: 'auto',
+                                  mb: 2,
+                                  boxShadow: `0 6px 20px ${alpha(rtlTheme.palette[action.color]?.main, 0.3)}`,
+                                  transition: 'all 0.3s ease'
+                                }}
+                              >
+                                {action.icon}
+                              </Avatar>
+                              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                {action.title}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {action.description}
+                              </Typography>
+                            </Box>
+                          </CardActionArea>
+                        </QuickActionCard>
+                      </Fade>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            </Zoom>
           </Container>
 
-          {/* כותרת תחתונה */}
-          <Paper 
-            component="footer" 
-            sx={{ 
-              py: 4, 
-              textAlign: 'center',
-              background: '#ffffff',
-              borderTop: '1px solid rgba(0, 0, 0, 0.08)',
-              mt: 'auto'
-            }}
-          >
-            <Container maxWidth="lg">
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                © 2025 Halo Care. כל הזכויות שמורות.
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                מערכת ניהול מתקדמת לגני ילדים מיוחדים - פותח באהבה לילדים ולחינוך 💙
-              </Typography>
-            </Container>
-          </Paper>
+          {/* כותרת תחתונה עם עיצוב זכוכית */}
+          <Fade in timeout={2000}>
+            <Paper 
+              component="footer" 
+              sx={{ 
+                py: 4, 
+                textAlign: 'center',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: 0,
+                mt: 'auto',
+                position: 'relative',
+                zIndex: 2,
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: 'linear-gradient(90deg, #667eea, #f093fb, #10b981, #667eea)',
+                }
+              }}
+            >
+              
+            </Paper>
+          </Fade>
         </FullScreenContainer>
       </Box>
     </ThemeProvider>
