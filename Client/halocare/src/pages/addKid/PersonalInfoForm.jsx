@@ -50,43 +50,9 @@ import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlic
 import { fetchParentById } from '../../Redux/features/parentSlice';
 import { createKidWithParents, updateKidWithParents, fetchKids } from '../../Redux/features/kidsSlice';
 import { uploadDocument, deleteDocument, fetchDocumentsByKidId } from '../../Redux/features/documentsSlice';
-// עיצוב משופר לאווטאר עם אפקט הבלטה וזוהר
-const EnhancedAvatar = styled(Avatar)(({ theme }) => ({
-  width: 150,
-  height: 150,
-  border: `4px solid ${theme.palette.background.paper}`,
-  boxShadow: `0 6px 20px rgba(0,0,0,0.2), 0 0 15px ${theme.palette.primary.light}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 8px 25px rgba(0,0,0,0.3), 0 0 20px ${theme.palette.primary.main}`,
-  }
-}));
+import { baseURL } from "../../components/common/axiosConfig";
 
-// מיכל תמונת פרופיל עם אפקט מבריק
-const ProfileImageContainer = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  marginBottom: theme.spacing(2),
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '10%',
-    left: '10%',
-    right: '10%',
-    height: '1px',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
-    filter: 'blur(1px)',
-    opacity: 0.7,
-    animation: 'shimmer 2s infinite',
-  },
-  '@keyframes shimmer': {
-    '0%': { transform: 'translateX(-100%)' },
-    '100%': { transform: 'translateX(100%)' },
-  }
-}));
+
 
 // כרטיסיה מוגדלת עם הנפשה לפתיחה
 const AnimatedSection = styled(Card)(({ theme, expanded }) => ({
@@ -567,7 +533,6 @@ if (photoFile) {
         </Zoom>
       )}
 
-      {/* תמונת פרופיל */}
     {/* תמונת פרופיל */}
 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
   <Badge
@@ -594,7 +559,9 @@ if (photoFile) {
     }
   >
     <Avatar 
-      src={photoPreview}
+      src={
+        `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(photoPreview)}`
+        }
       sx={{ 
         width: 150, 
         height: 150,
@@ -605,6 +572,7 @@ if (photoFile) {
     >
       {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
     </Avatar>
+    {console.log(photoPreview)}
   </Badge>
 
   <input

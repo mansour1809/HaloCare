@@ -37,6 +37,12 @@ namespace halocare.BL.Services
                 throw new ArgumentException("חובה למלא לפחות מספר טלפון אחד (נייד או בבית)");
             }
 
+            if (_parentRepository.IsParentEmailExists(parent.Email))
+            {
+                throw new ArgumentException("הדואר האלקטרוני כבר קיים במערכת");
+            }
+
+
             // וידוא שהעיר קיימת, אם צוינה
             if (!string.IsNullOrEmpty(parent.CityName))
             {

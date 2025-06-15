@@ -34,6 +34,19 @@ namespace halocare.DAL.Repositories
 
             return parents;
         }
+        public bool IsParentEmailExists(string email)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+    {
+        { "@Email", email }
+    };
+
+            object result = ExecuteScalar("SP_CheckIfEmailExists", parameters);
+
+            // result might be DBNull, so handle carefully
+            return result != null && Convert.ToInt32(result) == 1;
+        }
+
 
         public Parent GetParentById(int id)
         {

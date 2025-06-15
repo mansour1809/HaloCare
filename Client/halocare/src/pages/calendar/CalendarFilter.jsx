@@ -28,8 +28,6 @@ import {
   Person as PersonIcon,
   Category as CategoryIcon,
   AutoAwesome as AutoAwesomeIcon,
-  TuneIcon,
-  CloseIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 

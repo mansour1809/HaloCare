@@ -42,7 +42,7 @@ const KidProfilePage = () => {
   
   // Redux state
   const { selectedKid, status: kidStatus, error: kidError } = useSelector(state => state.kids);
-  const { selectedProcess } = useSelector(state => state.intakeProcess);
+  // const { selectedProcess } = useSelector(state => state.intakeProcess);
   const { treatmentTypes, status: typesStatus } = useSelector(state => state.treatmentTypes);
   
   // Local state

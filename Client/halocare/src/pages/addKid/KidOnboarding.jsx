@@ -346,14 +346,7 @@ const KidOnboarding = () => {
                   <Typography variant="h4" fontWeight="bold">
                     תהליך קליטה
                   </Typography>
-                  {/* <Button
-                    variant="outlined"
-                    startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                  >
-                    {refreshing ? 'מרענן...' : 'רענן'}
-                  </Button> */}
+
                 </Box>
 
                 <OnboardingDashboard
@@ -366,7 +359,7 @@ const KidOnboarding = () => {
               </>
             )}
 
-            {/* 🔥 מילוי/צפייה בטופס דינמי - מתוקן */}
+            {/* 🔥 מילוי/צפייה בטופס דינמי  */}
             {viewMode === 'form' && selectedForm && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

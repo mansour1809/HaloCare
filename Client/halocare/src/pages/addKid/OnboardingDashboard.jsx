@@ -1,10 +1,12 @@
-// components/kids/OnboardingDashboard.jsx - גרסה מעודכנת עם Redux החדש
+// components/kids/OnboardingDashboard.jsx - מעודכן עם אזור מסמכים
+
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Grid, Card, CardContent, CardActions, Typography, Button,
   Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Alert, CircularProgress, Tooltip, LinearProgress
+  TextField, Alert, CircularProgress, Tooltip, LinearProgress,
+  Divider, Paper
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -14,19 +16,23 @@ import {
   Email as EmailIcon,
   VerifiedUser as CompletedByParentIcon,
   HourglassEmpty as PendingIcon,
-  Visibility as ViewIcon
+  Visibility as ViewIcon,
+  Folder as FolderIcon,
+  CloudUpload as UploadIcon
 } from '@mui/icons-material';
 import axios from '../../components/common/axiosConfig';
-// 🔥 Redux החדש
+
+// Redux החדש
 import { 
   updateFormStatus,
-  // fetchOnboardingStatus 
 } from '../../Redux/features/onboardingSlice';
 import { 
-  // sendFormToParent,
   markFormCompletedByParent 
 } from '../../Redux/features/formsSlice';
 import { fetchParentById } from '../../Redux/features/parentSlice';
+
+// 🔥 הקומפוננטה החדשה לניהול מסמכים
+import KidDocumentManager from './KidDocumentManager';
 
 const OnboardingDashboard = ({ 
   onboardingData, 
@@ -40,116 +46,24 @@ const OnboardingDashboard = ({
   const [sendDialog, setSendDialog] = useState({ open: false, form: null });
   const [parentEmail, setParentEmail] = useState('');
   const [sendingToParent, setSendingToParent] = useState(false);
-   const [loadingParentEmail, setLoadingParentEmail] = useState(false);
+  const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
-  // 🔥 פונקציות מעודכנות לעבודה עם Redux החדש
-  
-  // // קבלת אייקון סטטוס
-  // const getStatusIcon = (status) => {
-  //   switch (status) {
-  //     case 'Completed':
-  //       return <CheckIcon color="success" />;
-  //     case 'CompletedByParent':
-  //       return <CompletedByParentIcon color="success" />;
-  //     case 'InProgress':
-  //       return <EditIcon color="primary" />;
-  //     case 'SentToParent':
-  //       return <EmailIcon color="info" />;
-  //     case 'NotStarted':
-  //     default:
-  //       return <PendingIcon color="disabled" />;
-  //   }
-  // };
-
-  // // קבלת צבע סטטוס
-  // const getStatusColor = (status) => {
-  //   switch (status) {
-  //     case 'Completed':
-  //     case 'CompletedByParent':
-  //       return 'success';
-  //     case 'InProgress':
-  //       return 'primary';
-  //     case 'SentToParent':
-  //       return 'info';
-  //     case 'NotStarted':
-  //     default:
-  //       return 'default';
-  //   }
-  // };
-
-  // // קבלת טקסט סטטוס
-  // const getStatusText = (status) => {
-  //   switch (status) {
-  //     case 'Completed':
-  //       return 'הושלם';
-  //     case 'CompletedByParent':
-  //       return 'הושלם ע"י הורים';
-  //     case 'InProgress':
-  //       return 'בתהליך';
-  //     case 'SentToParent':
-  //       return 'נשלח להורים';
-  //     case 'NotStarted':
-  //     default:
-  //       return 'לא התחיל';
-  //   }
-  // };
-
-  // 🔥 שליחת טופס להורה - מעודכן
-  // const handleSendToParent = (form) => {
-  //   // השלמת האימייל אוטומטית מנתוני ההורה
-  //   const defaultEmail = selectedKid?.parentEmail || '';
-  //   setParentEmail(defaultEmail);
-  //   setSendDialog({ open: true, form });
-  // };
-
-  // const confirmSendToParent = async () => {
-  //   if (!sendDialog.form || !parentEmail.trim()) {
-  //     return;
-  //   }
-
-  //   try {
-  //     setSendingToParent(true);
-      
-  //     // 🔥 שליחה עם עדכון סטטוס אוטומטי
-  //     await dispatch(sendFormToParent({
-  //       kidId: selectedKid.id,
-  //       formId: sendDialog.form.formId,
-  //       parentEmail: parentEmail.trim()
-  //     })).unwrap();
-
-  //     // סגירת הדיאלוג ורענון
-  //     setSendDialog({ open: false, form: null });
-  //     setParentEmail('');
-      
-  //     // רענון אוטומטי
-  //     setTimeout(() => {
-  //       onRefresh && onRefresh();
-  //     }, 1000);
-
-  //   } catch (error) {
-  //     console.error('שגיאה בשליחת הטופס:', error);
-  //   } finally {
-  //     setSendingToParent(false);
-  //   }
-  // };
-const handleSendToParent = async (form) => {
+  // פונקציות שליחה להורה (הקוד הקיים)
+  const handleSendToParent = async (form) => {
     try {
       setLoadingParentEmail(true);
       
-      // טעינת נתוני ההורה הראשון
       if (selectedKid?.parentId1) {
         const parentResult = await dispatch(fetchParentById(selectedKid.parentId1)).unwrap();
         const defaultEmail = parentResult?.email || '';
         setParentEmail(defaultEmail);
       } else {
-        // fallback אם אין parentId1
         setParentEmail('');
       }
       
       setSendDialog({ open: true, form });
     } catch (error) {
       console.error('שגיאה בטעינת נתוני הורה:', error);
-      // פתח את הדיאלוג גם אם נכשל בטעינת המייל
       setParentEmail('');
       setSendDialog({ open: true, form });
     } finally {
@@ -157,7 +71,7 @@ const handleSendToParent = async (form) => {
     }
   };
 
-    const confirmSendToParent = async () => {
+  const confirmSendToParent = async () => {
     if (!sendDialog.form || !parentEmail.trim()) {
       return;
     }
@@ -192,7 +106,7 @@ const handleSendToParent = async (form) => {
     }
   };
 
-  // 🔥 איפוס טופס לתחילה
+  // איפוס טופס לתחילה
   const handleResetForm = async (form) => {
     try {
       await dispatch(updateFormStatus({
@@ -202,7 +116,6 @@ const handleSendToParent = async (form) => {
         notes: `אופס בתאריך ${new Date().toLocaleDateString('he-IL')}`
       })).unwrap();
 
-      // רענון אוטומטי
       setTimeout(() => {
         onRefresh && onRefresh();
       }, 1000);
@@ -212,12 +125,11 @@ const handleSendToParent = async (form) => {
     }
   };
 
-  // בדיקה אם ניתן לערוך טופס
+  // בדיקות הרשאות
   const canEditForm = (form) => {
     return ['NotStarted', 'InProgress'].includes(form.status);
   };
 
-  // בדיקה אם ניתן לשלוח להורה
   const canSendToParent = (form) => {
     return ['NotStarted', 'InProgress', 'Completed'].includes(form.status);
   };
@@ -231,11 +143,11 @@ const handleSendToParent = async (form) => {
   }
 
   return (
-    <Box dir="rtl" >
-      {/* 🔥 סטטיסטיקות כלליות */}
-      <Grid container  spacing={3} sx={{ mb: 4, }} >
+    <Box dir="rtl">
+      {/* סטטיסטיקות כלליות */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white',borderRadius: 20 ,width: '90px'}}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.completedForms}
@@ -247,7 +159,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'white',borderRadius: 20 ,width: '90px'}}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'InProgress').length}
@@ -259,7 +171,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white',borderRadius: 20 ,width: '90px'}}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'SentToParent').length}
@@ -271,7 +183,7 @@ const handleSendToParent = async (form) => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white' ,borderRadius: 20,width: '90px'}}>
+          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
                 {onboardingData.forms.filter(f => f.status === 'NotStarted').length}
@@ -284,7 +196,43 @@ const handleSendToParent = async (form) => {
         </Grid>
       </Grid>
 
-      {/* 🔥 כרטיסי הטפסים */}
+      {/* 🔥 אזור מסמכים חדש */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <FolderIcon sx={{ mr: 1, color: 'primary.main' }} />
+          מסמכים ותעודות
+          <Chip 
+            label="אופציונלי" 
+            size="small" 
+            color="secondary" 
+            sx={{ ml: 1 }} 
+          />
+        </Typography>
+        
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2">
+            ניתן להעלות מסמכים רלוונטיים לילד (תעודות חיסונים, דוחות רפואיים, תעודות וכו'). 
+            העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
+          </Typography>
+        </Alert>
+
+        <KidDocumentManager
+          kidId={selectedKid?.id}
+          kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : ''}
+          compact={true}
+          showUpload={true}
+          showStats={true}
+          maxHeight={300}
+        />
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* כרטיסי הטפסים */}
+      <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+        טפסי קליטה
+      </Typography>
+      
       <Grid container spacing={3}>
         {onboardingData.forms.map((form) => {
           const progress = form.totalQuestions > 0 
@@ -314,7 +262,6 @@ const handleSendToParent = async (form) => {
                     <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
                       {form.formName}
                     </Typography>
-
                   </Box>
 
                   {/* תיאור */}
@@ -356,14 +303,13 @@ const handleSendToParent = async (form) => {
                         הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
                       </Typography>
                     )}
-
                   </Box>
                 </CardContent>
 
                 {/* פעולות */}
                 <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
                   <Box>
-                    {/* 🔥 כפתורים מתוקנים - תמיד אפשר לצפות ולערוך */}
+                    {/* כפתורים לעריכה/צפייה */}
                     {canEditForm(form) ? (
                       <Button
                         startIcon={<EditIcon />}
@@ -374,16 +320,15 @@ const handleSendToParent = async (form) => {
                       </Button>
                     ) : (
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        {form.formId != '1002' && (
-                          
-                        <Button
-                          startIcon={<ViewIcon />}
-                          onClick={() => onFormClick(form, 'view')}
-                          color="secondary"
-                          size="small"
-                        >
-                          צפייה
-                        </Button>
+                        {form.formId !== '1002' && (
+                          <Button
+                            startIcon={<ViewIcon />}
+                            onClick={() => onFormClick(form, 'view')}
+                            color="secondary"
+                            size="small"
+                          >
+                            צפייה
+                          </Button>
                         )}
                         <Button
                           startIcon={<EditIcon />}
@@ -399,8 +344,7 @@ const handleSendToParent = async (form) => {
 
                   <Box>
                     {/* שליחה להורה */}
-                  
-                    {canSendToParent(form) && form.formId != '1002' && (
+                    {canSendToParent(form) && form.formId !== '1002' && (
                       <Tooltip title="שלח טופס להורה">
                         <IconButton
                           onClick={() => handleSendToParent(form)}
@@ -410,7 +354,6 @@ const handleSendToParent = async (form) => {
                         </IconButton>
                       </Tooltip>
                     )}
-
                   </Box>
                 </CardActions>
               </Card>
@@ -419,7 +362,7 @@ const handleSendToParent = async (form) => {
         })}
       </Grid>
 
-      {/* 🔥 דיאלוג שליחה להורה */}
+      {/* דיאלוג שליחה להורה - הקוד הקיים */}
       <Dialog 
         open={sendDialog.open} 
         onClose={() => setSendDialog({ open: false, form: null })}
@@ -435,7 +378,6 @@ const handleSendToParent = async (form) => {
             שליחת הטופס "{sendDialog.form?.formName}" להורה של {selectedKid?.firstName}
           </Typography>
           
-          {/* 🔥 אינדיקטור טעינה למייל */}
           {loadingParentEmail && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <CircularProgress size={20} />
@@ -455,7 +397,7 @@ const handleSendToParent = async (form) => {
             required
             placeholder="example@email.com"
             helperText="הטופס יישלח עם קישור למילוי אונליין"
-            disabled={true} // 🔥 השבתה בזמן טעינה
+            disabled={loadingParentEmail}
           />
           <Alert severity="info" sx={{ mt: 2 }}>
             הטופס יישלח להורים באימייל עם קישור למילוי

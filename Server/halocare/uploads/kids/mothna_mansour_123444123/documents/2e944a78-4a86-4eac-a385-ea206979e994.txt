@@ -1,0 +1,792 @@
+///MODELS:
+
+namespace halocare.DAL.Models
+{
+    public class KidOnboardingProcess
+    {
+        public int ProcessId { get; set; }
+        public int KidId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? CompletionDate { get; set; }
+        public string ProcessStatus { get; set; } // NotStarted, InProgress, Completed
+        public int CompletionPercentage { get; set; }
+        public DateTime LastUpdated { get; set; }
+
+        // נוסיף רשימה של סטטוסי טפסים
+        public List<FormStatus> Forms { get; set; } = new List<FormStatus>();
+    }
+
+    public class FormStatus
+    {
+        public int FormId { get; set; }
+        public string FormName { get; set; }
+        public string FormDescription { get; set; }
+        public int FormOrder { get; set; }
+        public bool IsFirstStep { get; set; }
+        public string Status { get; set; } // not_started, in_progress, completed, sent_to_parent, returned_from_parent
+        public DateTime? StartedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public DateTime? SentToParentAt { get; set; }
+        public int AnsweredQuestions { get; set; }
+        public int TotalQuestions { get; set; }
+        public bool ByParent { get; set; } // האם מולא על ידי הורה
+    }
+}
+
+/////REPOSITORY:
+
+// DAL/Repositories/KidOnboardingRepository.cs
+using System;
+using System.Collections.Generic;
+using System.Data;
+using halocare.DAL.Models;
+using Microsoft.Extensions.Configuration;
+
+namespace halocare.DAL.Repositories
+{
+    public class KidOnboardingRepository : DBService
+    {
+        public KidOnboardingRepository(IConfiguration configuration) : base(configuration) { }
+
+        // יצירת תהליך קליטה חדש
+        public int CreateOnboardingProcess(int kidId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId },
+                { "@StartDate", DateTime.Now },
+                { "@LastUpdated", DateTime.Now },
+                { "@ProcessStatus", "InProgress" }
+            };
+
+            return Convert.ToInt32(ExecuteScalar("SP_CreateKidOnboardingProcess", parameters));
+        }
+
+        // קבלת תהליך קליטה לפי kidId
+        public KidOnboardingProcess GetOnboardingProcess(int kidId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId }
+            };
+
+            DataTable dataTable = ExecuteQuery("SP_GetOnboardingProcessByKidId", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            DataRow row = dataTable.Rows[0];
+
+            return new KidOnboardingProcess
+            {
+                ProcessId = Convert.ToInt32(row["ProcessId"]),
+                KidId = Convert.ToInt32(row["KidId"]),
+                StartDate = Convert.ToDateTime(row["StartDate"]),
+                LastUpdated = Convert.ToDateTime(row["LastUpdated"]),
+                ProcessStatus = row["ProcessStatus"].ToString()
+            };
+        }
+
+        // עדכון זמן עדכון אחרון
+        public bool UpdateProcessLastUpdated(int kidId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId },
+                { "@LastUpdated", DateTime.Now }
+            };
+
+            int rowsAffected = ExecuteNonQuery("SP_UpdateOnboardingProcessLastUpdated", parameters);
+            return rowsAffected > 0;
+        }
+
+        // עדכון סטטוס התהליך
+        public bool UpdateProcessStatus(int kidId, string status)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId },
+                { "@ProcessStatus", status },
+                { "@LastUpdated", DateTime.Now }
+            };
+
+            int rowsAffected = ExecuteNonQuery("SP_UpdateOnboardingProcessStatus", parameters);
+            return rowsAffected > 0;
+        }
+
+        // מחיקת תהליך קליטה
+        public bool DeleteOnboardingProcess(int kidId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId }
+            };
+
+            int rowsAffected = ExecuteNonQuery("SP_DeleteOnboardingProcess", parameters);
+            return rowsAffected > 0;
+        }
+
+        // בדיקה אם קיים תהליך קליטה
+        public bool OnboardingProcessExists(int kidId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@KidId", kidId }
+            };
+
+            var result = ExecuteScalar("SP_CheckOnboardingProcessExists", parameters);
+            return Convert.ToInt32(result) > 0;
+        }
+
+        // קבלת כל התהליכים הפעילים
+        public List<KidOnboardingProcess> GetAllActiveProcesses()
+        {
+            List<KidOnboardingProcess> processes = new List<KidOnboardingProcess>();
+            DataTable dataTable = ExecuteQuery("SP_GetAllActiveOnboardingProcesses");
+
+            foreach (DataRow row in dataTable.Rows)
+            {
+                KidOnboardingProcess process = new KidOnboardingProcess
+                {
+                    ProcessId = Convert.ToInt32(row["ProcessId"]),
+                    KidId = Convert.ToInt32(row["KidId"]),
+                    StartDate = Convert.ToDateTime(row["StartDate"]),
+                    LastUpdated = Convert.ToDateTime(row["LastUpdated"]),
+                    ProcessStatus = row["ProcessStatus"].ToString()
+                };
+
+                processes.Add(process);
+            }
+
+            return processes;
+        }
+    }
+
+    // מודל של תהליך קליטה
+    public class KidOnboardingProcess
+    {
+        public int ProcessId { get; set; }
+        public int KidId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime LastUpdated { get; set; }
+        public string ProcessStatus { get; set; } // InProgress, Completed, Paused
+    }
+}
+
+////SERVICE:
+
+// BL/Services/KidOnboardingService.cs - גרסה מעודכנת לגישה גמישה
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using halocare.DAL.Models;
+using halocare.DAL.Repositories;
+using Microsoft.Extensions.Configuration;
+
+namespace halocare.BL.Services
+{
+    public class KidOnboardingService
+    {
+        private readonly KidOnboardingRepository _onboardingRepository;
+        private readonly FormRepository _formRepository;
+        private readonly AnswerToQuestionRepository _answerRepository;
+        private readonly QuestionRepository _questionRepository;
+
+        public KidOnboardingService(IConfiguration configuration)
+        {
+            _onboardingRepository = new KidOnboardingRepository(configuration);
+            _formRepository = new FormRepository(configuration);
+            _answerRepository = new AnswerToQuestionRepository(configuration);
+            _questionRepository = new QuestionRepository(configuration);
+        }
+
+        // יצירת תהליך קליטה חדש
+        public int CreateOnboardingProcess(int kidId)
+        {
+            return _onboardingRepository.CreateOnboardingProcess(kidId);
+        }
+
+        // התחלת תהליך קליטה (אסינכרוני) - השיטה החסרה!
+        public async Task<int> StartOnboardingProcess(int kidId)
+        {
+            try
+            {
+                // בדיקה שלא קיים כבר תהליך קליטה
+                if (_onboardingRepository.OnboardingProcessExists(kidId))
+                {
+                    throw new Exception($"כבר קיים תהליך קליטה עבור ילד {kidId}");
+                }
+
+                // יצירת תהליך קליטה חדש
+                int processId = _onboardingRepository.CreateOnboardingProcess(kidId);
+
+                // כאן אפשר להוסיף לוגיקה נוספת:
+                // - שליחת הודעות
+                // - יצירת משימות ראשוניות
+                // - הגדרת תזכורות
+
+                return processId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בהתחלת תהליך קליטה עבור ילד {kidId}: {ex.Message}");
+            }
+        }
+
+        // קבלת סטטוס תהליך הקליטה - גמיש
+        public OnboardingStatusResponse GetOnboardingStatus(int kidId)
+        {
+            try
+            {
+                var process = _onboardingRepository.GetOnboardingProcess(kidId);
+                if (process == null)
+                {
+                    return null; // אין תהליך קליטה
+                }
+
+                // קבלת כל הטפסים הזמינים
+                var allForms = _formRepository.GetAllForms()
+                    .OrderBy(f => f.FormOrder ?? 999)
+                    .ToList();
+
+                var formsStatus = new List<FormStatusInfo>();
+
+                foreach (var form in allForms)
+                {
+                    var formStatus = GetFormStatus(kidId, form);
+                    formsStatus.Add(formStatus);
+                }
+
+                // חישוב אחוז השלמה
+                var completedForms = formsStatus.Count(f => f.Status == "completed");
+                var completionPercentage = allForms.Count > 0 ?
+                    Math.Round((double)completedForms / allForms.Count * 100) : 0;
+
+                // קביעת סטטוס כללי של התהליך
+                var processStatus = DetermineProcessStatus(formsStatus);
+
+                return new OnboardingStatusResponse
+                {
+                    Process = new ProcessInfo
+                    {
+                        ProcessId = process.ProcessId,
+                        KidId = kidId,
+                        ProcessStatus = processStatus,
+                        StartDate = process.StartDate,
+                        LastUpdated = process.LastUpdated
+                    },
+                    Forms = formsStatus,
+                    CompletionPercentage = (int)completionPercentage,
+                    TotalForms = allForms.Count,
+                    CompletedForms = completedForms
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בקבלת סטטוס תהליך הקליטה: {ex.Message}");
+            }
+        }
+
+        // קבלת סטטוס טופס ספציפי
+        private FormStatusInfo GetFormStatus(int kidId, Form form)
+        {
+            var formStatus = new FormStatusInfo
+            {
+                Form = new FormInfo
+                {
+                    FormId = form.FormId,
+                    FormName = form.FormName,
+                    FormDescription = form.FormDescription,
+                    FormOrder = form.FormOrder ?? 999,
+                    IsFirstStep = form.IsFirstStep
+                },
+                Status = "not_started",
+                AnsweredQuestions = 0,
+                TotalQuestions = 0,
+                CompletedAt = null,
+                SentToParentAt = null,
+                LastAnsweredAt = null
+            };
+
+            // אם זה הטופס הראשון (פרטים אישיים), הוא "הושלם" אם הילד קיים
+            if (form.IsFirstStep)
+            {
+                formStatus.Status = "completed";
+                formStatus.CompletedAt = DateTime.Now; // או תאריך יצירת הילד
+                formStatus.TotalQuestions = 1;
+                formStatus.AnsweredQuestions = 1;
+                return formStatus;
+            }
+
+            // בדיקת שאלות הטופס
+            var questions = _questionRepository.GetQuestionsByFormId(form.FormId);
+            formStatus.TotalQuestions = questions.Count;
+
+            if (questions.Count == 0)
+            {
+                formStatus.Status = "not_available";
+                return formStatus;
+            }
+
+            // בדיקת תשובות קיימות
+            var answers = _answerRepository.GetAnswersByKidAndForm(kidId, form.FormId);
+            var validAnswers = answers.Where(a => !string.IsNullOrEmpty(a.Answer)).ToList();
+
+            formStatus.AnsweredQuestions = validAnswers.Count;
+
+            if (validAnswers.Count == 0)
+            {
+                formStatus.Status = "not_started";
+            }
+            else if (validAnswers.Count == questions.Count)
+            {
+                formStatus.Status = "completed";
+                formStatus.CompletedAt = validAnswers.Max(a => a.AnsDate);
+            }
+            else
+            {
+                formStatus.Status = "in_progress";
+                formStatus.LastAnsweredAt = validAnswers.Max(a => a.AnsDate);
+            }
+
+            // בדיקה אם נשלח להורים
+            if (validAnswers.Any(a => a.ByParent))
+            {
+                formStatus.SentToParentAt = validAnswers
+                    .Where(a => a.ByParent)
+                    .Min(a => a.AnsDate);
+
+                if (formStatus.Status == "completed")
+                {
+                    formStatus.Status = "completed_by_parent";
+                }
+                else if (formStatus.Status == "in_progress")
+                {
+                    formStatus.Status = "sent_to_parent";
+                }
+            }
+
+            return formStatus;
+        }
+
+        // קביעת סטטוס כללי של התהליך
+        private string DetermineProcessStatus(List<FormStatusInfo> formsStatus)
+        {
+            if (formsStatus.All(f => f.Status == "completed" || f.Status == "completed_by_parent"))
+            {
+                return "Completed";
+            }
+
+            if (formsStatus.Any(f => f.Status == "in_progress" || f.Status == "sent_to_parent"))
+            {
+                return "InProgress";
+            }
+
+            if (formsStatus.Any(f => f.Status == "completed" || f.Status == "completed_by_parent"))
+            {
+                return "InProgress";
+            }
+
+            return "NotStarted";
+        }
+
+        // סימון טופס כהושלם
+        public bool CompleteFormStep(int kidId, int formId)
+        {
+            try
+            {
+                // בדיקה שהטופס אכן הושלם (יש תשובות לכל השאלות החובה)
+                var questions = _questionRepository.GetQuestionsByFormId(formId);
+                var mandatoryQuestions = questions.Where(q => q.IsMandatory).ToList();
+
+                if (mandatoryQuestions.Count > 0)
+                {
+                    var answers = _answerRepository.GetAnswersByKidAndForm(kidId, formId);
+                    var answeredMandatory = mandatoryQuestions.Where(q =>
+                        answers.Any(a => a.QuestionNo == q.QuestionNo && !string.IsNullOrEmpty(a.Answer))
+                    ).ToList();
+
+                    if (answeredMandatory.Count < mandatoryQuestions.Count)
+                    {
+                        throw new Exception("לא ניתן להשלים את הטופס - יש שאלות חובה שלא נענו");
+                    }
+                }
+
+                // עדכון זמן עדכון אחרון של התהליך
+                return _onboardingRepository.UpdateProcessLastUpdated(kidId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בהשלמת שלב הטופס: {ex.Message}");
+            }
+        }
+
+        // בדיקה אוטומטית אם טופס הושלם (לאחר שמירת תשובות)
+        public bool CheckAndMarkFormCompletion(int kidId, int formId)
+        {
+            try
+            {
+                // קבלת כל השאלות בטופס
+                var questions = _questionRepository.GetQuestionsByFormId(formId);
+                var mandatoryQuestions = questions.Where(q => q.IsMandatory).ToList();
+
+                // קבלת כל התשובות הקיימות
+                var answers = _answerRepository.GetAnswersByKidAndForm(kidId, formId);
+                var validAnswers = answers.Where(a => !string.IsNullOrEmpty(a.Answer)).ToList();
+
+                // בדיקה אם כל השאלות החובה נענו
+                bool allMandatoryAnswered = mandatoryQuestions.All(q =>
+                    validAnswers.Any(a => a.QuestionNo == q.QuestionNo)
+                );
+
+                // בדיקה אם כל השאלות (לא רק חובה) נענו
+                bool allQuestionsAnswered = questions.All(q =>
+                    validAnswers.Any(a => a.QuestionNo == q.QuestionNo)
+                );
+
+                if (allQuestionsAnswered)
+                {
+                    // הטופס הושלם לחלוטין
+                    _onboardingRepository.UpdateProcessLastUpdated(kidId);
+                    return true;
+                }
+                else if (allMandatoryAnswered && validAnswers.Count >= questions.Count * 0.8) // 80% מהשאלות נענו
+                {
+                    // הטופס הושלם ברמה מספקת
+                    _onboardingRepository.UpdateProcessLastUpdated(kidId);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // אם יש שגיאה, לא נכשיל את התהליך
+                Console.WriteLine($"Error checking form completion: {ex.Message}");
+                return false;
+            }
+        }
+
+        // שליחת טופס להורים
+        public bool SendFormToParent(int kidId, int formId)
+        {
+            try
+            {
+                // כאן תהיה הלוגיקה לשליחת הטופס להורים
+                // (אימייל, SMS, WhatsApp וכו')
+
+                // עדכון שהטופס נשלח
+                return _onboardingRepository.UpdateProcessLastUpdated(kidId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בשליחת הטופס להורים: {ex.Message}");
+            }
+        }
+
+        // קבלת רשימת טפסים זמינים
+        public List<Form> GetAvailableForms()
+        {
+            return _formRepository.GetAllForms()
+                .OrderBy(f => f.FormOrder ?? 999)
+                .ToList();
+        }
+    }
+
+    // מודלי תגובה מעודכנים
+    public class OnboardingStatusResponse
+    {
+        public ProcessInfo Process { get; set; }
+        public List<FormStatusInfo> Forms { get; set; }
+        public int CompletionPercentage { get; set; }
+        public int TotalForms { get; set; }
+        public int CompletedForms { get; set; }
+    }
+
+    public class ProcessInfo
+    {
+        public int ProcessId { get; set; }
+        public int KidId { get; set; }
+        public string ProcessStatus { get; set; } // NotStarted, InProgress, Completed
+        public DateTime StartDate { get; set; }
+        public DateTime LastUpdated { get; set; }
+    }
+
+    public class FormStatusInfo
+    {
+        public FormInfo Form { get; set; }
+        public string Status { get; set; } // not_started, in_progress, completed, sent_to_parent, completed_by_parent, not_available
+        public int AnsweredQuestions { get; set; }
+        public int TotalQuestions { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public DateTime? SentToParentAt { get; set; }
+        public DateTime? LastAnsweredAt { get; set; }
+    }
+
+    public class FormInfo
+    {
+        public int FormId { get; set; }
+        public string FormName { get; set; }
+        public string FormDescription { get; set; }
+        public int FormOrder { get; set; }
+        public bool IsFirstStep { get; set; }
+    }
+}
+
+////CONTROLLER:
+
+// Controllers/KidOnboardingController.cs - גרסה מעודכנת
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using halocare.BL.Services;
+using halocare.DAL.Models;
+using System;
+using System.Collections.Generic;
+
+namespace halocare.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class KidOnboardingController : ControllerBase
+    {
+        private readonly KidOnboardingService _onboardingService;
+
+        public KidOnboardingController(IConfiguration configuration)
+        {
+            _onboardingService = new KidOnboardingService(configuration);
+        }
+
+        // GET: api/KidOnboarding/status/5
+        [HttpGet("status/{kidId}")]
+        public ActionResult<OnboardingStatusResponse> GetOnboardingStatus(int kidId)
+        {
+            try
+            {
+                var status = _onboardingService.GetOnboardingStatus(kidId);
+
+                if (status == null)
+                {
+                    return NotFound($"לא נמצא תהליך קליטה עבור ילד {kidId}");
+                }
+
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // POST: api/KidOnboarding/create
+        [HttpPost("create")]
+        public ActionResult<int> CreateOnboardingProcess([FromBody] CreateOnboardingRequest request)
+        {
+            try
+            {
+                if (request.KidId <= 0)
+                {
+                    return BadRequest("מזהה ילד חייב להיות חיובי");
+                }
+
+                var processId = _onboardingService.CreateOnboardingProcess(request.KidId);
+
+                return Ok(new { ProcessId = processId, Message = "תהליך קליטה נוצר בהצלחה" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה ביצירת תהליך קליטה: {ex.Message}");
+            }
+        }
+
+        // PUT: api/KidOnboarding/complete-step
+        [HttpPut("complete-step")]
+        public ActionResult CompleteFormStep([FromBody] CompleteStepRequest request)
+        {
+            try
+            {
+                if (request.KidId <= 0 || request.FormId <= 0)
+                {
+                    return BadRequest("מזהה ילד ומזהה טופס חייבים להיות חיוביים");
+                }
+
+                bool success = _onboardingService.CompleteFormStep(request.KidId, request.FormId);
+
+                if (success)
+                {
+                    return Ok(new { Message = "שלב הטופס הושלם בהצלחה" });
+                }
+                else
+                {
+                    return BadRequest("לא ניתן להשלים את שלב הטופס");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // POST: api/KidOnboarding/check-completion
+        [HttpPost("check-completion")]
+        public ActionResult CheckFormCompletion([FromBody] CheckCompletionRequest request)
+        {
+            try
+            {
+                if (request.KidId <= 0 || request.FormId <= 0)
+                {
+                    return BadRequest("מזהה ילד ומזהה טופס חייבים להיות חיוביים");
+                }
+
+                bool isCompleted = _onboardingService.CheckAndMarkFormCompletion(request.KidId, request.FormId);
+
+                return Ok(new
+                {
+                    IsCompleted = isCompleted,
+                    Message = isCompleted ? "הטופס הושלם בהצלחה" : "הטופס עדיין בתהליך"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // GET: api/KidOnboarding/forms
+        [HttpGet("forms")]
+        public ActionResult<IEnumerable<Form>> GetAvailableForms()
+        {
+            try
+            {
+                var forms = _onboardingService.GetAvailableForms();
+                return Ok(forms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בטעינת רשימת הטפסים: {ex.Message}");
+            }
+        }
+
+        // GET: api/KidOnboarding/forms/{formId}/status/{kidId}
+        [HttpGet("forms/{formId}/status/{kidId}")]
+        public ActionResult<FormStatusInfo> GetFormStatus(int formId, int kidId)
+        {
+            try
+            {
+                var onboardingStatus = _onboardingService.GetOnboardingStatus(kidId);
+
+                if (onboardingStatus == null)
+                {
+                    return NotFound("לא נמצא תהליך קליטה עבור הילד");
+                }
+
+                var formStatus = onboardingStatus.Forms.Find(f => f.Form.FormId == formId);
+
+                if (formStatus == null)
+                {
+                    return NotFound("לא נמצא טופס זה בתהליך הקליטה");
+                }
+
+                return Ok(formStatus);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בקבלת סטטוס הטופס: {ex.Message}");
+            }
+        }
+
+        // GET: api/KidOnboarding/summary/{kidId}
+        [HttpGet("summary/{kidId}")]
+        public ActionResult<OnboardingSummary> GetOnboardingSummary(int kidId)
+        {
+            try
+            {
+                var status = _onboardingService.GetOnboardingStatus(kidId);
+
+                if (status == null)
+                {
+                    return NotFound($"לא נמצא תהליך קליטה עבור ילד {kidId}");
+                }
+
+                var summary = new OnboardingSummary
+                {
+                    KidId = kidId,
+                    ProcessStatus = status.Process.ProcessStatus,
+                    CompletionPercentage = status.CompletionPercentage,
+                    TotalForms = status.TotalForms,
+                    CompletedForms = status.CompletedForms,
+                    InProgressForms = status.Forms.Count(f => f.Status == "in_progress"),
+                    SentToParentForms = status.Forms.Count(f => f.Status == "sent_to_parent"),
+                    LastUpdated = status.Process.LastUpdated,
+                    NextRecommendedForm = GetNextRecommendedForm(status.Forms)
+                };
+
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בקבלת סיכום הקליטה: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/KidOnboarding/{kidId}
+        [HttpDelete("{kidId}")]
+        public ActionResult DeleteOnboardingProcess(int kidId)
+        {
+            try
+            {
+                // כאן תהיה הלוגיקה למחיקת תהליך קליטה
+                // (אם מותר לפי הכללים העסקיים)
+
+                return Ok(new { Message = "תהליך הקליטה נמחק בהצלחה" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה במחיקת תהליך הקליטה: {ex.Message}");
+            }
+        }
+
+        // פונקציה עזר לקביעת הטופס הבא המומלץ
+        private FormInfo GetNextRecommendedForm(List<FormStatusInfo> forms)
+        {
+            // מציאת הטופס הראשון שלא הושלם
+            var nextForm = forms
+                .Where(f => f.Status == "not_started" || f.Status == "in_progress")
+                .OrderBy(f => f.Form.FormOrder)
+                .FirstOrDefault();
+
+            return nextForm?.Form;
+        }
+    }
+
+    // מודלי בקשה
+    public class CreateOnboardingRequest
+    {
+        public int KidId { get; set; }
+    }
+
+    public class CompleteStepRequest
+    {
+        public int KidId { get; set; }
+        public int FormId { get; set; }
+    }
+
+    public class CheckCompletionRequest
+    {
+        public int KidId { get; set; }
+        public int FormId { get; set; }
+    }
+
+    // מודל סיכום
+    public class OnboardingSummary
+    {
+        public int KidId { get; set; }
+        public string ProcessStatus { get; set; }
+        public int CompletionPercentage { get; set; }
+        public int TotalForms { get; set; }
+        public int CompletedForms { get; set; }
+        public int InProgressForms { get; set; }
+        public int SentToParentForms { get; set; }
+        public DateTime LastUpdated { get; set; }
+        public FormInfo NextRecommendedForm { get; set; }
+    }
+}
