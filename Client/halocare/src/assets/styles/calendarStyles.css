@@ -1,233 +1,529 @@
+/* =================================================================
+   CALENDAR STYLES V7 - עיצוב מדהים ומתקדם ליומן
+   ================================================================= */
 
-      /* Swap next and prev icons */
-      .fc-icon-chevron-right::before {
-          content: "";
-
-        }
-
-      .fc-icon-chevron-left::before {
-        content: "";
-
-      }
-      /* רקע כללי לסרגל הכלים */
-      .fc-toolbar {
-        padding: 16px !important;
-        margin-bottom: 16px !important;
-        border-radius: 12px !important;
-        background: linear-gradient(to left, #ffffff, #f7faff) !important;
-        box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12) !important;
-      }
-
-
-/* ############################################################################################## */
-/* ############################################################################################## */
-/* ############################################################################################## */
-/* ############################################################################################## */
-/* ############################################################################################## */
-/* version 2  */
-/* 
-  עיצוב כללי ליומן 
-  מותאם לתצוגה עברית וצבעים מותאמים
-*/
-/* כללי */
+/* קומפוננט יומן כללי */
 .fc {
   direction: rtl;
   text-align: right;
-  font-family: 'Rubik', 'Assistant', sans-serif;
+  font-family: 'Rubik', 'Heebo', 'Assistant', sans-serif;
+  background: transparent;
 }
 
-/* כותרת */
-.fc .fc-toolbar-title {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #2c3e50;
-  margin: 0 0.5rem;
+/* =================================================================
+   TOOLBAR - סרגל כלים מעוצב
+   ================================================================= */
+.fc-toolbar {
+  padding: 24px !important;
+  margin-bottom: 20px !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,255,0.95) 100%) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255,255,255,0.3) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-/* כפתורים */
-.fc .fc-button {
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-weight: 500;
-  text-transform: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s;
+.fc-toolbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea);
+  border-radius: 20px 20px 0 0;
 }
 
-.fc .fc-button:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+/* כותרת היומן */
+.fc-toolbar-title {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(45deg, #667eea 30%, #764ba2 90%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 1rem !important;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.fc .fc-button-primary {
-  background-color: #1976d2;
-  border-color: #1976d2;
+/* =================================================================
+   BUTTONS - כפתורים מעוצבים
+   ================================================================= */
+.fc-button {
+  border-radius: 16px !important;
+  padding: 12px 20px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-family: 'Rubik', sans-serif !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-.fc .fc-button-primary:not(:disabled):active,
-.fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #1565c0;
-  border-color: #1565c0;
+.fc-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s;
+  z-index: 1;
 }
 
-.fc .fc-today-button {
-  font-weight: bold;
+.fc-button:hover::before {
+  left: 100%;
+}
+
+.fc-button:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* כפתור ראשי */
+.fc-button-primary {
+  background: linear-gradient(45deg, #667eea 30%, #764ba2 90%) !important;
+  color: white !important;
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+  background: linear-gradient(45deg, #5a67d8 30%, #6b46c1 90%) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* כפתור היום */
-.fc .fc-today-button:not(:disabled) {
-  background-color: #4caf50;
-  border-color: #4caf50;
+.fc-today-button:not(:disabled) {
+  background: linear-gradient(45deg, #10b981 30%, #34d399 90%) !important;
+  color: white !important;
 }
 
-.fc .fc-today-button:not(:disabled):hover {
-  background-color: #43a047;
-  border-color: #43a047;
+.fc-today-button:not(:disabled):hover {
+  background: linear-gradient(45deg, #059669 30%, #10b981 90%) !important;
+  transform: translateY(-3px) scale(1.05) !important;
 }
 
-/* כותרות ימים */
-.fc-day-header {
-  font-weight: 600 !important;
-  padding: 10px 0 !important;
-  background-color: #f5f9ff;
-  border-radius: 5px;
-  margin: 2px;
+/* איקונים בכפתורים */
+.fc-icon-chevron-right::before {
+  content: "◀";
+  font-size: 1.2em;
 }
 
-.fc .fc-col-header-cell-cushion {
-  color: #2c3e50;
+.fc-icon-chevron-left::before {
+  content: "▶";
+  font-size: 1.2em;
+}
+
+/* =================================================================
+   HEADER - כותרות ימים
+   ================================================================= */
+.fc-col-header {
+  background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%) !important;
+  border-radius: 12px !important;
+  margin: 4px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+.fc-col-header-cell {
+  padding: 16px 8px !important;
+  border: none !important;
+}
+
+.fc-col-header-cell-cushion {
+  color: #667eea !important;
   text-decoration: none !important;
-  padding: 5px 0;
+  font-weight: 700 !important;
+  font-size: 1.1em !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
 }
 
-/* תאים של היומן */
-.fc .fc-daygrid-day {
-  transition: background-color 0.2s;
+/* =================================================================
+   DAYS & CELLS - תאי היומן
+   ================================================================= */
+.fc-daygrid-day,
+.fc-timegrid-slot {
+  transition: all 0.3s ease !important;
+  border-color: rgba(0,0,0,0.05) !important;
 }
 
-.fc .fc-daygrid-day:hover {
-  background-color: #f8f9fa;
+.fc-daygrid-day:hover {
+  background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%) !important;
+  transform: scale(1.02) !important;
 }
 
-/* סגנון היום הנוכחי */
-.fc .fc-day-today {
-  background-color: rgba(76, 175, 80, 0.1) !important;
+/* היום הנוכחי */
+.fc-day-today {
+  background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(52,211,153,0.1) 100%) !important;
+  border: 2px solid rgba(16,185,129,0.3) !important;
+  border-radius: 8px !important;
+  position: relative !important;
 }
 
-/* שעות היומן */
-.fc .fc-timegrid-slot {
-  height: 48px;
+.fc-day-today::before {
+  content: "🌟";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.2em;
+  z-index: 2;
 }
 
-.fc .fc-timegrid-axis-cushion,
-.fc .fc-timegrid-slot-label-cushion {
-  font-weight: 500;
-  color: #546e7a;
+/* =================================================================
+   TIME GRID - רשת זמנים
+   ================================================================= */
+.fc-timegrid-slot {
+  height: 52px !important;
+  border-color: rgba(0,0,0,0.05) !important;
 }
 
-/* אירועים */
-.fc-event-custom {
-  border-radius: 6px;
-  border-right-width: 4px !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 2px;
+.fc-timegrid-axis-cushion,
+.fc-timegrid-slot-label-cushion {
+  font-weight: 600 !important;
+  color: #64748b !important;
+  font-size: 0.9em !important;
+  padding: 8px !important;
 }
 
-.fc-event-custom:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+/* =================================================================
+   EVENTS - אירועים מעוצבים
+   ================================================================= */
+.fc-event {
+  border-radius: 12px !important;
+  border: none !important;
+  border-right: 5px solid currentColor !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1) !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  margin: 2px 4px !important;
+  backdrop-filter: blur(10px) !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-.fc-event-custom .fc-event-title {
-  font-weight: 500;
-  padding: 2px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.fc-event::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.8s;
+  z-index: 1;
 }
 
-.fc-event-custom .fc-event-time {
-  font-weight: 500;
-  padding: 2px 4px;
-  font-size: 0.85em;
-  opacity: 0.9;
+.fc-event:hover::before {
+  left: 100%;
 }
 
-.fc-event-custom .fc-event-location {
-  font-size: 0.8em;
-  opacity: 0.8;
-  padding: 0 4px 2px 4px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.fc-event:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  z-index: 10 !important;
 }
 
-/* אינדיקטור זמן נוכחי */
-.fc .fc-timegrid-now-indicator-line {
-  border-color: #e91e63;
-  border-width: 2px;
+/* תוכן האירוע */
+.fc-event-title-container {
+  position: relative;
+  z-index: 2;
+  padding: 8px 12px !important;
 }
 
-.fc .fc-timegrid-now-indicator-arrow {
-  border-color: #e91e63;
-  border-width: 5px;
+.fc-event-title {
+  font-weight: 600 !important;
+  font-size: 0.95em !important;
+  line-height: 1.3 !important;
+  margin-bottom: 4px !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
 }
 
-/* התאמה למסכים קטנים */
-@media screen and (max-width: 768px) {
-  .fc .fc-toolbar {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .fc .fc-toolbar-title {
-    font-size: 1.2rem;
-  }
-  
-  .fc .fc-button {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.85rem;
-  }
-  
-  .fc-event-custom .fc-event-title {
-    font-size: 0.9em;
-  }
+.fc-event-time {
+  font-weight: 700 !important;
+  font-size: 0.85em !important;
+  opacity: 0.9 !important;
+  margin-bottom: 2px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
+.fc-event-time::before {
+  content: "🕐";
+  margin-left: 4px;
+  font-size: 0.9em;
+}
+
+/* מיקום האירוע */
+.fc-event-location {
+  font-size: 0.8em !important;
+  opacity: 0.85 !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 2px !important;
+}
+
+.fc-event-location .location-icon {
+  margin-left: 4px !important;
+  font-size: 1.1em !important;
+}
+
+/* משתתפים באירוע */
 .fc-event-participants {
-  font-size: 0.75em;
-  display: flex;
-  gap: 6px;
-  margin-top: 2px;
-  opacity: 0.85;
+  font-size: 0.75em !important;
+  display: flex !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+  opacity: 0.9 !important;
 }
 
 .fc-event-participants .kids-count,
 .fc-event-participants .employees-count {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 1px 4px;
+  display: inline-flex !important;
+  align-items: center !important;
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-radius: 12px !important;
+  padding: 2px 6px !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(5px) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
-.fc-event-location {
-  font-size: 0.75em;
-  display: flex;
-  align-items: center;
-  margin-top: 2px;
-  opacity: 0.85;
+/* =================================================================
+   NOW INDICATOR - מחוון זמן נוכחי
+   ================================================================= */
+.fc-timegrid-now-indicator-line {
+  border-color: #ef4444 !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 10px rgba(239,68,68,0.5) !important;
+  position: relative !important;
 }
 
-.fc-event-location .location-icon {
-  margin-left: 2px;
+.fc-timegrid-now-indicator-line::before {
+  content: "🔴 עכשיו";
+  position: absolute;
+  right: 10px;
+  top: -12px;
+  background: #ef4444;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+  animation: pulse 2s infinite;
 }
-.muirtl-1qw2a80-MuiGrid-root>.MuiGrid-item {
-  padding-top: 30px;
+
+.fc-timegrid-now-indicator-arrow {
+  border-color: #ef4444 !important;
+  border-width: 8px !important;
+  filter: drop-shadow(0 2px 4px rgba(239,68,68,0.3)) !important;
+}
+
+/* =================================================================
+   ANIMATIONS - אנימציות
+   ================================================================= */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* הוספת אנימציה לאירועים שנטענים */
+.fc-event {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* =================================================================
+   RESPONSIVE - התאמה למסכים קטנים
+   ================================================================= */
+@media screen and (max-width: 768px) {
+  .fc-toolbar {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 16px !important;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.5rem !important;
+    order: -1 !important;
+  }
+  
+  .fc-button {
+    padding: 8px 16px !important;
+    font-size: 0.9em !important;
+  }
+  
+  .fc-event-title {
+    font-size: 0.85em !important;
+  }
+  
+  .fc-event-time {
+    font-size: 0.75em !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    font-size: 0.9em !important;
+    padding: 8px 4px !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .fc-toolbar {
+    padding: 12px !important;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.3rem !important;
+  }
+  
+  .fc-button {
+    padding: 6px 12px !important;
+    font-size: 0.8em !important;
+  }
+  
+  .fc-event {
+    margin: 1px 2px !important;
+  }
+  
+  .fc-event-title-container {
+    padding: 6px 8px !important;
+  }
+}
+
+/* =================================================================
+   DARK MODE SUPPORT - תמיכה במצב כהה
+   ================================================================= */
+@media (prefers-color-scheme: dark) {
+  .fc-toolbar {
+    background: linear-gradient(135deg, rgba(31,41,55,0.95) 0%, rgba(17,24,39,0.95) 100%) !important;
+    border-color: rgba(75,85,99,0.3) !important;
+  }
+  
+  .fc-toolbar-title {
+    background: linear-gradient(45deg, #818cf8 30%, #a78bfa 90%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .fc-col-header {
+    background: linear-gradient(135deg, rgba(129,140,248,0.1) 0%, rgba(167,139,250,0.1) 100%) !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    color: #818cf8 !important;
+  }
+  
+  .fc-day-today {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(74,222,128,0.15) 100%) !important;
+    border-color: rgba(34,197,94,0.4) !important;
+  }
+}
+
+/* =================================================================
+   FIXES & OVERRIDES - תיקונים והחלפות
+   ================================================================= */
+.muirtl-1qw2a80-MuiGrid-root > .MuiGrid-item {
+  padding-top: 24px !important;
 }
 
 .my-zindex-fix {
   z-index: 2000 !important; 
+}
+
+/* תיקון z-index לדיאלוגים */
+.fc-popover {
+  z-index: 1500 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* עיצוב מותאם לסלקטורים */
+.fc-daygrid-event-harness {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+}
+
+/* הסתרת גבולות מיותרים */
+.fc-scrollgrid {
+  border: none !important;
+}
+
+.fc-scrollgrid-section > * {
+  border-color: rgba(0,0,0,0.05) !important;
+}
+
+/* עיצוב מיוחד לאירועים ארוכים */
+.fc-daygrid-event.fc-event-start,
+.fc-daygrid-event.fc-event-end {
+  border-radius: 12px !important;
+}
+
+.fc-daygrid-event:not(.fc-event-start):not(.fc-event-end) {
+  border-radius: 0 !important;
+  margin-top: 1px !important;
+  margin-bottom: 1px !important;
+}
+
+/* =================================================================
+   ACCESSIBILITY - נגישות
+   ================================================================= */
+.fc-event:focus {
+  outline: 3px solid #818cf8 !important;
+  outline-offset: 2px !important;
+}
+
+.fc-button:focus {
+  outline: 3px solid #818cf8 !important;
+  outline-offset: 2px !important;
+}
+
+/* עיצוב מותאם להדפסה */
+@media print {
+  .fc-toolbar {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .fc-event {
+    box-shadow: none !important;
+    border: 1px solid currentColor !important;
+  }
+  
+  .fc-button {
+    display: none !important;
+  }
 }
