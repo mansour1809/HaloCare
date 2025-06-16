@@ -33,6 +33,7 @@ import Profile from './pages/Employees/EmployeeProfile';
 import SystemSettings from './pages/SystemSetting/SystemSettings';
 import KidOnboarding from './pages/addKid/KidOnboarding';
 import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
+import EmployeeProfile from './pages/Employees/EmployeeProfile';
 
 // יצירת ערכת נושא
 const theme = createTheme({
@@ -265,13 +266,14 @@ const AppContent = () => {
               />
 
               <Route
-                path="/profile"
+                path="/employees/profile/:employeeId"
                 element={
                   <PrivateRoute>
-                      <Profile />
+                      <EmployeeProfile />
                   </PrivateRoute>
                 }
               />
+
 
               {/* 404 */}
               <Route path="*" element={<Navigate to="/" />} />

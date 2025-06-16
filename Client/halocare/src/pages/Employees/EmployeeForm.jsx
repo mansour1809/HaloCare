@@ -27,6 +27,7 @@ import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
 import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
+import { baseURL } from '../../components/common/axiosConfig';
 
 // עיצוב משופר לתמה עם פלטת צבעים מדהימה
 const rtlTheme = createTheme({
@@ -205,6 +206,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
+  
+  const currentUser = JSON.parse(localStorage.getItem('user'));
   
   const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
@@ -716,7 +719,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     <label htmlFor="profile-upload">
                       <StyledAvatar
                         src={profilePreview || (isEditMode && formData.photo ? 
-                          `${baseUrl}/api/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}` : 
+                          `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}` : 
                           undefined)}
                         sx={{ 
                           margin: '0 auto',
@@ -1067,9 +1070,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       </CardContent>
                     </Card>
                   </Fade>
-
                   {/* פרטי כניסה למערכת */}
-                  {!isEditMode && (
+                  {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
                     <Fade in timeout={1600}>
                       <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                         <CardContent sx={{ p: 3 }}>

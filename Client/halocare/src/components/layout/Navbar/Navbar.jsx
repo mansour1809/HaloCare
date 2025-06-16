@@ -69,7 +69,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const Navbar = () => {
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElNotifications, setAnchorElNotifications] = useState(null);
-  
+  // const [selectedEmployeeId, setSelectedEmployeeId] = useState(''); // נניח שיש לך מזהה עובד שנבחר
+
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const selectedEmployeeId = currentUser.id; 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -147,7 +150,7 @@ const Navbar = () => {
             onClick={() => {
               handleCloseUserMenu();
               if (setting === 'פרופיל') {
-                window.location.href = '/#/profile';
+                window.location.href = '/#/employees/profile/' + selectedEmployeeId;
               }
             }}
                 >

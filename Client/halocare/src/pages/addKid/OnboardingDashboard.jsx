@@ -26,9 +26,7 @@ import axios from '../../components/common/axiosConfig';
 import { 
   updateFormStatus,
 } from '../../Redux/features/onboardingSlice';
-import { 
-  markFormCompletedByParent 
-} from '../../Redux/features/formsSlice';
+
 import { fetchParentById } from '../../Redux/features/parentSlice';
 
 // 🔥 הקומפוננטה החדשה לניהול מסמכים
@@ -222,7 +220,7 @@ const OnboardingDashboard = ({
           compact={true}
           showUpload={true}
           showStats={true}
-          maxHeight={300}
+          maxHeight={400}
         />
       </Box>
 
@@ -320,7 +318,7 @@ const OnboardingDashboard = ({
                       </Button>
                     ) : (
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        {form.formId !== '1002' && (
+                        {form.formId != '1002' && (
                           <Button
                             startIcon={<ViewIcon />}
                             onClick={() => onFormClick(form, 'view')}
@@ -344,7 +342,7 @@ const OnboardingDashboard = ({
 
                   <Box>
                     {/* שליחה להורה */}
-                    {canSendToParent(form) && form.formId !== '1002' && (
+                    {canSendToParent(form) && form.formId != '1002' && (
                       <Tooltip title="שלח טופס להורה">
                         <IconButton
                           onClick={() => handleSendToParent(form)}
@@ -397,7 +395,7 @@ const OnboardingDashboard = ({
             required
             placeholder="example@email.com"
             helperText="הטופס יישלח עם קישור למילוי אונליין"
-            disabled={loadingParentEmail}
+            disabled={true}
           />
           <Alert severity="info" sx={{ mt: 2 }}>
             הטופס יישלח להורים באימייל עם קישור למילוי

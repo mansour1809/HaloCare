@@ -31,8 +31,6 @@ import {
   Tooltip
 } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import EditIcon from "@mui/icons-material/Edit";
-import DescriptionIcon from "@mui/icons-material/Description";
 import { Link } from "react-router-dom";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -40,7 +38,8 @@ import { he } from 'date-fns/locale';
 import { Alert } from '@mui/material';
 import FilesList from '../../components/common/FilesList';
 import FileUploader from '../../components/common/FileUploader';
-
+import { Person as PersonIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 // ייבוא הוק הקונטקסט שיצרנו
 import { useEmployees } from './EmployeesContext';
 import { useDispatch, useSelector } from 'react-redux';
@@ -65,6 +64,7 @@ const theme = createTheme({
 
 const EmployeesManagement = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   // שימוש בקונטקסט
   const { 
@@ -104,10 +104,10 @@ const EmployeesManagement = () => {
     }
   };
 
-  const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-    setOpen(true);
-  };
+  // const handleEdit = (employee) => {
+  //   setSelectedEmployee(employee);
+  //   setOpen(true);
+  // };
 
   const handleClose = () => {
     setOpen(false);
@@ -116,13 +116,13 @@ const EmployeesManagement = () => {
   };
 
 
-  // opening documents dialog
-  const handleOpenDocuments = (employee) => {
-    setSelectedEmployeeForDocuments(employee);
-    setDocumentsDialogOpen(true);
-    // dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
+  // // opening documents dialog
+  // const handleOpenDocuments = (employee) => {
+  //   setSelectedEmployeeForDocuments(employee);
+  //   setDocumentsDialogOpen(true);
+  //   // dispatch(fetchDocumentsByEmployeeId(employee.employeeId));
 
-  };
+  // };
 
   // closing documents dialog
   const handleCloseDocuments = () => {
@@ -139,7 +139,8 @@ const EmployeesManagement = () => {
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('he-IL');
-    } catch (e) {
+    } catch (error) {
+      console.error("Error parsing date:", error);
       return dateString;
     }
   };
@@ -427,37 +428,21 @@ src={
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", gap: 1 }}>
-                          <Tooltip title="עריכת פרטי עובד">
-                            <IconButton
-                              sx={{
-                                width: 35,
-                                height: 35,
-                                backgroundColor: "#4cb5c3",
-                                "&:hover": { backgroundColor: "#3da1af" },
-                                color: "white",
-                                transition: "all 0.2s",
-                              }}
-                              onClick={() => handleEdit(employee)}
-                            >
-                              <EditIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </Tooltip>
-
-                          <Tooltip title="ניהול מסמכים">
-                            <IconButton
-                              sx={{
-                                width: 35,
-                                height: 35,
-                                backgroundColor: "#ff9800",
-                                "&:hover": { backgroundColor: "#f57c00" },
-                                color: "white",
-                                transition: "all 0.2s",
-                              }}
-                              onClick={() => handleOpenDocuments(employee)}
-                            >
-                              <DescriptionIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </Tooltip>
+                          <Tooltip title="פרופיל עובד">
+  <IconButton
+    sx={{
+      width: 35,
+      height: 35,
+      backgroundColor: "#4cb5c3",
+      "&:hover": { backgroundColor: "#3da1af" },
+      color: "white",
+      transition: "all 0.2s",
+    }}
+    onClick={() => navigate(`/employees/profile/${employee.employeeId}`)}
+  >
+    <PersonIcon sx={{ fontSize: 18 }} />
+  </IconButton>
+</Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
