@@ -622,12 +622,6 @@ const EmployeeProfile = () => {
                     label="📁 מסמכים וקבצים" 
                     iconPosition="start"
                   />
-                  <Tab 
-                    // icon={<SettingsIcon />} 
-                    label="⚙️ הגדרות" 
-                    iconPosition="start"
-                    disabled
-                  />
                 </Tabs>
 
                 {/* תוכן הטאבים */}
@@ -786,21 +780,6 @@ const EmployeeProfile = () => {
                           showUpload={true}
                           showStats={true}
                         />
-                      </Box>
-                    </Fade>
-                  )}
-
-                  {/* טאב הגדרות */}
-                  {currentTab === 2 && (
-                    <Fade in timeout={500}>
-                      <Box textAlign="center" py={8}>
-                        <AutoAwesomeIcon sx={{ fontSize: 80, color: 'primary.main', mb: 3 }} />
-                        <Typography variant="h5" color="primary.main" fontWeight={700} gutterBottom>
-                          🚀 טאב הגדרות יגיע בקרוב
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
-                          ✨ אנחנו עובדים על תכונות מדהימות עבורך
-                        </Typography>
                       </Box>
                     </Fade>
                   )}
