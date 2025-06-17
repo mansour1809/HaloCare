@@ -153,34 +153,34 @@ const MainHeader = styled(Box)(({ theme }) => ({
   }
 }));
 
-// טאב מעוצב עם אייקון
-const TabWithIcon = ({ icon, label, ...props }) => {
-  return (
-    <Tab
-      icon={
-        <Avatar sx={{ 
-          background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
-          width: 32,
-          height: 32,
-          mb: 1
-        }}>
-          {icon}
-        </Avatar>
-      }
-      label={
-        <Typography variant="subtitle1" fontWeight={600}>
-          {label}
-        </Typography>
-      }
-      sx={{ 
-        flexDirection: 'column',
-        minWidth: 120,
-        padding: '16px 24px'
-      }}
-      {...props}
-    />
-  );
-};
+// // טאב מעוצב עם אייקון
+// const TabWithIcon = ({ icon, label, ...props }) => {
+//   return (
+//     <Tab
+//       icon={
+//         <Avatar sx={{ 
+//           background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
+//           width: 32,
+//           height: 32,
+//           mb: 1
+//         }}>
+//           {icon}
+//         </Avatar>
+//       }
+//       label={
+//         <Typography variant="subtitle1" fontWeight={600}>
+//           {label}
+//         </Typography>
+//       }
+//       sx={{ 
+//         flexDirection: 'column',
+//         minWidth: 190,
+//         padding: '16px 24px'
+//       }}
+//       {...props}
+//     />
+//   );
+// };
 
 // כרטיס תוכן מעוצב
 const ContentCard = styled(Card)(({ theme }) => ({
@@ -371,7 +371,7 @@ const AttendanceDashboard = () => {
           </Zoom>
           
           {/* טאבים מעוצבים */}
-          <Zoom in timeout={1200}>
+          {/* <Zoom in timeout={1200}>
             <Card sx={{ mb: 3 }}>
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -397,7 +397,7 @@ const AttendanceDashboard = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Zoom>
+          </Zoom> */}
 
           {/* תוכן הטאבים */}
           <Fade in timeout={1400}>

@@ -229,42 +229,42 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// כרטיס סטטיסטיקה מדהים
-const StatCard = styled(Card)(({ theme, color }) => ({
-  padding: '24px 20px',
-  textAlign: 'center',
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: '20px',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
-  height: '140px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
-    borderRadius: '20px 20px 0 0',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: '200%',
-    height: '200%',
-    background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
-    transform: 'translate(-50%, -50%)',
-    pointerEvents: 'none',
-  }
-}));
+// // כרטיס סטטיסטיקה מדהים
+// const StatCard = styled(Card)(({ theme, color }) => ({
+//   padding: '24px 20px',
+//   textAlign: 'center',
+//   background: 'rgba(255, 255, 255, 0.95)',
+//   backdropFilter: 'blur(20px)',
+//   borderRadius: '20px',
+//   border: '1px solid rgba(255, 255, 255, 0.3)',
+//   height: '140px',
+//   display: 'flex',
+//   flexDirection: 'column',
+//   justifyContent: 'center',
+//   position: 'relative',
+//   overflow: 'hidden',
+//   '&::before': {
+//     content: '""',
+//     position: 'absolute',
+//     top: 0,
+//     left: 0,
+//     right: 0,
+//     height: '4px',
+//     background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
+//     borderRadius: '20px 20px 0 0',
+//   },
+//   '&::after': {
+//     content: '""',
+//     position: 'absolute',
+//     top: '50%',
+//     left: '50%',
+//     width: '200%',
+//     height: '200%',
+//     background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
+//     transform: 'translate(-50%, -50%)',
+//     pointerEvents: 'none',
+//   }
+// }));
 
 // טבלה מעוצבת עם אפקטים
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
@@ -460,8 +460,8 @@ const EmployeesManagement = () => {
   return (
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-        <Box sx={{ direction: 'rtl' }}>
-          <FullScreenContainer>
+        <Box dir="rtl" sx={{ direction: 'rtl' }}>
+          <FullScreenContainer dir='rtl'>
             <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
               
               {/* כותרת מקצועית עם סטטיסטיקות */}
@@ -475,14 +475,14 @@ const EmployeesManagement = () => {
                       display: 'flex',
                       alignItems: 'center'
                     }}>
-                      <GroupIcon sx={{ mr: 2, fontSize: '3rem' }} />
+                      {/* <GroupIcon sx={{ mr: 2, fontSize: '3rem' }} /> */}
                       👥 ניהול עובדים
                     </Typography>
 
                     <Stack direction="row" spacing={2}>
                       <AnimatedButton
                         variant="contained"
-                        startIcon={<AddIcon />}
+                        // startIcon={<AddIcon />}
                         component={Link}
                         to="/employees/add"
                         sx={{
@@ -603,13 +603,7 @@ const EmployeesManagement = () => {
                       placeholder="🔍 חיפוש חופשי בשם, מייל או טלפון..."
                       value={searchText}
                       onChange={(event) => setSearchText(event.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <SearchIcon sx={{ color: '#4cb5c3' }} />
-                          </InputAdornment>
-                        ),
-                      }}
+                     
                       sx={{ 
                         flex: 1,
                         '& .MuiOutlinedInput-root': {
@@ -711,7 +705,7 @@ const EmployeesManagement = () => {
                             }}
                           >
                             <TableCell>
-                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Box sx={{ display: "flex-start", alignItems: "center", justifyContent: "right"  }}>
                                 <Avatar
                                   src={
                                     employee.photo
@@ -722,7 +716,7 @@ const EmployeesManagement = () => {
                                   sx={{
                                     width: 50,
                                     height: 50,
-                                    ml: 2,
+                                    // ml: 2,
                                     border: "3px solid rgba(76, 181, 195, 0.3)",
                                     boxShadow: "0 4px 12px rgba(76, 181, 195, 0.2)",
                                     transition: 'all 0.3s ease',
@@ -739,10 +733,12 @@ const EmployeesManagement = () => {
                                     </>
                                   )}
                                 </Avatar>
+                                
                                 <Typography sx={{ 
                                   fontWeight: 600,
                                   fontSize: '1.1rem',
-                                  color: '#2a8a95'
+                                  color: '#2a8a95',
+                                  ml: 2,
                                 }}>
                                   {`${employee.firstName || ""} ${employee.lastName || ""}`}
                                 </Typography>

@@ -393,7 +393,7 @@ const EmployeeProfile = () => {
   if (!employee) {
     return (
       <ThemeProvider theme={profileTheme}>
-        <Box sx={{ direction: 'rtl' }}>
+        <Box dir='rtl'>
           <FullScreenContainer>
             <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
               <Alert 
@@ -431,7 +431,7 @@ const EmployeeProfile = () => {
 
   return (
     <ThemeProvider theme={profileTheme}>
-      <Box sx={{ direction: 'rtl' }}>
+      <Box dir='rtl'>
         <FullScreenContainer>
           <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
             {/* Breadcrumbs */}
@@ -515,7 +515,8 @@ const EmployeeProfile = () => {
                      
                       <Chip
                         icon={employee.isActive ? <CelebrationIcon /> : <SecurityIcon />}
-                        label={employee.isActive ? '✅ פעיל' : '❌ לא פעיל'}
+                        // label={employee.isActive ? '✅ פעיל' : '❌ לא פעיל'}
+                        label={employee.isActive ? ' פעיל' : ' לא פעיל'}
                         color={employee.isActive ? 'success' : 'error'}
                         sx={{ 
                           fontWeight: 700,
@@ -541,7 +542,7 @@ const EmployeeProfile = () => {
                   <Grid item xs={12} md={3} textAlign="center">
                     <Button
                       variant="contained"
-                      startIcon={<EditIcon />}
+                      // startIcon={<EditIcon />}
                       onClick={() => setEditMode(true)}
                       sx={{
                         backgroundColor: 'rgba(255,255,255,0.2)',
@@ -612,17 +613,17 @@ const EmployeeProfile = () => {
                   }}
                 >
                   <Tab 
-                    icon={<PersonIcon />} 
+                    // icon={<PersonIcon />} 
                     label="📋 מידע כללי" 
                     iconPosition="start"
                   />
                   <Tab 
-                    icon={<FolderIcon />} 
+                    // icon={<FolderIcon />} 
                     label="📁 מסמכים וקבצים" 
                     iconPosition="start"
                   />
                   <Tab 
-                    icon={<SettingsIcon />} 
+                    // icon={<SettingsIcon />} 
                     label="⚙️ הגדרות" 
                     iconPosition="start"
                     disabled
@@ -641,7 +642,7 @@ const EmployeeProfile = () => {
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
-                                  <PersonIcon sx={{ color: 'primary.main', mr: 2, fontSize: '2rem' }} />
+                                  {/* <PersonIcon sx={{ color: 'primary.main', mr: 2, fontSize: '2rem' }} /> */}
                                   <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
                                     👤 פרטים אישיים
                                   </Typography>
@@ -649,7 +650,7 @@ const EmployeeProfile = () => {
                                 
                                 <Stack spacing={3}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(76, 181, 195, 0.05)' }}>
-                                    <EmailIcon sx={{ color: 'primary.main', mr: 3, fontSize: '1.5rem' }} />
+                                    {/* <EmailIcon sx={{ color: 'primary.main', mr: 3, fontSize: '1.5rem' }} /> */}
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         📧 דוא"ל
@@ -661,7 +662,7 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(255, 112, 67, 0.05)' }}>
-                                    <PhoneIcon sx={{ color: 'secondary.main', mr: 3, fontSize: '1.5rem' }} />
+                                    {/* <PhoneIcon sx={{ color: 'secondary.main', mr: 3, fontSize: '1.5rem' }} /> */}
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         📱 טלפון נייד
