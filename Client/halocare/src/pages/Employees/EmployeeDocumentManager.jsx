@@ -143,7 +143,7 @@ const rtlTheme = createTheme({
 // מסך מלא מותאם RTL עם רקע מדהים
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  background: 'linear-gradient(135deg,rgb(195, 110, 76) 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
@@ -183,42 +183,42 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// כרטיס סטטיסטיקה מדהים
-const StatCard = styled(Card)(({ theme, color }) => ({
-  padding: '24px 20px',
-  textAlign: 'center',
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: '20px',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
-  height: '140px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
-    borderRadius: '20px 20px 0 0',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: '200%',
-    height: '200%',
-    background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
-    transform: 'translate(-50%, -50%)',
-    pointerEvents: 'none',
-  }
-}));
+// // כרטיס סטטיסטיקה מדהים
+// const StatCard = styled(Card)(({ theme, color }) => ({
+//   padding: '24px 20px',
+//   textAlign: 'center',
+//   background: 'rgba(255, 255, 255, 0.95)',
+//   backdropFilter: 'blur(20px)',
+//   borderRadius: '20px',
+//   border: '1px solid rgba(255, 255, 255, 0.3)',
+//   height: '140px',
+//   display: 'flex',
+//   flexDirection: 'column',
+//   justifyContent: 'center',
+//   position: 'relative',
+//   overflow: 'hidden',
+//   '&::before': {
+//     content: '""',
+//     position: 'absolute',
+//     top: 0,
+//     left: 0,
+//     right: 0,
+//     height: '4px',
+//     background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
+//     borderRadius: '20px 20px 0 0',
+//   },
+//   '&::after': {
+//     content: '""',
+//     position: 'absolute',
+//     top: '50%',
+//     left: '50%',
+//     width: '200%',
+//     height: '200%',
+//     background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
+//     transform: 'translate(-50%, -50%)',
+//     pointerEvents: 'none',
+//   }
+// }));
 
 // כרטיס תוכן מעוצב
 const ContentCard = styled(Paper)(({ theme }) => ({

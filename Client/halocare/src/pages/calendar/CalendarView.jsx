@@ -35,8 +35,15 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
   '& .fc': {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     background: 'transparent',
+
+    
   },
-  
+
+//  '& .fc-scroller': {
+//     maxWidth: '120% !important',  // במקום 'fit-content'
+//     width: '120% !important'
+//   },
+
   // סגנון מותאם לכל רכיבי FullCalendar
   '& .fc-toolbar': {
     padding: '24px',
@@ -424,6 +431,7 @@ const CalendarView = ({
           handleWindowResize={true}
           stickyHeaderDates={true}
           nowIndicator={true}
+          // width="100px"
           
           // פורמט זמן
           eventTimeFormat={{

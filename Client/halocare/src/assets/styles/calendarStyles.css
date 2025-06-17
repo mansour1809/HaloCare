@@ -527,3 +527,10 @@
     display: none !important;
   }
 }
+
+.fc-scoller {
+  overflow: hidden !important;
+  position: relative !important;
+  max-width: fit-content !important;
+  width: 100% !important;
+}
