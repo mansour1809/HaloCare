@@ -15,12 +15,11 @@ const EmployeesContext = createContext();
 // הוק שמאפשר גישה לקונטקסט בכל קומפוננטה
 export const useEmployees = () => useContext(EmployeesContext);
 
-// קונטקסט פרובידר לעובדים
+// קונטקסט פרובידר לעובדים עם עיצוב מעודכן להודעות
 export const EmployeesProvider = ({ children }) => {
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState("");
 
   // קבלת נתונים מהרדקס סטור
   const { employees } = useSelector((state) => state.employees);
@@ -49,14 +48,12 @@ export const EmployeesProvider = ({ children }) => {
     }
   }, [dispatch, citiesStatus, rolesStatus, classesStatus, employeesStatus]);
 
-
-
   // פונקציה לרענון רשימת העובדים
-const refreshEmployees = useCallback(() => {
-  dispatch(fetchEmployees());
-}, [dispatch]);
+  const refreshEmployees = useCallback(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
 
-  // פונקציה להוספת עובד חדש
+  // פונקציה להוספת עובד חדש עם הודעות מעוצבות
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
@@ -64,23 +61,52 @@ const refreshEmployees = useCallback(() => {
       // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`/Employees`, employeeData);
 
-      // רענון רשימת העובדים
-      // refreshEmployees();
-      
       setLoading(false);
       
+      // הודעת הצלחה מעוצבת
+      await Swal.fire({
+        icon: 'success',
+        title: '🎉 העובד נוסף בהצלחה!',
+        text: 'העובד החדש נוסף למערכת בהצלחה',
+        confirmButtonText: '👍 מעולה!',
+        confirmButtonColor: '#4cb5c3',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-success',
+          content: 'swal-content-success'
+        },
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        },
+        timer: 3000,
+        timerProgressBar: true
+      });
       
       return { success: true, data: response.data };
     } catch (err) {
       console.error("שגיאה בהוספת עובד חדש:", err);
       setLoading(false);
 
-      // הצגת הודעת שגיאה
-      Swal.fire({
+      // הודעת שגיאה מעוצבת
+      await Swal.fire({
         icon: 'error',
-        title: 'שגיאה!',
+        title: '❌ שגיאה בהוספת עובד',
         text: err.response?.data || "שגיאה בהוספת עובד חדש. אנא בדוק את הנתונים ונסה שוב.",
-        confirmButtonText: 'אישור'
+        confirmButtonText: '🔄 נסה שוב',
+        confirmButtonColor: '#ef4444',
+        background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-error',
+          content: 'swal-content-error'
+        },
+        showClass: {
+          popup: 'animate__animated animate__shakeX'
+        }
       });
       
       return {
@@ -90,10 +116,11 @@ const refreshEmployees = useCallback(() => {
     }
   };
 
-  // פונקציה לעדכון עובד
+  // פונקציה לעדכון עובד עם הודעות מעוצבות
   const updateEmployee = async (updatedEmployee) => {
     try {
       setLoading(true);
+      
       // שליחת עדכון העובד לשרת
       await axios.put(`/Employees/${updatedEmployee.employeeId}`, updatedEmployee);
       
@@ -102,12 +129,24 @@ const refreshEmployees = useCallback(() => {
       
       setLoading(false);
       
-      // הצגת הודעת הצלחה
-      Swal.fire({
+      // הודעת הצלחה מעוצבת
+      await Swal.fire({
         icon: 'success',
-        title: 'העובד עודכן בהצלחה!',
+        title: '✅ העובד עודכן בהצלחה!',
         text: 'פרטי העובד עודכנו במערכת',
-        confirmButtonText: 'אישור'
+        confirmButtonText: '👍 מצוין!',
+        confirmButtonColor: '#10b981',
+        background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-success',
+          content: 'swal-content-success'
+        },
+        showClass: {
+          popup: 'animate__animated animate__bounceIn'
+        },
+        timer: 2500,
+        timerProgressBar: true
       });
       
       return { success: true };
@@ -115,12 +154,19 @@ const refreshEmployees = useCallback(() => {
       console.error("שגיאה בעדכון פרטי העובד:", err);
       setLoading(false);
       
-      // הצגת הודעת שגיאה
-      Swal.fire({
+      // הודעת שגיאה מעוצבת
+      await Swal.fire({
         icon: 'error',
-        title: 'שגיאה!',
+        title: '❌ שגיאה בעדכון',
         text: err.response?.data?.message || "שגיאה בעדכון פרטי העובד. אנא בדוק את הנתונים ונסה שוב.",
-        confirmButtonText: 'אישור'
+        confirmButtonText: '🔄 נסה שוב',
+        confirmButtonColor: '#ef4444',
+        background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-error',
+          content: 'swal-content-error'
+        }
       });
       
       return {
@@ -130,19 +176,48 @@ const refreshEmployees = useCallback(() => {
     }
   };
 
-  // פונקציה לעדכון סטטוס עובד
+  // פונקציה לעדכון סטטוס עובד עם הודעות מעוצבות
   const toggleEmployeeStatus = async (id, currentStatus) => {
     try {
       setLoading(true);
       
-      // שאלת אישור לפני שינוי הסטטוס
+      // שאלת אישור מעוצבת
       const result = await Swal.fire({
         icon: 'question',
-        title: `האם אתה בטוח שברצונך ${currentStatus ? 'להשבית' : 'להפעיל'} את העובד?`,
-        text: `העובד יהיה ${currentStatus ? 'לא פעיל' : 'פעיל'} במערכת`,
+        title: `🤔 ${currentStatus ? 'השבתת' : 'הפעלת'} עובד`,
+        text: `האם אתה בטוח שברצונך ${currentStatus ? 'להשבית' : 'להפעיל'} את העובד?`,
+        html: `
+          <div style="text-align: center; font-family: 'Rubik', 'Heebo', Arial, sans-serif;">
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">
+              העובד יהיה <strong style="color: ${currentStatus ? '#ef4444' : '#10b981'};">
+                ${currentStatus ? '❌ לא פעיל' : '✅ פעיל'}
+              </strong> במערכת
+            </p>
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+              <span style="background: ${currentStatus ? '#fee2e2' : '#dcfce7'}; 
+                           color: ${currentStatus ? '#dc2626' : '#059669'}; 
+                           padding: 8px 16px; 
+                           border-radius: 20px; 
+                           font-weight: 600;">
+                ${currentStatus ? '🔴 השבתה' : '🟢 הפעלה'}
+              </span>
+            </div>
+          </div>
+        `,
         showCancelButton: true,
-        confirmButtonText: 'כן, בצע שינוי',
-        cancelButtonText: 'ביטול'
+        confirmButtonText: `✅ כן, ${currentStatus ? 'השבת' : 'הפעל'}`,
+        cancelButtonText: '❌ ביטול',
+        confirmButtonColor: currentStatus ? '#ef4444' : '#10b981',
+        cancelButtonColor: '#6b7280',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-question',
+          content: 'swal-content-question'
+        },
+        showClass: {
+          popup: 'animate__animated animate__pulse'
+        }
       });
       
       if (!result.isConfirmed) {
@@ -160,12 +235,24 @@ const refreshEmployees = useCallback(() => {
       
       setLoading(false);
       
-      // הצגת הודעת הצלחה
-      Swal.fire({
+      // הודעת הצלחה מעוצבת
+      await Swal.fire({
         icon: 'success',
-        title: 'הסטטוס עודכן בהצלחה!',
-        text: `העובד ${!currentStatus ? 'פעיל' : 'לא פעיל'} כעת`,
-        confirmButtonText: 'אישור'
+        title: `🎉 הסטטוס עודכן בהצלחה!`,
+        text: `העובד ${!currentStatus ? '✅ פעיל' : '❌ לא פעיל'} כעת`,
+        confirmButtonText: '👍 מעולה!',
+        confirmButtonColor: '#4cb5c3',
+        background: `linear-gradient(135deg, ${!currentStatus ? '#f0fdf4' : '#fef2f2'} 0%, ${!currentStatus ? '#dcfce7' : '#fee2e2'} 100%)`,
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-success',
+          content: 'swal-content-success'
+        },
+        showClass: {
+          popup: 'animate__animated animate__tada'
+        },
+        timer: 2000,
+        timerProgressBar: true
       });
       
       return { success: true };
@@ -173,11 +260,18 @@ const refreshEmployees = useCallback(() => {
       console.error("שגיאה בעדכון סטטוס העובד:", err);
       setLoading(false);
       
-      Swal.fire({
+      await Swal.fire({
         icon: 'error',
-        title: 'שגיאה!',
+        title: '❌ שגיאה בעדכון סטטוס',
         text: "שגיאה בעדכון סטטוס העובד. אנא נסה שוב.",
-        confirmButtonText: 'אישור'
+        confirmButtonText: '🔄 נסה שוב',
+        confirmButtonColor: '#ef4444',
+        background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-error',
+          content: 'swal-content-error'
+        }
       });
       
       return {
@@ -187,37 +281,90 @@ const refreshEmployees = useCallback(() => {
     }
   };
 
-  // פונקציה לשליחת מייל ברוכים הבאים
+  // פונקציה לשליחת מייל ברוכים הבאים עם הודעות מעוצבות
   const sendWelcomeEmail = async (email, password, firstName, lastName) => {
-
     try {
       const response = await axios.post(`/Employees/sendWelcomeEmail`, {
         email,
         password,
         firstName,
         lastName,
-        // loginUrl: window.location.origin + "/bgroup3/test2/halocare/#/login",
         loginUrl: window.location.origin + "/#/login",
       });
 
-      // הצגת הודעת הצלחה
-      Swal.fire({
+      // הודעת הצלחה מעוצבת למייל
+      await Swal.fire({
         icon: 'success',
-        title: 'המייל נשלח בהצלחה!',
-        text: `מייל ברוכים הבאים נשלח ל-${email}`,
-        confirmButtonText: 'אישור'
+        title: '📧 המייל נשלח בהצלחה!',
+        html: `
+          <div style="text-align: center; font-family: 'Rubik', 'Heebo', Arial, sans-serif;">
+            <p style="font-size: 1.1rem; margin-bottom: 15px;">
+              מייל ברוכים הבאים נשלח בהצלחה ל:
+            </p>
+            <div style="background: #e0f2fe; 
+                        border: 2px solid #4cb5c3; 
+                        border-radius: 12px; 
+                        padding: 15px; 
+                        margin: 10px 0;">
+              <strong style="color: #2a8a95; font-size: 1.2rem;">
+                📧 ${email}
+              </strong>
+            </div>
+            <p style="color: #6b7280; font-size: 0.9rem; margin-top: 15px;">
+              העובד יקבל הוראות התחברות למערכת
+            </p>
+          </div>
+        `,
+        confirmButtonText: '👍 מצוין!',
+        confirmButtonColor: '#4cb5c3',
+        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-success',
+          content: 'swal-content-success'
+        },
+        showClass: {
+          popup: 'animate__animated animate__bounceIn'
+        },
+        timer: 4000,
+        timerProgressBar: true
       });
 
       return { success: true, data: response.data };
     } catch (err) {
       console.error("שגיאה בשליחת המייל:", err);
       
-      // הצגת הודעת שגיאה
-      Swal.fire({
+      // הודעת שגיאה מעוצבת למייל
+      await Swal.fire({
         icon: 'error',
-        title: 'שגיאה!',
-        text: err.response?.data?.message || "שגיאה בשליחת אימייל ברוכים הבאים.",
-        confirmButtonText: 'אישור'
+        title: '📧 שגיאה בשליחת מייל',
+        html: `
+          <div style="text-align: center; font-family: 'Rubik', 'Heebo', Arial, sans-serif;">
+            <p style="font-size: 1.1rem; margin-bottom: 15px; color: #dc2626;">
+              לא הצלחנו לשלוח את המייל לכתובת:
+            </p>
+            <div style="background: #fee2e2; 
+                        border: 2px solid #ef4444; 
+                        border-radius: 12px; 
+                        padding: 15px; 
+                        margin: 10px 0;">
+              <strong style="color: #dc2626; font-size: 1.2rem;">
+                📧 ${email}
+              </strong>
+            </div>
+            <p style="color: #6b7280; font-size: 0.9rem; margin-top: 15px;">
+              ${err.response?.data?.message || "אנא בדוק את כתובת המייל ונסה שוב"}
+            </p>
+          </div>
+        `,
+        confirmButtonText: '🔄 נסה שוב',
+        confirmButtonColor: '#ef4444',
+        background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+        customClass: {
+          popup: 'rtl-popup',
+          title: 'swal-title-error',
+          content: 'swal-content-error'
+        }
       });
       
       return {
@@ -227,10 +374,10 @@ const refreshEmployees = useCallback(() => {
     }
   };
 
-  // פונקציה ליצירת סיסמה אקראית
-  const generateRandomPassword = (length = 10) => {
+  // פונקציה ליצירת סיסמה אקראית מחוזקת
+  const generateRandomPassword = (length = 12) => {
     const charset =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     let password = "";
 
     const randomValues = new Uint32Array(length);
@@ -261,6 +408,50 @@ const refreshEmployees = useCallback(() => {
   return (
     <EmployeesContext.Provider value={value}>
       {children}
+      
+      {/* CSS מותאם להודעות SweetAlert2 */}
+      <style jsx global>{`
+        .rtl-popup {
+          direction: rtl !important;
+          font-family: 'Rubik', 'Heebo', Arial, sans-serif !important;
+        }
+        
+        .swal-title-success {
+          color: #059669 !important;
+          font-weight: 700 !important;
+        }
+        
+        .swal-title-error {
+          color: #dc2626 !important;
+          font-weight: 700 !important;
+        }
+        
+        .swal-title-question {
+          color: #4cb5c3 !important;
+          font-weight: 700 !important;
+        }
+        
+        .swal-content-success {
+          color: #374151 !important;
+        }
+        
+        .swal-content-error {
+          color: #374151 !important;
+        }
+        
+        .swal-content-question {
+          color: #374151 !important;
+        }
+        
+        .swal2-popup {
+          border-radius: 20px !important;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.2) !important;
+        }
+        
+        .swal2-timer-progress-bar {
+          background: linear-gradient(90deg, #4cb5c3, #10b981) !important;
+        }
+      `}</style>
     </EmployeesContext.Provider>
   );
 };
