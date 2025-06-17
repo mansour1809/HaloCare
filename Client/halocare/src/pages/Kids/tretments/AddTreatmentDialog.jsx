@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/treatments/AddTreatmentDialog.jsx - גרסה משופרת
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Dialog,
@@ -20,70 +21,68 @@ import {
   Alert,
   CircularProgress,
   FormHelperText,
-  Tooltip,
   Paper,
-  Chip
+  Chip,
+  Stack,
+  Avatar
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Save as SaveIcon,
-  ErrorOutline as ErrorIcon,
-  AutoFixHigh as AutoFixIcon,
-  FormatColorText as FormatTextIcon
+  Person as PersonIcon,
+  Star as StarIcon,
+  Event as EventIcon,
+  Description as DescriptionIcon,
+  Highlight as HighlightIcon
 } from '@mui/icons-material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import { useTreatmentContext } from './TreatmentContext';
-import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
 import { useAuth } from '../../../components/login/AuthContext';
 import Swal from 'sweetalert2';
-import TreatmentValidations from '../../../utils/treatmentsValidation';
-import axios from 'axios';
 
 const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
-  const { isAddDialogOpen, closeAddDialog, addTreatment, loading, error } = useTreatmentContext();
-  const dispatch = useDispatch();
-  const { currentUser } = useAuth();
+  const { 
+    isAddDialogOpen, 
+    closeAddDialog, 
+    addTreatment, 
+    loading, 
+    error,
+    getTreatmentName,
+    getColorForTreatmentType 
+  } = useTreatmentContext();
   
-  // שליפת סוגי טיפולים מהסטור
-  const { treatmentTypes, status: treatmentTypesStatus } = useSelector(state => state.treatmentTypes);
+  const { currentUser } = useAuth();
+  const { employees } = useSelector(state => state.employees);
+  const { selectedKid } = useSelector(state => state.kids);
   
   // מצב עבור ולידציות
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
   
-  // מצב עבור העוזר החכם לכתיבה
-  const [suggestion, setSuggestion] = useState('');
-  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
-  const [isImprovingText, setIsImprovingText] = useState(false);
-  const [selectedTreatmentTypeId, setSelectedTreatmentTypeId] = useState(null);
-  const typingTimeoutRef = useRef(null);
-  const descriptionInputRef = useRef(null);
-  
   const [formData, setFormData] = useState({
+    treatmentId: 0,
     kidId: kidId,
-    employeeId: currentUser?.id || '',
-    treatmentDate: new Date().toISOString().split('T')[0],
-    treatmentType: treatmentType || '',
+    employeeId: currentUser?.employeeId || '',
+    treatmentDate: new Date(),
+    treatmentTypeId: treatmentType || '',
     description: '',
     cooperationLevel: 3,
     status: 'active',
     highlight: ''
   });
   
-  // חישוב תאריך מינימלי (חצי שנה אחורה)
-  const getSixMonthsAgo = () => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 6);
-    return date.toISOString().split('T')[0];
-  };
-  
-  // איפוס הטופס כאשר הדיאלוג נפתח
+  // איפוס הטופס בפתיחת הדיאלוג
   useEffect(() => {
     if (isAddDialogOpen) {
       setFormData({
+        treatmentId: 0,
         kidId: kidId,
-        employeeId: currentUser?.id || '',
-        treatmentDate: new Date().toISOString().split('T')[0],
-        treatmentType: treatmentType || '',
+        employeeId: currentUser?.employeeId || '',
+        treatmentDate: new Date(),
+        treatmentTypeId: treatmentType || '',
         description: '',
         cooperationLevel: 3,
         status: 'active',
@@ -91,314 +90,92 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       });
       setFormErrors({});
       setTouched({});
-      setSuggestion('');
     }
   }, [isAddDialogOpen, kidId, treatmentType, currentUser]);
-  
-  // טעינת סוגי טיפולים
-  useEffect(() => {
-    if (isAddDialogOpen && treatmentTypesStatus === 'idle') {
-      dispatch(fetchTreatmentTypes());
-    }
-  }, [isAddDialogOpen, dispatch, treatmentTypesStatus]);
-  
-  // טיפול בעדכון מזהה סוג הטיפול כאשר משתנה סוג הטיפול בפורם
-  useEffect(() => {
-    if (formData.treatmentType && treatmentTypes?.length > 0) {
-      const selectedType = treatmentTypes.find(type => 
-        type.treatmentTypeName === formData.treatmentType
-      );
-      
-      if (selectedType) {
-        setSelectedTreatmentTypeId(selectedType.id);
-      }
-    }
-  }, [formData.treatmentType, treatmentTypes]);
-  
-  // בדיקת ולידציה לשדה בודד
-  const validateField = (name, value) => {
-    // הגדרת פרמטרים נוספים לולידציות
-    const extraParams = {
-      required: ['treatmentType', 'treatmentDate', 'description'].includes(name),
-      minDate: name === 'treatmentDate' ? getSixMonthsAgo() : null,
-      hebrewOnly: name === 'description' ? true : false
-    };
-    
-    // הפעלת הולידציה המתאימה
-    return TreatmentValidations(name, value, extraParams);
-  };
-  
-  // בדיקת כל השדות בטופס
-  const validateAllFields = () => {
-    const newErrors = {};
-    let isValid = true;
-    
-    // עבור על כל השדות בטופס ובדוק תקינות
-    Object.keys(formData).forEach(field => {
-      // בדיקת שדות רלוונטיים בלבד
-      if (['treatmentType', 'treatmentDate', 'description', 'highlight', 'cooperationLevel'].includes(field)) {
-        const error = validateField(field, formData[field]);
-        if (error) {
-          newErrors[field] = error;
-          isValid = false;
-        }
-      }
-    });
-    
-    setFormErrors(newErrors);
-    return isValid;
-  };
 
-  // קבלת הצעות להשלמת טקסט בזמן אמת
-  const getSuggestions = async (text) => {
-    if (!selectedTreatmentTypeId || !text.trim() || text.length < 5) {
-      setSuggestion('');
-      return;
-    }
-    
-    try {
-      setIsLoadingSuggestion(true);
-      
-      const response = await axios.post('/api/WritingAssistant/suggest', {
-        currentText: text,
-        treatmentTypeId: selectedTreatmentTypeId
-      });
-      
-      if (response.data && response.data.suggestion) {
-        setSuggestion(response.data.suggestion);
-      } else {
-        setSuggestion('');
-      }
-    } catch (error) {
-      console.error('שגיאה בקבלת הצעות:', error);
-      setSuggestion('');
-    } finally {
-      setIsLoadingSuggestion(false);
-    }
-  };
-
-  // שיפור ניסוח מקצועי
-  const improveText = async () => {
-    if (!selectedTreatmentTypeId || !formData.description.trim()) {
-      Swal.fire({
-        title: 'שגיאה',
-        text: 'יש להזין תיאור טיפול לפני שיפור הניסוח',
-        icon: 'error',
-        confirmButtonText: 'הבנתי',
-        confirmButtonColor: '#3085d6',
-        customClass: {
-          container: 'swal-rtl'
-        }
-      });
-      return;
-    }
-    
-    try {
-      setIsImprovingText(true);
-      
-      // הצגת טעינה
-      Swal.fire({
-        title: 'משפר ניסוח',
-        text: 'מעבד את הטקסט לניסוח מקצועי יותר...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        willOpen: () => {
-          Swal.showLoading();
-        }
-      });
-      
-      const response = await axios.post('/api/WritingAssistant/improve', {
-        text: formData.description,
-        treatmentTypeId: selectedTreatmentTypeId
-      });
-      
-      if (response.data && response.data.improvedText) {
-        setFormData(prev => ({
-          ...prev,
-          description: response.data.improvedText
-        }));
-        
-        // עדכון היילייט אם יש צורך
-        if (!formData.highlight.trim()) {
-          // חילוץ המשפט הראשון או פסקה ראשונה כהיילייט
-          const firstSentence = response.data.improvedText.split('.')[0] + '.';
-          setFormData(prev => ({
-            ...prev,
-            highlight: firstSentence
-          }));
-        }
-        
-        // הצגת הצלחה
-        Swal.fire({
-          title: 'הניסוח שופר',
-          text: 'הטקסט עודכן לניסוח מקצועי יותר',
-          icon: 'success',
-          confirmButtonText: 'אישור',
-          confirmButtonColor: '#3085d6',
-          customClass: {
-            container: 'swal-rtl'
-          }
-        });
-      }
-    } catch (error) {
-      console.error('שגיאה בשיפור הניסוח:', error);
-      
-      // סגירת טעינה והצגת שגיאה
-      Swal.fire({
-        title: 'שגיאה',
-        text: 'אירעה שגיאה בשיפור הניסוח המקצועי',
-        icon: 'error',
-        confirmButtonText: 'הבנתי',
-        confirmButtonColor: '#3085d6',
-        customClass: {
-          container: 'swal-rtl'
-        }
-      });
-    } finally {
-      setIsImprovingText(false);
-    }
-  };
-
-  // אישור והוספת ההשלמה המוצעת
-  const acceptSuggestion = () => {
-    if (!suggestion) return;
-    
-    // עדכון תיאור הטיפול עם ההשלמה
-    setFormData(prev => ({
-      ...prev,
-      description: prev.description + suggestion
-    }));
-    
-    // איפוס ההצעה
-    setSuggestion('');
-    
-    // מיקוד בשדה התיאור
-    if (descriptionInputRef.current) {
-      descriptionInputRef.current.focus();
-    }
-  };
-  
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // עדכון ערך בטופס
+  // טיפול בשינוי שדות
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
     
-    // סימון השדה כנגוע (כלומר, המשתמש ניסה להזין ערך)
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    // בדיקת ולידציה לשדה זה
-    const error = validateField(name, value);
-    setFormErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-    
-    // אם השדה הוא תיאור הטיפול, הגדר טיימר לקבלת הצעות
-    if (name === 'description') {
-      // ביטול טיימר קודם אם קיים
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      
-      // הגדרת טיימר חדש להצעות
-      typingTimeoutRef.current = setTimeout(() => {
-        // בדיקה שהטקסט מסתיים בנקודה או רווח כדי לא להציע בזמן הקלדה באמצע מילה
-        if (value.trim() && (value.endsWith(' ') || value.endsWith('.') || value.endsWith(','))) {
-          getSuggestions(value);
-        } else {
-          setSuggestion('');
-        }
-      }, 500); // המתן חצי שנייה לאחר הקלדה לפני בקשת הצעות
+    // ניקוי שגיאות
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
-  
-  const handleCooperationLevelChange = (event, newValue) => {
-    // עדכון ערך בטופס
+
+  const handleDateChange = (date) => {
+    setFormData(prev => ({
+      ...prev,
+      treatmentDate: date
+    }));
+  };
+
+  const handleCooperationChange = (event, newValue) => {
     setFormData(prev => ({
       ...prev,
       cooperationLevel: newValue
     }));
-    
-    // סימון השדה כנגוע
-    setTouched(prev => ({
-      ...prev,
-      cooperationLevel: true
-    }));
-    
-    // בדיקת ולידציה לשדה זה
-    const error = validateField('cooperationLevel', newValue);
-    setFormErrors(prev => ({
-      ...prev,
-      cooperationLevel: error
-    }));
   };
-  
-  const handleBlur = (e) => {
-    const { name } = e.target;
-    
-    // סימון השדה כנגוע
+
+  const handleBlur = (event) => {
+    const { name } = event.target;
     setTouched(prev => ({
       ...prev,
       [name]: true
     }));
-    
-    // בדיקת ולידציה לשדה זה
-    const error = validateField(name, formData[name]);
-    setFormErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
   };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+  // ולידציות
+  const validateForm = () => {
+    const errors = {};
     
-    // סימון כל השדות כנגועים
-    const allTouched = {};
-    Object.keys(formData).forEach(key => {
-      allTouched[key] = true;
-    });
-    setTouched(allTouched);
-    
-    // בדיקת ולידציה לכל השדות
-    if (!validateAllFields()) {
-      // הצגת התראה SweetAlert
-      Swal.fire({
-        title: 'שגיאה בטופס',
-        text: 'יש לתקן את השגיאות בטופס לפני שליחה',
-        icon: 'error',
-        confirmButtonText: 'הבנתי',
-        confirmButtonColor: '#3085d6',
-        customClass: {
-          container: 'swal-rtl'
-        }
-      });
-      return;
+    if (!formData.employeeId) {
+      errors.employeeId = 'נדרש לבחור מטפל';
     }
     
+    if (!formData.treatmentDate) {
+      errors.treatmentDate = 'נדרש לבחור תאריך טיפול';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'נדרש לכתב תיאור הטיפול';
+    } else if (formData.description.trim().length < 10) {
+      errors.description = 'תיאור הטיפול חייב להכיל לפחות 10 תווים';
+    }
+    
+    if (!formData.cooperationLevel || formData.cooperationLevel < 1 || formData.cooperationLevel > 5) {
+      errors.cooperationLevel = 'נדרש לבחור רמת שיתוף פעולה';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // שליחת הטופס
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     try {
-      // הצגת טעינה
-      Swal.fire({
-        title: 'שומר נתונים',
-        text: 'מוסיף את סיכום הטיפול...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        willOpen: () => {
-          Swal.showLoading();
-        }
-      });
-      
+      // הכנת הנתונים לשליחה
+      const treatmentData = {
+        ...formData,
+        treatmentId: 0, // ניצור טיפול חדש
+        treatmentDate: formData.treatmentDate.toISOString().split('T')[0]
+      };
+
       // שליחת הטופס
-      await addTreatment(kidId, formData);
+      await addTreatment(kidId, treatmentData);
       
       // הצגת הצלחה
       Swal.fire({
@@ -406,14 +183,12 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
         text: 'סיכום הטיפול נשמר בהצלחה במערכת',
         icon: 'success',
         confirmButtonText: 'אישור',
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#4fc3f7',
         customClass: {
           container: 'swal-rtl'
         }
       });
       
-      // סגירת הדיאלוג
-      closeAddDialog();
     } catch (err) {
       // הצגת שגיאה
       Swal.fire({
@@ -421,14 +196,21 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
         text: err.message || 'אירעה שגיאה בשמירת סיכום הטיפול',
         icon: 'error',
         confirmButtonText: 'הבנתי',
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#f44336',
         customClass: {
           container: 'swal-rtl'
         }
       });
     }
   };
-  
+
+  // קבלת שם העובד
+  const getEmployeeName = (employeeId) => {
+    if (!employees) return '';
+    const employee = employees.find(emp => emp.employeeId == employeeId);
+    return employee ? `${employee.firstName} ${employee.lastName}` : '';
+  };
+
   return (
     <Dialog
       open={isAddDialogOpen}
@@ -436,255 +218,257 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       maxWidth="md"
       fullWidth
       dir="rtl"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+        }
+      }}
     >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">הוספת סיכום טיפול</Typography>
-        <Box>
-          <IconButton edge="end" color="inherit" onClick={closeAddDialog} aria-label="סגור">
+      <DialogTitle sx={{ 
+        background: 'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
+        color: 'white',
+        p: 3
+      }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>
+              <SaveIcon />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight="bold">
+                הוספת סיכום טיפול חדש
+              </Typography>
+              {selectedKid && (
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  {selectedKid.firstName} {selectedKid.lastName} • {getTreatmentName(treatmentType)}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+          <IconButton 
+            edge="end" 
+            color="inherit" 
+            onClick={closeAddDialog} 
+            sx={{ 
+              bgcolor: 'rgba(255,255,255,0.1)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
-      <Divider />
       
       <form onSubmit={handleSubmit}>
-        <DialogContent>
+        <DialogContent sx={{ p: 3 }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
               {error}
             </Alert>
           )}
           
           <Grid container spacing={3}>
-            {/* סוג טיפול */}
+            {/* בחירת מטפל */}
             <Grid item xs={12} sm={6}>
-              <FormControl 
-                fullWidth 
-                required 
-                error={touched.treatmentType && Boolean(formErrors.treatmentType)}
-              >
-                <InputLabel>סוג טיפול</InputLabel>
-                <Select
-                  name="treatmentType"
-                  value={formData.treatmentType}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  label="סוג טיפול"
-                  disabled={loading || treatmentTypesStatus === 'loading'}
-                >
-                  <MenuItem value="">בחר סוג טיפול</MenuItem>
-                  {treatmentTypesStatus === 'succeeded' && treatmentTypes.map((type) => (
-                    <MenuItem key={type.treatmentTypeName} value={type.treatmentTypeName}>
-                      {type.treatmentTypeName}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {touched.treatmentType && formErrors.treatmentType && (
-                  <FormHelperText error>{formErrors.treatmentType}</FormHelperText>
-                )}
-              </FormControl>
-              {treatmentTypesStatus === 'loading' && (
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                  <CircularProgress size={20} sx={{ mr: 1 }} />
-                  <Typography variant="caption">טוען סוגי טיפולים...</Typography>
+              <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <PersonIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    מטפל
+                  </Typography>
                 </Box>
-              )}
+                <FormControl 
+                  fullWidth 
+                  required 
+                  error={touched.employeeId && Boolean(formErrors.employeeId)}
+                >
+                  <InputLabel>בחר מטפל</InputLabel>
+                  <Select
+                    name="employeeId"
+                    value={formData.employeeId}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    label="בחר מטפל"
+                    disabled={loading}
+                  >
+                    {employees && employees.map((employee) => (
+                      <MenuItem key={employee.employeeId} value={employee.employeeId}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 24, height: 24, fontSize: '0.8rem' }}>
+                            {employee.firstName?.charAt(0)}{employee.lastName?.charAt(0)}
+                          </Avatar>
+                          {employee.firstName} {employee.lastName}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.employeeId && formErrors.employeeId && (
+                    <FormHelperText>{formErrors.employeeId}</FormHelperText>
+                  )}
+                </FormControl>
+              </Paper>
             </Grid>
             
             {/* תאריך טיפול */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="תאריך טיפול"
-                type="date"
-                name="treatmentDate"
-                value={formData.treatmentDate}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                fullWidth
-                required
-                InputLabelProps={{ shrink: true }}
-                disabled={loading}
-                error={touched.treatmentDate && Boolean(formErrors.treatmentDate)}
-                helperText={touched.treatmentDate && formErrors.treatmentDate}
-                inputProps={{ max: new Date().toISOString().split('T')[0] }}
-              />
-            </Grid>
-            
-            {/* מידע על המטפל (מוצג כשדה קריאה בלבד) */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="מטפל"
-                value={`${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`}
-                fullWidth
-                disabled
-                helperText="הטיפול יירשם בשם המשתמש המחובר למערכת"
-              />
+              <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <EventIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    תאריך טיפול
+                  </Typography>
+                </Box>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+                  <DatePicker
+                    label="תאריך טיפול"
+                    value={formData.treatmentDate}
+                    onChange={handleDateChange}
+                    renderInput={(params) => (
+                      <TextField 
+                        {...params} 
+                        fullWidth
+                        required
+                        error={touched.treatmentDate && Boolean(formErrors.treatmentDate)}
+                        helperText={touched.treatmentDate && formErrors.treatmentDate}
+                        disabled={loading}
+                      />
+                    )}
+                    maxDate={new Date()}
+                    minDate={new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)} // 6 חודשים אחורה
+                  />
+                </LocalizationProvider>
+              </Paper>
             </Grid>
             
             {/* רמת שיתוף פעולה */}
-            <Grid item xs={12} sm={6}>
-              <Box>
-                <Typography variant="body2" gutterBottom>
-                  רמת שיתוף פעולה
-                </Typography>
-                <Rating
-                  name="cooperationLevel"
-                  value={parseInt(formData.cooperationLevel) || 0}
-                  onChange={handleCooperationLevelChange}
-                  max={5}
-                  disabled={loading}
-                />
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <StarIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    רמת שיתוף פעולה
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Rating
+                    value={formData.cooperationLevel}
+                    onChange={handleCooperationChange}
+                    max={5}
+                    size="large"
+                    disabled={loading}
+                    sx={{
+                      '& .MuiRating-iconFilled': {
+                        color: '#ffc107',
+                      },
+                      '& .MuiRating-iconEmpty': {
+                        color: '#e0e0e0',
+                      }
+                    }}
+                  />
+                  <Chip 
+                    label={`${formData.cooperationLevel}/5`}
+                    color="primary"
+                    size="small"
+                  />
+                </Box>
                 {touched.cooperationLevel && formErrors.cooperationLevel && (
                   <FormHelperText error>{formErrors.cooperationLevel}</FormHelperText>
                 )}
-              </Box>
+              </Paper>
             </Grid>
             
             {/* תיאור הטיפול */}
             <Grid item xs={12}>
-              <Box sx={{ position: 'relative' }}>
+              <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <DescriptionIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    תיאור מהלך הטיפול
+                  </Typography>
+                </Box>
                 <TextField
-                  label="תיאור מהלך הטיפול"
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
-                  inputRef={descriptionInputRef}
                   fullWidth
                   multiline
-                  rows={6}
+                  rows={4}
                   required
-                  disabled={loading || isImprovingText}
-                  placeholder="תאר את מהלך הטיפול, תגובות הילד, והתקדמות ביחס לטיפולים קודמים..."
+                  placeholder="תאר את מהלך הטיפול, התקדמות הילד, קשיים שהתגלו, דברים חיוביים..."
+                  disabled={loading}
                   error={touched.description && Boolean(formErrors.description)}
                   helperText={touched.description && formErrors.description}
-                  sx={{
+                  sx={{ 
                     '& .MuiOutlinedInput-root': {
-                      marginBottom: suggestion ? 1 : 0
+                      borderRadius: 2
                     }
                   }}
                 />
-                
-                {/* כפתור שיפור ניסוח */}
-                <Tooltip title="שיפור ניסוח מקצועי - שדרג את הטקסט לניסוח מקצועי יותר">
-                  <span>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<FormatTextIcon />}
-                      onClick={improveText}
-                      disabled={loading || isImprovingText || !formData.description.trim() || !selectedTreatmentTypeId}
-                      sx={{ mt: 1, ml: 1 }}
-                    >
-                      {isImprovingText ? 'משפר ניסוח...' : 'שפר ניסוח מקצועי'}
-                    </Button>
-                  </span>
-                </Tooltip>
-                
-                {/* הצגת הצעה להשלמה */}
-                {suggestion && (
-                  <Paper 
-                    elevation={3} 
-                    sx={{ 
-                      mt: 1, 
-                      p: 2, 
-                      bgcolor: 'rgba(25, 118, 210, 0.05)',
-                      border: '1px solid rgba(25, 118, 210, 0.2)',
-                      borderRadius: 1
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AutoFixIcon color="primary" sx={{ mr: 1 }} />
-                        <Typography variant="body2" color="primary" fontWeight="medium">
-                          הצעה להשלמה:
-                        </Typography>
-                      </Box>
-                      
-                      <Button 
-                        size="small" 
-                        variant="contained" 
-                        color="primary" 
-                        onClick={acceptSuggestion}
-                      >
-                        הוסף
-                      </Button>
-                    </Box>
-                    
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        mt: 1, 
-                        fontStyle: 'italic',
-                        color: 'text.secondary'
-                      }}
-                    >
-                      {suggestion}
-                    </Typography>
-                  </Paper>
-                )}
-                
-                {isLoadingSuggestion && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'flex-end' }}>
-                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                    <Typography variant="caption" color="text.secondary">
-                      טוען הצעות...
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <AutoFixIcon fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
-                  המערכת תציע השלמות חכמות בזמן הקלדה. לחיצה על "שפר ניסוח" תעדכן את הטקסט לניסוח מקצועי יותר.
-                </Box>
-              </Typography>
+              </Paper>
             </Grid>
             
             {/* נקודות חשובות */}
             <Grid item xs={12}>
-              <TextField
-                label="נקודות חשובות / היילייט"
-                name="highlight"
-                value={formData.highlight}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                fullWidth
-                multiline
-                rows={2}
-                disabled={loading}
-                placeholder="הוסף נקודות חשובות שיש לשים לב אליהן בטיפול הבא..."
-                error={touched.highlight && Boolean(formErrors.highlight)}
-                helperText={touched.highlight && formErrors.highlight}
-              />
+              <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <HighlightIcon color="warning" />
+                  <Typography variant="subtitle1" fontWeight="600">
+                    נקודות חשובות / היילייט
+                  </Typography>
+                </Box>
+                <TextField
+                  name="highlight"
+                  value={formData.highlight}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  placeholder="הוסף נקודות חשובות שיש לשים לב אליהן בטיפול הבא..."
+                  disabled={loading}
+                  error={touched.highlight && Boolean(formErrors.highlight)}
+                  helperText={touched.highlight && formErrors.highlight}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2
+                    }
+                  }}
+                />
+              </Paper>
             </Grid>
           </Grid>
         </DialogContent>
         
         <Divider />
         
-        <DialogActions sx={{ justifyContent: 'space-between', p: 2 }}>
-          <Box>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading || isImprovingText}
-              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-            >
-              {loading ? 'שומר...' : 'שמור'}
-            </Button>
-          </Box>
+        <DialogActions sx={{ justifyContent: 'space-between', p: 3 }}>
+          <Button
+            variant="outlined"
+            onClick={closeAddDialog}
+            disabled={loading}
+            sx={{ px: 3, borderRadius: 2 }}
+          >
+            ביטול
+          </Button>
           
-          <Box>
-            <Button
-              variant="outlined"
-              onClick={closeAddDialog}
-              disabled={loading}
-            >
-              ביטול
-            </Button>
-          </Box>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+            sx={{ 
+              px: 4, 
+              borderRadius: 2,
+              background: 'linear-gradient(45deg, #4fc3f7, #29b6f6)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #29b6f6, #1976d2)',
+              }
+            }}
+          >
+            {loading ? 'שומר...' : 'שמור טיפול'}
+          </Button>
         </DialogActions>
       </form>
     </Dialog>

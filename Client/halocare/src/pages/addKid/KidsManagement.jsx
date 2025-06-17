@@ -16,7 +16,8 @@ import {
   Edit as EditIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon
+  FilterList as FilterIcon,
+    Person as PersonIcon,
 } from '@mui/icons-material';
 
 // 🔥 Redux החדש
@@ -436,6 +437,8 @@ const KidsManagement = () => {
               <TableCell sx={{ fontWeight: 700 }}>סטטוס קליטה</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>התקדמות מפורטת</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>פעולות</TableCell>
+              <TableCell>⚡ פעולות</TableCell>
+              
             </TableRow>
           </TableHead>
           <TableBody>
@@ -507,6 +510,28 @@ const KidsManagement = () => {
                         onboardingData={kidOnboardingData}
                         onAction={handleAction}
                       />
+                    </TableCell>
+                    <TableCell>
+                       <Tooltip title="פרופיל ילד">
+                                                      <IconButton
+                                                        sx={{
+                                                          width: 45,
+                                                          height: 45,
+                                                          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                                                          color: "white",
+                                                          transition: "all 0.3s ease",
+                                                          boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
+                                                          "&:hover": { 
+                                                            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+                                                            transform: 'scale(1.1)',
+                                                            boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
+                                                          },
+                                                        }}
+                                                        onClick={() => navigate(`/kids/${kid.id}`)}
+                                                      >
+                                                        <PersonIcon sx={{ fontSize: 20 }} />
+                                                      </IconButton>
+                                                    </Tooltip>
                     </TableCell>
                   </TableRow>
                 );

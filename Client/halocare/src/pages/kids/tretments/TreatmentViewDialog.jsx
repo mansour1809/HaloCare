@@ -1,5 +1,5 @@
-// src/components/treatments/TreatmentViewDialog.jsx
-import React, { useState } from 'react';
+// src/components/treatments/TreatmentViewDialog.jsx - גרסה משופרת
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,21 +13,40 @@ import {
   Box,
   Divider,
   Rating,
-  Chip,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  Chip,
+  Avatar,
+  Stack,
+  Card,
+  CardContent,
+  Collapse,
+  Fade
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Download as DownloadIcon,
-  DeleteOutline as DeleteIcon
+  DeleteOutline as DeleteIcon,
+  Person as PersonIcon,
+  Event as EventIcon,
+  Star as StarIcon,
+  Description as DescriptionIcon,
+  Highlight as HighlightIcon,
+  Visibility as VisibilityIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import { useTreatmentContext } from './TreatmentContext';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import Swal from 'sweetalert2';
 
 const TreatmentViewDialog = () => {
   const { 
@@ -37,25 +56,40 @@ const TreatmentViewDialog = () => {
     updateTreatment,
     deleteTreatment,
     loading, 
-    error 
+    error,
+    getTreatmentName,
+    getColorForTreatmentType,
+    getEmployeeName,
+    formatDate
   } = useTreatmentContext();
 
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [formError, setFormError] = useState('');
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    details: true,
+    description: true,
+    highlight: true
+  });
 
-  // עדכון נתוני הטופס בעת פתיחת הדיאלוג או שינוי הטיפול הנוכחי
-  React.useEffect(() => {
-    if (currentTreatment) {
+  // עדכון נתוני הטופס בעת פתיחת הדיאלוג
+  useEffect(() => {
+    if (currentTreatment && isViewDialogOpen) {
       setFormData({
         ...currentTreatment,
-        cooperationLevel: currentTreatment.cooperationLevel || 0
+        cooperationLevel: currentTreatment.cooperationLevel || 0,
+        treatmentDate: currentTreatment.treatmentDate ? new Date(currentTreatment.treatmentDate) : new Date()
+      });
+      setEditMode(false);
+      setShowDeleteConfirm(false);
+      setFormError('');
+      setExpandedSections({
+        details: true,
+        description: true,
+        highlight: Boolean(currentTreatment.highlight)
       });
     }
-    setEditMode(false);
-    setDeleteConfirm(false);
-    setFormError('');
   }, [currentTreatment, isViewDialogOpen]);
 
   if (!currentTreatment) {
@@ -68,9 +102,21 @@ const TreatmentViewDialog = () => {
       ...prev,
       [name]: value
     }));
+    
+    // ניקוי שגיאות
+    if (formError) {
+      setFormError('');
+    }
   };
 
-  const handleCooperationLevelChange = (event, newValue) => {
+  const handleDateChange = (date) => {
+    setFormData(prev => ({
+      ...prev,
+      treatmentDate: date
+    }));
+  };
+
+  const handleCooperationChange = (event, newValue) => {
     setFormData(prev => ({
       ...prev,
       cooperationLevel: newValue
@@ -80,6 +126,11 @@ const TreatmentViewDialog = () => {
   const validateForm = () => {
     if (!formData.description?.trim()) {
       setFormError('יש להזין תיאור טיפול');
+      return false;
+    }
+    
+    if (formData.description.trim().length < 10) {
+      setFormError('תיאור הטיפול חייב להכיל לפחות 10 תווים');
       return false;
     }
     
@@ -95,7 +146,21 @@ const TreatmentViewDialog = () => {
     }
     
     try {
-      await updateTreatment(currentTreatment.id || currentTreatment.treatmentId, formData);
+      const treatmentData = {
+        ...formData,
+        treatmentDate: formData.treatmentDate.toISOString().split('T')[0]
+      };
+      
+      await updateTreatment(currentTreatment.treatmentId, treatmentData);
+      
+      Swal.fire({
+        title: 'עודכן בהצלחה',
+        text: 'פרטי הטיפול עודכנו בהצלחה',
+        icon: 'success',
+        confirmButtonText: 'אישור',
+        confirmButtonColor: '#4fc3f7'
+      });
+      
       setEditMode(false);
     } catch (err) {
       setFormError(err.message || 'שגיאה בעדכון טיפול');
@@ -103,23 +168,43 @@ const TreatmentViewDialog = () => {
   };
 
   const handleDelete = async () => {
-    if (!deleteConfirm) {
-      setDeleteConfirm(true);
-      return;
-    }
-    
     try {
-      await deleteTreatment(currentTreatment.id || currentTreatment.treatmentId);
-      // אם הפעולה הצליחה, הדיאלוג ייסגר אוטומטית
-    } catch (err) {
-      setFormError(err.message || 'שגיאה במחיקת טיפול');
-    }
-  };
+      const result = await Swal.fire({
+        title: 'מחיקת טיפול',
+        text: 'האם אתה בטוח שברצונך למחוק את סיכום הטיפול? פעולה זו אינה הפיכה.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f44336',
+        cancelButtonColor: '#9e9e9e',
+        confirmButtonText: 'כן, מחק',
+        cancelButtonText: 'ביטול',
+        customClass: {
+          container: 'swal-rtl'
+        }
+      });
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL');
+      if (result.isConfirmed) {
+        await deleteTreatment(
+          currentTreatment.treatmentId, 
+          currentTreatment.kidId, 
+          currentTreatment.treatmentTypeId
+        );
+        
+        Swal.fire({
+          title: 'נמחק בהצלחה',
+          text: 'סיכום הטיפול נמחק מהמערכת',
+          icon: 'success',
+          confirmButtonColor: '#4fc3f7'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'שגיאה',
+        text: err.message || 'שגיאה במחיקת הטיפול',
+        icon: 'error',
+        confirmButtonColor: '#f44336'
+      });
+    }
   };
 
   const exportToPdf = () => {
@@ -129,7 +214,7 @@ const TreatmentViewDialog = () => {
       format: 'a4'
     });
     
-    // הגדרת כיוון מימין לשמאל עבור עברית
+    // הגדרת כיוון RTL
     doc.setR2L(true);
     
     // כותרת הדוח
@@ -138,9 +223,9 @@ const TreatmentViewDialog = () => {
     
     // פרטי הטיפול
     doc.setFontSize(12);
-    doc.text(`סוג טיפול: ${currentTreatment.treatmentType || ''}`, 180, 40, { align: 'right' });
+    doc.text(`סוג טיפול: ${getTreatmentName(currentTreatment.treatmentTypeId)}`, 180, 40, { align: 'right' });
     doc.text(`תאריך: ${formatDate(currentTreatment.treatmentDate)}`, 180, 50, { align: 'right' });
-    doc.text(`מטפל: ${currentTreatment.employeeName || ''}`, 180, 60, { align: 'right' });
+    doc.text(`מטפל: ${getEmployeeName(currentTreatment.employeeId)}`, 180, 60, { align: 'right' });
     doc.text(`רמת שיתוף פעולה: ${currentTreatment.cooperationLevel}/5`, 180, 70, { align: 'right' });
     
     // תיאור הטיפול
@@ -163,147 +248,416 @@ const TreatmentViewDialog = () => {
     }
     
     // שמירת הקובץ
-    doc.save(`סיכום_טיפול_${currentTreatment.treatmentType}_${formatDate(currentTreatment.treatmentDate)}.pdf`);
+    doc.save(`סיכום_טיפול_${getTreatmentName(currentTreatment.treatmentTypeId)}_${formatDate(currentTreatment.treatmentDate)}.pdf`);
   };
 
-  // תצוגת פרטי הטיפול במצב צפייה
-  const renderViewMode = () => (
-    <Grid container spacing={3}>
-      <Grid item xs={12} sm={6}>
-        <Typography variant="subtitle1" gutterBottom>סוג טיפול</Typography>
-        <Typography variant="body1">{currentTreatment.treatmentType || 'לא צוין'}</Typography>
-      </Grid>
-      
-      <Grid item xs={12} sm={6}>
-        <Typography variant="subtitle1" gutterBottom>תאריך טיפול</Typography>
-        <Typography variant="body1">{formatDate(currentTreatment.treatmentDate)}</Typography>
-      </Grid>
-      
-      <Grid item xs={12} sm={6}>
-        <Typography variant="subtitle1" gutterBottom>מטפל</Typography>
-        <Typography variant="body1">{currentTreatment.employeeName || 'לא צוין'}</Typography>
-      </Grid>
-      
-      <Grid item xs={12} sm={6}>
-        <Typography variant="subtitle1" gutterBottom>רמת שיתוף פעולה</Typography>
-        <Rating 
-          value={parseInt(currentTreatment.cooperationLevel) || 0} 
-          readOnly 
-          max={5}
-        />
-      </Grid>
-      
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" gutterBottom>תיאור הטיפול</Typography>
-        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-            {currentTreatment.description || 'לא צוין'}
-          </Typography>
-        </Paper>
-      </Grid>
-      
-      {currentTreatment.highlight && (
-        <Grid item xs={12}>
-          <Typography variant="subtitle1" gutterBottom>
-            נקודות חשובות
-          </Typography>
-          <Chip 
-            label={currentTreatment.highlight} 
-            color="primary" 
-            sx={{ 
-              height: 'auto', 
-              '& .MuiChip-label': { 
-                whiteSpace: 'normal',
-                p: 1
-              } 
-            }}
-          />
-        </Grid>
-      )}
-    </Grid>
-  );
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   return (
     <Dialog
       open={isViewDialogOpen}
-      onClose={() => {
-        if (!loading) closeViewDialog();
-      }}
-      maxWidth="md"
+      onClose={closeViewDialog}
+      maxWidth="lg"
+      height="220vh"
       fullWidth
       dir="rtl"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          maxHeight: '150vh',
+        }
+      }}
     >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">
-          {editMode ? 'עריכת סיכום טיפול' : 'צפייה בסיכום טיפול'}
-        </Typography>
-        <Box>
-          {!editMode && (
-            <>
-              <IconButton 
-                color="primary" 
-                onClick={() => setEditMode(true)} 
-                disabled={loading}
-                title="ערוך טיפול"
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton 
-                color="primary" 
-                onClick={exportToPdf} 
-                disabled={loading}
-                title="ייצא ל-PDF"
-              >
-                <DownloadIcon />
-              </IconButton>
-            </>
-          )}
-          <IconButton 
-            edge="end" 
-            color="inherit" 
-            onClick={closeViewDialog}
-            disabled={loading}
-          >
-            <CloseIcon />
-          </IconButton>
+      {/* כותרת משופרת */}
+      <DialogTitle sx={{ 
+        background: editMode 
+          ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)'
+          : 'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
+        color: 'white',
+        p: 3
+      }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ 
+              bgcolor: 'rgba(255,255,255,0.2)',
+              width: 48,
+              height: 48
+            }}>
+              {editMode ? <EditIcon /> : <VisibilityIcon />}
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight="bold">
+                {editMode ? 'עריכת סיכום טיפול' : 'צפייה בסיכום טיפול'}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                {getTreatmentName(currentTreatment.treatmentTypeId)} • {formatDate(currentTreatment.treatmentDate)}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {!editMode && (
+              <>
+                <IconButton 
+                  color="inherit" 
+                  onClick={() => setEditMode(true)} 
+                  disabled={loading}
+                  sx={{ 
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton 
+                  color="inherit" 
+                  onClick={exportToPdf} 
+                  disabled={loading}
+                  sx={{ 
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+                  }}
+                >
+                  <DownloadIcon />
+                </IconButton>
+              </>
+            )}
+            <IconButton 
+              color="inherit" 
+              onClick={closeViewDialog}
+              disabled={loading}
+              sx={{ 
+                bgcolor: 'rgba(255,255,255,0.1)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </Box>
       </DialogTitle>
-      <Divider />
       
-      <DialogContent>
+      <DialogContent sx={{ p: 3 }}>
         {(formError || error) && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
             {formError || error}
           </Alert>
         )}
         
-        {deleteConfirm && (
-          <Alert severity="warning" sx={{ mb: 3 }}>
-            האם אתה בטוח שברצונך למחוק את סיכום הטיפול? פעולה זו אינה הפיכה.
-          </Alert>
+        {editMode ? (
+          /* מצב עריכה */
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              {/* פרטי הטיפול */}
+              <Grid item xs={12}>
+                <Card sx={{ border: '1px solid', borderColor: 'primary.light', borderRadius: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6" color="primary.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonIcon />
+                      פרטי הטיפול
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          label="סוג טיפול"
+                          value={getTreatmentName(currentTreatment.treatmentTypeId)}
+                          disabled
+                          fullWidth
+                          variant="outlined"
+                        />
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={4}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+                          <DatePicker
+                            label="תאריך טיפול"
+                            value={formData.treatmentDate}
+                            onChange={handleDateChange}
+                            renderInput={(params) => (
+                              <TextField 
+                                {...params} 
+                                fullWidth
+                                disabled={loading}
+                              />
+                            )}
+                            maxDate={new Date()}
+                          />
+                        </LocalizationProvider>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          label="מטפל"
+                          value={getEmployeeName(currentTreatment.employeeId)}
+                          disabled
+                          fullWidth
+                          variant="outlined"
+                        />
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* רמת שיתוף פעולה */}
+              <Grid item xs={12}>
+                <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6" color="warning.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <StarIcon />
+                      רמת שיתוף פעולה
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Rating
+                        value={parseInt(formData.cooperationLevel) || 0}
+                        onChange={handleCooperationChange}
+                        max={5}
+                        size="large"
+                        disabled={loading}
+                        sx={{
+                          '& .MuiRating-iconFilled': {
+                            color: '#ffc107',
+                          }
+                        }}
+                      />
+                      <Chip 
+                        label={`${formData.cooperationLevel}/5`}
+                        color="warning"
+                        size="medium"
+                      />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* תיאור הטיפול */}
+              <Grid item xs={12}>
+                <Card sx={{ border: '1px solid', borderColor: 'info.light', borderRadius: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6" color="info.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <DescriptionIcon />
+                      תיאור מהלך הטיפול
+                    </Typography>
+                    
+                    <TextField
+                      name="description"
+                      value={formData.description || ''}
+                      onChange={handleInputChange}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      required
+                      disabled={loading}
+                      placeholder="תאר את מהלך הטיפול, התקדמות הילד, קשיים שהתגלו..."
+                      sx={{ 
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2
+                        }
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* נקודות חשובות */}
+              <Grid item xs={12}>
+                <Card sx={{ border: '1px solid', borderColor: 'secondary.light', borderRadius: 2 }}>
+                  <CardContent>
+                    <Typography variant="h6" color="secondary.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <HighlightIcon />
+                      נקודות חשובות / היילייט
+                    </Typography>
+                    
+                    <TextField
+                      name="highlight"
+                      value={formData.highlight || ''}
+                      onChange={handleInputChange}
+                      fullWidth
+                      multiline
+                      rows={2}
+                      disabled={loading}
+                      placeholder="הוסף נקודות חשובות שיש לשים לב אליהן בטיפול הבא..."
+                      sx={{ 
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2
+                        }
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </form>
+        ) : (
+          /* מצב צפייה */
+          <Grid container spacing={3}>
+            {/* פרטי הטיפול */}
+            <Grid item xs={12}>
+              <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box 
+                  sx={{ 
+                    p: 2, 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider'
+                  }}
+                  onClick={() => toggleSection('details')}
+                >
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PersonIcon color="primary" />
+                    פרטי הטיפול
+                  </Typography>
+                  {expandedSections.details ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </Box>
+                <Collapse in={expandedSections.details}>
+                  <CardContent>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.light', color: 'white' }}>
+                          <Typography variant="body2">סוג טיפול</Typography>
+                          <Typography variant="h6" fontWeight="bold">
+                            {getTreatmentName(currentTreatment.treatmentTypeId)}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'info.light', color: 'white' }}>
+                          <Typography variant="body2">תאריך</Typography>
+                          <Typography variant="h6" fontWeight="bold">
+                            {formatDate(currentTreatment.treatmentDate)}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'secondary.light', color: 'white' }}>
+                          <Typography variant="body2">מטפל</Typography>
+                          <Typography variant="h6" fontWeight="bold">
+                            {getEmployeeName(currentTreatment.employeeId)}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.light', color: 'white' }}>
+                          <Typography variant="body2">שיתוף פעולה</Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+                            <Rating
+                              value={currentTreatment.cooperationLevel || 0}
+                              readOnly
+                              size="small"
+                              sx={{ '& .MuiRating-iconFilled': { color: 'white' } }}
+                            />
+                            <Typography variant="h6" fontWeight="bold">
+                              {currentTreatment.cooperationLevel}/5
+                            </Typography>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Collapse>
+              </Card>
+            </Grid>
+            
+            {/* תיאור הטיפול */}
+            <Grid item xs={12}>
+              <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <Box 
+                  sx={{ 
+                    p: 2, 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider'
+                  }}
+                  onClick={() => toggleSection('description')}
+                >
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <DescriptionIcon color="info" />
+                    תיאור מהלך הטיפול
+                  </Typography>
+                  {expandedSections.description ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </Box>
+                <Collapse in={expandedSections.description}>
+                  <CardContent>
+                    <Typography variant="body1" sx={{ 
+                      lineHeight: 1.7,
+                      p: 2,
+                      bgcolor: 'grey.50',
+                      borderRadius: 2,
+                      whiteSpace: 'pre-line'
+                    }}>
+                      {currentTreatment.description || 'לא הוזן תיאור'}
+                    </Typography>
+                  </CardContent>
+                </Collapse>
+              </Card>
+            </Grid>
+            
+            {/* נקודות חשובות */}
+            {currentTreatment.highlight && (
+              <Grid item xs={12}>
+                <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: 'warning.light',
+                      color: 'white'
+                    }}
+                    onClick={() => toggleSection('highlight')}
+                  >
+                    <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <HighlightIcon />
+                      נקודות חשובות
+                    </Typography>
+                    {expandedSections.highlight ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  </Box>
+                  <Collapse in={expandedSections.highlight}>
+                    <CardContent>
+                      <Alert severity="warning" sx={{ borderRadius: 2 }}>
+                        <Typography variant="body1" sx={{ 
+                          lineHeight: 1.7,
+                          whiteSpace: 'pre-line'
+                        }}>
+                          {currentTreatment.highlight}
+                        </Typography>
+                      </Alert>
+                    </CardContent>
+                  </Collapse>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
         )}
-        
-        {/* מציג את תצוגת העריכה או הצפייה בהתאם למצב */}
-        {editMode ? renderEditMode() : renderViewMode()}
       </DialogContent>
       
       <Divider />
       
-      <DialogActions sx={{ justifyContent: 'space-between', p: 2 }}>
+      <DialogActions sx={{ justifyContent: 'space-between', p: 3 }}>
         {editMode ? (
           // כפתורים במצב עריכה
           <>
-            <Button
-              type="button"
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-              disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-            >
-              {loading ? 'שומר...' : 'שמור שינויים'}
-            </Button>
-            
             <Button
               variant="outlined"
               onClick={() => {
@@ -312,8 +666,27 @@ const TreatmentViewDialog = () => {
                 setFormError('');
               }}
               disabled={loading}
+              sx={{ px: 3, borderRadius: 2 }}
             >
               ביטול
+            </Button>
+            
+            <Button
+              type="submit"
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+              sx={{ 
+                px: 4, 
+                borderRadius: 2,
+                background: 'linear-gradient(45deg, #ff9800, #f57c00)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #f57c00, #e65100)',
+                }
+              }}
+            >
+              {loading ? 'שומר...' : 'שמור שינויים'}
             </Button>
           </>
         ) : (
@@ -324,103 +697,37 @@ const TreatmentViewDialog = () => {
               color="error"
               onClick={handleDelete}
               disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} /> : <DeleteIcon />}
+              startIcon={<DeleteIcon />}
+              sx={{ px: 3, borderRadius: 2 }}
             >
-              {deleteConfirm ? 'אישור מחיקה' : 'מחק טיפול'}
+              מחק טיפול
             </Button>
             
-            <Button
-              variant="outlined"
-              onClick={closeViewDialog}
-              disabled={loading}
-            >
-              סגור
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={closeViewDialog}
+                disabled={loading}
+                sx={{ px: 3, borderRadius: 2 }}
+              >
+                סגור
+              </Button>
+              
+              <Button
+                variant="contained"
+                onClick={() => setEditMode(true)}
+                disabled={loading}
+                startIcon={<EditIcon />}
+                sx={{ px: 3, borderRadius: 2 }}
+              >
+                ערוך
+              </Button>
+            </Box>
           </>
         )}
       </DialogActions>
     </Dialog>
   );
-
-  // טופס עריכת פרטי הטיפול
-  const renderEditMode = () => (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="סוג טיפול"
-            value={formData.treatmentType || ''}
-            disabled
-            fullWidth
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="תאריך טיפול"
-            type="date"
-            name="treatmentDate"
-            value={formData.treatmentDate?.split('T')[0] || ''}
-            onChange={handleInputChange}
-            fullWidth
-            required
-            InputLabelProps={{ shrink: true }}
-            disabled={loading}
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="מטפל"
-            value={formData.employeeName || ''}
-            disabled
-            fullWidth
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6}>
-          <Box>
-            <Typography variant="body2" gutterBottom>
-              רמת שיתוף פעולה
-            </Typography>
-            <Rating
-              name="cooperationLevel"
-              value={parseInt(formData.cooperationLevel) || 0}
-              onChange={handleCooperationLevelChange}
-              max={5}
-              disabled={loading}
-            />
-          </Box>
-        </Grid>
-        
-        <Grid item xs={12}>
-          <TextField
-            label="תיאור מהלך הטיפול"
-            name="description"
-            value={formData.description || ''}
-            onChange={handleInputChange}
-            fullWidth
-            multiline
-            rows={4}
-            required
-            disabled={loading}
-          />
-        </Grid>
-        
-        <Grid item xs={12}>
-          <TextField
-            label="נקודות חשובות / היילייט"
-            name="highlight"
-            value={formData.highlight || ''}
-            onChange={handleInputChange}
-            fullWidth
-            multiline
-            rows={2}
-            disabled={loading}
-          />
-        </Grid>
-      </Grid>
-    </form>
-  )};
+};
 
 export default TreatmentViewDialog;

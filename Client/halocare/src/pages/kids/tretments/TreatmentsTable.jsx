@@ -1,422 +1,409 @@
-// TreatmentsTable.jsx - גרסה משופרת עם עיצוב קארדים
+// src/components/treatments/TreatmentsTable.jsx - גרסה משופרת
 import React from 'react';
-import {
+import { 
+  Paper, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  TableSortLabel,
+  TablePagination,
   Box,
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  Grid,
   IconButton,
-  Avatar,
+  Chip,
+  Typography,
+  useTheme,
   Tooltip,
-  Rating,
-  LinearProgress,
-  Stack,
-  Divider,
-  Zoom
+  styled,
+  Avatar,
+  Stack
 } from '@mui/material';
-import {
+import { 
   Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  CalendarToday as CalendarIcon,
-  Person as PersonIcon,
-  // MoodIcon,
-  TrendingUpIcon,
-  // LocalHospitalIcon,
-  StarIcon
+  FileDownload as FileDownloadIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon
 } from '@mui/icons-material';
-import MoodIcon from '@mui/icons-material/Mood';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import { useTreatmentContext } from './TreatmentContext';
-import { useSelector } from 'react-redux';
+import { baseURL } from '../../../components/common/axiosConfig';
 
-const TreatmentsTable = () => {
-  const { 
-    filteredTreatments, 
-    page, 
-    rowsPerPage,
-    openViewDialog,
-    getColorForTreatmentType,
-    getTreatmentName,
-    formatDate 
-  } = useTreatmentContext();
+// Styled Components לעיצוב משופר
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: '16px',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  border: '1px solid rgba(0,0,0,0.04)',
+  overflow: 'hidden',
+  '& .MuiTableHead-root': {
+    '& .MuiTableRow-root': {
+      background: 'linear-gradient(135deg, #f8fafb 0%, #f1f5f7 100%)',
+      '& .MuiTableCell-root': {
+        borderBottom: '2px solid #e2e8f0',
+        fontWeight: 700,
+        fontSize: '0.95rem',
+        color: theme.palette.text.primary,
+        padding: '20px 16px',
+      }
+    }
+  }
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  cursor: 'pointer',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: 'rgba(76, 181, 195, 0.04)',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+  },
+  '&:nth-of-type(even)': {
+    backgroundColor: 'rgba(248, 250, 252, 0.5)',
+  },
+  '& .MuiTableCell-root': {
+    borderBottom: '1px solid rgba(224, 224, 224, 0.3)',
+    padding: '16px',
+  }
+}));
+
+const TreatmentTypeChip = styled(Chip)(({ theme, treatmentcolor }) => ({
+  fontWeight: 600,
+  fontSize: '0.85rem',
+  height: '32px',
+  borderRadius: '16px',
+  backgroundColor: treatmentcolor || theme.palette.primary.light,
+  color: 'white',
+  boxShadow: `0 2px 8px ${treatmentcolor}40`,
+  '& .MuiChip-icon': {
+    color: 'white',
+  },
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: `0 4px 12px ${treatmentcolor}60`,
+  }
+}));
+
+const CooperationRating = ({ level }) => {
+  const theme = useTheme();
+  const stars = [];
   
-  const treatmentTypes = useSelector(state => state.treatmentTypes.treatmentTypes);
-
-  // פונקציה לקבלת אייקון לפי סוג טיפול
-  const getTreatmentIcon = (typeId) => {
-    const treatmentType = treatmentTypes.find(t => t.treatmentTypeId === typeId);
-    // כאן תוכל להוסיף לוגיקה לאייקונים שונים לפי שם הטיפול
-    return <LocalHospitalIcon />;
-  };
-
-  // פונקציה לקבלת טקסט לרמת שיתוף פעולה
-  const getCooperationText = (level) => {
-    const levels = {
-      1: 'לא משתף פעולה',
-      2: 'שיתוף פעולה נמוך',
-      3: 'שיתוף פעולה בינוני',
-      4: 'שיתוף פעולה טוב',
-      5: 'שיתוף פעולה מעולה'
-    };
-    return levels[level] || 'לא הוגדר';
-  };
-
-  // פונקציה לקבלת צבע לרמת שיתוף פעולה
-  const getCooperationColor = (level) => {
-    if (level >= 4) return '#4caf50'; // ירוק
-    if (level === 3) return '#ff9800'; // כתום
-    if (level <= 2) return '#f44336'; // אדום
-    return '#9e9e9e'; // אפור
-  };
-
-  // חישוב אחוז התקדמות (בהתבסס על מספר הטיפולים)
-  const calculateProgress = (treatments, currentIndex) => {
-    return Math.min(((currentIndex + 1) / treatments.length) * 100, 100);
-  };
-
-  // טיפול בלחיצה על קארד
-  const handleCardClick = (treatment) => {
-    openViewDialog(treatment);
-  };
-
-  // עיצוב קארד בודד
-  const TreatmentCard = ({ treatment, index }) => {
-    const treatmentColor = getColorForTreatmentType(treatment.treatmentTypeId);
-    const treatmentName = getTreatmentName(treatment.treatmentTypeId);
-    const progress = calculateProgress(filteredTreatments, index);
-
-    return (
-      <Zoom in timeout={300 + (index * 100)}>
-        <Card
-          sx={{
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            position: 'relative',
-            borderRadius: 3,
-            overflow: 'hidden',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-            '&:hover': {
-              transform: 'translateY(-8px) scale(1.02)',
-              boxShadow: `0 12px 40px ${treatmentColor}20`,
-              '& .action-buttons': {
-                opacity: 1,
-                transform: 'translateY(0)'
-              }
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: `linear-gradient(90deg, ${treatmentColor}, ${treatmentColor}80)`,
-              zIndex: 1
-            }
-          }}
-          onClick={() => handleCardClick(treatment)}
-        >
-          <CardContent sx={{ p: 3 }}>
-            {/* כותרת הקארד */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar 
-                sx={{ 
-                  bgcolor: treatmentColor,
-                  width: 48,
-                  height: 48,
-                  mr: 2,
-                  boxShadow: `0 4px 20px ${treatmentColor}40`
-                }}
-              >
-                {getTreatmentIcon(treatment.treatmentTypeId)}
-              </Avatar>
-              
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    fontWeight: 700,
-                    color: '#1a1a1a',
-                    mb: 0.5,
-                    fontSize: '1.1rem'
-                  }}
-                >
-                  {treatmentName}
-                </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CalendarIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDate(treatment.treatmentDate)}
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* כפתורי פעולה */}
-              <Box 
-                className="action-buttons"
-                sx={{
-                  opacity: 0,
-                  transform: 'translateY(10px)',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  gap: 1
-                }}
-              >
-                <Tooltip title="צפייה">
-                  <IconButton
-                    size="small"
-                    sx={{
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' }
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCardClick(treatment);
-                    }}
-                  >
-                    <VisibilityIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-
-            {/* תוכן הטיפול */}
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mb: 2,
-                color: 'text.secondary',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: 1.4
-              }}
-            >
-              {treatment.description || 'אין תיאור זמין'}
-            </Typography>
-
-            {/* מידע נוסף */}
-            <Stack spacing={2}>
-              {/* מטפל */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PersonIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
-                  מטפל: {treatment.employeeName || 'לא הוזן'}
-                </Typography>
-              </Box>
-
-              {/* רמת שיתוף פעולה */}
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <MoodIcon sx={{ fontSize: 18, color: getCooperationColor(treatment.cooperationLevel) }} />
-                    <Typography variant="body2" fontWeight={600}>
-                      שיתוף פעולה
-                    </Typography>
-                  </Box>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: getCooperationColor(treatment.cooperationLevel),
-                      fontWeight: 600
-                    }}
-                  >
-                    {getCooperationText(treatment.cooperationLevel)}
-                  </Typography>
-                </Box>
-                
-                <Rating
-                  value={treatment.cooperationLevel || 0}
-                  max={5}
-                  readOnly
-                  size="small"
-                  icon={<StarIcon fontSize="inherit" />}
-                  emptyIcon={<StarIcon fontSize="inherit" sx={{ color: '#e0e0e0' }} />}
-                  sx={{
-                    '& .MuiRating-iconFilled': {
-                      color: getCooperationColor(treatment.cooperationLevel)
-                    }
-                  }}
-                />
-              </Box>
-
-              {/* התקדמות */}
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon sx={{ fontSize: 18, color: treatmentColor }} />
-                    <Typography variant="body2" fontWeight={600}>
-                      התקדמות כללית
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {Math.round(progress)}%
-                  </Typography>
-                </Box>
-                
-                <LinearProgress
-                  variant="determinate"
-                  value={progress}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    bgcolor: '#f5f5f5',
-                    '& .MuiLinearProgress-bar': {
-                      background: `linear-gradient(90deg, ${treatmentColor}, ${treatmentColor}80)`,
-                      borderRadius: 3
-                    }
-                  }}
-                />
-              </Box>
-
-              {/* הדגשה */}
-              {treatment.highlight && (
-                <>
-                  <Divider sx={{ my: 1 }} />
-                  <Box 
-                    sx={{
-                      bgcolor: `${treatmentColor}10`,
-                      border: `1px solid ${treatmentColor}30`,
-                      borderRadius: 2,
-                      p: 1.5
-                    }}
-                  >
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 600,
-                        color: treatmentColor,
-                        fontSize: '0.85rem'
-                      }}
-                    >
-                      💡 {treatment.highlight}
-                    </Typography>
-                  </Box>
-                </>
-              )}
-
-              {/* סטטוס */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Chip
-                  label={treatment.status === 'active' ? 'פעיל' : 'לא פעיל'}
-                  size="small"
-                  color={treatment.status === 'active' ? 'success' : 'default'}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.75rem'
-                  }}
-                />
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Zoom>
-    );
-  };
-
-  // אם אין טיפולים
-  if (!filteredTreatments || filteredTreatments.length === 0) {
-    return (
-      <Box 
-        sx={{ 
-          textAlign: 'center', 
-          py: 8,
-          bgcolor: '#fafafa',
-          borderRadius: 3,
-          border: '2px dashed #e0e0e0'
-        }}
-      >
-        <LocalHospitalIcon sx={{ fontSize: 64, color: '#bdbdbd', mb: 2 }} />
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-          אין טיפולים להצגה
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          נסה לשנות את מסנני החיפוש או להוסיף טיפולים חדשים
-        </Typography>
+  for (let i = 1; i <= 5; i++) {
+    stars.push(
+      <Box key={i} sx={{ color: i <= level ? '#ffc107' : '#e0e0e0' }}>
+        {i <= level ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
       </Box>
     );
   }
+  
+  return (
+    <Tooltip title={`רמת שיתוף פעולה: ${level}/5`}>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        {stars}
+        <Typography variant="caption" sx={{ ml: 1, fontWeight: 600 }}>
+          {level}/5
+        </Typography>
+      </Stack>
+    </Tooltip>
+  );
+};
 
-  // חישוב טיפולים לעמוד הנוכחי
-  const startIndex = page * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentTreatments = filteredTreatments.slice(startIndex, endIndex);
+const ActionButton = styled(IconButton)(({ theme, actiontype }) => {
+  const colors = {
+    view: { bg: '#4fc3f7', hover: '#29b6f6' },
+    download: { bg: '#ff9800', hover: '#f57c00' }
+  };
+  
+  const color = colors[actiontype] || colors.view;
+  
+  return {
+    width: 40,
+    height: 40,
+    backgroundColor: color.bg,
+    color: 'white',
+    boxShadow: `0 2px 8px ${color.bg}40`,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: color.hover,
+      transform: 'translateY(-2px) scale(1.05)',
+      boxShadow: `0 4px 16px ${color.bg}60`,
+    },
+    '&:active': {
+      transform: 'translateY(0) scale(0.95)',
+    }
+  };
+});
+
+const TreatmentsTable = () => {
+  const { 
+    filteredTreatments,
+    page, 
+    setPage,
+    rowsPerPage, 
+    setRowsPerPage,
+    orderBy,
+    order,
+    handleRequestSort,
+    openViewDialog,
+    getColorForTreatmentType,
+    getEmployeePhoto,
+    getEmployeeName,
+    formatDate
+  } = useTreatmentContext();
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const createSortHandler = (property) => () => {
+    handleRequestSort(property);
+  };
+
+  const paginatedTreatments = filteredTreatments.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
-    <Box sx={{ mt: 3 }}>
-      {/* סטטיסטיקות מהירות */}
-      <Box sx={{ mb: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={3}>
-            <Card sx={{ textAlign: 'center', p: 2, bgcolor: '#f8f9fa' }}>
-              <Typography variant="h4" fontWeight={700} color="primary.main">
-                {filteredTreatments.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                סה"כ טיפולים
-              </Typography>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={3}>
-            <Card sx={{ textAlign: 'center', p: 2, bgcolor: '#f1f8e9' }}>
-              <Typography variant="h4" fontWeight={700} color="success.main">
-                {filteredTreatments.filter(t => t.cooperationLevel >= 4).length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                שיתוף פעולה טוב
-              </Typography>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={3}>
-            <Card sx={{ textAlign: 'center', p: 2, bgcolor: '#fff3e0' }}>
-              <Typography variant="h4" fontWeight={700} color="warning.main">
-                {filteredTreatments.filter(t => t.cooperationLevel === 3).length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                שיתוף פעולה בינוני
-              </Typography>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={3}>
-            <Card sx={{ textAlign: 'center', p: 2, bgcolor: '#ffebee' }}>
-              <Typography variant="h4" fontWeight={700} color="error.main">
-                {filteredTreatments.filter(t => t.cooperationLevel <= 2).length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                זקוק לתשומת לב
-              </Typography>
-            </Card>
-          </Grid>
-        </Grid>
-      </Box>
+    <Paper elevation={0} sx={{ width: '100%', overflow: 'hidden' }}>
+      <StyledTableContainer>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === 'treatmentDate'}
+                  direction={orderBy === 'treatmentDate' ? order : 'asc'}
+                  onClick={createSortHandler('treatmentDate')}
+                  sx={{ 
+                    fontSize: '0.95rem',
+                    '& .MuiTableSortLabel-icon': {
+                      color: '#4fc3f7 !important',
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#4fc3f7', fontSize: '0.75rem' }}>
+                      📅
+                    </Avatar>
+                    תאריך טיפול
+                  </Box>
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === 'employeeName'}
+                  direction={orderBy === 'employeeName' ? order : 'asc'}
+                  onClick={createSortHandler('employeeName')}
+                  sx={{ 
+                    fontSize: '0.95rem',
+                    '& .MuiTableSortLabel-icon': {
+                      color: '#4fc3f7 !important',
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#4fc3f7', fontSize: '0.75rem' }}>
+                      👤
+                    </Avatar>
+                    מטפל
+                  </Box>
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+                  <Avatar sx={{ width: 24, height: 24, bgcolor: '#4fc3f7', fontSize: '0.75rem' }}>
+                    ⭐
+                  </Avatar>
+                  רמת שיתוף פעולה
+                </Box>
+              </TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === 'description'}
+                  direction={orderBy === 'description' ? order : 'asc'}
+                  onClick={createSortHandler('description')}
+                  sx={{ 
+                    fontSize: '0.95rem',
+                    '& .MuiTableSortLabel-icon': {
+                      color: '#4fc3f7 !important',
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar sx={{ width: 24, height: 24, bgcolor: '#4fc3f7', fontSize: '0.75rem' }}>
+                      📝
+                    </Avatar>
+                    תיאור הטיפול
+                  </Box>
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
+                  <Avatar sx={{ width: 24, height: 24, bgcolor: '#4fc3f7', fontSize: '0.75rem' }}>
+                    ⚡
+                  </Avatar>
+                  פעולות
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedTreatments.length > 0 ? (
+              paginatedTreatments.map((treatment) => (
+                <StyledTableRow 
+                  key={treatment.treatmentId}
+                  onClick={() => openViewDialog(treatment)}
+                >
+                  
+                  <TableCell align="center">
+                    <Box>
+                      <Typography variant="body2" fontWeight={600} color="text.primary">
+                        {formatDate(treatment.treatmentDate)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(treatment.treatmentDate).toLocaleDateString('he-IL', { weekday: 'long' })}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Avatar 
+                      src={
+                        getEmployeePhoto(treatment.employeeId) ? 
+                        `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(getEmployeePhoto(treatment.employeeId))}` : 
+                        getEmployeeName(treatment.employeeId) ? getEmployeeName(treatment.employeeId).charAt(0) : '?'
+                      }
+                        sx={{ 
+                          width: 32, 
+                          height: 32, 
+                          bgcolor: getColorForTreatmentType(treatment.treatmentTypeId),
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                      </Avatar>
+                      <Box>
+                        <Typography variant="body2" fontWeight={600}>
+                          {getEmployeeName(treatment.employeeId)}
+                        </Typography>
 
-      {/* רשת הקארדים */}
-      <Grid container spacing={3}>
-        {currentTreatments.map((treatment, index) => (
-          <Grid item xs={12} md={6} lg={4} key={treatment.treatmentId}>
-            <TreatmentCard treatment={treatment} index={index} />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* אם יש הרבה טיפולים, נוסיף pagination כאן */}
-      {filteredTreatments.length > rowsPerPage && (
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-          <Typography variant="body2" color="text.secondary">
-            מציג {startIndex + 1}-{Math.min(endIndex, filteredTreatments.length)} מתוך {filteredTreatments.length} טיפולים
-          </Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <CooperationRating level={treatment.cooperationLevel || 0} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box>
+                      <Typography variant="body2" fontWeight={600} color="text.primary" sx={{ mb: 0.5 }}>
+                        {treatment.description?.substring(0, 40)}
+                        {treatment.description?.length >40 && '...'}
+                      </Typography>
+                    
+                    </Box>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                      <Tooltip title="צפייה בפרטי הטיפול">
+                        <ActionButton
+                          actiontype="view"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openViewDialog(treatment);
+                          }}
+                        >
+                          <VisibilityIcon sx={{ fontSize: 18 }} />
+                        </ActionButton>
+                      </Tooltip>
+                      <Tooltip title="הורדת סיכום טיפול">
+                        <ActionButton
+                          actiontype="download"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // כאן תהיה הפונקציה להורדת PDF
+                            console.log('הורדת PDF עבור טיפול:', treatment.treatmentId);
+                          }}
+                        >
+                          <FileDownloadIcon sx={{ fontSize: 18 }} />
+                        </ActionButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </StyledTableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    color: 'text.secondary'
+                  }}>
+                    <Avatar sx={{ width: 64, height: 64, bgcolor: 'grey.100', color: 'grey.400' }}>
+                      🔍
+                    </Avatar>
+                    <Typography variant="h6" color="text.secondary">
+                      לא נמצאו טיפולים
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      נסה לשנות את הפילטרים או להוסיף טיפול חדש
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </StyledTableContainer>
+      
+      {filteredTreatments.length > 0 && (
+        <Box sx={{ 
+          p: 2, 
+          borderTop: '1px solid rgba(224, 224, 224, 0.3)',
+          background: 'linear-gradient(135deg, #fafbfc 0%, #f8fafb 100%)'
+        }}>
+          <TablePagination
+            component="div"
+            count={filteredTreatments.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="שורות בעמוד:"
+            labelDisplayedRows={({ from, to, count }) => `${from}-${to} מתוך ${count}`}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            sx={{
+              '& .MuiTablePagination-toolbar': {
+                minHeight: '52px',
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontWeight: 600,
+                color: 'text.primary',
+              },
+              '& .MuiTablePagination-select': {
+                borderRadius: '8px',
+                border: '1px solid rgba(0,0,0,0.1)',
+              },
+              '& .MuiTablePagination-actions button': {
+                borderRadius: '8px',
+                '&:hover': {
+                  backgroundColor: 'rgba(76, 181, 195, 0.1)',
+                }
+              }
+            }}
+          />
         </Box>
       )}
-    </Box>
+    </Paper>
   );
 };
 

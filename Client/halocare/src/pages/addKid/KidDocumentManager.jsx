@@ -1,4 +1,3 @@
-// src/components/kids/KidDocumentManager.jsx - רכיב ניהול מסמכים לילדים
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -108,6 +107,7 @@ const KidDocumentManager = ({
   if (compact) {
     return (
       <Paper 
+      dir="rtl"
         elevation={2} 
         sx={{ 
           p: 2, 
@@ -227,7 +227,7 @@ const KidDocumentManager = ({
 
   // מצב מלא (לפרופיל ילד)
   return (
-    <Box sx={{ maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Box dir='rtl' sx={{ maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' , ml:2 ,mr:2 }}>
       {/* כותרת עם סטטיסטיקות */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box>
@@ -368,7 +368,7 @@ const KidDocumentManager = ({
         <DialogContent>
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              ניתן להעלות עד 10 קבצים בבת אחת. קבצים נתמכים: תמונות, PDF, מסמכים ועוד.
+              ניתן להעלות עד 5 קבצים בבת אחת. קבצים נתמכים: תמונות, PDF, מסמכים ועוד.
             </Typography>
           </Alert>
           

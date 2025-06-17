@@ -1,9 +1,10 @@
-// src/context/TreatmentContext.jsx
+// src/context/TreatmentContext.jsx - גרסה משופרת עם פילטרים נוספים
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
-
+import { fetchEmployees } from '../../../Redux/features/employeesSlice';
+import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
 const TreatmentContext = createContext();
 
 export const useTreatmentContext = () => useContext(TreatmentContext);
@@ -12,23 +13,29 @@ export const TreatmentProvider = ({ children }) => {
   const dispatch = useDispatch();
   const { treatments } = useSelector(state => state.treatments);
   const treatmentTypes = useSelector(state => state.treatmentTypes.treatmentTypes);
+  const { employees } = useSelector(state => state.employees);
   
   // מצבי הדיאלוגים
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [currentTreatment, setCurrentTreatment] = useState(null);
   
-  // מצבי החיפוש והסינון
+  // מצבי החיפוש והסינון - בסיסיים
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const [dateFrom, setDateFrom] = useState(null);
   const [dateTo, setDateTo] = useState(null);
   const [employeeFilter, setEmployeeFilter] = useState('');
+  
+  // מצבי סינון נוספים
+  const [cooperationLevelFilter, setCooperationLevelFilter] = useState(null);
+  const [quickFilterPreset, setQuickFilterPreset] = useState(null);
+  
   const [filteredTreatments, setFilteredTreatments] = useState([]);
   
   // מצבי העמוד והמיון
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState('treatmentDate');
   const [order, setOrder] = useState('desc');
   
@@ -36,18 +43,27 @@ export const TreatmentProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // עדכון הטיפולים המסוננים
+  // עדכון הטיפולים המסוננים - לוגיקה משופרת
   useEffect(() => {
     if (!treatments || treatments.length === 0) {
       setFilteredTreatments([]);
+          // dispatch(fetchTreatmentTypes());
+
       return;
     }
     
-    // פונקציית סינון
+    // ודא שהעובדים נטענו לפני הסינון
+    if (!employees || employees.length === 0) {
+      // אם העובדים לא נטענו עדיין, נטען אותם
+      dispatch(fetchEmployees());
+      return;
+    }
+    
+    // פונקציית סינון משופרת
     const filterTreatments = () => {
       return treatments.filter(treatment => {
         // סינון לפי חיפוש חופשי
-        const matchesSearch = searchTerm.trim() === '' ? true : 
+        const searchMatches = searchTerm.trim() === '' ? true : 
           (treatment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           treatment.highlight?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           treatment.treatmentTypeId?.toString().includes(searchTerm.toLowerCase()) ||
@@ -55,14 +71,20 @@ export const TreatmentProvider = ({ children }) => {
         
         // סינון לפי תאריכים
         const treatmentDate = treatment.treatmentDate ? new Date(treatment.treatmentDate) : null;
-        const matchesDateFrom = !dateFrom || !treatmentDate ? true : treatmentDate >= dateFrom;
-        const matchesDateTo = !dateTo || !treatmentDate ? true : treatmentDate <= dateTo;
+        const dateFromMatches = !dateFrom || !treatmentDate ? true : treatmentDate >= dateFrom;
+        const dateToMatches = !dateTo || !treatmentDate ? true : treatmentDate <= dateTo;
         
         // סינון לפי עובד
-        const matchesEmployee = !employeeFilter ? true : 
-          treatment.employeeName?.toLowerCase().includes(employeeFilter.toLowerCase());
+        const employeeMatches = !employeeFilter ? true : 
+          getEmployeeName(treatment.employeeId)?.toLowerCase().includes(employeeFilter.toLowerCase());
         
-        return matchesSearch && matchesDateFrom && matchesDateTo && matchesEmployee;
+        // סינון לפי רמת שיתוף פעולה
+        const cooperationMatches = !cooperationLevelFilter ? true :
+          (treatment.cooperationLevel >= cooperationLevelFilter[0] && 
+           treatment.cooperationLevel <= cooperationLevelFilter[1]);
+        
+        return searchMatches && dateFromMatches && dateToMatches && 
+               employeeMatches && cooperationMatches;
       });
     };
     
@@ -75,11 +97,18 @@ export const TreatmentProvider = ({ children }) => {
       if (orderBy === 'treatmentDate') {
         const dateA = a.treatmentDate ? new Date(a.treatmentDate) : new Date(0);
         const dateB = b.treatmentDate ? new Date(b.treatmentDate) : new Date(0);
-        
         return order === 'asc' ? dateA - dateB : dateB - dateA;
       }
       
-      // מיון לפי שדות טקסט
+      // מיון לפי רמת שיתוף פעולה
+      if (orderBy === 'cooperationLevel') {
+        const levelA = a.cooperationLevel || 0;
+        const levelB = b.cooperationLevel || 0;
+        return order === 'asc' ? levelA - levelB : levelB - levelA;
+      }
+      
+     
+      // מיון לפי שדות טקסט אחרים
       const valueA = a[orderBy] || '';
       const valueB = b[orderBy] || '';
       
@@ -89,7 +118,18 @@ export const TreatmentProvider = ({ children }) => {
     });
     
     setFilteredTreatments(filtered);
-  }, [treatments, searchTerm, dateFrom, dateTo, employeeFilter, orderBy, order]);
+  }, [
+    treatments, 
+    searchTerm, 
+    dateFrom, 
+    dateTo, 
+    employeeFilter, 
+    cooperationLevelFilter,
+    orderBy, 
+    order,
+    treatmentTypes,
+    employees
+  ]);
 
   // פונקציית מיון
   const handleRequestSort = (property) => {
@@ -98,16 +138,18 @@ export const TreatmentProvider = ({ children }) => {
     setOrderBy(property);
   };
 
-  // ניקוי פילטרים
+  // ניקוי פילטרים משופר
   const clearFilters = () => {
     setSearchTerm('');
     setDateFrom(null);
     setDateTo(null);
     setEmployeeFilter('');
+    setCooperationLevelFilter(null);
+    setQuickFilterPreset(null);
     setPage(0);
   };
 
-  // הפונקציות הבאות כבר היו בקונטקסט
+  // פונקציות דיאלוגים
   const openAddDialog = () => {
     setCurrentTreatment(null);
     setIsAddDialogOpen(true);
@@ -131,7 +173,7 @@ export const TreatmentProvider = ({ children }) => {
   const addTreatment = async (kidId, treatmentData) => {
     setLoading(true);
     setError(null);
-    
+    console.log('dsvcedsscsdcsdcddddddddddddddddddddddd',treatmentData)
     try {
       const response = await axios.post(`/treatments`, {
         ...treatmentData,
@@ -210,14 +252,62 @@ export const TreatmentProvider = ({ children }) => {
   };
 
   const getTreatmentName = (typeId) => {
+  
     const treatmentType = treatmentTypes.find(t => t.treatmentTypeId == typeId);
     return treatmentType?.treatmentTypeName || 'לא ידוע';
   };
 
+  // פונקציה לקבלת שם העובד לפי ID
+  const getEmployeeName = (employeeId) => {
+    if (!employeeId || !employees) return 'לא ידוע';
+    const employee = employees.find(emp => emp.employeeId == employeeId);
+    return employee ? `${employee.firstName} ${employee.lastName}` : 'לא ידוע';
+  };
+const getEmployeePhoto = (employeeId) => {
+    if (!employeeId || !employees) return 'לא ידוע';
+    const employee = employees.find(emp => emp.employeeId == employeeId);
+    return employee ? employee.photo : null;
+  };
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('he-IL');
+  };
+
+  // פונקציות עבור סטטיסטיקות מהירות
+  const getFilteredTreatmentStats = () => {
+    if (!filteredTreatments.length) return {};
+    
+    const stats = {
+      total: filteredTreatments.length,
+      averageCooperation: 0,
+      employeeDistribution: {},
+      monthlyDistribution: {}
+    };
+    
+    // חישוב ממוצע שיתוף פעולה
+    const cooperationSum = filteredTreatments.reduce((sum, t) => sum + (t.cooperationLevel || 0), 0);
+    stats.averageCooperation = (cooperationSum / filteredTreatments.length).toFixed(1);
+    
+    // חלוקה לפי מטפלים
+    filteredTreatments.forEach(treatment => {
+      const employeeName = getEmployeeName(treatment.employeeId) || 'לא ידוע';
+      stats.employeeDistribution[employeeName] = 
+        (stats.employeeDistribution[employeeName] || 0) + 1;
+    });
+    
+    // חלוקה לפי חודש
+    filteredTreatments.forEach(treatment => {
+      if (treatment.treatmentDate) {
+        const month = new Date(treatment.treatmentDate).toLocaleDateString('he-IL', { 
+          year: 'numeric', 
+          month: 'long' 
+        });
+        stats.monthlyDistribution[month] = (stats.monthlyDistribution[month] || 0) + 1;
+      }
+    });
+    
+    return stats;
   };
 
   const value = {
@@ -237,7 +327,7 @@ export const TreatmentProvider = ({ children }) => {
     updateTreatment,
     deleteTreatment,
     
-    // סינון ומיון
+    // סינון ומיון - בסיסי
     searchTerm,
     setSearchTerm,
     filterOpen,
@@ -248,6 +338,13 @@ export const TreatmentProvider = ({ children }) => {
     setDateTo,
     employeeFilter,
     setEmployeeFilter,
+    
+    // סינון נוסף
+    cooperationLevelFilter,
+    setCooperationLevelFilter,
+    quickFilterPreset,
+    setQuickFilterPreset,
+    
     filteredTreatments,
     clearFilters,
     
@@ -269,7 +366,10 @@ export const TreatmentProvider = ({ children }) => {
     // עזרים
     getColorForTreatmentType,
     getTreatmentName,
-    formatDate
+    getEmployeeName,
+    getEmployeePhoto,
+    formatDate,
+    getFilteredTreatmentStats
   };
 
   return (

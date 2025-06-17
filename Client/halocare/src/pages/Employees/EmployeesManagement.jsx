@@ -909,7 +909,7 @@ const EmployeesManagement = () => {
               </Dialog>
 
               {/* דיאלוג מסמכי עובד מעוצב */}
-              <Dialog
+              {/* <Dialog
                 open={documentsDialogOpen}
                 onClose={handleCloseDocuments}
                 fullWidth
@@ -1073,7 +1073,7 @@ const EmployeesManagement = () => {
                     ✅ סגור
                   </AnimatedButton>
                 </DialogActions>
-              </Dialog>
+              </Dialog> */}
             </Container>
           </FullScreenContainer>
         </Box>
