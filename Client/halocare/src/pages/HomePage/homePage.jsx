@@ -154,7 +154,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.3) 0%, transparent 50%)',
+    background: 'radial-gradient(circle at 50% 30%, rgba(102, 126, 234, 0.2) 0%, transparent 60%), radial-gradient(circle at 50% 70%, rgba(240, 147, 251, 0.2) 0%, transparent 60%), radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
     pointerEvents: 'none',
     zIndex: 1,
   },
@@ -461,43 +461,9 @@ const HomePage = () => {
                           textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                         }}
                       >
-                        מערכת ניהול מתקדמת לגן ילדים מיוחד
+                        מערכת לניהול מתקדם
                       </Typography>
                     </Box>
-                  </Stack>
-                  
-                  <Stack direction="row" spacing={2}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<ContactIcon />}
-                      sx={{ 
-                        color: 'white',
-                        borderColor: 'rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(10px)',
-                        '&:hover': {
-                          borderColor: 'white',
-                          background: 'rgba(255,255,255,0.2)',
-                        }
-                      }}
-                    >
-                      צור קשר
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<LoginIcon />}
-                      sx={{ 
-                        background: 'linear-gradient(45deg, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.1) 90%)',
-                        backdropFilter: 'blur(10px)',
-                        color: 'white',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        '&:hover': {
-                          background: 'linear-gradient(45deg, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.2) 90%)',
-                        }
-                      }}
-                    >
-                      כניסה למערכת
-                    </Button>
                   </Stack>
                 </Stack>
               </Container>
@@ -519,7 +485,7 @@ const HomePage = () => {
                     textShadow: '0 4px 8px rgba(0,0,0,0.3)'
                   }}
                 >
-                  ✨ המצב כרגע בגן שלנו ✨
+                  ✨ מה קורה בגן שלנו ✨
                 </Typography>
                 <Grid container spacing={4} justifyContent="center">
                   {stats.map((stat, index) => (
@@ -804,7 +770,6 @@ const HomePage = () => {
                 }
               }}
             >
-              
             </Paper>
           </Fade>
         </FullScreenContainer>
