@@ -32,17 +32,15 @@ import { useCalendar } from './CalendarContext';
 
 // קונטיינר מעוצב לFullCalendar
 const CalendarContainer = styled(Box)(({ theme }) => ({
+  
   '& .fc': {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     background: 'transparent',
-
-    
+    // width: '100vw !important', // נסה את זה
+    // maxWidth: 'none !important',
   },
 
-//  '& .fc-scroller': {
-//     maxWidth: '120% !important',  // במקום 'fit-content'
-//     width: '120% !important'
-//   },
+
 
   // סגנון מותאם לכל רכיבי FullCalendar
   '& .fc-toolbar': {
@@ -315,6 +313,8 @@ const LoadingCard = styled(Card)(({ theme }) => ({
   }
 }));
 
+
+
 const CalendarView = ({
   calendarRef,
   events,
@@ -402,6 +402,7 @@ const CalendarView = ({
   }
   
   return (
+
     <Fade in timeout={800}>
       <CalendarContainer>
         <FullCalendar
@@ -431,7 +432,6 @@ const CalendarView = ({
           handleWindowResize={true}
           stickyHeaderDates={true}
           nowIndicator={true}
-          // width="100px"
           
           // פורמט זמן
           eventTimeFormat={{
@@ -476,6 +476,7 @@ const CalendarView = ({
         />
       </CalendarContainer>
     </Fade>
+
   );
 };
 

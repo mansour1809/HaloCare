@@ -33,6 +33,7 @@ import SystemSettings from './pages/SystemSetting/SystemSettings';
 import KidOnboarding from './pages/addKid/KidOnboarding';
 import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
 import EmployeeProfile from './pages/Employees/EmployeeProfile';
+import PersonalInfoForm from './pages/addKid/PersonalInfoForm';
 
 // יצירת ערכת נושא
 const theme = createTheme({
@@ -196,7 +197,8 @@ const AppContent = () => {
                 path="/kids/onboarding/new"
                 element={
                   <PrivateRoute>
-                    <KidOnboarding />
+                    <KidOnboarding  />
+                    {/* <PersonalInfoForm/> */}
                   </PrivateRoute>
                 }
               />

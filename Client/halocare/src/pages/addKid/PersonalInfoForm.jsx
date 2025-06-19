@@ -348,6 +348,12 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     }
   }, [data, isEditMode]);
 
+  // useEffect(() => {
+  //   if (!isEditMode) {
+  //     formik.resetForm();
+  //   }
+  // }, [isEditMode]);
+
   // טיפול בהעלאת תמונה
  const handlePhotoChange = (event) => {
     const file = event.target.files[0];
@@ -560,8 +566,8 @@ if (photoFile) {
   >
     <Avatar 
       src={
-        `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(photoPreview)}`
-        }
+        isEditMode ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(photoPreview)}` : undefined
+      }
       sx={{ 
         width: 150, 
         height: 150,
@@ -572,7 +578,6 @@ if (photoFile) {
     >
       {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
     </Avatar>
-    {console.log(photoPreview)}
   </Badge>
 
   <input

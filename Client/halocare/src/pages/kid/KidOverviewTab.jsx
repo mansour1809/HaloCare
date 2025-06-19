@@ -25,7 +25,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 // ייבוא הפרח הקיים
-import KidFlowerProfile from '../kids/KidFlowerProfile';
+// import KidFlowerProfile from '../kids/KidFlowerProfile';
+import SimpleFlowerProfile from '../kid/SimpleFlowerProfile';
 
 const KidOverviewTab = ({ selectedKid }) => {
   const navigate = useNavigate();
@@ -137,7 +138,7 @@ const KidOverviewTab = ({ selectedKid }) => {
               minHeight: '400px',
               alignItems: 'center'
             }}>
-              <KidFlowerProfile kid={selectedKid} />
+              <SimpleFlowerProfile kid={selectedKid} />
             </Box>
             
             <Divider sx={{ my: 3 }} />

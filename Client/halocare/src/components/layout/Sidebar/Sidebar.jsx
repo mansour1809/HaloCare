@@ -146,6 +146,8 @@ const ProSidebar = () => {
             <MenuItem
               icon={<PersonAddIcon />}
               onClick={() => navigate("/kids/onboarding/new")}
+              // onClick={() => navigate("/kids/onboarding/new")}
+              // onClick={() => window.location.href = "/#/kids/onboarding/new"}
               style={
                 location.pathname === "/kids/onboarding/new" ? activeMenuItemStyles : {}
               }

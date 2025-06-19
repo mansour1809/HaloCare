@@ -58,6 +58,7 @@ const KidOnboarding = () => {
 
   const isNewKid = kidId === undefined;
 
+  console.log('KidOnboarding - kidId:', kidId, 'isNewKid:', isNewKid);
   // טעינה ראשונית
   useEffect(() => {
     initializeOnboarding();
@@ -252,7 +253,7 @@ const KidOnboarding = () => {
         <Fade in={true} timeout={500}>
           <Box>
             {/* 🔥 טופס פרטים אישיים לילד חדש */}
-            {viewMode === 'personalInfo' && !selectedForm && (
+            {isNewKid && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50' }}>
                   <Typography variant="h5" gutterBottom>
@@ -272,7 +273,7 @@ const KidOnboarding = () => {
                 </Box>
               </Paper>
             )}
-            {viewMode === 'personalInfo' && selectedForm && (
+            {viewMode === 'personalInfo' && selectedForm && !isNewKid && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
@@ -300,7 +301,6 @@ const KidOnboarding = () => {
                       )}
                     </Box>
                   </Box>
-                  
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {/* כפתור מעבר בין מצבים */}
                     {formReadOnly && (
@@ -326,13 +326,13 @@ const KidOnboarding = () => {
                 
                 <Box sx={{ p: 3 }}>
                   <PersonalInfoForm
-                    data={selectedKid} // 🔥 העברת נתוני הילד הקיימים
+                    data={isNewKid ? null : selectedKid} // 🔥 העברת נתוני הילד הקיימים
                     onUpdate={(updatedData) => {
                       // עדכון לאחר שמירה
                       showNotification('פרטי הילד עודכנו בהצלחה', 'success');
                       handleBackToDashboard();
                     }}
-                    isEditMode={true} // 🔥 תמיד במצב עריכה (PersonalInfoForm מטפל בצפייה פנימית)
+                    isEditMode={!isNewKid} // 🔥 תמיד במצב עריכה (PersonalInfoForm מטפל בצפייה פנימית)
                     readOnly={formReadOnly} // 🔥 נעביר את זה אם PersonalInfoForm יתמוך בזה
                   />
                 </Box>

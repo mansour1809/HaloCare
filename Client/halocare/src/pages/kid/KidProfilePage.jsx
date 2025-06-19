@@ -111,7 +111,7 @@ const KidProfilePage = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <Box dir='rtl' sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Breadcrumbs */}
         <Breadcrumbs sx={{ mb: 4 }}>

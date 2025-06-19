@@ -306,6 +306,7 @@ const OnboardingDashboard = ({
 
                 {/* פעולות */}
                 <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
+                  {form.formName != 'אישורים' && (
                   <Box>
                     {/* כפתורים לעריכה/צפייה */}
                     {canEditForm(form) ? (
@@ -339,7 +340,7 @@ const OnboardingDashboard = ({
                       </Box>
                     )}
                   </Box>
-
+)}
                   <Box>
                     {/* שליחה להורה */}
                     {canSendToParent(form) && form.formId != '1002' && (

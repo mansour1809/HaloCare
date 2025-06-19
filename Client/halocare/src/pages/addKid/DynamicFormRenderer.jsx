@@ -427,18 +427,7 @@ const DynamicFormRenderer = ({
           )}
           
           <Stack direction="row" spacing={2}>
-            {readOnly && (
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => window.location.reload()}
-                color="primary"
-                size="large"
-              >
-                עריכה
-              </Button>
-            )}
-            
+      
             {!readOnly && (
               <Button
                 variant="contained"
