@@ -11,7 +11,6 @@ namespace halocare.DAL.Models
         public int TreatmentTypeId { get; set; }
         public string Description { get; set; }
         public int CooperationLevel { get; set; }
-        //public string Status { get; set; }
         public string Highlight { get; set; }
     }
 }

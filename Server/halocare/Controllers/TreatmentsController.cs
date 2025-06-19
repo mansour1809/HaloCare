@@ -170,50 +170,5 @@ namespace halocare.Controllers
 
 
 
-        //#################################for the tsha y3ne#######################################
-
-        // GET: api/Treatments/summary/{kidId}
-        //[HttpGet("summary/{kidId}")]
-        //public ActionResult GetTreatmentSummary(int kidId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-        //{
-        //    try
-        //    {
-        //        Dictionary<string, object> parameters = new Dictionary<string, object>
-        //{
-        //    { "@KidId", kidId },
-        //    { "@StartDate", startDate },
-        //    { "@EndDate", endDate }
-        //};
-
-        //        DataSet result = _treatmentService.ExecuteDataSet("GetTreatmentSummaryForTSHA", parameters);
-
-        //        return Ok(new
-        //        {
-        //            Types = ConvertDataTableToJson(result.Tables[0]),
-        //            Trends = ConvertDataTableToJson(result.Tables[1])
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"שגיאה בהפקת סיכום הטיפולים: {ex.Message}");
-        //    }
-        //}
-
-        //private List<Dictionary<string, object>> ConvertDataTableToJson(DataTable dt)
-        //{
-        //    List<Dictionary<string, object>> rows = new List<Dictionary<string, object>>();
-        //    foreach (DataRow dr in dt.Rows)
-        //    {
-        //        Dictionary<string, object> row = new Dictionary<string, object>();
-        //        foreach (DataColumn col in dt.Columns)
-        //        {
-        //            row[col.ColumnName] = dr[col] != DBNull.Value ? dr[col] : null;
-        //        }
-        //        rows.Add(row);
-        //    }
-        //    return rows;
-        //}
-
-
     }
 }
