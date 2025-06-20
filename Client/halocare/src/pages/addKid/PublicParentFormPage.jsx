@@ -15,6 +15,7 @@ import axios from 'axios';
 import QuestionRenderer from '../kids/QuestionRenderer';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import MultipleEntriesComponent from './MultipleEntriesComponent';
 
 const PublicParentFormPage = () => {
   const { token } = useParams();
@@ -28,8 +29,19 @@ const PublicParentFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [submitDialog, setSubmitDialog] = useState(false);
+  const [multipleEntriesData, setMultipleEntriesData] = useState({});
 
   const steps = ['אימות זהות', 'מילוי הטופס', 'סיום'];
+
+// 🆕 פונקציה לטיפול במידע מורכב
+  const handleMultipleEntriesChange = (questionNo, entriesData) => {
+    setMultipleEntriesData(prev => ({
+      ...prev,
+      [questionNo]: entriesData
+    }));
+  };
+
+
 
   // אימות גישה
   const handleValidation = async () => {
@@ -93,33 +105,53 @@ const PublicParentFormPage = () => {
     setLoading(true);
     
     try {
-      // הכנת התשובות לשליחה
-      const answersToSubmit = Object.entries(answers)
-        .filter(([_, answerData]) => answerData.answer && answerData.answer.trim() !== '')
-        .map(([questionNo, answerData]) => ({
+      // המרת התשובות לפורמט הנדרש
+      const formattedAnswers = Object.entries(answers).map(([questionNo, answerData]) => {
+        const question = formData.questions.find(q => q.questionNo === parseInt(questionNo));
+        
+        let answerObject = {
           questionNo: parseInt(questionNo),
-          answer: answerData.answer,
+          answer: answerData.answer || '',
           other: answerData.other || ''
-        }));
+        };
 
-      const response = await axios.post('/ParentForm/submit', {
-        token,
-        answers: answersToSubmit
+        // 🆕 הוספת מידע מורכב אם קיים
+        if (question?.requiresMultipleEntries && answerData.answer === 'כן') {
+          const entriesData = multipleEntriesData[questionNo];
+          if (entriesData && entriesData.length > 0) {
+            const validEntries = entriesData.filter(entry => 
+              Object.values(entry).some(val => val && val.toString().trim())
+            );
+            if (validEntries.length > 0) {
+              answerObject.multipleEntries = validEntries;
+            }
+          }
+        }
+
+        return answerObject;
       });
 
+      const payload = {
+        token: token,
+        answers: formattedAnswers
+      };
+
+      const response = await axios.post('/ParentForm/submit', payload);
+      
       if (response.data.success) {
-        setCurrentStep(2); // מעבר לעמוד סיום
-        setSubmitDialog(false);
+        setCurrentStep(2); // מעבר לשלב הסיום
       } else {
-        setError('שגיאה בשמירת הטופס');
+        setError(response.data.message || 'שגיאה בשמירת הטופס');
       }
     } catch (error) {
-      console.error('שגיאה בשמירה:', error);
-      setError('שגיאה בשמירת הטופס');
+      console.error('Error submitting form:', error);
+      setError('שגיאה בשליחת הטופס. אנא נסה שוב.');
     } finally {
       setLoading(false);
+      setSubmitDialog(false);
     }
   };
+       
 
   // חישוב התקדמות
   const calculateProgress = () => {
@@ -287,11 +319,39 @@ const PublicParentFormPage = () => {
                       question={question}
                       value={answer}
                       otherValue={other}
-                      onChange={(value, otherValue) => 
-                        handleAnswerChange(question.questionNo, value, otherValue)
+                      onChange={(value, otherValue) =>
+                        handleAnswerChange(
+                          question.questionNo,
+                          value,
+                          otherValue
+                        )
                       }
                       readOnly={false}
                     />
+
+                    {/* 🆕 הוספת רכיב מידע מורכב */}
+                    {question.requiresMultipleEntries &&
+                      answer === "כן" && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            פרטי תשובות נוספות:
+                          </Typography>
+                          <MultipleEntriesComponent
+                            question={question}
+                            existingAnswer={{
+                              multipleEntries: JSON.stringify(
+                                multipleEntriesData[question.questionNo] || []
+                              ),
+                            }}
+                            onDataChange={(data) =>
+                              handleMultipleEntriesChange(
+                                question.questionNo,
+                                data
+                              )
+                            }
+                          />
+                        </Box>
+                      )}
                   </Box>
                 );
               })}

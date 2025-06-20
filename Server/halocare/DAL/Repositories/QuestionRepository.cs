@@ -34,6 +34,9 @@ namespace halocare.DAL.Repositories
                     HasOther = row["HasOther"] != DBNull.Value ? Convert.ToBoolean(row["HasOther"]) : false,
                     Category = row["Category"].ToString(),
                     QuestionType = row["QuestionType"].ToString(),
+
+                    RequiresMultipleEntries = row["requires_multiple_entries"] != DBNull.Value ? Convert.ToBoolean(row["requires_multiple_entries"]) : false,
+                    MultipleEntryType = row["multiple_entry_type"] != DBNull.Value ? row["multiple_entry_type"].ToString() : null
                 };
 
                 questions.Add(question);
@@ -69,6 +72,8 @@ namespace halocare.DAL.Repositories
                 HasOther = Convert.ToBoolean(row["HasOther"]),
                 Category = row["Category"].ToString(),
                 QuestionType = row["QuestionType"].ToString(),
+                RequiresMultipleEntries = row["requires_multiple_entries"] != DBNull.Value ? Convert.ToBoolean(row["requires_multiple_entries"]) : false,
+                MultipleEntryType = row["multiple_entry_type"] != DBNull.Value ? row["multiple_entry_type"].ToString() : null
             };
 
             return question;

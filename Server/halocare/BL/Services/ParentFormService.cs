@@ -4,7 +4,6 @@ using halocare.DAL.Models;
 using halocare.DAL.Repositories;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
-//using halocare.DTOs;
 
 namespace halocare.BL.Services  
 {
@@ -52,7 +51,7 @@ namespace halocare.BL.Services
 
                 // יצירת קישור
                 var baseUrl = _configuration["AppSettings:BaseUrl"];
-                var parentFormUrl = $"{baseUrl}/parent-form/{token}";
+                var parentFormUrl = $"{baseUrl}#/parent-form/{token}";
 
                 // קבלת שם ההורה
                 var parentName = parent?.FirstName ?? "הורה יקר";
@@ -137,6 +136,13 @@ namespace halocare.BL.Services
                 // שמירת התשובות
                 foreach (var answer in answers)
                 {
+                    // 🆕 המרת מידע מורכב ל-JSON
+                    string multipleEntriesJson = null;
+                    if (answer.MultipleEntries != null && answer.MultipleEntries.Count > 0)
+                    {
+                        multipleEntriesJson = System.Text.Json.JsonSerializer.Serialize(answer.MultipleEntries);
+                    }
+
                     var answerData = new AnswerToQuestion
                     {
                         KidId = tokenData.KidId,
@@ -146,7 +152,8 @@ namespace halocare.BL.Services
                         Other = answer.Other,
                         AnsDate = DateTime.Now,
                         ByParent = true,
-                        EmployeeId = null
+                        EmployeeId = null,
+                        MultipleEntries = multipleEntriesJson // 🆕 הוספה
                     };
 
                     // בדיקה אם קיימת תשובה - עדכון או הוספה
@@ -164,8 +171,8 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // בדיקת השלמת טופס
                 _onboardingService.CheckFormCompletion(tokenData.KidId, tokenData.FormId);
+
 
                 return true;
             }
@@ -213,7 +220,7 @@ namespace halocare.BL.Services
         }
     }
 
-    // DTOs - בתוך אותו namespace
+    // DTOs 
     public class TokenData
     {
         public int KidId { get; set; }
@@ -236,5 +243,6 @@ namespace halocare.BL.Services
         public int QuestionNo { get; set; }
         public string Answer { get; set; }
         public string Other { get; set; }
+        public List<Dictionary<string, object>>? MultipleEntries { get; set; } // 🆕 הוספה
     }
 }

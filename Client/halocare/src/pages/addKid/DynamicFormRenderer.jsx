@@ -1,4 +1,4 @@
-// components/kids/DynamicFormRenderer.jsx - עיצוב טופס נייר מקצועי
+// components/kids/DynamicFormRenderer.jsx 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -24,10 +24,13 @@ import {
   clearCurrentFormAnswers, 
   selectCurrentFormAnswers,
   selectSaveStatus,
-  selectSaveError
+  selectSaveError,
+saveAnswerWithMultipleEntries
 } from '../../Redux/features/answersSlice';
 import axios from '../../components/common/axiosConfig'; 
 import QuestionRenderer from '../kids/QuestionRenderer';
+import MultipleEntriesComponent from './MultipleEntriesComponent';
+
 
 // 🎨 עיצוב כמו טופס נייר אמיתי
 const FormPaper = styled(Paper)(({ theme }) => ({
@@ -55,9 +58,6 @@ const FormPaper = styled(Paper)(({ theme }) => ({
 // 🎨 כותרת טופס רשמית
 const FormHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
-  // marginBottom: theme.spacing(2),
-  // paddingBottom: theme.spacing(2),
-  // borderBottom: `2px solid ${theme.palette.primary.main}`
 }));
 
 
@@ -105,11 +105,29 @@ const DynamicFormRenderer = ({
   const [localAnswers, setLocalAnswers] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  const [multipleEntriesData, setMultipleEntriesData] = useState({});
+
 
   // טעינה ראשונית
   useEffect(() => {
+     if (kidId && formId) {
+      // ניקוי מלא של הנתונים הקיימים
+      dispatch(clearCurrentFormAnswers());
+      setLocalAnswers({});
+      setMultipleEntriesData({});
+      setHasChanges(false);
+      
     loadFormData();
-  }, [kidId, formId]);
+
+    }
+  }, [kidId, formId, dispatch]);
+
+   useEffect(() => {
+    return () => {
+      console.log('Cleaning up form data'); 
+      dispatch(clearCurrentFormAnswers());
+    };
+  }, [dispatch]);
 
   useEffect(() => {
     if (currentFormAnswers.length > 0) {
@@ -122,12 +140,25 @@ const DynamicFormRenderer = ({
         };
       });
       setLocalAnswers(answersMap);
+
+      const multipleEntriesMap = {};
+    currentFormAnswers.forEach(answer => {
+      if (answer.multipleEntries) {
+        try {
+          multipleEntriesMap[answer.questionNo] = JSON.parse(answer.multipleEntries);
+        } catch (e) {
+          console.error('Error parsing multiple entries:', e);
+        }
+      }
+    });
+    setMultipleEntriesData(multipleEntriesMap);
+  
     }
   }, [currentFormAnswers]);
 
   const loadFormData = async () => {
     try {
-      dispatch(clearCurrentFormAnswers());
+      // dispatch(clearCurrentFormAnswers());
       dispatch(setCurrentForm({ kidId, formId }));
       
       await Promise.all([
@@ -139,6 +170,15 @@ const DynamicFormRenderer = ({
       showNotification('שגיאה בטעינת הטופס', 'error');
     }
   };
+
+  // 🆕 3. פונקציה חדשה לטיפול במידע מורכב
+const handleMultipleEntriesChange = (questionNo, entriesData) => {
+  setMultipleEntriesData(prev => ({
+    ...prev,
+    [questionNo]: entriesData
+  }));
+  setHasChanges(true);
+};
 
   const handleQuestionChange = (questionNo, answer, otherValue = '') => {
     setLocalAnswers(prev => ({
@@ -160,13 +200,28 @@ const DynamicFormRenderer = ({
       const answersToSave = currentFormQuestions.map(question => {
         const localAnswer = localAnswers[question.questionNo];
         
-        return {
-          answerId: localAnswer?.answerId || null,
-          questionNo: question.questionNo,
-          answer: localAnswer?.answer || '',
-          other: localAnswer?.other || '',
-          byParent: false
-        };
+          let answerData = {
+        answerId: localAnswer?.answerId || null,
+        questionNo: question.questionNo,
+        answer: localAnswer?.answer || '',
+        other: localAnswer?.other || '',
+        byParent: false
+      };
+
+      // 🆕 רק הוסף את זה:
+      if (question.requiresMultipleEntries && localAnswer?.answer === 'כן') {
+        const entriesData = multipleEntriesData[question.questionNo];
+        if (entriesData && entriesData.length > 0) {
+          const validEntries = entriesData.filter(entry => 
+            Object.values(entry).some(val => val && val.toString().trim())
+          );
+          if (validEntries.length > 0) {
+            answerData.multipleEntries = validEntries;
+          }
+        }
+      }
+
+      return answerData;
       }).filter(answer => answer.answer && answer.answer.trim() !== '');
 
       if (answersToSave.length === 0) {
@@ -187,6 +242,11 @@ const DynamicFormRenderer = ({
       console.error('שגיאה בשמירת הטופס:', error);
       showNotification('שגיאה בשמירת הטופס', 'error');
     }
+    finally {
+      // איפוס סטטוס השמירה
+      // dispatch(saveAnswerWithMultipleEntries({}));
+      setLocalAnswers({});
+    }
   };
 
   const saveAnswersWithUpsert = async (answersToSave) => {
@@ -194,6 +254,7 @@ const DynamicFormRenderer = ({
     const userId = user?.id;
 
     for (const answerData of answersToSave) {
+      
       const fullAnswerData = {
         answerId: answerData.answerId || 0, 
         kidId,
@@ -203,9 +264,11 @@ const DynamicFormRenderer = ({
         other: answerData.other,
         ansDate: new Date().toISOString(),
         byParent: false,
-        employeeId: userId
+        employeeId: userId,
+ multipleEntries: answerData.multipleEntries ? 
+          JSON.stringify(answerData.multipleEntries) : null
       };
-
+console.log('Saving answer:', fullAnswerData);
       try {
         if (answerData.answerId) {
           await axios.put(`/Forms/answers/${answerData.answerId}`, fullAnswerData);
@@ -388,17 +451,43 @@ const DynamicFormRenderer = ({
                     .findIndex(q => q.questionNo === question.questionNo) + 1;
                   
                   return (
-                    <QuestionRenderer
-                      key={question.questionNo}
-                      question={question}
-                      value={answer}
-                      otherValue={other}
-                      onChange={(value, otherValue) => 
-                        handleQuestionChange(question.questionNo, value, otherValue)
-                      }
-                      readOnly={readOnly}
-                      questionIndex={questionIndex}
-                    />
+                    <Box key={question.questionNo}>
+                      <QuestionRenderer
+                        key={question.questionNo}
+                        question={question}
+                        value={answer}
+                        otherValue={other}
+                        onChange={(value, otherValue) =>
+                          handleQuestionChange(
+                            question.questionNo,
+                            value,
+                            otherValue
+                          )
+                        }
+                        readOnly={readOnly}
+                        questionIndex={questionIndex}
+                      />
+
+                      {question.requiresMultipleEntries &&
+                        localAnswers[question.questionNo]?.answer === "כן" && (
+                          <Box sx={{ mt: 2, mr: 4 }}>
+                            <MultipleEntriesComponent
+                              question={question}
+                              existingAnswer={{
+                                multipleEntries: JSON.stringify(
+                                  multipleEntriesData[question.questionNo] || []
+                                ),
+                              }}
+                              onDataChange={(data) =>
+                                handleMultipleEntriesChange(
+                                  question.questionNo,
+                                  data
+                                )
+                              }
+                            />
+                          </Box>
+                        )}
+                    </Box>
                   );
                 })}
             </Box>

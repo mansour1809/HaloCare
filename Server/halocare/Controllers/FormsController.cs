@@ -331,5 +331,120 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+
+        // 🆕 API חדש לשליפת מידע רפואי קריטי
+        [HttpGet("critical-medical-info/{kidId}")]
+        public ActionResult<IEnumerable<AnswerToQuestion>> GetCriticalMedicalInfo(int kidId)
+        {
+            try
+            {
+                var criticalInfo = _formService.GetCriticalMedicalInfo(kidId);
+                return Ok(criticalInfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // 🆕 API לשמירת תשובה עם מידע מורכב
+        [HttpPost("answers/with-multiple-entries")]
+        public ActionResult<AnswerToQuestion> PostAnswerWithMultipleEntries([FromBody] AnswerWithMultipleEntriesRequest request)
+        {
+            try
+            {
+                // המרה של המידע המורכב ל-JSON
+                string multipleEntriesJson = null;
+                if (request.MultipleEntries != null && request.MultipleEntries.Count > 0)
+                {
+                    multipleEntriesJson = System.Text.Json.JsonSerializer.Serialize(request.MultipleEntries);
+                }
+
+                var answerData = new AnswerToQuestion
+                {
+                    KidId = request.KidId,
+                    FormId = request.FormId,
+                    QuestionNo = request.QuestionNo,
+                    AnsDate = DateTime.Now,
+                    Answer = request.Answer,
+                    Other = request.Other,
+                    EmployeeId = request.EmployeeId,
+                    ByParent = request.ByParent,
+                    MultipleEntries = multipleEntriesJson
+                };
+
+                int answerId = _formService.AddAnswer(answerData);
+                answerData.AnswerId = answerId;
+
+                return CreatedAtAction(nameof(GetFormAnswers),
+                    new { kidId = request.KidId, formId = request.FormId },
+                    answerData);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        // 🆕 API לעדכון תשובה עם מידע מורכב
+        [HttpPut("answers/{answerId}/with-multiple-entries")]
+        public IActionResult PutAnswerWithMultipleEntries(int answerId, [FromBody] AnswerWithMultipleEntriesRequest request)
+        {
+            try
+            {
+                // המרה של המידע המורכב ל-JSON
+                string multipleEntriesJson = null;
+                if (request.MultipleEntries != null && request.MultipleEntries.Count > 0)
+                {
+                    multipleEntriesJson = System.Text.Json.JsonSerializer.Serialize(request.MultipleEntries);
+                }
+
+                var answerData = new AnswerToQuestion
+                {
+                    AnswerId = answerId,
+                    Answer = request.Answer,
+                    Other = request.Other,
+                    EmployeeId = request.EmployeeId,
+                    ByParent = request.ByParent,
+                    MultipleEntries = multipleEntriesJson
+                };
+
+                bool updated = _formService.UpdateAnswer(answerData);
+
+                if (updated)
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return NotFound($"תשובה עם מזהה {answerId} לא נמצאה");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
     }
-}
+        public class AnswerWithMultipleEntriesRequest
+        {
+            public int KidId { get; set; }
+            public int FormId { get; set; }
+            public int QuestionNo { get; set; }
+            public string Answer { get; set; }
+            public string Other { get; set; }
+            public int? EmployeeId { get; set; }
+            public bool ByParent { get; set; }
+            public List<Dictionary<string, object>> MultipleEntries { get; set; }
+        }
+
+    }
+

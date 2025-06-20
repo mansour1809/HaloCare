@@ -178,6 +178,45 @@ export const deleteAnswerWithStatusCheck = createAsyncThunk(
   }
 );
 
+// 🆕 שמירת תשובה עם מידע מורכב
+export const saveAnswerWithMultipleEntries = createAsyncThunk(
+  'answers/saveAnswerWithMultipleEntries',
+  async (answerData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post('/Forms/answers/with-multiple-entries', answerData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בשמירת התשובה עם מידע מורכב');
+    }
+  }
+);
+
+// 🆕 עדכון תשובה עם מידע מורכב
+export const updateAnswerWithMultipleEntries = createAsyncThunk(
+  'answers/updateAnswerWithMultipleEntries',
+  async ({ answerId, answerData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`/Forms/answers/${answerId}/with-multiple-entries`, answerData);
+      return { answerId, ...answerData };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון התשובה עם מידע מורכב');
+    }
+  }
+);
+
+// 🆕 שליפת מידע רפואי קריטי
+export const fetchCriticalMedicalInfo = createAsyncThunk(
+  'answers/fetchCriticalMedicalInfo',
+  async (kidId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/Forms/critical-medical-info/${kidId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בטעינת מידע רפואי קריטי');
+    }
+  }
+);
+
 // =============================================================================
 // SLICE DEFINITION
 // =============================================================================
@@ -201,6 +240,11 @@ const answersSlice = createSlice({
     
     // מטמון מקומי לעדכונים
     localChanges: {}, // שינויים שטרם נשמרו
+
+     // 🆕 מידע רפואי קריטי
+    criticalMedicalInfo: [],
+    criticalInfoStatus: 'idle',
+    criticalInfoError: null,
   },
   reducers: {
     // 🧹 ניקוי שגיאות
@@ -220,6 +264,19 @@ const answersSlice = createSlice({
       state.currentFormAnswers = state.answersByKidAndForm[key] || [];
     },
     
+    // 🆕 עדכון מקומי של מידע מורכב
+    updateLocalMultipleEntries: (state, action) => {
+      const { questionNo, multipleEntries } = action.payload;
+      const key = `${state.currentKidId}_${state.currentFormId}_${questionNo}`;
+      
+      state.localChanges[key] = {
+        questionNo,
+        answer: 'כן', // תמיד "כן" אם יש מידע מורכב
+        multipleEntries,
+        timestamp: Date.now()
+      };
+    },
+
     // ✏️ עדכון תשובה מקומית (לפני שמירה)
     updateLocalAnswer: (state, action) => {
       const { questionNo, answer, other } = action.payload;
@@ -504,6 +561,97 @@ const answersSlice = createSlice({
         state.currentFormAnswers = state.currentFormAnswers.filter(
           a => a.answerId !== answerId
         );
+      })
+
+       // 🆕 Save answer with multiple entries
+      .addCase(saveAnswerWithMultipleEntries.pending, (state) => {
+        state.saveStatus = 'loading';
+        state.saveError = null;
+      })
+      .addCase(saveAnswerWithMultipleEntries.fulfilled, (state, action) => {
+        state.saveStatus = 'succeeded';
+        
+        // עדכון התשובה ברשימה הנוכחית
+        const newAnswer = action.payload;
+        const existingIndex = state.currentFormAnswers.findIndex(
+          a => a.questionNo === newAnswer.questionNo
+        );
+        
+        if (existingIndex !== -1) {
+          state.currentFormAnswers[existingIndex] = newAnswer;
+        } else {
+          state.currentFormAnswers.push(newAnswer);
+        }
+        
+        // עדכון במטמון הכללי
+        const key = `${state.currentKidId}_${state.currentFormId}`;
+        if (!state.answersByKidAndForm[key]) {
+          state.answersByKidAndForm[key] = [];
+        }
+        const cacheIndex = state.answersByKidAndForm[key].findIndex(
+          a => a.questionNo === newAnswer.questionNo
+        );
+        if (cacheIndex !== -1) {
+          state.answersByKidAndForm[key][cacheIndex] = newAnswer;
+        } else {
+          state.answersByKidAndForm[key].push(newAnswer);
+        }
+        
+        // ניקוי שינויים מקומיים
+        const localKey = `${state.currentKidId}_${state.currentFormId}_${newAnswer.questionNo}`;
+        delete state.localChanges[localKey];
+      })
+      .addCase(saveAnswerWithMultipleEntries.rejected, (state, action) => {
+        state.saveStatus = 'failed';
+        state.saveError = action.payload;
+      })
+      
+      // 🆕 Update answer with multiple entries
+      .addCase(updateAnswerWithMultipleEntries.fulfilled, (state, action) => {
+        state.saveStatus = 'succeeded';
+        // לוגיקה דומה לsave
+        const updatedAnswer = action.payload;
+const existingIndex = state.currentFormAnswers.findIndex(
+          a => a.questionNo === updatedAnswer.questionNo
+        );
+        
+        if (existingIndex !== -1) {
+          state.currentFormAnswers[existingIndex] = updatedAnswer;
+        } else {
+          state.currentFormAnswers.push(updatedAnswer);
+        }
+        
+        // עדכון במטמון הכללי
+        const key = `${state.currentKidId}_${state.currentFormId}`;
+        if (!state.answersByKidAndForm[key]) {
+          state.answersByKidAndForm[key] = [];
+        }
+        const cacheIndex = state.answersByKidAndForm[key].findIndex(
+          a => a.questionNo === updatedAnswer.questionNo
+        );
+        if (cacheIndex !== -1) {
+          state.answersByKidAndForm[key][cacheIndex] = updatedAnswer;
+        } else {
+          state.answersByKidAndForm[key].push(updatedAnswer);
+        }
+        
+        // ניקוי שינויים מקומיים
+        const localKey = `${state.currentKidId}_${state.currentFormId}_${updatedAnswer.questionNo}`;
+        delete state.localChanges[localKey];
+      })
+
+      // 🆕 Fetch critical medical info
+      .addCase(fetchCriticalMedicalInfo.pending, (state) => {
+        state.criticalInfoStatus = 'loading';
+        state.criticalInfoError = null;
+      })
+      .addCase(fetchCriticalMedicalInfo.fulfilled, (state, action) => {
+        state.criticalInfoStatus = 'succeeded';
+        state.criticalMedicalInfo = action.payload;
+      })
+      .addCase(fetchCriticalMedicalInfo.rejected, (state, action) => {
+        state.criticalInfoStatus = 'failed';
+        state.criticalInfoError = action.payload;
       });
   }
 });
@@ -538,7 +686,9 @@ export const {
   applyLocalChanges,
   clearAnswers,
   clearCurrentFormAnswers, // 🔥 הוספה
-  clearKidAnswers
+  clearKidAnswers,
+    updateLocalMultipleEntries 
+
 } = answersSlice.actions;
 
 export default answersSlice.reducer;

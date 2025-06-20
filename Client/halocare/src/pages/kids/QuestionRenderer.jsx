@@ -395,7 +395,7 @@ const QuestionRenderer = ({
 
   return (
     <QuestionRow>
-      <QuestionNumber>{questionIndex}.</QuestionNumber>
+      <QuestionNumber>{question.questionNo}.</QuestionNumber>
       
       <QuestionText>
         {question.questionText}

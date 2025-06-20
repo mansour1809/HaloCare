@@ -67,3 +67,36 @@ public class SubmitParentFormRequest
     public string Token { get; set; }
     public List<ParentAnswerDto> Answers { get; set; }
 }
+
+
+public class MedicationEntry
+{
+    public string MedicationName { get; set; }
+    public string Dosage { get; set; }
+    public string Times { get; set; }
+    public string Notes { get; set; }
+}
+
+    public class AllergyEntry
+    {
+        public string Allergen { get; set; }
+        public string Reaction { get; set; }
+        public string Severity { get; set; }
+        public string Notes { get; set; }
+    }
+
+    public class SeizureEntry
+    {
+        public string SeizureType { get; set; }
+        public string Frequency { get; set; }
+        public string Triggers { get; set; }
+        public string Medications { get; set; }
+        public string Notes { get; set; }
+    }
+
+
+    public class MultipleEntryData
+    {
+        public string Type { get; set; } // "medications", "allergies", "seizures"
+        public List<object> Entries { get; set; }
+    }

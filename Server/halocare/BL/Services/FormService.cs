@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using halocare.DAL.Repositories;
 using halocare.DAL.Models;
 using Microsoft.Extensions.Configuration;
+using System.Data;
 
 namespace halocare.BL.Services
 {
@@ -322,5 +323,11 @@ namespace halocare.BL.Services
 
             return _answerRepository.DeleteAnswer(answerId);
         }
+
+        public List<AnswerToQuestion> GetCriticalMedicalInfo(int kidId)
+        {
+            return _answerRepository.GetCriticalMedicalInfo(kidId);
+        }
+       
     }
 }
