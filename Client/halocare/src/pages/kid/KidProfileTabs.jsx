@@ -87,13 +87,6 @@ const KidProfileTabs = ({ selectedKid }) => {
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { documents } = useSelector(state => state.documents);
 
-  // // טעינת נתונים בהתחלה
-  // useEffect(() => {
-  //   if (kidId) {
-  //     // כאן תוכל להוסיף טעינת נתונים נוספים אם צריך
-  //     console.log('Loading data for kid:', kidId);
-  //   }
-  // }, [kidId, dispatch]);
 
   // פונקציה לחישוב מספר טפסים שהושלמו
   const getCompletedFormsCount = () => {

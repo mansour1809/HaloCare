@@ -23,9 +23,6 @@ import {
   TrendingUp as ProgressIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-
-// ייבוא הפרח הקיים
-// import KidFlowerProfile from '../kids/KidFlowerProfile';
 import SimpleFlowerProfile from '../kid/SimpleFlowerProfile';
 
 const KidOverviewTab = ({ selectedKid }) => {

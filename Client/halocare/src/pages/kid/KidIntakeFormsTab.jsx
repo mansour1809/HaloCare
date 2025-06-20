@@ -1,5 +1,5 @@
-// src/components/kids/tabs/KidIntakeFormsTab.jsx - טאב מידע מטפסי קליטה (מסודר לפי נושאים)
-import React, { useEffect, useState } from 'react';
+// src/components/kids/tabs/KidIntakeFormsTab.jsx - טאב מידע מטפסי קליטה
+import  { useEffect, useState } from 'react';
 import {
   Box,
   Accordion,
@@ -11,7 +11,6 @@ import {
   Chip,
   Avatar,
   Stack,
-  Divider,
   Alert,
   CircularProgress,
   Card,
@@ -24,7 +23,6 @@ import {
   LocalHospital as MedicalIcon,
   Restaurant as NutritionIcon,
   Psychology as DevelopmentIcon,
-  // Family as FamilyIcon,
   Home as HomeIcon,
   School as EducationIcon,
   Info as InfoIcon
