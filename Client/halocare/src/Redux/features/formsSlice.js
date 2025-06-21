@@ -31,7 +31,7 @@ export const sendFormToParent = createAsyncThunk(
   'forms/sendFormToParent',
   async ({ kidId, formId, parentEmail }, { dispatch, rejectWithValue }) => {
     try {
-      // 1. שליחת הטופס (הAPI הקיים שלך)
+      // 1. שליחת הטופס 
       const response = await axios.post('/Forms/send-to-parent', {
         kidId,
         formId,

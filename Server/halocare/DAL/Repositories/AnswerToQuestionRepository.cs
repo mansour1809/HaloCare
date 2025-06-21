@@ -73,10 +73,8 @@ namespace halocare.DAL.Repositories
                 Other = row["Other"].ToString(),
                 EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
                 ByParent = Convert.ToBoolean(row["ByParent"]),
-                MultipleEntries = row["multiple_entries"] != DBNull.Value ? row["multiple_entries"].ToString() : null 
-
+                MultipleEntries = row["multiple_entries"] != DBNull.Value ? row["multiple_entries"].ToString() : null
             };
-
             return answer;
         }
         public AnswerToQuestion GetAnswerById(int answerId)
@@ -105,7 +103,6 @@ namespace halocare.DAL.Repositories
                 EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : null,
                 ByParent = Convert.ToBoolean(row["ByParent"])
             };
-
             return answer;
         }
 
@@ -122,9 +119,7 @@ namespace halocare.DAL.Repositories
                 { "@EmployeeId", answer.EmployeeId ?? (object)DBNull.Value },
                 { "@ByParent", answer.ByParent },
                 { "@MultipleEntries", answer.MultipleEntries ?? (object)DBNull.Value }
-
             };
-
             return Convert.ToInt32(ExecuteScalar("SP_AddAnswer", parameters));
         }
 
@@ -142,13 +137,10 @@ namespace halocare.DAL.Repositories
                 { "@EmployeeId", answer.EmployeeId ?? (object)DBNull.Value },
                 { "@ByParent", answer.ByParent },
                 { "@MultipleEntries", answer.MultipleEntries ?? (object)DBNull.Value }
-
             };
-
             int rowsAffected = ExecuteNonQuery("SP_UpdateAnswer", parameters);
             return rowsAffected > 0;
         }
-
         public bool DeleteAnswer(int answerId)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -160,22 +152,19 @@ namespace halocare.DAL.Repositories
             return rowsAffected > 0;
         }
 
-        public List<AnswerToQuestion> GetCriticalMedicalInfo(int kidId)
+        public List<CriticalInfoData> GetCriticalMedicalInfo(int kidId)
         {
 
-
-
             Dictionary<string, object> parameters = new Dictionary<string, object>
-    {
-        { "@KidId", kidId }
-    };
-
-            List<AnswerToQuestion> criticalAnswers = new List<AnswerToQuestion>();
+            {
+            { "@KidId", kidId }
+            };
+            List<CriticalInfoData> criticalAnswers = new List<CriticalInfoData>();
             DataTable dataTable = ExecuteQuery("SP_GetCriticalMedicalInfo", parameters);
 
             foreach (DataRow row in dataTable.Rows)
             {
-                AnswerToQuestion answer = new AnswerToQuestion
+                CriticalInfoData answer = new CriticalInfoData
                 {
                     AnswerId = Convert.ToInt32(row["AnswerId"]),
                     KidId = Convert.ToInt32(row["KidId"]),
@@ -186,7 +175,9 @@ namespace halocare.DAL.Repositories
                     Other = row["Other"].ToString(),
                     EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : (int?)null,
                     ByParent = Convert.ToBoolean(row["ByParent"]),
-                    MultipleEntries = row["multiple_entries"] != DBNull.Value ? row["multiple_entries"].ToString() : null
+                    MultipleEntries = row["multiple_entries"] != DBNull.Value ? row["multiple_entries"].ToString() : null,
+                    Category = row["Category"].ToString(),
+                    MultipleEntryType = row["multiple_entry_type"] != DBNull.Value ? row["multiple_entry_type"].ToString() : null
                 };
                 criticalAnswers.Add(answer);
             }

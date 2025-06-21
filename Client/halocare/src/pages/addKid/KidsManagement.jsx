@@ -432,6 +432,7 @@ const KidsManagement = () => {
             <TableRow sx={{ backgroundColor: 'grey.50' }}>
               <TableCell sx={{ fontWeight: 700 }}>ילד</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>גיל</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>ת"ז</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>מגדר</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>הורה ראשי</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>סטטוס קליטה</TableCell>
@@ -490,6 +491,7 @@ const KidsManagement = () => {
                       </Box>
                     </TableCell>
                     <TableCell>{calculateAge(kid.birthDate)}</TableCell>
+                    <TableCell>{kid.id}</TableCell>
                     <TableCell>
                       <Chip 
                         label={kid.gender === 'זכר' ? 'זכר' : 'נקבה'} 

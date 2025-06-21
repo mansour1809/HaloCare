@@ -334,7 +334,7 @@ namespace halocare.Controllers
 
         // 🆕 API חדש לשליפת מידע רפואי קריטי
         [HttpGet("critical-medical-info/{kidId}")]
-        public ActionResult<IEnumerable<AnswerToQuestion>> GetCriticalMedicalInfo(int kidId)
+        public ActionResult<IEnumerable<CriticalInfoData>> GetCriticalMedicalInfo(int kidId)
         {
             try
             {

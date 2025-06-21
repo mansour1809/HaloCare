@@ -12,7 +12,6 @@
         public bool HasOther { get; set; }
         public string Category { get; set; }
         public string QuestionType { get; set; }
-
         public bool RequiresMultipleEntries { get; set; }
         public string MultipleEntryType { get; set; }
 

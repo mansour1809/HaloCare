@@ -1,4 +1,4 @@
-// src/components/kids/KidProfileTabs.jsx - מבנה טאבים חדש
+// src/components/kids/KidProfileTabs.jsx - מבנה טאבים עם כפתורי גישה מהירה
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -11,15 +11,24 @@ import {
   Chip,
   Divider,
   useTheme,
-  styled
+  styled,
+  Button,
+  Stack,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
   Visibility as OverviewIcon,
   Assignment as FormsIcon,
   Folder as DocumentsIcon,
-  Assessment as ReportsIcon
+  Assessment as ReportsIcon,
+  CalendarToday as CalendarIcon,
+  Groups as AttendanceIcon,
+  Refresh as RefreshIcon,
+  Print as PrintIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
 // Import קומפוננטות הטאבים
@@ -58,6 +67,26 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
   },
 }));
 
+const QuickActionButton = styled(Button)(({ theme }) => ({
+  minWidth: 'auto',
+  padding: '8px 16px',
+  borderRadius: '8px',
+  textTransform: 'none',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  border: '1px solid',
+  borderColor: theme.palette.divider,
+  color: theme.palette.text.primary,
+  backgroundColor: theme.palette.background.paper,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.primary.lighter || 'rgba(76, 181, 195, 0.08)',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  },
+}));
+
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
     role="tabpanel"
@@ -77,7 +106,8 @@ const TabPanel = ({ children, value, index, ...other }) => (
 const KidProfileTabs = ({ selectedKid }) => {
   const theme = useTheme();
   const { kidId } = useParams();
-  // const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   // State לטאב הנוכחי
   const [currentTab, setCurrentTab] = useState(0);
@@ -87,6 +117,51 @@ const KidProfileTabs = ({ selectedKid }) => {
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { documents } = useSelector(state => state.documents);
 
+  // פונקציות עזר
+  const handleRefresh = () => {
+    // רענון כל הנתונים הרלוונטיים
+    if (kidId) {
+      // כאן תוכל להוסיף רענון של כל הנתונים הרלוונטיים
+      window.location.reload(); // פתרון זמני - ניתן לשפר
+    }
+  };
+
+  const handlePrint = () => {
+    // הדפסת סיכום הילד
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html dir="rtl">
+        <head>
+          <title>סיכום ילד - ${selectedKid.firstName} ${selectedKid.lastName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; }
+            h1 { color: #1976d2; }
+            h2 { color: #666; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+            .info-row { margin: 10px 0; }
+            .label { font-weight: bold; display: inline-block; width: 150px; }
+          </style>
+        </head>
+        <body>
+          <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
+          <h2>פרטים בסיסיים</h2>
+          <div class="info-row"><span class="label">תאריך לידה:</span> ${selectedKid.birthDate || 'לא מצוין'}</div>
+          <div class="info-row"><span class="label">מגדר:</span> ${selectedKid.gender || 'לא מצוין'}</div>
+          <div class="info-row"><span class="label">כתובת:</span> ${selectedKid.address || 'לא מצוין'}</div>
+          <div class="info-row"><span class="label">כיתה:</span> ${selectedKid.className || 'לא משויך'}</div>
+          <div class="info-row"><span class="label">סטטוס:</span> ${selectedKid.isActive ? 'פעיל' : 'לא פעיל'}</div>
+          <div class="info-row"><span class="label">הורה ראשי:</span> ${selectedKid.parentName1 || 'לא מצוין'}</div>
+          <div class="info-row"><span class="label">הורה משני:</span> ${selectedKid.parentName2 || 'לא מצוין'}</div>
+          <div class="info-row"><span class="label">איש קשר חירום:</span> ${selectedKid.emergencyContact || 'לא מצוין'}</div>
+          <h2>הערות</h2>
+          <p>${selectedKid.notes || 'אין הערות'}</p>
+          <br><br>
+          <p><small>הופק ב: ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</small></p>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   // פונקציה לחישוב מספר טפסים שהושלמו
   const getCompletedFormsCount = () => {
@@ -113,7 +188,7 @@ const KidProfileTabs = ({ selectedKid }) => {
       icon: <OverviewIcon />,
       component: KidOverviewTab,
       badge: null,
-      description: 'פרח טיפולים וסטטיסטיקות'
+      description: 'מידע קריטי, פרח טיפולים ופרטים בסיסיים'
     },
     {
       id: 'intake-forms', 
@@ -121,7 +196,7 @@ const KidProfileTabs = ({ selectedKid }) => {
       icon: <FormsIcon />,
       component: KidIntakeFormsTab,
       badge: getCompletedFormsCount(),
-      description: 'טפסים שמולאו בתהליך הקליטה'
+      description: 'כל המידע שנאסף בתהליך הקליטה'
     },
     {
       id: 'documents',
@@ -160,79 +235,70 @@ const KidProfileTabs = ({ selectedKid }) => {
           height: 32,
           bgcolor: isSelected ? 'primary.main' : 'grey.300',
           color: isSelected ? 'white' : 'grey.600',
-          transition: 'all 0.2s ease-in-out',
           fontSize: '1rem'
         }}>
           {tab.icon}
         </Avatar>
         
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="body2" fontWeight={600}>
-            {tab.label}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" display="block">
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          textAlign: 'left'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body1" fontWeight={isSelected ? 'bold' : 'medium'}>
+              {tab.label}
+            </Typography>
+            {tab.badge !== null && tab.badge > 0 && (
+              <Badge 
+                badgeContent={tab.badge} 
+                color="primary"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.75rem',
+                    minWidth: '20px',
+                    height: '20px'
+                  }
+                }}
+              />
+            )}
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
             {tab.description}
           </Typography>
         </Box>
-        
-        {tab.badge !== null && tab.badge > 0 && (
-          <Badge 
-            badgeContent={tab.badge} 
-            color="primary"
-            sx={{
-              '& .MuiBadge-badge': {
-                right: -8,
-                top: -8,
-                minWidth: 20,
-                height: 20,
-                fontSize: '0.75rem',
-                fontWeight: 600
-              }
-            }}
-          />
-        )}
       </Box>
     );
   };
 
-  if (!selectedKid) {
-    return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
-          טוען פרטי ילד...
-        </Typography>
-      </Paper>
-    );
-  }
-
   return (
-    <Box>
-      {/* כותרת הטאבים */}
-      <Paper sx={{ borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
-        <Box sx={{ 
-          p: 3, 
-          background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Avatar sx={{ 
-              width: 48, 
-              height: 48, 
-              bgcolor: 'primary.main',
-              fontSize: '1.2rem'
-            }}>
-              {selectedKid.firstName?.charAt(0)}{selectedKid.lastName?.charAt(0)}
+    <Box dir="rtl">
+      {/* כותרת עליונה עם פרטי הילד וכפתורי גישה מהירה */}
+      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar 
+              sx={{ 
+                width: 64, 
+                height: 64,
+                bgcolor: 'primary.main',
+                fontSize: '1.5rem',
+                fontWeight: 'bold'
+              }}
+            >
+              {selectedKid.firstName?.charAt(0) || '?'}
             </Avatar>
             
             <Box>
               <Typography variant="h5" fontWeight="bold" color="primary.main">
                 {selectedKid.firstName} {selectedKid.lastName}
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+              
+              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
                 <Chip 
-                  label={selectedKid.isActive ? 'פעיל' : 'לא פעיל'}
-                  color={selectedKid.isActive ? 'success' : 'default'}
+                  label={selectedKid.isActive ? '✅ פעיל' : '❌ לא פעיל'}
+                  color={selectedKid.isActive ? 'success' : 'error'}
                   size="small"
                 />
                 {selectedKid.className && (
@@ -249,38 +315,94 @@ const KidProfileTabs = ({ selectedKid }) => {
                     size="small"
                   />
                 )}
-              </Box>
+              </Stack>
             </Box>
           </Box>
           
-          <Typography variant="body2" color="text.secondary">
-            תיק דיגיטלי מלא של {selectedKid.firstName} - טיפולים, טפסים, מסמכים ודוחות
-          </Typography>
+          {/* כפתורי גישה מהירה */}
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="יומן כללי">
+              <QuickActionButton
+                startIcon={<CalendarIcon />}
+                onClick={() => navigate('/calendar/schedule')}
+              >
+                יומן
+              </QuickActionButton>
+            </Tooltip>
+            
+            <Tooltip title="נוכחות היום">
+              <QuickActionButton
+                startIcon={<AttendanceIcon />}
+                onClick={() => navigate('/reports/attendance')}
+              >
+                נוכחות
+              </QuickActionButton>
+            </Tooltip>
+            
+            <Tooltip title="רענן נתונים">
+              <IconButton
+                onClick={handleRefresh}
+                sx={{ 
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '&:hover': { borderColor: 'primary.main' }
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            
+            <Tooltip title="הדפס סיכום">
+              <IconButton
+                onClick={handlePrint}
+                sx={{ 
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '&:hover': { borderColor: 'primary.main' }
+                }}
+              >
+                <PrintIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Box>
+        
+        <Typography variant="body2" color="text.secondary">
+          תיק דיגיטלי מלא של {selectedKid.firstName} - טיפולים, טפסים, מסמכים ודוחות
+        </Typography>
 
         {/* הטאבים עצמם */}
-        <StyledTabs
-          value={currentTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ px: 2 }}
-        >
-          {tabs.map((tab, index) => (
-            <Tab
-              key={tab.id}
-              label={renderTabIcon(tab, index)}
-              id={`kid-tab-${index}`}
-              aria-controls={`kid-tabpanel-${index}`}
-            />
-          ))}
-        </StyledTabs>
+        <Box sx={{ mt: 3 }}>
+          <StyledTabs
+            value={currentTab}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{ 
+              px: 2,
+              '& .MuiTabs-flexContainer': {
+                gap: 1
+              }
+            }}
+          >
+            {tabs.map((tab, index) => (
+              <Tab
+                key={tab.id}
+                label={renderTabIcon(tab, index)}
+                id={`kid-tab-${index}`}
+                aria-controls={`kid-tabpanel-${index}`}
+                sx={{ minHeight: '80px' }}
+              />
+            ))}
+          </StyledTabs>
+        </Box>
       </Paper>
 
       {/* תוכן הטאבים */}
       <Paper sx={{ 
-        borderRadius: '0 0 12px 12px',
+        borderRadius: 3,
         minHeight: '500px',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         {tabs.map((tab, index) => {
           const Component = tab.component;

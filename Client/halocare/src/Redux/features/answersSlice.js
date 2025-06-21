@@ -210,6 +210,7 @@ export const fetchCriticalMedicalInfo = createAsyncThunk(
   async (kidId, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/Forms/critical-medical-info/${kidId}`);
+      console.log('Fetched critical medical info:', response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת מידע רפואי קריטי');
@@ -656,9 +657,7 @@ const existingIndex = state.currentFormAnswers.findIndex(
   }
 });
 
-// =============================================================================
 // SELECTORS - לגישה נוחה לנתונים
-// =============================================================================
 
 export const selectCurrentFormAnswers = (state) => state.answers.currentFormAnswers;
 export const selectAnswersByKidAndForm = (kidId, formId) => (state) => {

@@ -13,7 +13,6 @@ namespace halocare.DAL.Models
         public string? Other { get; set; }
         public int? EmployeeId { get; set; }
         public bool ByParent { get; set; }
-
         public string? MultipleEntries { get; set; } // JSON string
 
     }

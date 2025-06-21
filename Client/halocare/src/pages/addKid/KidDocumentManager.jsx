@@ -288,12 +288,12 @@ const KidDocumentManager = ({
       </Box>
 
       {/* טאבים */}
-      <Paper sx={{ borderRadius: 2, overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Paper sx={{ borderRadius: 2, overflow: 'hidden', flex: 2, display: 'flex', flexDirection: 'column' }}>
         <Tabs 
           value={currentTab} 
           onChange={(e, newValue) => setCurrentTab(newValue)}
           variant="fullWidth"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          sx={{ borderBottom: 2, borderColor: 'divider' }}
         >
           <Tab label="כל המסמכים" />
           <Tab label="תמונות פרופיל" />

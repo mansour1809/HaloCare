@@ -1,17 +1,14 @@
 // components/kids/DynamicFormRenderer.jsx 
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Typography, Paper, Button, LinearProgress,
   CircularProgress, Alert, Snackbar, Container,
-  Divider, Stack, useTheme
+   Stack, useTheme
 } from '@mui/material';
 import {
   Save as SaveIcon,
   ArrowBack as BackIcon,
-  Edit as EditIcon,
-  Assignment as AssignmentIcon,
-  Warning as WarningIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -25,7 +22,6 @@ import {
   selectCurrentFormAnswers,
   selectSaveStatus,
   selectSaveError,
-saveAnswerWithMultipleEntries
 } from '../../Redux/features/answersSlice';
 import axios from '../../components/common/axiosConfig'; 
 import QuestionRenderer from '../kids/QuestionRenderer';
@@ -158,7 +154,6 @@ const DynamicFormRenderer = ({
 
   const loadFormData = async () => {
     try {
-      // dispatch(clearCurrentFormAnswers());
       dispatch(setCurrentForm({ kidId, formId }));
       
       await Promise.all([

@@ -66,23 +66,7 @@ const PetalLabel = styled(Typography)(({ theme, angle }) => ({
   lineHeight: 1.2,
 }));
 
-const ActionButton = styled(Button)(({ theme, angle }) => ({
-  position: 'absolute',
-  transform: `rotate(${-angle}deg) translateY(15px)`,
-  fontSize: '0.7rem',
-  padding: '4px 12px',
-  minWidth: 'auto',
-  borderRadius: '12px',
-  backgroundColor: 'rgba(255,255,255,0.9)',
-  color: theme.palette.text.primary,
-  border: '1px solid rgba(255,255,255,0.3)',
-  opacity: 0,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: 'white',
-    transform: `rotate(${-angle}deg) translateY(15px) scale(1.05)`,
-  }
-}));
+
 
 const SimpleFlowerProfile = ({ kid }) => {
   const navigate = useNavigate();
@@ -95,7 +79,7 @@ const SimpleFlowerProfile = ({ kid }) => {
   // טיפול בלחיצה על עלה
   const handlePetalClick = (treatmentType) => {
     setClickedPetal(treatmentType.treatmentTypeId);
-    
+    console.log(kid)
     // אפקט ריפל
     setTimeout(() => {
       navigate(`/kids/${kid.id}/treatments/${treatmentType.treatmentTypeId}`);
@@ -266,9 +250,6 @@ const SimpleFlowerProfile = ({ kid }) => {
         textAlign: 'center',
         zIndex: 10
       }}>
-        <Typography variant="h6" fontWeight="bold" color="text.primary">
-          {kid?.firstName} {kid?.lastName}
-        </Typography>
         <Typography variant="body2" color="text.secondary">
           {treatmentTypes.length} תחומי טיפול
         </Typography>

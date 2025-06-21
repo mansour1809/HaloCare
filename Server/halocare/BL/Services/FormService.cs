@@ -324,7 +324,7 @@ namespace halocare.BL.Services
             return _answerRepository.DeleteAnswer(answerId);
         }
 
-        public List<AnswerToQuestion> GetCriticalMedicalInfo(int kidId)
+        public List<CriticalInfoData> GetCriticalMedicalInfo(int kidId)
         {
             return _answerRepository.GetCriticalMedicalInfo(kidId);
         }
