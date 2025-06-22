@@ -117,7 +117,7 @@ const LoginPage = () => {
           }}
         >
           <img
-            src={"/logo.jpeg"}
+            src={"/logo.png"}
             alt="Halo Care Logo"
             style={{
               height: "250px",

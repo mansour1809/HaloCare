@@ -225,7 +225,6 @@ const Navbar = () => {
   
   const userSettings = [
     { name: 'פרופיל', icon: <PersonIcon />, action: () => window.location.href = '/#/employees/profile/' + selectedEmployeeId },
-    { name: 'הגדרות חשבון', icon: <SettingsIcon />, action: () => {} },
     { name: 'הגדרות מערכת', icon: <SettingsIcon />, action: () => window.location.href = '/#/settings' },
     { name: 'התנתקות', icon: <LogoutIcon />, action: () => {} }
   ];
@@ -367,33 +366,13 @@ const Navbar = () => {
                   </Typography>
                 </MenuItem>
               ))}
-              
-              <Divider />
-              <MenuItem sx={{ justifyContent: 'center', py: 1.5 }}>
-                <Typography variant="button" color="primary" fontWeight="600">
-                  📋 הצג את כל ההתראות
-                </Typography>
-              </MenuItem>
             </StyledMenu>
           </Box>
-          
-          {/* מרכז - חיפוש */}
-          <SearchContainer>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              dir='rtl'
-              placeholder="🔍 חיפוש במערכת..."
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </SearchContainer>
           
           {/* צד שמאל - לוגו */}
           <LogoContainer>
             <img 
-              src={'./logo-noLett.png'} 
-              // src={'./logo.jpeg'} 
+              src={'./logo.png'} 
               alt="HALO CARE" 
               style={{ 
                 height: '32px', 
