@@ -388,8 +388,10 @@ const EmployeesManagement = () => {
   // search color of role in roles 
   const getRoleColor = (roleName) => {
     if (!roleName) return "#9e9e9e"; 
-    
+    console.log(roleName)
+    console.log(roles)
     const role = roles.find(r => r.roleName === roleName);
+    console.log(role)
     return role?.description || "#9e9e9e"; 
   };
 

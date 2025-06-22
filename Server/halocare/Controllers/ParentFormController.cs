@@ -53,7 +53,6 @@ namespace halocare.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SubmitForm([FromBody] SubmitParentFormRequest request)
         {
-            Console.WriteLine(request);
             // 🔥 עכשיו זה יעבוד כי אנחנו משתמשים באותו ParentAnswerDto
             var result = await _parentFormService.SaveParentFormAnswers(request.Token, request.Answers);
 

@@ -7,7 +7,7 @@ import { ProSidebarProvider } from 'react-pro-sidebar';
 
 // כל הimports שלך...
 import Navbar from './components/layout/Navbar/Navbar';
-import ProSidebar from './components/layout/Sidebar/Sidebar';
+import ProSidebar from './components/layout/Sidebar/ProSidebar';
 import PrivateRoute from './components/PrivateRoute';
 
 // דפים
@@ -76,7 +76,7 @@ const theme = createTheme({
   },
 });
 
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 260;
 const NAVBAR_HEIGHT = 64;
 
 // 🔥 פונקציה לבדיקת דף ציבורי - פשוטה ויעילה

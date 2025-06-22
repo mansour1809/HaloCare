@@ -272,35 +272,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// אייקון מעוצב עם אנימציות
-const StyledIcon = styled(Avatar)(({ theme, color }) => ({
-  width: 60,
-  height: 60,
-  margin: '0 auto 16px',
-  background: `linear-gradient(135deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.dark})`,
-  color: 'white',
-  fontSize: '1.8rem',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: `0 8px 24px ${alpha(theme.palette[color]?.main, 0.4)}`,
-  position: 'relative',
-  overflow: 'visible',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '-3px',
-    left: '-3px',
-    right: '-3px',
-    bottom: '-3px',
-    background: `linear-gradient(45deg, ${theme.palette[color]?.light}, ${theme.palette[color]?.main})`,
-    borderRadius: '50%',
-    zIndex: -1,
-    opacity: 0,
-    transition: 'opacity 0.3s ease',
-  },
-  '&:hover::before': {
-    opacity: 1,
-  }
-}));
+
 
 const EmployeeDocumentManager = ({
   employeeId,
@@ -379,7 +351,7 @@ const EmployeeDocumentManager = ({
   if (compact) {
     return (
       <ThemeProvider theme={rtlTheme}>
-        <Box sx={{ direction: 'rtl' }}>
+        <Box dir='rtl' sx={{ direction: 'rtl' }}>
           <Paper
             elevation={2}
             sx={{
@@ -435,14 +407,14 @@ const EmployeeDocumentManager = ({
   // מצב מלא
   return (
     <ThemeProvider theme={rtlTheme}>
-      <Box sx={{ direction: 'rtl' }}>
+      <Box dir='rtl' sx={{ direction: 'rtl' }}>
         <FullScreenContainer sx={{ minHeight: 'auto', background: 'transparent' }}>
           <Box sx={{ position: 'relative', zIndex: 2, maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
             {/* כותרת מקצועית עם סטטיסטיקות */}
             <Fade in timeout={800}>
               <ModernHeader elevation={0}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Box dir='rtl' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                   <Box>
                     <Typography variant="h5" gutterBottom sx={{
                       fontWeight: 700,

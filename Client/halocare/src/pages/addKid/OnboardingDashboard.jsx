@@ -306,10 +306,9 @@ const OnboardingDashboard = ({
 
                 {/* פעולות */}
                 <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
-                  {form.formName != 'אישורים' && (
                   <Box>
                     {/* כפתורים לעריכה/צפייה */}
-                    {canEditForm(form) ? (
+                    { canEditForm(form) ? (
                       <Button
                         startIcon={<EditIcon />}
                         onClick={() => onFormClick(form, 'edit')}
@@ -319,7 +318,7 @@ const OnboardingDashboard = ({
                       </Button>
                     ) : (
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        {form.formId != '1002' && (
+                        {(form.formId != '1002' || !form.formName.includes('אישי') )&& (
                           <Button
                             startIcon={<ViewIcon />}
                             onClick={() => onFormClick(form, 'view')}
@@ -329,6 +328,8 @@ const OnboardingDashboard = ({
                             צפייה
                           </Button>
                         )}
+                                                {!form.formName.includes('אישור') && (
+
                         <Button
                           startIcon={<EditIcon />}
                           onClick={() => onFormClick(form, 'edit')}
@@ -337,10 +338,11 @@ const OnboardingDashboard = ({
                         >
                           עריכה
                         </Button>
+                                                                        )}
+
                       </Box>
                     )}
                   </Box>
-)}
                   <Box>
                     {/* שליחה להורה */}
                     {canSendToParent(form) && form.formId != '1002' && (

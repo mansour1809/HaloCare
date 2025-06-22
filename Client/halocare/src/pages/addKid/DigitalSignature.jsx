@@ -179,6 +179,8 @@ const DigitalSignature = ({
     }
   };
 
+  
+
   return (
     <Box>
       {/* תצוגת החתימה */}
@@ -203,16 +205,18 @@ const DigitalSignature = ({
           {value ? (
             // תצוגת חתימה קיימת
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-              <img 
+               <img 
                 src={value} 
                 alt="חתימה דיגיטלית"
                 style={{ 
+                    display: 'block',
                   maxHeight: 60, 
                   maxWidth: 200,
                   border: '1px solid #eee',
                   borderRadius: 4
                 }}
               />
+
               <Typography variant="body2" color="success.main">
                 ✓ נחתם
               </Typography>
@@ -224,7 +228,6 @@ const DigitalSignature = ({
             </Typography>
           )}
           
-          {/* כפתורי פעולה */}
           <Box sx={{ display: 'flex', gap: 1 }}>
             {value && (
               <Tooltip title="צפייה בחתימה">
@@ -259,6 +262,21 @@ const DigitalSignature = ({
         onClose={cancelSignature}
         maxWidth="sm"
         fullWidth
+         TransitionProps={{
+    onEntered: () => {
+      if (readOnly && value && canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = () => {
+          // Clear previous content and draw the image
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = value;
+      }
+    }
+  }}
       >
         <DialogTitle>
           {readOnly ? 'צפייה בחתימה' : 'חתימה דיגיטלית'}

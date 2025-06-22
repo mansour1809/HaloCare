@@ -18,16 +18,14 @@ import {
   TextField,
   InputAdornment,
   Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Badge,
   IconButton,
   Button
 } from '@mui/material';
 import ExportIcon from '@mui/icons-material/SaveAlt';
 import PrintIcon from '@mui/icons-material/Print';
+import PdfIcon from '@mui/icons-material/PictureAsPdf';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   ExpandMore as ExpandMoreIcon,
   Person as PersonIcon,
@@ -45,11 +43,12 @@ import {
   QuestionAnswer as QuestionIcon
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { fetchForms } from '../../Redux/features/formsSlice';
 import { fetchFormAnswers } from '../../Redux/features/answersSlice';
 import { fetchQuestionsByFormId } from '../../Redux/features/questionsSlice';
-
+import { Navigate } from 'react-router-dom';
+import DigitalSignature from '../addKid/DigitalSignature';
 // Styled Components
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -134,7 +133,16 @@ const QuestionCard = ({ question, answer }) => {
     } catch (e) {
       // לא JSON, נחזיר כמו שזה
     }
-    
+
+    if(answer && answer.startsWith('data:image/')) {
+      return <DigitalSignature
+                    value={answer}
+                    // onChange={(signatureData) => onChange(signatureData)}
+                    readOnly={true}
+                    // required={question.isMandatory}
+                    label=""
+                  />
+    }
     return answer;
   };
 
@@ -171,6 +179,7 @@ const QuestionCard = ({ question, answer }) => {
             border: '1px solid',
             borderColor: 'grey.200'
           }}>
+           
             {formatAnswer(answer?.answer)}
             {answer?.other && (
               <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
@@ -192,6 +201,7 @@ const QuestionCard = ({ question, answer }) => {
 
 const KidIntakeFormsTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { kidId } = useParams();
   
   // States
@@ -687,10 +697,19 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     <Box dir="rtl" sx={{ p: 3 }}>
       {/* כותרת וחיפוש */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
         <Typography variant="h5" fontWeight="bold" color="primary.main" gutterBottom>
           📋 מידע מטפסי קליטה
         </Typography>
-        
+        <Button
+          variant="outlined"
+          size="small"
+          position="left"
+          onClick={() => navigate(`/kids/onboarding/${selectedKid.id}`)}
+          >
+            ניהול טפסי קליטה
+          </Button>
+        </Box>
         <Typography variant="body1" color="text.secondary" mb={3}>
           כל המידע שנאסף בתהליך הקליטה, מאורגן לפי טפסים וקטגוריות
         </Typography>

@@ -12,29 +12,76 @@ import {
   MenuItem,
   InputBase,
   Badge,
-  Divider
+  Divider,
+  Chip
 } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
-import MenuIcon from '@mui/icons-material/Menu';
+import { styled, alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-// import haloCareLogoSrc from '/logo.jpeg'; // עדכן את הנתיב ללוגו
+import PersonIcon from '@mui/icons-material/Person';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 
-// חיפוש מעוצב
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  border: '1px solid #e0e0e0',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
+// יצירת theme מקצועי
+const navbarTheme = createTheme({
+  direction: 'rtl',
+  typography: {
+    fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
   },
+  palette: {
+    primary: {
+      main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
+    }
+  }
+});
+
+// AppBar מעוצב
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  border: 'none',
+  borderBottom: '1px solid rgba(76, 181, 195, 0.1)',
+  color: '#2d3748',
+  position: 'fixed',
+  zIndex: 1300,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+  }
+}));
+
+// חיפוש מעוצב ומתקדם
+const SearchContainer = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: 20,
+  backgroundColor: 'rgba(76, 181, 195, 0.08)',
+  border: '2px solid rgba(76, 181, 195, 0.15)',
+  transition: 'all 0.3s ease',
+  marginLeft: theme.spacing(2),
   marginRight: theme.spacing(2),
-  marginLeft: 0,
   width: 'auto',
+  '&:hover': {
+    backgroundColor: 'rgba(76, 181, 195, 0.12)',
+    borderColor: 'rgba(76, 181, 195, 0.3)',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 15px rgba(76, 181, 195, 0.2)',
+  },
+  '&:focus-within': {
+    backgroundColor: 'rgba(76, 181, 195, 0.12)',
+    borderColor: '#4cb5c3',
+    transform: 'translateY(-1px)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+  },
   [theme.breakpoints.up('sm')]: {
     marginLeft: theme.spacing(3),
     width: 'auto',
@@ -49,30 +96,118 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#757575',
+  color: '#4cb5c3',
+  fontSize: '1.2rem'
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
+  color: '#2d3748',
+  fontWeight: 500,
   '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
+    padding: theme.spacing(1.2, 1.5, 1.2, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     width: '100%',
+    fontSize: '0.95rem',
     [theme.breakpoints.up('md')]: {
-      width: '25ch',
+      width: '30ch',
+      '&:focus': {
+        width: '35ch',
+      },
     },
   },
+}));
+
+// כפתורי פעולות מעוצבים
+const ActionButton = styled(IconButton)(({ theme }) => ({
+  backgroundColor: 'rgba(76, 181, 195, 0.08)',
+  border: '2px solid rgba(76, 181, 195, 0.15)',
+  borderRadius: 16,
+  margin: theme.spacing(0, 0.5),
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    backgroundColor: 'rgba(76, 181, 195, 0.15)',
+    borderColor: '#4cb5c3',
+    transform: 'translateY(-2px) scale(1.05)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+  },
+  '& .MuiSvgIcon-root': {
+    color: '#4cb5c3',
+    fontSize: '1.3rem'
+  }
+}));
+
+// פרופיל משתמש מעוצב
+const UserProfileContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  padding: theme.spacing(0.5, 1.5, 0.5, 1),
+  borderRadius: 20,
+  backgroundColor: 'rgba(76, 181, 195, 0.08)',
+  border: '2px solid rgba(76, 181, 195, 0.15)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    backgroundColor: 'rgba(76, 181, 195, 0.15)',
+    borderColor: '#4cb5c3',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+  }
+}));
+
+// לוגו מעוצב
+const LogoContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0.5, 2),
+  borderRadius: 20,
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(42, 138, 149, 0.1) 100%)',
+  border: '1px solid rgba(76, 181, 195, 0.2)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+    boxShadow: '0 4px 15px rgba(76, 181, 195, 0.2)',
+  }
+}));
+
+// תפריט מעוצב
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    borderRadius: 16,
+    marginTop: theme.spacing(1),
+    background: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '3px',
+      background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+      borderRadius: '16px 16px 0 0',
+    }
+  },
+  '& .MuiMenuItem-root': {
+    borderRadius: 8,
+    margin: theme.spacing(0.5, 1),
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: 'rgba(76, 181, 195, 0.1)',
+      transform: 'translateX(4px)',
+    }
+  }
 }));
 
 const Navbar = () => {
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElNotifications, setAnchorElNotifications] = useState(null);
-  // const [selectedEmployeeId, setSelectedEmployeeId] = useState(''); // נניח שיש לך מזהה עובד שנבחר
 
   const currentUser = JSON.parse(localStorage.getItem('user'));
-  const selectedEmployeeId = currentUser.id; 
+  const selectedEmployeeId = currentUser?.id; 
+  
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -89,168 +224,205 @@ const Navbar = () => {
     setAnchorElNotifications(null);
   };
   
-  const userSettings = ['פרופיל', 'הגדרות חשבון', 'הגדרות מערכת', 'התנתקות'];
+  const userSettings = [
+    { name: 'פרופיל', icon: <PersonIcon />, action: () => window.location.href = '/#/employees/profile/' + selectedEmployeeId },
+    { name: 'הגדרות חשבון', icon: <SettingsIcon />, action: () => {} },
+    { name: 'הגדרות מערכת', icon: <SettingsIcon />, action: () => window.location.href = '/#/settings' },
+    { name: 'התנתקות', icon: <LogoutIcon />, action: () => {} }
+  ];
   
-  // דוגמה להתראות
+  // דוגמה להתראות מעוצבות
   const notifications = [
-    { id: 1, content: 'התקבלה בקשת הרשמה חדשה', time: 'לפני 5 דקות' },
-    { id: 2, content: 'הוספת ילד חדש', time: 'לפני שעה' },
-    { id: 3, content: 'ישיבת צוות ב-10:00', time: 'לפני 3 שעות' },
+    { id: 1, content: 'התקבלה בקשת הרשמה חדשה', time: 'לפני 5 דקות', type: 'info' },
+    { id: 2, content: 'הוספת ילד חדש למערכת', time: 'לפני שעה', type: 'success' },
+    { id: 3, content: 'ישיבת צוות ב-10:00', time: 'לפני 3 שעות', type: 'warning' },
   ];
   
   return (
-    <AppBar 
-      position="fixed" 
-      sx={{ 
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: 'white',
-        color: 'black',
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-      }}
-    >
-      <Toolbar>
-          <Box sx={{ flexGrow: 0, marginRight: 2 }}>
-            <Tooltip title="הגדרות משתמש">
-              <Box 
-                onClick={handleOpenUserMenu} 
-                sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            cursor: 'pointer',
-            padding: '4px 8px 4px 12px'
-                }}
-              >
-                <KeyboardArrowDownIcon fontSize="small" />
+    <ThemeProvider theme={navbarTheme}>
+      <StyledAppBar position="fixed">
+        <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
+          
+          {/* צד ימין - פרופיל וכפתורים */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            
+            {/* פרופיל משתמש */}
+            <Tooltip title="תפריט משתמש" arrow>
+              <UserProfileContainer onClick={handleOpenUserMenu}>
+                <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
                 <Avatar 
-            alt="צוות" 
-            src="/static/images/avatar/1.jpg" 
-            sx={{ width: 32, height: 32, ml: 1 }}
+                  alt={currentUser?.firstName || "משתמש"} 
+                  src="/static/images/avatar/1.jpg" 
+                  sx={{ 
+                    width: 36, 
+                    height: 36, 
+                    ml: 1,
+                    border: '2px solid rgba(76, 181, 195, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.1)',
+                      borderColor: '#4cb5c3'
+                    }
+                  }}
                 />
-              </Box>
+                <Typography variant="body2" sx={{ 
+                  ml: 1, 
+                  fontWeight: 600, 
+                  color: '#2d3748',
+                  display: { xs: 'none', sm: 'block' }
+                }}>
+                  {currentUser?.firstName || "משתמש"}
+                </Typography>
+              </UserProfileContainer>
             </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
+
+            {/* תפריט משתמש */}
+            <StyledMenu
               id="menu-appbar"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
               {userSettings.map((setting) => (
                 <MenuItem 
-            key={setting} 
-            onClick={() => {
-              handleCloseUserMenu();
-              if (setting === 'פרופיל') {
-                window.location.href = '/#/employees/profile/' + selectedEmployeeId;
-              }
-            }}
+                  key={setting.name} 
+                  onClick={() => {
+                    handleCloseUserMenu();
+                    setting.action();
+                  }}
+                  sx={{ gap: 2 }}
                 >
-            <Typography textAlign="center">{setting}</Typography>
+                  {setting.icon}
+                  <Typography>{setting.name}</Typography>
                 </MenuItem>
               ))}
-            </Menu>
-          </Box>
-          
-          {/* התראות והודעות - בצד ימין */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 2 }}>
-          <IconButton size="large" color="inherit">
-            <Badge badgeContent={3} color="error">
-              <ChatIcon />
-            </Badge>
-          </IconButton>
-          
-          <IconButton
-            size="large"
-            color="inherit"
-            onClick={handleOpenNotificationsMenu}
-          >
-            <Badge badgeContent={notifications.length} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <Menu
-            sx={{ mt: '45px' }}
-            id="notifications-menu"
-            anchorEl={anchorElNotifications}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorElNotifications)}
-            onClose={handleCloseNotificationsMenu}
-          >
-            <Typography sx={{ p: 2, fontWeight: 'bold' }}>התראות</Typography>
-            <Divider />
-            {notifications.map((notification) => (
-              <MenuItem key={notification.id} onClick={handleCloseNotificationsMenu}>
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="body2">{notification.content}</Typography>
-                  <Typography variant="caption" color="text.secondary">
+            </StyledMenu>
+            
+            {/* כפתורי פעולות */}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Tooltip title="הודעות" arrow>
+                <ActionButton size="medium">
+                  <Badge badgeContent={3} color="error">
+                    <ChatIcon />
+                  </Badge>
+                </ActionButton>
+              </Tooltip>
+              
+              <Tooltip title="התראות" arrow>
+                <ActionButton size="medium" onClick={handleOpenNotificationsMenu}>
+                  <Badge badgeContent={notifications.length} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </ActionButton>
+              </Tooltip>
+            </Box>
+
+            {/* תפריט התראות */}
+            <StyledMenu
+              id="notifications-menu"
+              anchorEl={anchorElNotifications}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              keepMounted
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              open={Boolean(anchorElNotifications)}
+              onClose={handleCloseNotificationsMenu}
+              PaperProps={{ sx: { maxWidth: 350, minWidth: 300 } }}
+            >
+              <Box sx={{ p: 2 }}>
+                <Typography variant="h6" fontWeight="bold" color="#2d3748">
+                  🔔 התראות
+                </Typography>
+              </Box>
+              <Divider />
+              
+              {notifications.map((notification) => (
+                <MenuItem 
+                  key={notification.id} 
+                  onClick={handleCloseNotificationsMenu}
+                  sx={{ 
+                    flexDirection: 'column', 
+                    alignItems: 'flex-start',
+                    py: 1.5,
+                    borderBottom: '1px solid rgba(0,0,0,0.05)'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
+                    <Chip 
+                      size="small" 
+                      label={notification.type} 
+                      color={
+                        notification.type === 'success' ? 'success' : 
+                        notification.type === 'warning' ? 'warning' : 'info'
+                      }
+                      sx={{ fontSize: '0.7rem' }}
+                    />
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {notification.content}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
                     {notification.time}
                   </Typography>
-                </Box>
+                </MenuItem>
+              ))}
+              
+              <Divider />
+              <MenuItem sx={{ justifyContent: 'center', py: 1.5 }}>
+                <Typography variant="button" color="primary" fontWeight="600">
+                  📋 הצג את כל ההתראות
+                </Typography>
               </MenuItem>
-            ))}
-            <Divider />
-            <MenuItem sx={{ justifyContent: 'center' }}>
-              <Typography variant="button" color="primary">
-                הצג את כל ההתראות
-              </Typography>
-            </MenuItem>
-          </Menu>
-        </Box>
-        
-        {/* חיפוש */}
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            dir='rtl'
-            placeholder="חיפוש..."
-            inputProps={{ 'aria-label': 'search' }}
-          />
-        </Search>
-        
-        {/* מרווח אוטומטי */}
-        <Box sx={{ flexGrow: 1 }} />
-        
-        {/* לוגו בצד שמאל */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ 
-              display: { xs: 'none', sm: 'block' }, 
-              fontWeight: 'bold',
-              color: '#4fc3f7'
-            }}
-          >
-            HALO CARE
-          </Typography>
-          <img 
-            src={'./logo.jpeg'} 
-            alt="HALO CARE" 
-            style={{ height: '30px', marginLeft: '10px' }}
-          />
-        </Box>
-      </Toolbar>
-    </AppBar>
+            </StyledMenu>
+          </Box>
+          
+          {/* מרכז - חיפוש */}
+          <SearchContainer>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              dir='rtl'
+              placeholder="🔍 חיפוש במערכת..."
+              inputProps={{ 'aria-label': 'search' }}
+            />
+          </SearchContainer>
+          
+          {/* צד שמאל - לוגו */}
+          <LogoContainer>
+            <img 
+              src={'./logo.jpeg'} 
+              alt="HALO CARE" 
+              style={{ 
+                height: '32px', 
+                marginLeft: '8px',
+                borderRadius: '6px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            />
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ 
+                display: { xs: 'none', sm: 'block' }, 
+                fontWeight: 800,
+                background: 'linear-gradient(45deg, #4cb5c3, #2a8a95)',
+                backgroundClip: 'text',
+                textFillColor: 'transparent',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontSize: '1.3rem'
+              }}
+            >
+              HALO CARE
+            </Typography>
+          </LogoContainer>
+        </Toolbar>
+      </StyledAppBar>
+    </ThemeProvider>
   );
 };
 

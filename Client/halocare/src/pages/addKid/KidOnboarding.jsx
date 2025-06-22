@@ -58,7 +58,6 @@ const KidOnboarding = () => {
 
   const isNewKid = kidId === undefined;
 
-  console.log('KidOnboarding - kidId:', kidId, 'isNewKid:', isNewKid);
   // טעינה ראשונית
   useEffect(() => {
     initializeOnboarding();
@@ -302,17 +301,6 @@ const KidOnboarding = () => {
                     </Box>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {/* כפתור מעבר בין מצבים */}
-                    {formReadOnly && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<EditIcon />}
-                        onClick={switchToEditMode}
-                        color="primary"
-                      >
-                        עבר לעריכה
-                      </Button>
-                    )}
                     
                     <Button
                       variant="outlined"
@@ -391,7 +379,7 @@ const KidOnboarding = () => {
                   
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {/* 🔥 כפתור מעבר בין מצבים */}
-                    {formReadOnly && (
+                    {formReadOnly && !selectedForm.formName.includes('אישור') && (
                       <Button
                         variant="outlined"
                         startIcon={<EditIcon />}
