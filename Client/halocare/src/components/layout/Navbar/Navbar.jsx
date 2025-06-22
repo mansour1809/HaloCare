@@ -23,7 +23,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-
 // יצירת theme מקצועי
 const navbarTheme = createTheme({
   direction: 'rtl',
@@ -393,7 +392,8 @@ const Navbar = () => {
           {/* צד שמאל - לוגו */}
           <LogoContainer>
             <img 
-              src={'./logo.jpeg'} 
+              src={'./logo-noLett.png'} 
+              // src={'./logo.jpeg'} 
               alt="HALO CARE" 
               style={{ 
                 height: '32px', 

@@ -32,7 +32,7 @@ export const updateCity = createAsyncThunk(
   'cities/updateCity',
   async ({ oldName, newData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/ReferenceData/cities/${oldName}`, newData);
+      const response = await axios.put(`/ReferenceData/cities/${encodeURIComponent(oldName)}`, newData);
       return { oldName, newData: response.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בעדכון העיר');

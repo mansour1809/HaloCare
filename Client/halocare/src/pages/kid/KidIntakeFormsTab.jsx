@@ -137,9 +137,7 @@ const QuestionCard = ({ question, answer }) => {
     if(answer && answer.startsWith('data:image/')) {
       return <DigitalSignature
                     value={answer}
-                    // onChange={(signatureData) => onChange(signatureData)}
                     readOnly={true}
-                    // required={question.isMandatory}
                     label=""
                   />
     }
