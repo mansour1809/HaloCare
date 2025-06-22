@@ -21,7 +21,13 @@ import {
   DialogContent,
   DialogActions,
   useTheme,
-  alpha
+  alpha,
+  Container,
+  Card,
+  CardContent,
+  Fade,
+  Zoom,
+  Stack
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,19 +35,187 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  LocalHospital as HealthIcon
+  LocalHospital as HealthIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Star as StarIcon,
+  MedicalServices as MedicalIcon
 } from '@mui/icons-material';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import Swal from 'sweetalert2';
 
 import { fetchHealthInsurances, addHealthInsurance, updateHealthInsurance, clearError, resetActionStatus } from '../../Redux/features/healthinsurancesSlice';
 
+// יצירת theme מדהים עם תמיכה ב-RTL
+const rtlTheme = createTheme({
+  direction: 'rtl',
+  typography: {
+    fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
+    h1: {
+      fontWeight: 800,
+      fontSize: '3.5rem',
+    },
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.2rem',
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: '1.8rem',
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1.4rem'
+    }
+  },
+  palette: {
+    primary: {
+      main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
+    },
+    secondary: {
+      main: '#ff7043',
+      light: '#ff9473',
+      dark: '#cc5a36',
+    },
+    background: {
+      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    }
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          minHeight: '100vh'
+        }
+      }
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          fontWeight: 700,
+          fontSize: '1.1rem',
+          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+          color: 'white',
+          borderBottom: 'none'
+        }
+      }
+    }
+  }
+});
+
+// קונטיינר מסך מלא מעוצב
+const FullScreenContainer = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 30% 20%, rgba(76, 181, 195, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 112, 67, 0.3) 0%, transparent 50%)',
+    pointerEvents: 'none'
+  }
+}));
+
+// כרטיס הכותרת הראשית המעוצב
+const HeroCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  borderRadius: 25,
+  color: 'white',
+  position: 'relative',
+  overflow: 'hidden',
+  marginBottom: theme.spacing(4),
+  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+    pointerEvents: 'none'
+  }
+}));
+
+// טבלה מעוצבת עם אפקטים
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 20,
+  overflow: 'hidden',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  position: 'relative',
+  zIndex: 2,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+  }
+}));
+
+// כפתור מונפש מדהים
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 16,
+  padding: '12px 24px',
+  fontWeight: 600,
+  fontSize: '1rem',
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+// Fab מעוצב
+const StyledFab = styled(Fab)(({ theme }) => ({
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  boxShadow: '0 8px 30px rgba(76, 181, 195, 0.4)',
+  '&:hover': {
+    transform: 'scale(1.1) rotate(10deg)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+    boxShadow: '0 12px 40px rgba(76, 181, 195, 0.5)',
+  },
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+}));
+
 const HealthInsuranceTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  
+
   // Redux state - התאם לשם הslice שלך
   const { healthInsurances, status, actionStatus, error } = useSelector(state => state.healthInsurances || { healthInsurances: [], status: 'idle', actionStatus: 'idle', error: null });
-  
+
   // Local state
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -162,230 +336,341 @@ const HealthInsuranceTab = () => {
 
   if (status === 'loading') {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress size={60} />
-      </Box>
+      <ThemeProvider theme={rtlTheme}>
+        <FullScreenContainer>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+            <CircularProgress size={80} sx={{ color: '#4cb5c3' }} />
+          </Box>
+        </FullScreenContainer>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Box>
-      {/* Header with search */}
-      <Box 
-        display="flex" 
-        justifyContent="space-between" 
-        alignItems="center" 
-        mb={3}
-        p={2}
-        sx={{
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`,
-          borderRadius: 2
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={2}>
-          <HealthIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h5" fontWeight="bold">
-            ניהול קופות חולים ({filteredHealthInsurances.length})
-          </Typography>
-        </Box>
-        
-        <TextField
-          placeholder="חיפוש קופת חולים..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          size="small"
-          sx={{ minWidth: 250 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
+    <ThemeProvider theme={rtlTheme}>
+      <FullScreenContainer>
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Container maxWidth="xl" sx={{ py: 4 }}>
 
-      {/* Health Insurances Table */}
-      <TableContainer 
-        component={Paper} 
-        elevation={2}
-        sx={{ 
-          borderRadius: 2,
-          maxHeight: 500
-        }}
-      >
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell 
-                sx={{ 
-                  fontWeight: 'bold', 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  fontSize: '1.1rem'
-                }}
-              >
-                שם קופת החולים
-              </TableCell>
-              <TableCell 
-                align="center"
-                sx={{ 
-                  fontWeight: 'bold', 
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  fontSize: '1.1rem',
-                  width: 120
-                }}
-              >
-                פעולות
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredHealthInsurances.map((insurance) => (
-              <TableRow 
-                key={insurance.hName}
-                hover
-                sx={{
-                  '&:nth-of-type(odd)': {
-                    backgroundColor: alpha(theme.palette.action.hover, 0.5),
-                  },
-                }}
-              >
-                <TableCell>
-                  {editingId === insurance.hName ? (
-                    <TextField
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      size="small"
-                      fullWidth
-                      autoFocus
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleEditSave();
-                        } else if (e.key === 'Escape') {
-                          handleEditCancel();
-                        }
-                      }}
-                    />
-                  ) : (
-                    <Typography 
-                      variant="body1" 
-                      onDoubleClick={() => handleEditStart(insurance)}
-                      sx={{ 
-                        cursor: 'pointer',
-                        p: 1,
-                        borderRadius: 1,
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.1)
-                        }
-                      }}
-                    >
-                      {insurance.hName}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="center">
-                  {editingId === insurance.hName ? (
-                    <Box display="flex" gap={1} justifyContent="center">
-                      <IconButton
-                        onClick={handleEditSave}
-                        color="primary"
-                        size="small"
-                        disabled={actionStatus === 'loading'}
-                      >
-                        <SaveIcon />
-                      </IconButton>
-                      <IconButton
-                        onClick={handleEditCancel}
-                        color="error"
-                        size="small"
-                      >
-                        <CancelIcon />
-                      </IconButton>
+            {/* כרטיס הכותרת הראשית */}
+            <Zoom in timeout={800}>
+              <HeroCard>
+                <CardContent sx={{ p: 4 }}>
+                  <Box display="flex" alignItems="center" justifyContent="center">
+                    <Box display="flex" alignItems="center">
+                      <StarIcon sx={{ fontSize: '3rem', mr: 2, color: '#fbbf24' }} />
+                      <Box textAlign="center">
+                        <Typography variant="h4" sx={{
+                          fontWeight: 800,
+                          background: 'linear-gradient(45deg, #ffffff, #f0f9ff)',
+                          backgroundClip: 'text',
+                          textFillColor: 'transparent',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent'
+                        }}>
+                          ניהול קופות חולים
+                        </Typography>
+                        <Typography variant="h6" sx={{ opacity: 0.9, mt: 1 }}>
+                          מערכת ניהול קופות חולים וביטוח בריאות
+                        </Typography>
+                      </Box>
                     </Box>
-                  ) : (
-                    <IconButton
-                      onClick={() => handleEditStart(insurance)}
-                      color="primary"
-                      size="small"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredHealthInsurances.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={2} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    {searchTerm ? 'לא נמצאו קופות חולים מתאימות לחיפוש' : 'אין קופות חולים במערכת'}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                  </Box>
+                </CardContent>
+              </HeroCard>
+            </Zoom>
 
-      {/* Add button */}
-      <Fab
-        color="primary"
-        aria-label="add"
-        onClick={() => setOpenDialog(true)}
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          zIndex: 1000
-        }}
-      >
-        <AddIcon />
-      </Fab>
+            {/* בר חיפוש וכפתור הוספה מעוצב */}
+            <Fade in timeout={1000}>
+              <Paper sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 4,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                position: 'relative',
+                zIndex: 2
+              }}>
+                <Stack direction="row" alignItems="center" spacing={3}>
+                  <AutoAwesomeIcon sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
+                  <TextField
+                    placeholder="🔍 חיפוש קופת חולים..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    variant="outlined"
+                    fullWidth
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#4cb5c3' }} />
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        borderRadius: 3,
+                        background: 'rgba(76, 181, 195, 0.05)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(76, 181, 195, 0.3)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4cb5c3',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#4cb5c3',
+                          borderWidth: 2,
+                        }
+                      }
+                    }}
+                  />
+                  <AnimatedButton
+                    onClick={() => setOpenDialog(true)}
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    sx={{ minWidth: 160, py: 1.5 }}
+                  >
+                    🌟 הוסף קופת חולים
+                  </AnimatedButton>
+                </Stack>
+              </Paper>
+            </Fade>
 
-      {/* Add Health Insurance Dialog */}
-      <Dialog 
-        open={openDialog} 
-        onClose={handleDialogClose}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-          הוספת קופת חולים חדשה
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="שם קופת החולים"
-            fullWidth
-            variant="outlined"
-            value={newHealthInsuranceName}
-            onChange={(e) => setNewHealthInsuranceName(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleAddHealthInsurance();
-              }
-            }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button 
-            onClick={handleDialogClose}
-            color="inherit"
-          >
-            ביטול
-          </Button>
-          <Button 
-            onClick={handleAddHealthInsurance}
-            variant="contained"
-            disabled={actionStatus === 'loading'}
-            startIcon={actionStatus === 'loading' ? <CircularProgress size={16} /> : <AddIcon />}
-          >
-            הוסף קופת חולים
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+            {/* טבלת קופות חולים מעוצבת */}
+            <Fade in timeout={1200}>
+              <StyledTableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>🏥 שם קופת החולים</TableCell>
+                      <TableCell align="center">⚡ פעולות</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredHealthInsurances.map((insurance) => (
+                      <TableRow
+                        key={insurance.hName}
+                        hover
+                        sx={{
+                          '&:nth-of-type(odd)': {
+                            backgroundColor: alpha(theme.palette.action.hover, 0.5),
+                          },
+                          '&:hover': {
+                            backgroundColor: alpha('#4cb5c3', 0.1),
+                            transform: 'scale(1.02)',
+                            transition: 'all 0.3s ease'
+                          }
+                        }}
+                      >
+                        <TableCell>
+                          {editingId === insurance.hName ? (
+                            <TextField
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              size="small"
+                              fullWidth
+                              autoFocus
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleEditSave();
+                                } else if (e.key === 'Escape') {
+                                  handleEditCancel();
+                                }
+                              }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: 2,
+                                  background: 'rgba(76, 181, 195, 0.1)'
+                                }
+                              }}
+                            />
+                          ) : (
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <MedicalIcon sx={{ color: '#4cb5c3', fontSize: '1.5rem' }} />
+                              <Typography
+                                variant="body1"
+                                onDoubleClick={() => handleEditStart(insurance)}
+                                sx={{
+                                  cursor: 'pointer',
+                                  p: 2,
+                                  borderRadius: 2,
+                                  fontWeight: 600,
+                                  fontSize: '1.1rem',
+                                  '&:hover': {
+                                    bgcolor: alpha('#4cb5c3', 0.1),
+                                    transform: 'scale(1.05)',
+                                    transition: 'all 0.2s ease'
+                                  }
+                                }}
+                              >
+                                {insurance.hName}
+                              </Typography>
+                            </Box>
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          {editingId === insurance.hName ? (
+                            <Box display="flex" gap={1} justifyContent="center">
+                              <IconButton
+                                onClick={handleEditSave}
+                                color="primary"
+                                size="small"
+                                disabled={actionStatus === 'loading'}
+                                sx={{
+                                  bgcolor: alpha('#10b981', 0.1),
+                                  '&:hover': {
+                                    bgcolor: '#10b981',
+                                    color: 'white',
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
+                              >
+                                <SaveIcon />
+                              </IconButton>
+                              <IconButton
+                                onClick={handleEditCancel}
+                                color="error"
+                                size="small"
+                                sx={{
+                                  bgcolor: alpha('#ef4444', 0.1),
+                                  '&:hover': {
+                                    bgcolor: '#ef4444',
+                                    color: 'white',
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
+                              >
+                                <CancelIcon />
+                              </IconButton>
+                            </Box>
+                          ) : (
+                            <IconButton
+                              onClick={() => handleEditStart(insurance)}
+                              color="primary"
+                              size="small"
+                              sx={{
+                                bgcolor: alpha('#4cb5c3', 0.1),
+                                '&:hover': {
+                                  bgcolor: '#4cb5c3',
+                                  color: 'white',
+                                  transform: 'scale(1.1)'
+                                }
+                              }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredHealthInsurances.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={2} align="center" sx={{ py: 8 }}>
+                          <Box textAlign="center">
+                            <HealthIcon sx={{ fontSize: '4rem', color: '#9ca3af', mb: 2 }} />
+                            <Typography variant="h6" color="text.secondary" gutterBottom>
+                              {searchTerm ? '🔍 לא נמצאו קופות חולים מתאימות לחיפוש' : '🏥 אין קופות חולים במערכת'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {!searchTerm && 'התחל על ידי הוספת קופת החולים הראשונה'}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </StyledTableContainer>
+            </Fade>
+
+
+
+            {/* דיאלוג הוספת קופת חולים מעוצב */}
+            <Dialog
+              open={openDialog}
+              onClose={handleDialogClose}
+              maxWidth="sm"
+              fullWidth
+              PaperProps={{
+                sx: {
+                  borderRadius: 4,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }
+              }}
+            >
+              <DialogTitle sx={{
+                textAlign: 'center',
+                fontWeight: 'bold',
+                fontSize: '1.5rem',
+                background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                color: 'white',
+                mb: 2
+              }}>
+                ✨ הוספת קופת חולים חדשה
+              </DialogTitle>
+              <DialogContent sx={{ p: 3 }}>
+                <TextField
+                  autoFocus
+                  margin="dense"
+                  label="🏥 שם קופת החולים"
+                  fullWidth
+                  variant="outlined"
+                  value={newHealthInsuranceName}
+                  onChange={(e) => setNewHealthInsuranceName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddHealthInsurance();
+                    }
+                  }}
+                  sx={{
+                    mt: 2,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      background: 'rgba(76, 181, 195, 0.05)',
+                      '& fieldset': {
+                        borderColor: 'rgba(76, 181, 195, 0.3)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#4cb5c3',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#4cb5c3',
+                        borderWidth: 2,
+                      }
+                    }
+                  }}
+                />
+              </DialogContent>
+              <DialogActions sx={{ p: 3, gap: 2 }}>
+                <Button
+                  onClick={handleDialogClose}
+                  sx={{
+                    borderRadius: 3,
+                    px: 3,
+                    py: 1.5,
+                    color: '#6b7280',
+                    '&:hover': {
+                      bgcolor: alpha('#6b7280', 0.1)
+                    }
+                  }}
+                >
+                  ביטול
+                </Button>
+                <AnimatedButton
+                  onClick={handleAddHealthInsurance}
+                  variant="contained"
+                  disabled={actionStatus === 'loading'}
+                  startIcon={actionStatus === 'loading' ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+                >
+                  🌟 הוסף קופת חולים
+                </AnimatedButton>
+              </DialogActions>
+            </Dialog>
+          </Container>
+        </Box>
+      </FullScreenContainer>
+    </ThemeProvider>
   );
 };
 

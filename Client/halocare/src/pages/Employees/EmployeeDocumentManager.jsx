@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Paper, Typography, Tabs, Tab, Button, Alert, Zoom, Fade, 
+  Box, Paper, Typography, Tabs, Tab, Button, Alert, Zoom, Fade,
   CircularProgress, Chip, Dialog, DialogTitle, DialogContent,
   DialogActions, Grid, Card, CardContent, IconButton, Tooltip,
   Collapse, Stack, Avatar
@@ -28,9 +28,9 @@ import FileUploader from '../../components/common/FileUploader';
 import FilesList from '../../components/common/FilesList';
 
 // Redux imports
-import { 
-  fetchDocumentsByEmployeeId, 
-  clearDocuments 
+import {
+  fetchDocumentsByEmployeeId,
+  clearDocuments
 } from '../../Redux/features/documentsSlice';
 
 // יצירת theme מדהים עם תמיכה ב-RTL
@@ -302,21 +302,21 @@ const StyledIcon = styled(Avatar)(({ theme, color }) => ({
   }
 }));
 
-const EmployeeDocumentManager = ({ 
-  employeeId, 
+const EmployeeDocumentManager = ({
+  employeeId,
   employeeName = '',
-  compact = false,           
-  showUpload = true,         
-  showStats = true,          
-  maxHeight = null           
+  compact = false,
+  showUpload = true,
+  showStats = true,
+  maxHeight = null
 }) => {
   const dispatch = useDispatch();
-  
+
   // Redux state
   const documents = useSelector((state) => state.documents.documents);
   const documentsStatus = useSelector((state) => state.documents.status);
   const documentsError = useSelector((state) => state.documents.error);
-  
+
   // Local state
   const [currentTab, setCurrentTab] = useState(0);
   const [uploadDialog, setUploadDialog] = useState(false);
@@ -328,7 +328,7 @@ const EmployeeDocumentManager = ({
     if (employeeId) {
       loadDocuments();
     }
-    
+
     return () => {
       dispatch(clearDocuments());
     };
@@ -365,7 +365,7 @@ const EmployeeDocumentManager = ({
   // סטטיסטיקות
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
-    
+
     return {
       total: documents.length,
       profilePics: documents.filter(doc => doc.docType === 'profile').length,
@@ -380,10 +380,10 @@ const EmployeeDocumentManager = ({
     return (
       <ThemeProvider theme={rtlTheme}>
         <Box sx={{ direction: 'rtl' }}>
-          <Paper 
-            elevation={2} 
-            sx={{ 
-              p: 2, 
+          <Paper
+            elevation={2}
+            sx={{
+              p: 2,
               borderRadius: 3,
               maxHeight: maxHeight || 400,
               overflow: 'hidden',
@@ -406,7 +406,7 @@ const EmployeeDocumentManager = ({
                   )}
                 </Typography>
               </Box>
-              
+
               <Chip
                 label={`${stats.total} מסמכים`}
                 size="small"
@@ -438,164 +438,162 @@ const EmployeeDocumentManager = ({
       <Box sx={{ direction: 'rtl' }}>
         <FullScreenContainer sx={{ minHeight: 'auto', background: 'transparent' }}>
           <Box sx={{ position: 'relative', zIndex: 2, maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            
+
             {/* כותרת מקצועית עם סטטיסטיקות */}
             <Fade in timeout={800}>
-  <ModernHeader elevation={0}>
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-      <Box>
-        <Typography variant="h5" gutterBottom sx={{ 
-          fontWeight: 700,
-          color: '#2a8a95',
-          textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-          <FolderIcon sx={{ mr: 2, fontSize: '2rem', color: '#4cb5c3' }} />
-          📁 המסמכים של
-          {employeeName && (
-            <Typography component="span" variant="h6" sx={{ 
-              ml: 2,
-              color: '#6b7280',
-              fontWeight: 500
-            }}>
-              • {employeeName}
-            </Typography>
-          )}
-        </Typography>
-        
-        {showStats && (
-          <Stack direction="row" spacing={2} sx={{ mt: 2, gap: 2}}>
-            <Chip
-              icon={<DocumentIcon />}
-              label={`${stats.total} סה"כ מסמכים`}
-              sx={{
-                background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-                color: 'white',
-                border: '1px solid rgba(76, 181, 195, 0.3)',
-                fontWeight: 600,
-                boxShadow: '0 2px 8px rgba(76, 181, 195, 0.3)',
-                '& .MuiChip-icon': {
-      marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
-      marginRight: '4px'  // רווח קטן יותר מהצד הימני
-    }
-              }}
-              size="medium"
-            />
-            {stats.profilePics > 0 && (
-              <Chip
-                icon={<PersonIcon />}
-                label={`${stats.profilePics} תמונות פרופיל`}
-                sx={{
-                  background: 'linear-gradient(45deg, #10b981 30%, #059669 90%)',
-                  color: 'white',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  fontWeight: 600,
-                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
-                  '& .MuiChip-icon': {
-      marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
-      marginRight: '4px'  // רווח קטן יותר מהצד הימני
-    }
-                }}
-                size="medium"
-              />
-            )}
-          </Stack>
-        )}
-      </Box>
+              <ModernHeader elevation={0}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                  <Box>
+                    <Typography variant="h5" gutterBottom sx={{
+                      fontWeight: 700,
+                      color: '#2a8a95',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      📁 המסמכים של
+                      {employeeName && (
+                        <Typography component="span" variant="h6" sx={{
+                          ml: 2,
+                          color: '#6b7280',
+                          fontWeight: 500
+                        }}>
+                          • {employeeName}
+                        </Typography>
+                      )}
+                    </Typography>
 
-      <Stack direction="row" spacing={2} sx={{ gap: 2}}>
-        {showUpload && (
-          <AnimatedButton
-            variant="contained"
-            startIcon={<UploadIcon />}
-            onClick={() => setUploadDialog(true)}
-            sx={{
-              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-              color: 'white',
-              border: 'none',
-              boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)'
-              }
-            }}
-          >
-            העלאת מסמכים
-          </AnimatedButton>
-        )}
-        
-        <Tooltip title="רענון מסמכים">
-          <IconButton 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            sx={{
-              backgroundColor: '#4cb5c3',
-              color: 'white',
-              border: '2px solid #4cb5c3',
-              boxShadow: '0 2px 8px rgba(76, 181, 195, 0.3)',
-              '&:hover': {
-                backgroundColor: '#3da1af',
-                transform: 'scale(1.1)',
-                boxShadow: '0 4px 12px rgba(76, 181, 195, 0.4)'
-              },
-              '&:disabled': {
-                backgroundColor: '#9ca3af',
-                color: 'white'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            {refreshing ? (
-              <CircularProgress size={20} sx={{ color: 'white' }} />
-            ) : (
-              <RefreshIcon />
-            )}
-          </IconButton>
-        </Tooltip>
-      </Stack>
-    </Box>
-  </ModernHeader>
-</Fade>
+                    {showStats && (
+                      <Stack direction="row" spacing={2} sx={{ mt: 2, gap: 2 }}>
+                        <Chip
+                          icon={<DocumentIcon />}
+                          label={`${stats.total} סה"כ מסמכים`}
+                          sx={{
+                            background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                            color: 'white',
+                            border: '1px solid rgba(76, 181, 195, 0.3)',
+                            fontWeight: 600,
+                            boxShadow: '0 2px 8px rgba(76, 181, 195, 0.3)',
+                            '& .MuiChip-icon': {
+                              marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
+                              marginRight: '4px'  // רווח קטן יותר מהצד הימני
+                            }
+                          }}
+                          size="medium"
+                        />
+                        {stats.profilePics > 0 && (
+                          <Chip
+                            icon={<PersonIcon />}
+                            label={`${stats.profilePics} תמונות פרופיל`}
+                            sx={{
+                              background: 'linear-gradient(45deg, #10b981 30%, #059669 90%)',
+                              color: 'white',
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                              '& .MuiChip-icon': {
+                                marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
+                                marginRight: '4px'  // רווח קטן יותר מהצד הימני
+                              }
+                            }}
+                            size="medium"
+                          />
+                        )}
+                      </Stack>
+                    )}
+                  </Box>
+
+                  <Stack direction="row" spacing={2} sx={{ gap: 2 }}>
+                    {showUpload && (
+                      <AnimatedButton
+                        variant="contained"
+                        onClick={() => setUploadDialog(true)}
+                        sx={{
+                          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                          color: 'white',
+                          border: 'none',
+                          boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
+                          '&:hover': {
+                            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)'
+                          }
+                        }}
+                      >
+                        העלאת מסמכים
+                      </AnimatedButton>
+                    )}
+
+                    <Tooltip title="רענון מסמכים">
+                      <IconButton
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        sx={{
+                          backgroundColor: '#4cb5c3',
+                          color: 'white',
+                          border: '2px solid #4cb5c3',
+                          boxShadow: '0 2px 8px rgba(76, 181, 195, 0.3)',
+                          '&:hover': {
+                            backgroundColor: '#3da1af',
+                            transform: 'scale(1.1)',
+                            boxShadow: '0 4px 12px rgba(76, 181, 195, 0.4)'
+                          },
+                          '&:disabled': {
+                            backgroundColor: '#9ca3af',
+                            color: 'white'
+                          },
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        {refreshing ? (
+                          <CircularProgress size={20} sx={{ color: 'white' }} />
+                        ) : (
+                          <RefreshIcon />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </Box>
+              </ModernHeader>
+            </Fade>
 
             {/* כרטיס תוכן עם טאבים */}
             <Zoom in timeout={1000}>
               <ContentCard sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <Tabs 
-                  value={currentTab} 
+                <Tabs
+                  value={currentTab}
                   onChange={(e, newValue) => setCurrentTab(newValue)}
                   variant="fullWidth"
-                  sx={{ 
+                  sx={{
                     borderBottom: '2px solid rgba(76, 181, 195, 0.1)',
                     backgroundColor: 'rgba(76, 181, 195, 0.05)',
                     '& .MuiTab-root': {
                       fontWeight: 600,
                       fontSize: '1rem',
-                      py: 2
-                    },
-                    '& .Mui-selected': {
-                      color: '#2a8a95 !important'
+                      py: 2,
+                      borderBottom: '3px solid transparent',
+                      '&.Mui-selected': {
+                        color: '#2a8a95 !important',
+                        borderBottom: '3px solid #4cb5c3'
+                      }
                     },
                     '& .MuiTabs-indicator': {
-                      height: 3,
-                      borderRadius: '3px 3px 0 0',
-                      background: 'linear-gradient(90deg, #4cb5c3, #2a8a95)'
+                      display: 'none'
                     }
                   }}
                 >
-                  <Tab 
-                    label="כל המסמכים" 
+                  <Tab
+                    label="כל המסמכים"
                     icon={<FolderIcon />}
                     iconPosition="start"
                   />
-                  <Tab 
-                    label="תמונות פרופיל" 
+                  <Tab
+                    label="תמונות פרופיל"
                     icon={<ImageIcon />}
                     iconPosition="start"
                   />
-                  <Tab 
-                    label="מסמכים רגילים" 
+                  <Tab
+                    label="מסמכים רגילים"
                     icon={<DocumentIcon />}
                     iconPosition="start"
                   />
@@ -611,9 +609,9 @@ const EmployeeDocumentManager = ({
                       </Typography>
                     </Box>
                   ) : documentsError ? (
-                    <Alert 
-                      severity="error" 
-                      sx={{ 
+                    <Alert
+                      severity="error"
+                      sx={{
                         mt: 2,
                         borderRadius: 3,
                         background: 'rgba(239, 68, 68, 0.1)',
@@ -627,7 +625,7 @@ const EmployeeDocumentManager = ({
                         ❌ שגיאה בטעינת מסמכים
                       </Typography>
                       {documentsError}
-                      <Button 
+                      <Button
                         onClick={handleRefresh}
                         sx={{ mt: 1 }}
                         variant="outlined"
@@ -647,7 +645,7 @@ const EmployeeDocumentManager = ({
                             onDelete={handleDeleteSuccess}
                           />
                         )}
-                        
+
                         {currentTab === 1 && (
                           <FilesList
                             entityId={employeeId}
@@ -657,7 +655,7 @@ const EmployeeDocumentManager = ({
                             filterByType="profile"
                           />
                         )}
-                        
+
                         {currentTab === 2 && (
                           <FilesList
                             entityId={employeeId}
@@ -675,8 +673,8 @@ const EmployeeDocumentManager = ({
             </Zoom>
 
             {/* דיאלוג העלאה מעוצב */}
-            <Dialog 
-              open={uploadDialog} 
+            <Dialog
+              open={uploadDialog}
               onClose={() => setUploadDialog(false)}
               maxWidth="lg"
               fullWidth
@@ -711,14 +709,13 @@ const EmployeeDocumentManager = ({
                   }
                 }}
               >
-                <UploadIcon sx={{ mr: 1 }} />
                 📤 העלאת מסמכים - {employeeName}
               </DialogTitle>
-              
+
               <DialogContent sx={{ p: 3 }}>
-                <Alert 
-                  severity="info" 
-                  sx={{ 
+                <Alert
+                  severity="info"
+                  sx={{
                     mb: 3,
                     borderRadius: 2,
                     backgroundColor: 'rgba(76, 181, 195, 0.1)',
@@ -730,7 +727,7 @@ const EmployeeDocumentManager = ({
                     💡 ניתן להעלות עד 5 קבצים בבת אחת. קבצים נתמכים: תמונות, PDF, מסמכים ועוד.
                   </Typography>
                 </Alert>
-                
+
                 <FileUploader
                   entityId={employeeId}
                   entityType="employee"
@@ -743,12 +740,12 @@ const EmployeeDocumentManager = ({
                   showPreview={true}
                 />
               </DialogContent>
-              
+
               <DialogActions sx={{ p: 2, backgroundColor: 'rgba(0,0,0,0.02)' }}>
-                <Button 
-                  onClick={() => setUploadDialog(false)} 
+                <Button
+                  onClick={() => setUploadDialog(false)}
                   size="large"
-                  sx={{ 
+                  sx={{
                     borderRadius: 2,
                     px: 3
                   }}

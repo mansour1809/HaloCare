@@ -592,23 +592,23 @@ const EmployeeProfile = () => {
                   value={currentTab} 
                   onChange={(e, newValue) => setCurrentTab(newValue)}
                   variant="fullWidth"
-                  sx={{ 
+                  sx={{
                     borderBottom: '2px solid rgba(76, 181, 195, 0.1)',
                     backgroundColor: 'rgba(76, 181, 195, 0.05)',
                     '& .MuiTab-root': {
                       fontSize: '1.1rem',
                       fontWeight: 700,
                       py: 3,
-                      transition: 'all 0.3s ease'
-                    },
-                    '& .Mui-selected': {
-                      color: '#2a8a95 !important',
-                      background: 'rgba(76, 181, 195, 0.1)'
+                      transition: 'all 0.3s ease',
+                      borderBottom: '4px solid transparent', // גבול שקוף לכל הטאבים
+                      '&.Mui-selected': {
+                        color: '#2a8a95 !important',
+                        background: 'rgba(76, 181, 195, 0.1)',
+                        borderBottom: '4px solid #4cb5c3'     // גבול צבעוני לטאב הפעיל
+                      }
                     },
                     '& .MuiTabs-indicator': {
-                      height: 4,
-                      borderRadius: '4px 4px 0 0',
-                      background: 'linear-gradient(90deg, #4cb5c3, #2a8a95)'
+                      display: 'none'
                     }
                   }}
                 >
@@ -668,7 +668,6 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(16, 185, 129, 0.05)' }}>
-                                    <LocationIcon sx={{ color: 'success.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         🏠 עיר מגורים
@@ -680,7 +679,6 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(245, 158, 11, 0.05)' }}>
-                                    <EventIcon sx={{ color: 'warning.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         🎂 תאריך לידה
@@ -700,7 +698,6 @@ const EmployeeProfile = () => {
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
-                                  <WorkIcon sx={{ color: 'secondary.main', mr: 2, fontSize: '2rem' }} />
                                   <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
                                     💼 פרטי עבודה
                                   </Typography>
@@ -708,7 +705,6 @@ const EmployeeProfile = () => {
                                 
                                 <Stack spacing={3}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(76, 181, 195, 0.05)' }}>
-                                    <BadgeIcon sx={{ color: 'primary.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         🎯 תפקיד
@@ -720,7 +716,6 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(255, 112, 67, 0.05)' }}>
-                                    <WorkIcon sx={{ color: 'secondary.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         🆔 מספר רישיון
@@ -732,7 +727,6 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(16, 185, 129, 0.05)' }}>
-                                    <EventIcon sx={{ color: 'success.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         📅 תחילת עבודה
@@ -744,7 +738,6 @@ const EmployeeProfile = () => {
                                   </Box>
                                   
                                   <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(245, 158, 11, 0.05)' }}>
-                                    <SecurityIcon sx={{ color: 'warning.main', mr: 3, fontSize: '1.5rem' }} />
                                     <Box>
                                       <Typography variant="body2" color="text.secondary" fontWeight={600}>
                                         🔐 סטטוס
