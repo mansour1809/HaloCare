@@ -263,7 +263,6 @@ namespace halocare.Controllers
 
 
 
-        // הוסף את ה-endpoints האלה לקונטרולר ReferenceDataController הקיים
 
         // PUT: api/ReferenceData/cities/{oldName}
         [HttpPut("cities/{oldName}")]
@@ -337,31 +336,7 @@ namespace halocare.Controllers
             }
         }
 
-        //// PUT: api/ReferenceData/roles/{oldName}
-        //[HttpPut("roles/{oldName}")]
-        //public ActionResult<Role> UpdateRole(string oldName, [FromBody] UpdateRoleRequest request)
-        //{
-        //    try
-        //    {
-        //        bool updated = _referenceDataService.UpdateRole(oldName, request.NewRoleName);
-
-        //        if (updated)
-        //        {
-        //            var updatedRole = new Role { RoleName = request.NewRoleName };
-        //            return Ok(updatedRole);
-        //        }
-        //        else
-        //        {
-        //            return NotFound($"תפקיד בשם {oldName} לא נמצא");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-        //    }
-        //}
-
-        // הוסף את המחלקות האלה לפרויקט
+        
         public class UpdateCityRequest
         {
             public string NewCityName { get; set; }

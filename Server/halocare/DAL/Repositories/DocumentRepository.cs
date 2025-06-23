@@ -127,11 +127,11 @@ namespace halocare.DAL.Repositories
                 DocId = Convert.ToInt32(row["DocId"]),
                 KidId = row["KidId"] != DBNull.Value ? Convert.ToInt32(row["KidId"]) : (int?)null,
                 EmployeeId = row["EmployeeId"] != DBNull.Value ? Convert.ToInt32(row["EmployeeId"]) : (int?)null,
-                DocType = row["DocType"] != DBNull.Value ? row["DocType"].ToString() : "other", // ערך ברירת מחדל
+                DocType = row["DocType"] != DBNull.Value ? row["DocType"].ToString() : "other", 
                 DocName = row["DocName"] != DBNull.Value ? row["DocName"].ToString() : null,
                 DocPath = row["DocPath"].ToString(),
                 UploadDate = Convert.ToDateTime(row["UploadDate"]),
-                ContentType = row["ContentType"] != DBNull.Value ? row["ContentType"].ToString() : "application/octet-stream", // ערך ברירת מחדל
+                ContentType = row["ContentType"] != DBNull.Value ? row["ContentType"].ToString() : "application/octet-stream",
                 FileSize = row["FileSize"] != DBNull.Value ? Convert.ToInt64(row["FileSize"]) : 0
             };
         }
