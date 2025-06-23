@@ -1,5 +1,4 @@
-// src/components/treatments/TreatmentViewDialog.jsx - גרסה משופרת
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -18,11 +17,9 @@ import {
   Paper,
   Chip,
   Avatar,
-  Stack,
   Card,
   CardContent,
   Collapse,
-  Fade
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -31,14 +28,12 @@ import {
   Download as DownloadIcon,
   DeleteOutline as DeleteIcon,
   Person as PersonIcon,
-  Event as EventIcon,
   Star as StarIcon,
   Description as DescriptionIcon,
   Highlight as HighlightIcon,
   Visibility as VisibilityIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Warning as WarningIcon
 } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -58,7 +53,6 @@ const TreatmentViewDialog = () => {
     loading, 
     error,
     getTreatmentName,
-    getColorForTreatmentType,
     getEmployeeName,
     formatDate
   } = useTreatmentContext();
@@ -66,7 +60,6 @@ const TreatmentViewDialog = () => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [formError, setFormError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     details: true,
     description: true,
@@ -82,7 +75,6 @@ const TreatmentViewDialog = () => {
         treatmentDate: currentTreatment.treatmentDate ? new Date(currentTreatment.treatmentDate) : new Date()
       });
       setEditMode(false);
-      setShowDeleteConfirm(false);
       setFormError('');
       setExpandedSections({
         details: true,
@@ -351,10 +343,10 @@ const TreatmentViewDialog = () => {
         )}
         
         {editMode ? (
-          /* מצב עריכה */
+          /* editMode */
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              {/* פרטי הטיפול */}
+              {/* Treatment Details */}
               <Grid item xs={12}>
                 <Card sx={{ border: '1px solid', borderColor: 'primary.light', borderRadius: 2 }}>
                   <CardContent>
@@ -406,7 +398,7 @@ const TreatmentViewDialog = () => {
                 </Card>
               </Grid>
               
-              {/* רמת שיתוף פעולה */}
+              {/* Cooperation Level */}
               <Grid item xs={12}>
                 <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>
                   <CardContent>
@@ -438,7 +430,7 @@ const TreatmentViewDialog = () => {
                 </Card>
               </Grid>
               
-              {/* תיאור הטיפול */}
+              {/* Treatment Description */}
               <Grid item xs={12}>
                 <Card sx={{ border: '1px solid', borderColor: 'info.light', borderRadius: 2 }}>
                   <CardContent>
@@ -467,7 +459,7 @@ const TreatmentViewDialog = () => {
                 </Card>
               </Grid>
               
-              {/* נקודות חשובות */}
+              {/* Highlight Points */}
               <Grid item xs={12}>
                 <Card sx={{ border: '1px solid', borderColor: 'secondary.light', borderRadius: 2 }}>
                   <CardContent>
@@ -497,9 +489,9 @@ const TreatmentViewDialog = () => {
             </Grid>
           </form>
         ) : (
-          /* מצב צפייה */
+            /* view mode */
           <Grid container spacing={3}>
-            {/* פרטי הטיפול */}
+            {/* Treatment Details */}
             <Grid item xs={12}>
               <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box 
@@ -572,7 +564,7 @@ const TreatmentViewDialog = () => {
               </Card>
             </Grid>
             
-            {/* תיאור הטיפול */}
+            {/* Treatment Description */}
             <Grid item xs={12}>
               <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box 
@@ -609,7 +601,7 @@ const TreatmentViewDialog = () => {
               </Card>
             </Grid>
             
-            {/* נקודות חשובות */}
+            {/* Highlight Points */}
             {currentTreatment.highlight && (
               <Grid item xs={12}>
                 <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>

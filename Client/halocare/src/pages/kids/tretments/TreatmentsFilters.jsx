@@ -1,5 +1,3 @@
-// src/components/treatments/TreatmentsFilters.jsx - גרסה משופרת
-import React from 'react';
 import { 
   Box, 
   Paper,
@@ -27,13 +25,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { 
   Search as SearchIcon,
-  FilterList as FilterListIcon,
   Clear as ClearIcon,
-  // TuneIcon,
-  // CalendarTodayIcon,
-  // PersonIcon,
-  // StarIcon,
-  // SaveIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
@@ -66,9 +58,8 @@ const TreatmentsFilters = () => {
     setQuickFilterPreset
   } = useTreatmentContext();
 
-  // שליפת נתונים מהרדקס
+  // Get data from Redux
   const { employees } = useSelector(state => state.employees);
-  const { treatments } = useSelector(state => state.treatments);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -80,7 +71,7 @@ const TreatmentsFilters = () => {
     setPage(0);
   };
 
-  // פילטרים מהירים מוגדרים מראש
+  // Predefined quick filters
   const quickFilters = [
     {
       id: 'today',
@@ -134,7 +125,7 @@ const TreatmentsFilters = () => {
     }
   ];
 
-  // ספירת פילטרים פעילים
+  // Count active filters
   const getActiveFiltersCount = () => {
     let count = 0;
     if (searchTerm.trim()) count++;
@@ -147,23 +138,10 @@ const TreatmentsFilters = () => {
 
   const activeFiltersCount = getActiveFiltersCount();
 
-  // פונקציה לשמירת פילטרים במקומי storage (אופציונלי)
-  const saveFiltersPreset = () => {
-    const preset = {
-      searchTerm,
-      dateFrom,
-      dateTo,
-      employeeFilter,
-      cooperationLevelFilter
-    };
-    
-    // כאן תוכל להוסיף שמירה ללוקל סטורג' או שליחה לשרת
-    console.log('שמירת פילטרים:', preset);
-  };
 
   return (
     <Box sx={{ mb: 3 }}>
-      {/* שורת חיפוש עליונה */}
+      {/* Top search bar */}
       <Paper sx={{ p: 2, mb: 2, borderRadius: 2 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={8}>
@@ -223,7 +201,7 @@ const TreatmentsFilters = () => {
           </Grid>
         </Grid>
 
-        {/* פילטרים מהירים */}
+        {/* Quick Filters */}
         {!filterOpen && activeFiltersCount === 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
@@ -250,7 +228,7 @@ const TreatmentsFilters = () => {
           </Box>
         )}
 
-        {/* הצגת פילטרים פעילים */}
+        {/* Display active filters */}
         {activeFiltersCount > 0 && !filterOpen && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
@@ -298,7 +276,7 @@ const TreatmentsFilters = () => {
         )}
       </Paper>
 
-      {/* פאנל פילטרים מתקדמים */}
+     {/* Advanced Filters Panel */}
       <Collapse in={filterOpen}>
         <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
           <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -307,7 +285,7 @@ const TreatmentsFilters = () => {
           </Typography>
           
           <Grid container spacing={3}>
-            {/* טווח תאריכים */}
+            {/* Date Range */}
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CalendarTodayIcon fontSize="small" color="primary" />
@@ -350,7 +328,7 @@ const TreatmentsFilters = () => {
               <Divider />
             </Grid>
 
-            {/* בחירת מטפל */}
+            {/* Employee selection */}
             <Grid item xs={12} sm={6}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <PersonIcon fontSize="small" color="primary" />
@@ -374,10 +352,10 @@ const TreatmentsFilters = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              {/* מקום ריק או תוכן נוסף בעתיד */}
+              {/* Empty space or additional content in the future */}
             </Grid>
 
-            {/* רמת שיתוף פעולה */}
+            {/* Cooperation Level */}
             <Grid item xs={12}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <StarIcon fontSize="small" color="primary" />
@@ -422,7 +400,7 @@ const TreatmentsFilters = () => {
               <Divider />
             </Grid>
 
-            {/* כפתורי פעולה */}
+           {/* Action Buttons */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
