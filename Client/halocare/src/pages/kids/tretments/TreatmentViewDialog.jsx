@@ -60,7 +60,6 @@ const TreatmentViewDialog = () => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [formError, setFormError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     details: true,
     description: true,
@@ -76,7 +75,6 @@ const TreatmentViewDialog = () => {
         treatmentDate: currentTreatment.treatmentDate ? new Date(currentTreatment.treatmentDate) : new Date()
       });
       setEditMode(false);
-      setShowDeleteConfirm(false);
       setFormError('');
       setExpandedSections({
         details: true,
