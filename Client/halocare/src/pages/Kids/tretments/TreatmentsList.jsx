@@ -1,4 +1,3 @@
-// src/components/treatments/TreatmentsList.jsx
 import  { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -10,7 +9,7 @@ import {
 import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
 import { fetchKidById } from '../../../Redux/features/kidsSlice';
 
-// רכיבים משניים
+// Sub components
 import TreatmentsHeader from './TreatmentsHeader';
 import TreatmentsFilters from './TreatmentsFilters';
 import TreatmentsTable from './TreatmentsTable';
@@ -21,23 +20,23 @@ const TreatmentsList = () => {
   const { kidId, treatmentType } = useParams();
   const dispatch = useDispatch();
   
-  // שליפת state מהסטור
+  // Select state from the store
   const { status, error } = useSelector(state => state.treatments);
   const { selectedKid, status: kidStatus } = useSelector(state => state.kids);
   
-  // טעינת טיפולים בעת טעינת הדף
+  // Load treatments when the page loads
   useEffect(() => {
     if (kidId) {
       dispatch(fetchTreatmentsByKid({ kidId, treatmentType }));
       
-      // אם אין פרטי ילד, נטען אותם
+      // If kid details are missing, fetch them
       if (!selectedKid || selectedKid.id !== parseInt(kidId)) {
         dispatch(fetchKidById(kidId));
       }
     }
   }, [dispatch, kidId, treatmentType, selectedKid]);
 
-  // תוכן שיוצג בהתאם למצב הטעינה
+  // Content to display based on loading state
   let content;
   if (status === 'loading' || kidStatus === 'loading') {
     content = (
@@ -54,10 +53,10 @@ const TreatmentsList = () => {
   } else {
     content = (
       <>
-        {/* פילטר חיפוש ואפשרויות סינון */}
+        {/* Search filter and filtering options */}
         <TreatmentsFilters />
 
-        {/* טבלת טיפולים */}
+        {/* Treatments table */}
         <TreatmentsTable />
       </>
     );
@@ -72,7 +71,7 @@ const TreatmentsList = () => {
       />
       {content}
 
-      {/* דיאלוגים */}
+      {/* Dialogs */}
       <TreatmentViewDialog />
       <AddTreatmentDialog kidId={kidId} treatmentType={treatmentType} />
     </Box>

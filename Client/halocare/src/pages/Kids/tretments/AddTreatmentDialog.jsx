@@ -1,6 +1,5 @@
-// src/components/treatments/AddTreatmentDialog.jsx - גרסה משופרת
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import  { useState, useEffect } from 'react';
+import {  useSelector } from 'react-redux';
 import {
   Dialog,
   DialogTitle,
@@ -23,7 +22,6 @@ import {
   FormHelperText,
   Paper,
   Chip,
-  Stack,
   Avatar
 } from '@mui/material';
 import {
@@ -51,14 +49,13 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     loading, 
     error,
     getTreatmentName,
-    getColorForTreatmentType 
   } = useTreatmentContext();
   
   const { currentUser } = useAuth();
   const { employees } = useSelector(state => state.employees);
   const { selectedKid } = useSelector(state => state.kids);
   
-  // מצב עבור ולידציות
+  // for validations
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
   
@@ -74,7 +71,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     highlight: ''
   });
   
-  // איפוס הטופס בפתיחת הדיאלוג
+  // Reset the form when the dialog opens
   useEffect(() => {
     if (isAddDialogOpen) {
       setFormData({
@@ -93,7 +90,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
   }, [isAddDialogOpen, kidId, treatmentType, currentUser]);
 
-  // טיפול בשינוי שדות
+  // Handle field changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData(prev => ({
@@ -101,7 +98,8 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       [name]: value
     }));
     
-    // ניקוי שגיאות
+    // Clear errors
+
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -132,7 +130,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }));
   };
 
-  // ולידציות
+  // Validations
   const validateForm = () => {
     const errors = {};
     
@@ -158,7 +156,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     return Object.keys(errors).length === 0;
   };
 
-  // שליחת הטופס
+  // Submit the form
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -167,17 +165,17 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
 
     try {
-      // הכנת הנתונים לשליחה
+      // Prepare data for submission
       const treatmentData = {
         ...formData,
-        treatmentId: 0, // ניצור טיפול חדש
+        treatmentId: 0, // new treatment
         treatmentDate: formData.treatmentDate.toISOString().split('T')[0]
       };
 
-      // שליחת הטופס
+      // send form
       await addTreatment(kidId, treatmentData);
       
-      // הצגת הצלחה
+      // show sucess massage
       Swal.fire({
         title: 'נשמר בהצלחה',
         text: 'סיכום הטיפול נשמר בהצלחה במערכת',
@@ -190,7 +188,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       });
       
     } catch (err) {
-      // הצגת שגיאה
+      // show error
       Swal.fire({
         title: 'שגיאה',
         text: err.message || 'אירעה שגיאה בשמירת סיכום הטיפול',
@@ -202,13 +200,6 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
         }
       });
     }
-  };
-
-  // קבלת שם העובד
-  const getEmployeeName = (employeeId) => {
-    if (!employees) return '';
-    const employee = employees.find(emp => emp.employeeId == employeeId);
-    return employee ? `${employee.firstName} ${employee.lastName}` : '';
   };
 
   return (
@@ -269,7 +260,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
           )}
           
           <Grid container spacing={3}>
-            {/* בחירת מטפל */}
+            {/* Select Therapist */}
             <Grid item xs={12} sm={6}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -310,7 +301,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
               </Paper>
             </Grid>
             
-            {/* תאריך טיפול */}
+            {/* Treatment Date */}
             <Grid item xs={12} sm={6}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -335,13 +326,13 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
                       />
                     )}
                     maxDate={new Date()}
-                    minDate={new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)} // 6 חודשים אחורה
+                    minDate={new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)} //  back 6 months ago
                   />
                 </LocalizationProvider>
               </Paper>
             </Grid>
             
-            {/* רמת שיתוף פעולה */}
+           {/* Cooperation Level */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -378,7 +369,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
               </Paper>
             </Grid>
             
-            {/* תיאור הטיפול */}
+            {/* Treatment Description */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -409,7 +400,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
               </Paper>
             </Grid>
             
-            {/* נקודות חשובות */}
+            {/* Highlights */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>

@@ -1,5 +1,4 @@
-// src/components/treatments/TreatmentsHeader.jsx - גרסה משופרת עם סטטיסטיקות
-import React from 'react';
+// src/components/treatments/TreatmentsHeader.jsx 
 import { 
   Box, 
   Typography, 
@@ -21,11 +20,10 @@ import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
   Star as StarIcon,
-  CalendarToday as CalendarIcon,
-  Analytics as AnalyticsIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTreatmentContext } from './TreatmentContext';
+import PropTypes from 'prop-types';
 
 const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
   const navigate = useNavigate();
@@ -38,10 +36,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     getFilteredTreatmentStats
   } = useTreatmentContext();
 
-  // קבלת סטטיסטיקות
+  // Get statistics
   const stats = getFilteredTreatmentStats();
 
-  // פונקציה לחישוב טרנד (משוערת)
+  // Function to calculate trend (approximate)
   const getTrend = () => {
     if (!filteredTreatments.length) return null;
     
@@ -99,7 +97,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
         </Typography>
       </Breadcrumbs>
       
-      {/* כותרת ראשית */}
+      {/* Main Header */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2, background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box>
@@ -183,13 +181,13 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           </Button>
         </Box>
 
-        {/* סטטיסטיקות מהירות */}
+        {/* Quick stats */}
         {stats.total > 0 && (
           <>
             <Divider sx={{ my: 3 }} />
             
             <Grid container spacing={3}>
-              {/* סך הכל טיפולים */}
+              {/* Total treatments */}
               <Grid item xs={12} sm={6} md={3}>
                 <Paper sx={{ 
                   p: 2, 
@@ -225,7 +223,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                 </Paper>
               </Grid>
 
-              {/* ממוצע שיתוף פעולה */}
+              {/* Average cooperation */}
               <Grid item xs={12} sm={6} md={4}>
                 <Paper sx={{ 
                   p: 2, 
@@ -264,7 +262,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                 </Paper>
               </Grid>
 
-              {/* מטפלים שונים */}
+              {/* Different therapists */}
               <Grid item xs={12} sm={6} md={4}>
                 <Paper sx={{ 
                   p: 2, 
@@ -299,7 +297,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
             </Grid>
 
-            {/* חלוקה לפי סוגי טיפולים */}
+            {/* Distribution by treatment types */}
             {Object.keys(stats.treatmentTypeDistribution || {}).length > 1 && (
               <Box sx={{ mt: 3 }}>
                 <Typography variant="subtitle1" fontWeight="bold" color="text.primary" mb={2}>
@@ -331,6 +329,17 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
       </Paper>
     </Box>
   );
+};
+
+
+TreatmentsHeader.propTypes = {
+  kidId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  treatmentType: PropTypes.string,
+  selectedKid: PropTypes.shape({
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    isActive: PropTypes.bool,
+  }),
 };
 
 export default TreatmentsHeader;

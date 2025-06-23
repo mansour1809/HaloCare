@@ -1,5 +1,3 @@
-// src/components/treatments/TreatmentsTable.jsx - גרסה משופרת
-import React from 'react';
 import { 
   Paper, 
   Table, 
@@ -12,9 +10,7 @@ import {
   TablePagination,
   Box,
   IconButton,
-  Chip,
   Typography,
-  useTheme,
   Tooltip,
   styled,
   Avatar,
@@ -29,7 +25,7 @@ import {
 import { useTreatmentContext } from './TreatmentContext';
 import { baseURL } from '../../../components/common/axiosConfig';
 
-// Styled Components לעיצוב משופר
+// Styled Components for enhanced styling
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: '16px',
   boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
@@ -49,7 +45,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
+const StyledTableRow = styled(TableRow)(() => ({
   cursor: 'pointer',
   transition: 'all 0.2s ease-in-out',
   '&:hover': {
@@ -66,25 +62,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   }
 }));
 
-const TreatmentTypeChip = styled(Chip)(({ theme, treatmentcolor }) => ({
-  fontWeight: 600,
-  fontSize: '0.85rem',
-  height: '32px',
-  borderRadius: '16px',
-  backgroundColor: treatmentcolor || theme.palette.primary.light,
-  color: 'white',
-  boxShadow: `0 2px 8px ${treatmentcolor}40`,
-  '& .MuiChip-icon': {
-    color: 'white',
-  },
-  '&:hover': {
-    transform: 'scale(1.05)',
-    boxShadow: `0 4px 12px ${treatmentcolor}60`,
-  }
-}));
+
+
+import PropTypes from 'prop-types';
 
 const CooperationRating = ({ level }) => {
-  const theme = useTheme();
+  // const theme = useTheme();
   const stars = [];
   
   for (let i = 1; i <= 5; i++) {
@@ -107,7 +90,8 @@ const CooperationRating = ({ level }) => {
   );
 };
 
-const ActionButton = styled(IconButton)(({ theme, actiontype }) => {
+
+const ActionButton = styled(IconButton)(({  actiontype }) => {
   const colors = {
     view: { bg: '#4fc3f7', hover: '#29b6f6' },
     download: { bg: '#ff9800', hover: '#f57c00' }
@@ -327,7 +311,7 @@ const TreatmentsTable = () => {
                           size="small"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // כאן תהיה הפונקציה להורדת PDF
+                            // PDF download function goes here
                             console.log('הורדת PDF עבור טיפול:', treatment.treatmentId);
                           }}
                         >
@@ -408,3 +392,7 @@ const TreatmentsTable = () => {
 };
 
 export default TreatmentsTable;
+
+CooperationRating.propTypes = {
+  level: PropTypes.number.isRequired,
+};
