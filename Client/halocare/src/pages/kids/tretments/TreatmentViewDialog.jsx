@@ -341,7 +341,7 @@ const TreatmentViewDialog = () => {
             {formError || error}
           </Alert>
         )}
-        
+
         {editMode ? (
           /* editMode */
           <form onSubmit={handleSubmit}>
