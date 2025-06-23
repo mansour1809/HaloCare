@@ -60,6 +60,7 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
   marginBottom: '2px',
   borderBottom: '1px solid rgba(76, 181, 195, 0.1)',
   position: 'relative',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -112,15 +113,21 @@ const ProSidebar = () => {
       margin: '1px 6px',
       borderRadius: '8px',
       transition: 'all 0.3s ease',
+        overflow: 'none',
+
     },
     icon: {
       color: '#64748b',
       fontSize: '1.1rem',
       marginLeft: '6px',
+        overflow: 'hidden',
+
     },
     button: {
       padding: '8px 12px',
       borderRadius: '8px',
+              overflow: 'hidden',
+
       '&:hover': {
         backgroundColor: 'rgba(76, 181, 195, 0.08)',
         color: '#2a8a95',

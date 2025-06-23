@@ -14,7 +14,7 @@ import {
   Divider,
   Chip
 } from '@mui/material';
-import { styled, alpha, createTheme, ThemeProvider } from '@mui/material/styles';
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -372,12 +372,12 @@ const Navbar = () => {
           {/* Left side - Logo */}
           <LogoContainer>
             <img 
-              src={'./logo.png'} 
+              src={'./logo-noLett.png'} 
               alt="HALO CARE" 
               style={{ 
                 height: '45px', 
                 marginLeft: '8px',
-                borderRadius: '6px'
+                borderRadius: '6px',
               }}
             />
             <Typography

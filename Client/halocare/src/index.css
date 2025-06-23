@@ -86,3 +86,8 @@ body {
   transform: none !important;
   
 }
+
+div.ps-submenu-content.ps-open.css-18unl23{
+
+  overflow: hidden;
+}
