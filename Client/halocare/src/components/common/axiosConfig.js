@@ -1,33 +1,29 @@
 // src/services/axiosConfig.js
 import axios from 'axios';
 
-// קבע כתובת בסיס
+// Set the base URL
 axios.defaults.baseURL = 'https://localhost:7225/api';
 // axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/test2/tar1/api';
 
-
-// 🔥 רשימת endpoints ציבוריים שלא צריכים token
+// 🔥 List of public endpoints that do not require a token
 const publicEndpoints = [
   '/ParentForm/validate',
   '/ParentForm/form/',
   '/ParentForm/submit',
-  '/Auth/reset-password', 
-  '/Auth/forgot-password', // אם יש
-  '/Auth/login' 
-
+  '/Auth/reset-password',
+  '/Auth/forgot-password', // If exists
+  '/Auth/login',
 ];
 
-// 🔥 בדיקה אם הנתיב ציבורי
+// 🔥 Check if the path is public
 const isPublicEndpoint = (url) => {
-  return publicEndpoints.some(endpoint => url.includes(endpoint));
+  return publicEndpoints.some((endpoint) => url.includes(endpoint));
 };
 
-
-
-// הוסף interceptor שיוסיף את הטוקן רק לבקשות פרטיות
+// Add an interceptor to include the token only for private requests
 axios.interceptors.request.use(
   (config) => {
-    //  הוסף token רק אם זה לא endpoint ציבורי
+    // Add token only if it's not a public endpoint
     if (!isPublicEndpoint(config.url)) {
       const token = localStorage.getItem('token');
       if (token) {
@@ -41,21 +37,21 @@ axios.interceptors.request.use(
   }
 );
 
-// טיפול בשגיאות אימות (401)
+// Handle authentication errors (401)
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // 🔥 בדיקה מורחבת לדפים ציבוריים
+      // 🔥 Extended check for public pages
       const currentPath = window.location.pathname + window.location.hash;
-      const publicPaths = ["/login", "/reset-password", "/parent-form"];
-      const isPublicPage = publicPaths.some(path => currentPath.includes(path));
-      
-      // 🔥 הפנה ל-login רק אם זה לא דף ציבורי
+      const publicPaths = ['/login', '/reset-password', '/parent-form'];
+      const isPublicPage = publicPaths.some((path) => currentPath.includes(path));
+
+      // 🔥 Redirect to login only if it's not a public page
       if (!isPublicPage) {
-        window.location.href = "/bgroup3/test2/halocare/#/login";
+        window.location.href = '/bgroup3/test2/halocare/#/login';
       }
-      
+
       return Promise.reject({ silent: true });
     }
     return Promise.reject(error);
@@ -64,4 +60,4 @@ axios.interceptors.response.use(
 
 export default axios;
 
-export const baseURL=axios.defaults.baseURL;
+export const baseURL = axios.defaults.baseURL;

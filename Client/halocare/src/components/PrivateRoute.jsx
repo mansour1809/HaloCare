@@ -5,12 +5,12 @@ import { useAuth } from './login/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
-  // בדיקה אם עדיין טוען
+  // Check if still loading
   if (loading) {
     return <div>טוען...</div>;
   }
   
-  // אם המשתמש לא מחובר, הפנה לדף התחברות
+  // If the user is not authenticated, redirect to the login page
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }

@@ -16,9 +16,6 @@ import {
   TrendingDown as TrendingDownIcon,
   Equalizer as EqualizerIcon,
   Analytics as AnalyticsIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  School as SchoolIcon,
-  CalendarToday as CalendarIcon,
   Insights as InsightsIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -27,7 +24,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchMonthlySummary } from '../../Redux/features/attendanceSlice';
 import Swal from 'sweetalert2';
 
-// מערך צבעים מעוצבים לגרפים
+// Array of styled colors for graphs
 const COLORS = ['#667eea', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 const GRADIENT_COLORS = [
   'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -38,7 +35,7 @@ const GRADIENT_COLORS = [
   'linear-gradient(45deg, #06b6d4 30%, #22d3ee 90%)'
 ];
 
-// כרטיס בקרה מעוצב
+// Styled control card
 const ControlCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
@@ -59,7 +56,7 @@ const ControlCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כרטיס גרף מעוצב
+// Styled graph card
 const ChartCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -80,7 +77,7 @@ const ChartCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כרטיס תובנות מעוצב
+// Styled insights card
 const InsightCard = styled(Card)(({ borderColor }) => ({
   height: '100%',
   borderRadius: 16,
@@ -106,7 +103,7 @@ const InsightCard = styled(Card)(({ borderColor }) => ({
   }
 }));
 
-// כפתור ToggleButton מעוצב
+// Styled ToggleButton
 const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   borderRadius: 12,
   border: 'none',
@@ -129,7 +126,7 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   }
 }));
 
-// Select מעוצב
+// Styled Select
 const StyledSelect = styled(Select)(({ theme }) => ({
   borderRadius: 16,
   background: 'rgba(255, 255, 255, 0.9)',
@@ -153,13 +150,13 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
   const { kids } = useSelector(state => state.kids);
   const theme = useTheme();
   
-  // מצבים
+  // States
   const [timeRange, setTimeRange] = useState('week');
   const [classFilter, setClassFilter] = useState('all');
   const [chartType, setChartType] = useState('bar');
   const [attendanceData, setAttendanceData] = useState([]);
   
-  // טעינת נתוני הנוכחות מהשרת
+  // Load attendance data from the server
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -180,7 +177,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
     loadData();
   }, [dispatch]);
   
-  // עיבוד הנתונים לתצוגה בגרף
+  // Process data for graph display
   useEffect(() => {
     if (!monthlySummary || Object.keys(monthlySummary).length === 0) {
       const demoData = createDemoData(timeRange);
@@ -226,7 +223,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
     }
   }, [monthlySummary, timeRange, classFilter, kids]);
   
-  // פונקצית עזר ליצירת נתוני דמה
+  // Helper function to create demo data
   const createDemoData = (range) => {
     const demoData = [];
     
@@ -253,13 +250,13 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
     return demoData;
   };
   
-  // המרת מספר היום לשם בעברית
+  // Convert day number to name in Hebrew
   const getDayNameInHebrew = (dayNumber) => {
     const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
     return days[dayNumber];
   };
   
-  // ניתוח הנתונים להצגת תובנות
+  // Analyze data to display insights
   const getInsights = () => {
     if (!attendanceData.length) return null;
     
@@ -279,7 +276,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
   
   const insights = getInsights();
   
-  // במקרה של גרסה קטנה, נחזיר גרף בלבד
+  // If mini version, return only the graph
   if (miniVersion) {
     return (
       <Box sx={{ height: '100%', width: '100%', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
@@ -324,7 +321,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
     );
   }
   
-  // אם עדיין טוען
+  // If still loading
   if (status === 'loading') {
     return (
       <Fade in>
@@ -346,7 +343,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
     );
   }
   
-  // פונקציה להצגת הגרף המתאים
+  // Function to display the appropriate graph
   const renderChart = () => {
     const commonProps = {
       margin: { top: 20, right: 30, left: 20, bottom: 20 }
@@ -476,7 +473,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
   
   return (
     <Box>
-      {/* כרטיס בקרה */}
+      {/* Control Card */}
       <Fade in timeout={500}>
         <ControlCard>
           <CardContent sx={{ p: 3 }}>
@@ -486,7 +483,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               alignItems={{ xs: 'stretch', lg: 'center' }} 
               justifyContent="space-between"
             >
-              {/* כותרת וסטטיסטיקות */}
+              {/* Title and Statistics */}
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar sx={{ 
                   background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
@@ -504,9 +501,9 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
                 </Box>
               </Stack>
               
-              {/* בקרות */}
+              {/* Controls */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                {/* בורר טווח זמן */}
+                {/* Time Range Selector */}
                 <FormControl size="small" variant="outlined" sx={{ minWidth: 140 }}>
                   <InputLabel>טווח זמן</InputLabel>
                   <StyledSelect
@@ -519,7 +516,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
                   </StyledSelect>
                 </FormControl>
                 
-                {/* בורר כיתה */}
+                {/* Class Filter Selector */}
                 <FormControl size="small" variant="outlined" sx={{ minWidth: 140 }}>
                   <InputLabel>כיתה</InputLabel>
                   <StyledSelect
@@ -533,7 +530,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
                   </StyledSelect>
                 </FormControl>
                 
-                {/* בורר סוג גרף */}
+                {/* Chart Type Selector */}
                 <ToggleButtonGroup
                   value={chartType}
                   exclusive
@@ -557,7 +554,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
         </ControlCard>
       </Fade>
       
-      {/* הצגת הגרף המתאים לפי הבחירה */}
+      {/* Display the appropriate chart based on selection */}
       <Zoom in timeout={800}>
         <ChartCard sx={{ mt: 3 }}>
           <CardContent sx={{ p: 3 }}>
@@ -570,7 +567,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
         </ChartCard>
       </Zoom>
       
-      {/* תובנות מהנתונים */}
+      {/* Insights from the data */}
       {insights && (
         <Fade in timeout={1200}>
           <Grid container spacing={3} sx={{ mt: 2 }}>
@@ -652,7 +649,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
         </Fade>
       )}
       
-      {/* הצגת המלצות */}
+      {/* Recommendations display */}
       {insights && insights.lowestDay.percentage < 80 && (
         <Fade in timeout={1500}>
           <Card sx={{ 

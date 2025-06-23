@@ -11,10 +11,10 @@ import {
   Avatar,
   Button,
   Paper,
+  alpha,
   IconButton,
   Chip,
   useTheme,
-  alpha,
   ThemeProvider,
   createTheme,
   Stack,
@@ -29,7 +29,7 @@ import {
   Assessment as ReportsIcon,
   TrendingUp as TrendingIcon,
   CheckCircle as CompleteIcon,
-  Login as LoginIcon,
+Login as LoginIcon,
   ContactSupport as ContactIcon,
   Dashboard as DashboardIcon,
   LocalHospital as MedicalIcon,
@@ -45,7 +45,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
-// יצירת theme מדהים עם תמיכה ב-RTL
+// Create an amazing theme with RTL support
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -138,7 +138,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// מסך מלא מותאם RTL עם רקע מדהים
+// Full-screen container with amazing RTL support and background
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #10b981 75%, #667eea 100%)',
@@ -165,7 +165,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כותרת עם עיצוב זכוכית ואפקטים
+// Header with glass design and effects
 const ModernHeader = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.15)',
   backdropFilter: 'blur(20px)',
@@ -186,7 +186,7 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// כרטיס סטטיסטיקה מדהים
+// Amazing statistics card
 const StatCard = styled(Card)(({ theme, color }) => ({
   padding: '32px 24px',
   textAlign: 'center',
@@ -223,7 +223,8 @@ const StatCard = styled(Card)(({ theme, color }) => ({
   }
 }));
 
-// כרטיס תכונה מעוצב עם זוהר
+
+// Animated feature card
 const FeatureCard = styled(Card)(({ theme, color }) => ({
   height: '320px',
   cursor: 'pointer',
@@ -259,7 +260,7 @@ const FeatureCard = styled(Card)(({ theme, color }) => ({
   }
 }));
 
-// אייקון מעוצב עם אנימציות
+// Styled icon for the feature card
 const StyledIcon = styled(Avatar)(({ theme, color }) => ({
   width: 80,
   height: 80,
@@ -289,7 +290,7 @@ const StyledIcon = styled(Avatar)(({ theme, color }) => ({
   }
 }));
 
-// כרטיס דשבורד מעוצב
+// Dashboard card with gradient background and glass effect
 const DashboardCard = styled(Card)(({ theme, gradientColor }) => ({
   height: '320px',
   background: gradientColor,
@@ -308,7 +309,7 @@ const DashboardCard = styled(Card)(({ theme, gradientColor }) => ({
   }
 }));
 
-// כפתור פעולה מהירה
+// Quick action button
 const QuickActionCard = styled(Card)(({ theme }) => ({
   height: '160px',
   cursor: 'pointer',
@@ -331,7 +332,7 @@ const HomePage = () => {
     { label: 'הושלמו השבוע', value: '8', icon: <CompleteIcon fontSize="large" />, color: 'success' },
     { label: 'בתהליך כעת', value: '12', icon: <ProgressIcon fontSize="large" />, color: 'warning' },
     { label: 'אחוז השלמה', value: '85%', icon: <TrendingIcon fontSize="large" />, color: 'error' }
-  ];
+];
 
   const features = [
     {
@@ -413,7 +414,7 @@ const HomePage = () => {
     <ThemeProvider theme={rtlTheme}>
       <Box sx={{ direction: 'rtl' }}>
         <FullScreenContainer>
-          {/* כותרת מקצועית עם אפקטי זכוכית */}
+          {/* Professional header with glass effects */}
           <Fade in timeout={800}>
             <ModernHeader elevation={0}>
               <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
@@ -461,7 +462,7 @@ const HomePage = () => {
                           textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                         }}
                       >
-                        מערכת לניהול מתקדם
+                        מערכת לניהול
                       </Typography>
                     </Box>
                   </Stack>
@@ -470,9 +471,9 @@ const HomePage = () => {
             </ModernHeader>
           </Fade>
 
-          {/* תוכן ראשי */}
+          {/* Main content */}
           <Container maxWidth="lg" sx={{ flex: 1, py: 6, position: 'relative', zIndex: 2 }}>
-            {/* סטטיסטיקות מרכזיות */}
+            {/* Central statistics */}
             <Zoom in timeout={1000}>
               <Box sx={{ mb: 8 }}>
                 <Typography 
@@ -520,7 +521,7 @@ const HomePage = () => {
               </Box>
             </Zoom>
 
-            {/* לוח פעילות יומי מעוצב */}
+            {/* Calander */}
             <Fade in timeout={1400}>
               <Box sx={{ mb: 8 }}>
                 <Typography 
@@ -536,7 +537,7 @@ const HomePage = () => {
                   🎯 מה קורה בגן שלנו היום
                 </Typography>
                 <Grid container spacing={4}>
-                  {/* אירועים השבוע */}
+                  {/* Weekly events*/}
                   <Grid item xs={12} md={6} lg={3}>
                     <DashboardCard gradientColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
@@ -570,7 +571,7 @@ const HomePage = () => {
                     </DashboardCard>
                   </Grid>
 
-                  {/* מילוי נוכחות */}
+                  {/* Attendance */}
                   <Grid item xs={12} md={6} lg={3}>
                     <DashboardCard gradientColor="linear-gradient(135deg, #10b981 0%, #34d399 100%)">
                       <CardActionArea 
@@ -618,7 +619,7 @@ const HomePage = () => {
                     </DashboardCard>
                   </Grid>
 
-                  {/* הישגים אחרונים */}
+                  {/* Recent progress */}
                   <Grid item xs={12} md={6} lg={3}>
                     <DashboardCard gradientColor="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)">
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
@@ -652,7 +653,7 @@ const HomePage = () => {
                     </DashboardCard>
                   </Grid>
 
-                  {/* הודעות חשובות */}
+                  {/* Important alerts */}
                   <Grid item xs={12} md={6} lg={3}>
                     <DashboardCard gradientColor="linear-gradient(135deg, #f093fb 0%, #e879f9 100%)">
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
@@ -692,7 +693,7 @@ const HomePage = () => {
               </Box>
             </Fade>
 
-            {/* פעולות מהירות */}
+            {/* Quick tasks */}
             <Zoom in timeout={1600}>
               <Box sx={{ mb: 8 }}>
                 <Typography 
@@ -745,7 +746,7 @@ const HomePage = () => {
             </Zoom>
           </Container>
 
-          {/* כותרת תחתונה עם עיצוב זכוכית */}
+          {/* Footer with glass design */}
           <Fade in timeout={2000}>
             <Paper 
               component="footer" 

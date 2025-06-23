@@ -1,21 +1,10 @@
-
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Sidebar, 
-  Menu, 
-  MenuItem, 
-  SubMenu,
-  menuClasses,
-} from 'react-pro-sidebar';
-import { Box, Typography, Button, Divider, Chip } from '@mui/material';
+import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import { Box, Typography, Button, Divider } from '@mui/material';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 
 // אייקונים מינימליסטיים ונקיים
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import ChildCareIcon from '@mui/icons-material/ChildCare';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import SettingsIcon from '@mui/icons-material/Settings';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -27,7 +16,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import { useAuth } from '../../login/AuthContext.jsx';
 
-// יצירת theme מקצועי
+// Creating professional theme 
 const sidebarTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -38,14 +27,14 @@ const sidebarTheme = createTheme({
       main: '#4cb5c3',
       light: '#7ec8d3',
       dark: '#2a8a95',
-    }
-  }
+    },
+  },
 });
 
-// רוחב הסרגל הצדדי
+// Sidebar width
 const DRAWER_WIDTH = 240;
 
-// כפתור התנתקות מעוצב אבל קומפקטי יותר
+// Styled logout button
 const LogoutButton = styled(Button)(({ theme }) => ({
   width: '100%',
   margin: '8px auto',
@@ -61,10 +50,10 @@ const LogoutButton = styled(Button)(({ theme }) => ({
     background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
     borderColor: '#dc2626',
     transform: 'translateY(-1px)',
-  }
+  },
 }));
 
-// כותרת קטגוריה קומפקטית יותר
+// Compact category header
 const CategoryHeader = styled(Box)(({ theme }) => ({
   padding: '8px 16px 4px 16px',
   marginTop: '8px',
@@ -79,37 +68,35 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
     width: '20px',
     height: '1px',
     background: '#4cb5c3',
-  }
+  },
 }));
 
-// Styled SubMenu שיכפה את הסגנונות
+// Styled SubMenu
 const StyledSubMenu = styled(SubMenu)(({ theme }) => ({
   margin: '1px 6px !important',
   borderRadius: '8px !important',
-  
+
   '& .ps-submenu-expand-icon': {
     color: '#4cb5c3 !important',
   },
-  
+
   '& .ps-menu-button': {
     padding: '8px 12px !important',
     borderRadius: '8px !important',
-    // backgroundColor: 'rgba(76, 181, 195, 0.05) !important',
-    // border: '1px solid rgba(76, 181, 195, 0.1) !important',
     fontWeight: '700 !important',
     fontSize: '0.9rem !important',
     color: '#2a8a95 !important',
-        
+
     '&:hover': {
-      backgroundColor: 'rgba(76, 181, 195, 0.1) !important'
-    }
+      backgroundColor: 'rgba(76, 181, 195, 0.1) !important',
+    },
   },
-  
+
   '& .ps-menu-icon': {
     color: '#4cb5c3 !important',
     fontSize: '1.1rem !important',
     marginLeft: '6px !important',
-  }
+  },
 }));
 
 const ProSidebar = () => {
@@ -117,7 +104,7 @@ const ProSidebar = () => {
   const location = useLocation();
   const { logout } = useAuth();
 
-  // עיצוב קומפקטי יותר לפריטי התפריט
+  // Compact styling for menu items
   const menuItemStyles = {
     root: {
       fontSize: '0.85rem',
@@ -136,7 +123,7 @@ const ProSidebar = () => {
       borderRadius: '8px',
       '&:hover': {
         backgroundColor: 'rgba(76, 181, 195, 0.08)',
-        color: '#2a8a95'
+        color: '#2a8a95',
       },
     },
     label: {
@@ -144,19 +131,21 @@ const ProSidebar = () => {
       fontSize: '0.85rem',
     },
   };
-  
-  // עיצוב פריט פעיל
+
+  // Active item styling
   const getActiveStyle = (path) => {
     const isActive = location.pathname === path || location.pathname.startsWith(path);
-    return isActive ? {
-      backgroundColor: 'rgba(76, 181, 195, 0.15)',
-      color: '#2a8a95',
-      fontWeight: 700,
-      borderLeft: '3px solid #4cb5c3'
-    } : {};
+    return isActive
+      ? {
+          backgroundColor: 'rgba(76, 181, 195, 0.15)',
+          color: '#2a8a95',
+          fontWeight: 700,
+          borderLeft: '3px solid #4cb5c3',
+        }
+      : {};
   };
-  
-  // כותרת קטגוריה קומפקטית
+
+  // Compact category label
   const CategoryLabel = ({ children, emoji }) => (
     <CategoryHeader>
       <Typography
@@ -169,7 +158,7 @@ const ProSidebar = () => {
           letterSpacing: '0.5px',
           display: 'flex',
           alignItems: 'center',
-          gap: 0.5
+          gap: 0.5,
         }}
       >
         <span style={{ fontSize: '0.9rem' }}>{emoji}</span>
@@ -182,26 +171,26 @@ const ProSidebar = () => {
     logout();
     navigate('/login');
   };
-  
+
   return (
     <ThemeProvider theme={sidebarTheme}>
       <Sidebar
         rtl
         width={`${DRAWER_WIDTH}px`}
         style={{
-          height: "calc(100% - 64px)",
-          position: "fixed",
+          height: 'calc(100% - 64px)',
+          position: 'fixed',
           top: 64,
           right: 0,
-          border: "none",
+          border: 'none',
           background: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(20px)',
-          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         }}
         rootStyles={{
-          backgroundColor: "transparent",
-          borderLeft: "1px solid rgba(76, 181, 195, 0.1)",
-          overflowX: "hidden",
+          backgroundColor: 'transparent',
+          borderLeft: '1px solid rgba(76, 181, 195, 0.1)',
+          overflowX: 'hidden',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -210,37 +199,30 @@ const ProSidebar = () => {
             width: '2px',
             height: '100%',
             background: 'linear-gradient(180deg, #4cb5c3, #ff7043, #10b981)',
-          }
+          },
         }}
       >
-        <Box sx={{ padding: "8px 0", height: '100%', display: 'flex', flexDirection: 'column' }}>
-          
-          {/* תפריט ראשי */}
+        <Box sx={{ padding: '8px 0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Main menu */}
           <Menu menuItemStyles={menuItemStyles}>
-            <MenuItem
-              icon={<DashboardIcon />}
-              onClick={() => navigate("/")}
-              style={getActiveStyle("/")}
-            >
+            <MenuItem icon={<DashboardIcon />} onClick={() => navigate('/')} style={getActiveStyle('/')}>
               דף הבית
             </MenuItem>
 
             <CategoryLabel emoji="👶">ילדים</CategoryLabel>
 
-            <StyledSubMenu
-              label="ניהול ילדים"
-            >
+            <StyledSubMenu label="ניהול ילדים">
               <MenuItem
                 icon={<GroupIcon />}
-                onClick={() => navigate("/kids/list")}
-                style={getActiveStyle("/kids/list")}
+                onClick={() => navigate('/kids/list')}
+                style={getActiveStyle('/kids/list')}
               >
                 רשימת ילדים
               </MenuItem>
               <MenuItem
                 icon={<PersonAddIcon />}
-                onClick={() => navigate("/kids/onboarding/new")}
-                style={getActiveStyle("/kids/onboarding/new")}
+                onClick={() => navigate('/kids/onboarding/new')}
+                style={getActiveStyle('/kids/onboarding/new')}
               >
                 הוספת ילד
               </MenuItem>
@@ -248,20 +230,18 @@ const ProSidebar = () => {
 
             <CategoryLabel emoji="👥">צוות</CategoryLabel>
 
-            <StyledSubMenu 
-              label="ניהול צוות"
-            >
+            <StyledSubMenu label="ניהול צוות">
               <MenuItem
                 icon={<GroupIcon />}
-                onClick={() => navigate("/employees/list")}
-                style={getActiveStyle("/employees/list")}
+                onClick={() => navigate('/employees/list')}
+                style={getActiveStyle('/employees/list')}
               >
                 רשימת צוות
               </MenuItem>
               <MenuItem
                 icon={<PersonAddIcon />}
-                onClick={() => navigate("/employees/add")}
-                style={getActiveStyle("/employees/add")}
+                onClick={() => navigate('/employees/add')}
+                style={getActiveStyle('/employees/add')}
               >
                 הוספת צוות
               </MenuItem>
@@ -269,20 +249,18 @@ const ProSidebar = () => {
 
             <CategoryLabel emoji="📅">יומן</CategoryLabel>
 
-            <StyledSubMenu 
-              label="ניהול לוח זמנים"
-            >
+            <StyledSubMenu label="ניהול לוח זמנים">
               <MenuItem
                 icon={<EventIcon />}
-                onClick={() => navigate("/calendar/schedule")}
-                style={getActiveStyle("/calendar/schedule")}
+                onClick={() => navigate('/calendar/schedule')}
+                style={getActiveStyle('/calendar/schedule')}
               >
                 לוח שנה
               </MenuItem>
               <MenuItem
                 icon={<MeetingRoomIcon />}
-                onClick={() => navigate("/calendar/meetings")}
-                style={getActiveStyle("/calendar/meetings")}
+                onClick={() => navigate('/calendar/meetings')}
+                style={getActiveStyle('/calendar/meetings')}
               >
                 פגישות
               </MenuItem>
@@ -290,42 +268,33 @@ const ProSidebar = () => {
 
             <CategoryLabel emoji="⚙️">מערכת</CategoryLabel>
 
-            <MenuItem
-              onClick={() => navigate("/settings")}
-              style={getActiveStyle("/settings")}
-            >
+            <MenuItem onClick={() => navigate('/settings')} style={getActiveStyle('/settings')}>
               הגדרות
             </MenuItem>
 
-            <StyledSubMenu 
-              label="ניהול דוחות" 
-              icon={<AssessmentIcon />}
-            >
+            <StyledSubMenu label="ניהול דוחות" icon={<AssessmentIcon />}>
               <MenuItem
                 icon={<AutoStoriesIcon />}
-                onClick={() => navigate("/reports/attendance")}
-                style={getActiveStyle("/reports/attendance")}
+                onClick={() => navigate('/reports/attendance')}
+                style={getActiveStyle('/reports/attendance')}
               >
                 נוכחות
               </MenuItem>
               <MenuItem
                 icon={<EditNoteIcon />}
-                onClick={() => navigate("/reports/treatments")}
-                style={getActiveStyle("/reports/treatments")}
+                onClick={() => navigate('/reports/treatments')}
+                style={getActiveStyle('/reports/treatments')}
               >
                 טיפולים
               </MenuItem>
             </StyledSubMenu>
           </Menu>
 
-          {/* מרווח אוטומטי */}
           <Box sx={{ flex: 1 }} />
 
-          {/* קטע תחתון קומפקטי */}
           <Box sx={{ px: 1, pb: 1 }}>
             <Divider sx={{ mb: 1, borderColor: 'rgba(76, 181, 195, 0.2)' }} />
-            
-            {/* כפתור התנתקות */}
+
             <LogoutButton
               onClick={handleLogout}
               startIcon={<LogoutIcon sx={{ fontSize: '1rem' }} />}
@@ -341,4 +310,3 @@ const ProSidebar = () => {
 };
 
 export default ProSidebar;
-  

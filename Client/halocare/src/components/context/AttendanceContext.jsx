@@ -1,5 +1,5 @@
 // AttendanceContext.js
-import  { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs from 'dayjs';
 import { 
@@ -11,7 +11,6 @@ import {
 } from '../../Redux/features/attendanceSlice';
 import PropTypes from 'prop-types';
 
-
 const AttendanceContext = createContext();
 
 export const useAttendance = () => useContext(AttendanceContext);
@@ -21,7 +20,7 @@ export const AttendanceProvider = ({ children }) => {
   const { todayRecords, kidRecords, monthlySummary, status, error } = useSelector(state => state.attendance);
   const { kids } = useSelector(state => state.kids);
   
-  // מצבים
+  // States
   const [attendance, setAttendance] = useState({});
   const [absenceReasons, setAbsenceReasons] = useState({});
   const [selectedDateRange, setSelectedDateRange] = useState({
@@ -30,26 +29,26 @@ export const AttendanceProvider = ({ children }) => {
     endDate: dayjs().endOf('week')
   });
   
-  // פונקציות עזר
+  // Helper functions
   const today = dayjs().format("YYYY-MM-DD");
   
-  // טעינת נתוני נוכחות ליום ספציפי
+  // Load attendance data for a specific day
   const loadTodayAttendance = useCallback(async (dateStr = today) => {
     try {
       await dispatch(fetchAttendanceByDate(dateStr));
       
-      // אתחול מצב נוכחות לפי נתונים מהשרת
+      // Initialize attendance state based on server data
       const initialAttendance = {};
       const initialReasons = {};
       
-      // הגדרת ערך התחלתי לכל הילדים
+      // Set initial value for all kids
       const activeKids = kids.filter(k => k.isActive);
       activeKids.forEach(kid => {
         initialAttendance[kid.id] = { ...initialAttendance[kid.id] };
         initialAttendance[kid.id][dateStr] = false;
       });
       
-      // עדכון מהנתונים שהתקבלו מהשרת
+      // Update based on data received from the server
       todayRecords.forEach(record => {
         if (!initialAttendance[record.kidId]) {
           initialAttendance[record.kidId] = {};
@@ -67,9 +66,9 @@ export const AttendanceProvider = ({ children }) => {
     } catch (err) {
       console.error("שגיאה בטעינת נתוני נוכחות להיום:", err);
     }
-  }, [dispatch, kids, todayRecords,today]);
+  }, [dispatch, kids, todayRecords, today]);
   
-  // שינוי מצב נוכחות של ילד
+  // Change attendance status for a kid
   const handleAttendanceChange = useCallback((kidId, dateStr = today) => {
     setAttendance(prev => {
       const updatedState = { ...prev };
@@ -87,7 +86,7 @@ export const AttendanceProvider = ({ children }) => {
     });
   }, []);
   
-  // עדכון סיבת היעדרות
+  // Update absence reason
   const handleReasonChange = useCallback((kidId, reason) => {
     setAbsenceReasons(prev => ({
       ...prev,
@@ -95,10 +94,10 @@ export const AttendanceProvider = ({ children }) => {
     }));
   }, []);
   
-  // שמירת הנוכחות לשרת
+  // Save attendance to the server
   const saveAttendance = useCallback(async (dateStr = today, classId = null) => {
     const activeKids = kids.filter(k => {
-      // אם נבחרה כיתה מסוימת, סנן רק את הילדים מאותה כיתה
+      // If a specific class is selected, filter only kids from that class
       if (classId !== null && k.classId !== classId) {
         return false;
       }
@@ -109,7 +108,7 @@ export const AttendanceProvider = ({ children }) => {
     const userId = user?.id;
     
     try {
-      // מעבר על כל הילדים ושמירה/עדכון נתונים
+      // Iterate over all kids and save/update data
       for (const kid of activeKids) {
         const existingRecord = todayRecords.find(r => r.kidId === kid.id);
         const recordId = attendance[kid.id]?.attendanceId || existingRecord?.attendanceId || 0;
@@ -124,15 +123,15 @@ export const AttendanceProvider = ({ children }) => {
         };
         
         if (recordId === 0) {
-          // יצירת רשומה חדשה
+          // Create a new record
           await dispatch(addAttendanceRecord(record));
         } else {
-          // עדכון רשומה קיימת
+          // Update an existing record
           await dispatch(updateAttendanceRecord({ id: recordId, data: record }));
         }
       }
       
-      // עדכון הנתונים המקומיים
+      // Update local data
       await loadTodayAttendance(dateStr);
       
       return true;
@@ -142,7 +141,7 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, [dispatch, kids, attendance, absenceReasons, todayRecords, loadTodayAttendance, today]);
   
-  // טעינת נתוני נוכחות לילד ספציפי בטווח תאריכים
+  // Load attendance data for a specific kid within a date range
   const loadKidAttendance = useCallback(async (kidId) => {
     if (!kidId) return null;
     
@@ -155,7 +154,7 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, [dispatch, kidRecords]);
   
-  // טעינת סיכום נוכחות חודשי
+  // Load monthly attendance summary
   const loadMonthlySummary = useCallback(async (year, month) => {
     try {
       await dispatch(fetchMonthlySummary({ year, month }));
@@ -166,7 +165,7 @@ export const AttendanceProvider = ({ children }) => {
     }
   }, [dispatch, monthlySummary]);
   
-  // עדכון טווח התאריכים
+  // Update date range
   const updateDateRange = useCallback((rangeType, startDate = null, endDate = null) => {
     const newRange = { rangeType };
     
@@ -185,7 +184,7 @@ export const AttendanceProvider = ({ children }) => {
   }, []);
   
   const value = {
-    // מצבים
+    // States
     attendance,
     absenceReasons,
     selectedDateRange,
@@ -193,7 +192,8 @@ export const AttendanceProvider = ({ children }) => {
     isLoading: status === 'loading',
     error,
     
-    // פונקציות
+
+    // Functions
     loadTodayAttendance,
     handleAttendanceChange,
     handleReasonChange,

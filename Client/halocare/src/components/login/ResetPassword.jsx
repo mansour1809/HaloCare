@@ -32,11 +32,11 @@ const ResetPassword = () => {
   const { resetPassword } = useAuth();
   
   useEffect(() => {
-    // קבלת הטוקן והאימייל מפרמטרי ה-URL
+    // Retrieve token and email from URL parameters
     const params = new URLSearchParams(location.search);
     const tokenFromUrl = params.get('token');
     const emailFromUrl = params.get('email');
-console.log("Token from URL:", tokenFromUrl);
+    console.log("Token from URL:", tokenFromUrl);
     console.log("Email from URL:", emailFromUrl);
     if (!tokenFromUrl || !emailFromUrl) {
       setError('קישור לא תקין. אנא בקש קישור חדש לאיפוס סיסמה.');
@@ -50,7 +50,7 @@ console.log("Token from URL:", tokenFromUrl);
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // בדיקת תקינות סיסמאות
+    // Validate passwords
     if (password !== confirmPassword) {
       setError('הסיסמאות לא תואמות');
       return;
@@ -65,13 +65,13 @@ console.log("Token from URL:", tokenFromUrl);
     setError('');
     
     try {
-      // שימוש בפונקציה מה-AuthContext
+      // Use the function from AuthContext
       const response = await resetPassword(email, token, password);
       
       setMessage(response.message || 'הסיסמה עודכנה בהצלחה');
       setIsSuccess(true);
       
-      // מעבר לדף ההתחברות אחרי השהייה
+      // Redirect to login page after a delay
       setTimeout(() => {
         navigate(`/login?email=${encodeURIComponent(email)}`, { replace: true });
       }, 3000);
@@ -86,7 +86,7 @@ console.log("Token from URL:", tokenFromUrl);
     }
   };
   
-  // תצוגת שגיאה אם הקישור לא תקין
+  // Display error if the link is invalid
   if (error && !token) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>

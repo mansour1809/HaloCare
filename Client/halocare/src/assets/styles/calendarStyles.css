@@ -1,8 +1,8 @@
 /* =================================================================
-   CALENDAR STYLES V7 - עיצוב מדהים ומתקדם ליומן
+   CALENDAR STYLES V7
    ================================================================= */
 
-/* קומפוננט יומן כללי */
+/* General calendar component */
 .fc {
   direction: rtl;
   text-align: right;
@@ -11,7 +11,7 @@
 }
 
 /* =================================================================
-   TOOLBAR - סרגל כלים מעוצב
+   TOOLBAR
    ================================================================= */
 .fc-toolbar {
   padding: 24px !important;
@@ -36,7 +36,7 @@
   border-radius: 20px 20px 0 0;
 }
 
-/* כותרת היומן */
+/* Calendar title */
 .fc-toolbar-title {
   font-size: 2rem !important;
   font-weight: 700 !important;
@@ -49,7 +49,7 @@
 }
 
 /* =================================================================
-   BUTTONS - כפתורים מעוצבים
+   BUTTONS - Styled buttons
    ================================================================= */
 .fc-button {
   border-radius: 16px !important;
@@ -85,7 +85,7 @@
   box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
 
-/* כפתור ראשי */
+/* Primary button */
 .fc-button-primary {
   background: linear-gradient(45deg, #667eea 30%, #764ba2 90%) !important;
   color: white !important;
@@ -97,7 +97,7 @@
   transform: translateY(-1px) !important;
 }
 
-/* כפתור היום */
+/* Today button */
 .fc-today-button:not(:disabled) {
   background: linear-gradient(45deg, #10b981 30%, #34d399 90%) !important;
   color: white !important;
@@ -108,7 +108,7 @@
   transform: translateY(-3px) scale(1.05) !important;
 }
 
-/* איקונים בכפתורים */
+/* Icons in buttons */
 .fc-icon-chevron-right::before {
   content: "▶";
   font-size: 1.2em;
@@ -120,7 +120,7 @@
 }
 
 /* =================================================================
-   HEADER - כותרות ימים
+   HEADER - Day headers
    ================================================================= */
 .fc-col-header {
   background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%) !important;
@@ -144,7 +144,7 @@
 }
 
 /* =================================================================
-   DAYS & CELLS - תאי היומן
+   DAYS & CELLS - Calendar cells
    ================================================================= */
 .fc-daygrid-day,
 .fc-timegrid-slot {
@@ -157,7 +157,7 @@
   transform: scale(1.02) !important;
 }
 
-/* היום הנוכחי */
+/* Current day */
 .fc-day-today {
   background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(52,211,153,0.1) 100%) !important;
   border: 2px solid rgba(16,185,129,0.3) !important;
@@ -175,7 +175,7 @@
 }
 
 /* =================================================================
-   TIME GRID - רשת זמנים
+   TIME GRID - Time grid styles
    ================================================================= */
 .fc-timegrid-slot {
   height: 52px !important;
@@ -191,7 +191,7 @@
 }
 
 /* =================================================================
-   EVENTS - אירועים מעוצבים
+   EVENTS - Styled events
    ================================================================= */
 .fc-event {
   border-radius: 12px !important;
@@ -228,7 +228,7 @@
   z-index: 10 !important;
 }
 
-/* תוכן האירוע */
+/* Event content */
 .fc-event-title-container {
   position: relative;
   z-index: 2;
@@ -258,7 +258,7 @@
   font-size: 0.9em;
 }
 
-/* מיקום האירוע */
+/* Event location */
 .fc-event-location {
   font-size: 0.8em !important;
   opacity: 0.85 !important;
@@ -272,7 +272,7 @@
   font-size: 1.1em !important;
 }
 
-/* משתתפים באירוע */
+/* Event participants */
 .fc-event-participants {
   font-size: 0.75em !important;
   display: flex !important;
@@ -294,7 +294,7 @@
 }
 
 /* =================================================================
-   NOW INDICATOR - מחוון זמן נוכחי
+   NOW INDICATOR - Current time indicator
    ================================================================= */
 .fc-timegrid-now-indicator-line {
   border-color: #ef4444 !important;
@@ -325,7 +325,7 @@
 }
 
 /* =================================================================
-   ANIMATIONS - אנימציות
+   ANIMATIONS
    ================================================================= */
 @keyframes pulse {
   0%, 100% {
@@ -358,13 +358,13 @@
   }
 }
 
-/* הוספת אנימציה לאירועים שנטענים */
+/* Add animation to loaded events */
 .fc-event {
   animation: fadeInUp 0.5s ease-out;
 }
 
 /* =================================================================
-   RESPONSIVE - התאמה למסכים קטנים
+   RESPONSIVE - Small screen adjustments
    ================================================================= */
 @media screen and (max-width: 768px) {
   .fc-toolbar {
@@ -421,7 +421,7 @@
 }
 
 /* =================================================================
-   DARK MODE SUPPORT - תמיכה במצב כהה
+   DARK MODE SUPPORT
    ================================================================= */
 @media (prefers-color-scheme: dark) {
   .fc-toolbar {
@@ -451,7 +451,7 @@
 }
 
 /* =================================================================
-   FIXES & OVERRIDES - תיקונים והחלפות
+   FIXES & OVERRIDES
    ================================================================= */
 .muirtl-1qw2a80-MuiGrid-root > .MuiGrid-item {
   padding-top: 24px !important;
@@ -461,7 +461,7 @@
   z-index: 2000 !important; 
 }
 
-/* תיקון z-index לדיאלוגים */
+/* Fix z-index for dialogs */
 .fc-popover {
   z-index: 1500 !important;
   border-radius: 12px !important;
@@ -470,13 +470,13 @@
   backdrop-filter: blur(20px) !important;
 }
 
-/* עיצוב מותאם לסלקטורים */
+/* Custom styling for selectors */
 .fc-daygrid-event-harness {
   margin-top: 2px !important;
   margin-bottom: 2px !important;
 }
 
-/* הסתרת גבולות מיותרים */
+/* Hide unnecessary borders */
 .fc-scrollgrid {
   border: none !important;
 }
@@ -485,7 +485,7 @@
   border-color: rgba(0,0,0,0.05) !important;
 }
 
-/* עיצוב מיוחד לאירועים ארוכים */
+/* Special styling for long events */
 .fc-daygrid-event.fc-event-start,
 .fc-daygrid-event.fc-event-end {
   border-radius: 12px !important;
@@ -498,7 +498,7 @@
 }
 
 /* =================================================================
-   ACCESSIBILITY - נגישות
+   ACCESSIBILITY
    ================================================================= */
 .fc-event:focus {
   outline: 3px solid #818cf8 !important;
@@ -510,7 +510,7 @@
   outline-offset: 2px !important;
 }
 
-/* עיצוב מותאם להדפסה */
+/* Custom styling for print */
 @media print {
   .fc-toolbar {
     background: white !important;

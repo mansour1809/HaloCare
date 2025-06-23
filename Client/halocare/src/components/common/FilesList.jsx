@@ -1,4 +1,4 @@
-// src/components/common/FilesList.jsx - מעודכן עם תמיכה בסינון
+// src/components/common/FilesList.jsx - Updated with filtering support
 
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDocumentsByEntityId, deleteDocument, clearDocuments } from '../../Redux/features/documentsSlice';
@@ -23,13 +23,13 @@ const FilesList = ({
   onDelete,
   openDialog,
   closeDialog,
-  filterByType = null,        // 🔥 חדש - סינון לפי סוג מסמך ('profile', 'document', או null לכל הסוגים)
-  compact = false,            // 🔥 חדש - מצב קומפקטי
-  maxHeight = null            // 🔥 חדש - גובה מקסימלי
+  filterByType = null,        // 🔥 New - Filter by document type ('profile', 'document', or null for all types)
+  compact = false,            // 🔥 New - Compact mode
+  maxHeight = null            // 🔥 New - Maximum height
 }) => {
   const dispatch = useDispatch();
   
-  // קבלת נתונים מהרדקס
+  // Fetching data from Redux
   const documents = useSelector((state) => state.documents.documents);
   const status = useSelector((state) => state.documents.status);
   const error = useSelector((state) => state.documents.error);
@@ -40,7 +40,7 @@ const FilesList = ({
     }
   }, [entityId, entityType, dispatch, status]);
 
-  // 🔥 סינון מסמכים לפי סוג
+  // 🔥 Filtering documents by type
   const filteredDocuments = filterByType 
     ? documents.filter(doc => doc.docType === filterByType)
     : documents;
@@ -118,7 +118,7 @@ const FilesList = ({
     }
   };
 
-  // החזרת אייקון לפי סוג המסמך
+  // Returning an icon based on the document type
   const getFileIcon = (contentType, docType) => {
     if (
       contentType?.includes("image") ||
@@ -132,7 +132,7 @@ const FilesList = ({
     return <FileIcon color="info" />;
   };
 
-  // 🔥 קבלת תווית סוג מסמך
+  // 🔥 Getting document type label
   const getDocTypeLabel = (docType) => {
     switch (docType) {
       case 'profile':
@@ -144,7 +144,7 @@ const FilesList = ({
     }
   };
 
-  // תצוגת טעינה
+  // Loading view
   if (status === "loading") {
     return (
       <Box display="flex" justifyContent="center" p={2}>
@@ -156,7 +156,7 @@ const FilesList = ({
     );
   }
 
-  // תצוגת שגיאה
+  // Error view
   if (status === "failed") {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
@@ -166,7 +166,7 @@ const FilesList = ({
     );
   }
 
-  // אין מסמכים
+  // No documents
   if (!filteredDocuments || filteredDocuments.length === 0) {
     const messageByFilter = filterByType === 'profile' 
       ? 'אין תמונות פרופיל'
@@ -188,7 +188,7 @@ const FilesList = ({
     );
   }
 
-  // 🔥 תצוגה קומפקטית
+  // 🔥 Compact view
   if (compact) {
     return (
       <Box sx={{ maxHeight: maxHeight || 200, overflow: 'auto' }}>
@@ -257,7 +257,7 @@ const FilesList = ({
     );
   }
 
-  // תצוגת טבלה מלאה
+  // Full table view
   return (
     <TableContainer 
       component={Paper} 

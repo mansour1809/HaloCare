@@ -1,10 +1,10 @@
-// src/components/common/FileUploader.jsx - מורחב עם תמיכה משופרת בילדים
+// src/components/common/FileUploader.jsx - Extended with improved child support
 
 import React, { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Swal from 'sweetalert2';
 import { 
-  Box, Button, Typography, Paper, Chip, Alert, CircularProgress,
+  Box, Button, Typography, Paper, Alert, CircularProgress,
   IconButton, Grid, Card, CardContent, LinearProgress, Fade
 } from '@mui/material';
 import { 
@@ -22,11 +22,11 @@ const FileUploader = ({
   maxSize = 5 * 1024 * 1024,
   buttonText = 'בחר קובץ',
   showPreview = true,
-  allowMultiple = false,      // 🔥 חדש - אפשרות להעלות מספר קבצים
-  title = 'העלאת קובץ',        // 🔥 חדש - כותרת מותאמת
-  compact = false,            // 🔥 חדש - מצב קומפקטי
-  dragAndDrop = false,        // 🔥 חדש - drag & drop
-  maxFiles = 5               // 🔥 חדש - מספר מקסימלי של קבצים
+  allowMultiple = false,      // 🔥 New - Option to upload multiple files
+  title = 'העלאת קובץ',      // 🔥 New - Custom title
+  compact = false,            // 🔥 New - Compact mode
+  dragAndDrop = false,        // 🔥 New - Drag & drop
+  maxFiles = 5                // 🔥 New - Maximum number of files
 }) => {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
@@ -39,14 +39,14 @@ const FileUploader = ({
   const [uploadProgress, setUploadProgress] = useState({});
   const [dragOver, setDragOver] = useState(false);
 
-  // בדיקת תקינות קובץ
+  // Validate file
   const validateFile = (file) => {
-    // בדיקת גודל
+    // Check size
     if (file.size > maxSize) {
       return `הגודל המקסימלי המותר הוא ${Math.round(maxSize / 1024 / 1024)} MB`;
     }
 
-    // בדיקת סוג קובץ
+    // Check file type
     if (allowedTypes !== '*' && !file.type.match(allowedTypes)) {
       return `יש להעלות רק קבצים מסוג ${allowedTypes}`;
     }
@@ -54,12 +54,12 @@ const FileUploader = ({
     return null;
   };
 
-  // טיפול בבחירת קבצים
+  // Handle file selection
   const handleFileChange = (files) => {
     setError(null);
     const fileArray = Array.from(files);
     
-    // בדיקת מספר קבצים
+    // Check number of files
     if (!allowMultiple && fileArray.length > 1) {
       setError('ניתן לבחור קובץ אחד בלבד');
       return;
@@ -70,7 +70,7 @@ const FileUploader = ({
       return;
     }
 
-    // בדיקת תקינות כל קובץ
+    // Validate each file
     const validFiles = [];
     const newPreviews = [];
 
@@ -83,7 +83,7 @@ const FileUploader = ({
 
       validFiles.push(file);
 
-      // יצירת תצוגה מקדימה לתמונות
+      // Create preview for images
       if (file.type.startsWith('image/') && showPreview) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -110,14 +110,14 @@ const FileUploader = ({
     }
   };
 
-  // קבלת סוג קובץ לאייקון
+  // Get file type for icon
   const getFileType = (mimeType) => {
     if (mimeType.includes('pdf')) return 'pdf';
     if (mimeType.includes('image')) return 'image';
     return 'file';
   };
 
-  // קבלת אייקון לפי סוג קובץ
+  // Get icon based on file type
   const getFileIcon = (type) => {
     switch (type) {
       case 'pdf':
@@ -129,7 +129,7 @@ const FileUploader = ({
     }
   };
 
-  // הסרת קובץ מהרשימה
+  // Remove file from list
   const removeFile = (index) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
@@ -140,7 +140,7 @@ const FileUploader = ({
     });
   };
 
-  // העלאת הקבצים
+  // Upload files
   const handleUpload = async () => {
     if (selectedFiles.length === 0 || !entityId) {
       setError("נא לבחור קבצים ולוודא שיש מזהה ישות");
@@ -164,7 +164,7 @@ const FileUploader = ({
           file: file
         };
 
-        // סימולציה של התקדמות (במציאות זה יגיע מה-request)
+        // Simulate progress (in reality, this would come from the request)
         const progressInterval = setInterval(() => {
           setUploadProgress(prev => ({
             ...prev,
@@ -185,13 +185,13 @@ const FileUploader = ({
 
       const results = await Promise.all(uploadPromises);
       
-      // איפוס הטופס
+      // Reset form
       setSelectedFiles([]);
       setPreviews([]);
       setUploadProgress({});
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      // הודעת הצלחה
+      // Success message
       Swal.fire({
         icon: 'success',
         title: 'הקבצים הועלו בהצלחה',
@@ -200,7 +200,7 @@ const FileUploader = ({
         showConfirmButton: false
       });
       
-      // קריאה לפונקציית קולבק
+      // Callback function
       if (onSuccess) onSuccess(results);
       
     } catch (err) {
@@ -240,7 +240,7 @@ const FileUploader = ({
     }
   };
 
-  // רכיב קומפקטי
+  // Compact component
   if (compact) {
     return (
       <Box sx={{ p: 2, border: '1px dashed #ccc', borderRadius: 2, textAlign: 'center' }}>
@@ -283,7 +283,7 @@ const FileUploader = ({
     );
   }
 
-  // רכיב מלא
+  // Full component
   return (
     <Paper 
       elevation={1} 
@@ -308,7 +308,7 @@ const FileUploader = ({
         </Alert>
       )}
       
-      {/* אזור בחירת קבצים */}
+      {/* File selection area */}
       <Box 
         sx={{ 
           textAlign: 'center', 
@@ -343,7 +343,7 @@ const FileUploader = ({
         />
       </Box>
 
-      {/* רשימת קבצים נבחרים */}
+      {/* Selected files list */}
       {selectedFiles.length > 0 && (
         <Fade in={true}>
           <Box sx={{ mt: 3 }}>
@@ -356,7 +356,7 @@ const FileUploader = ({
                 <Grid item xs={12} sm={6} md={4} key={index}>
                   <Card variant="outlined" sx={{ position: 'relative' }}>
                     <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                      {/* אייקון/תמונה */}
+                      {/* Icon/Image */}
                       {preview.preview ? (
                         <img 
                           src={preview.preview} 
@@ -371,7 +371,7 @@ const FileUploader = ({
                         getFileIcon(preview.type)
                       )}
                       
-                      {/* שם קובץ */}
+                      {/* File name */}
                       <Typography 
                         variant="caption" 
                         display="block" 
@@ -380,12 +380,12 @@ const FileUploader = ({
                         {preview.file.name}
                       </Typography>
                       
-                      {/* גודל קובץ */}
+                      {/* File size */}
                       <Typography variant="caption" color="text.secondary">
                         {Math.round(preview.file.size / 1024)} KB
                       </Typography>
                       
-                      {/* בר התקדמות */}
+                      {/* Progress bar */}
                       {uploadProgress[index] !== undefined && (
                         <Box sx={{ mt: 1 }}>
                           <LinearProgress 
@@ -399,7 +399,7 @@ const FileUploader = ({
                         </Box>
                       )}
                       
-                      {/* כפתור מחיקה */}
+                      {/* Delete button */}
                       {!loading && (
                         <IconButton
                           size="small"
@@ -415,7 +415,7 @@ const FileUploader = ({
                         </IconButton>
                       )}
                       
-                      {/* אייקון הצלחה */}
+                      {/* Success icon */}
                       {uploadProgress[index] === 100 && (
                         <CheckIcon 
                           sx={{ 
@@ -435,7 +435,7 @@ const FileUploader = ({
         </Fade>
       )}
 
-      {/* כפתור העלאה */}
+      {/* Upload button */}
       {selectedFiles.length > 0 && (
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Button

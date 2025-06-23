@@ -32,7 +32,7 @@ import AttendanceAnalytics from "./AttendanceAnalytics";
 import Swal from "sweetalert2";
 import { baseURL } from "../../components/common/axiosConfig";
 
-// כרטיס ראשי מעוצב
+// Styled main card
 const MainCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
@@ -53,7 +53,7 @@ const MainCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כרטיס כיתה מעוצב
+// Styled class card
 const ClassCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(10px)',
@@ -79,7 +79,7 @@ const ClassCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כפתור ניווט מעוצב
+// Styled navigation button
 const NavButton = styled(IconButton)(({ theme }) => ({
   background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
   color: 'white',
@@ -100,7 +100,7 @@ const NavButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
-// כפתור שמירה מעוצב
+// Styled save button
 const SaveButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -121,14 +121,14 @@ const SaveButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// תא נוכחות מעוצב
+// Styled attendance cell
 const AttendanceCell = styled(TableCell)(({ theme }) => ({
   padding: '16px',
   textAlign: 'center',
   position: 'relative',
 }));
 
-// Checkbox מעוצב
+// Styled checkbox
 const StyledCheckbox = styled(Checkbox)(({ theme }) => ({
   '&.Mui-checked': {
     transform: 'scale(1.2)',
@@ -142,7 +142,7 @@ const StyledCheckbox = styled(Checkbox)(({ theme }) => ({
   transition: 'all 0.3s ease',
 }));
 
-// דיאלוג מעוצב
+// Styled dialog
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
     borderRadius: 20,
@@ -177,29 +177,29 @@ const AttendanceMarking = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
   
-  // מצבים חדשים
+  // New states
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedClass, setSelectedClass] = useState('all');
   
-  // טעינת נתוני נוכחות ליום הנבחר
+  // Load attendance data for the selected day
   useEffect(() => {
     loadTodayAttendance(selectedDate.format('YYYY-MM-DD'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
   
-  // פונקציה למעבר בין ימים
+  // Function to switch between days
   const changeDay = (days) => {
     setSelectedDate(prevDate => prevDate.add(days, 'day'));
   };
   
-  // פתיחת דיאלוג סיבות היעדרות
+  // Open absence reasons dialog
   const handleSaveClick = (classId = null) => {
     setSelectedClass(classId === null ? 'all' : classId.toString());
     setOpenDialog(true);
   };
   
-  // שמירת הנוכחות לשרת
+  // Save attendance to the server
   const handleDialogConfirm = async () => {
     setLoadingSave(true);
     try {
@@ -236,11 +236,11 @@ const AttendanceMarking = () => {
     }
   };
   
-  // קבוצות ילדים לפי כיתה
+  // Groups of kids by class
   const class1 = kids?.filter(k => k.classId === 1 && k.isActive) || [];
   const class2 = kids?.filter(k => k.classId === 2 && k.isActive) || [];
   
-  // חישוב סטטיסטיקות נוכחות
+  // Calculate attendance statistics
   const getAttendanceStats = (classKids) => {
     const currentDate = selectedDate.format("YYYY-MM-DD");
     const present = classKids.filter(kid => attendance[kid.id]?.[currentDate]).length;
@@ -250,7 +250,7 @@ const AttendanceMarking = () => {
     return { present, total, percentage };
   };
   
-  // יצירת טבלת נוכחות לכיתה
+  // Create attendance table for a class
   const renderTable = (classKids, title, classId) => {
     const currentDate = selectedDate.format("YYYY-MM-DD");
     const stats = getAttendanceStats(classKids);
@@ -259,7 +259,7 @@ const AttendanceMarking = () => {
       <Fade in timeout={800 + (classId * 200)}>
         <ClassCard>
           <CardContent sx={{ p: 2 }}>
-            {/* כותרת כיתה עם סטטיסטיקות */}
+            {/* Class header with statistics */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar sx={{ 
@@ -373,7 +373,7 @@ const AttendanceMarking = () => {
     );
   };
   
-  // הצגת בחירת תאריך
+  // Display date picker
   const renderDatePicker = () => (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="he">
       <StyledDialog open={showDatePicker} onClose={() => setShowDatePicker(false)}>
@@ -427,12 +427,12 @@ const AttendanceMarking = () => {
   
   return (
     <Box>
-      {/* כרטיס ניווט תאריכים */}
+      {/* Date navigation card */}
       <Fade in timeout={500}>
         <MainCard sx={{ mb: 3 }}>
           <CardContent sx={{ p: 3 }}>
             <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
-              {/* מידע על התאריך */}
+              {/* Date information */}
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar sx={{ 
                   background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -480,7 +480,7 @@ const AttendanceMarking = () => {
                 </Tooltip>
               </Stack>
               
-              {/* כפתורי ניווט */}
+              {/* Navigation buttons */}
               <Stack direction="row" spacing={1} alignItems="center">
                 <Tooltip title="יום קודם" arrow>
                   <NavButton onClick={() => changeDay(-1)}>
@@ -518,7 +518,7 @@ const AttendanceMarking = () => {
         </MainCard>
       </Fade>
       
-      {/* טבלאות כיתות */}
+      {/* Class tables */}
       <Grid container spacing={3}>
         <Grid item xs={12} lg={6}>
           {renderTable(class1, "כיתה א'", 1)}
@@ -528,7 +528,7 @@ const AttendanceMarking = () => {
         </Grid>
       </Grid>
       
-      {/* כפתור שמירה כללי */}
+      {/* General save button */}
       <Zoom in timeout={1200}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <SaveButton
@@ -548,7 +548,7 @@ const AttendanceMarking = () => {
         </Box>
       </Zoom>
       
-      {/* גרף מיני בדף הבית */}
+      {/* Mini attendance analytics card */}
       <Fade in timeout={1400}>
         <Card sx={{ 
           mt: 4,
@@ -589,7 +589,7 @@ const AttendanceMarking = () => {
         </Card>
       </Fade>
       
-      {/* דיאלוג סיבות היעדרות */}
+      {/* Absence reasons dialog */}
       <StyledDialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ textAlign: 'center', pt: 4 }}>
           <Avatar sx={{ 
@@ -698,7 +698,7 @@ const AttendanceMarking = () => {
         </DialogActions>
       </StyledDialog>
       
-      {/* רכיב בחירת תאריך */}
+      {/* Date picker component */}
       {renderDatePicker()}
     </Box>
   );

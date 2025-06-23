@@ -28,8 +28,8 @@ const LoginPage = () => {
     showForgotPassword, 
     setShowForgotPassword, 
     message, 
-    isSubmitting ,
-    setEmail: setAuthEmail  // Rename to avoid conflict with local state
+    isSubmitting,
+    setEmail: setAuthEmail // Rename to avoid conflict with local state
   } = useAuth();
   
   const passwordRef = useRef(null);
@@ -43,10 +43,10 @@ const LoginPage = () => {
   useEffect(() => {
     // Clear localStorage when user navigates to the login page
     localStorage.clear();
-  const hash = window.location.hash; 
-  const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-  const params = new URLSearchParams(queryString);
-  const emailParam = params.get('email');
+    const hash = window.location.hash; 
+    const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+    const params = new URLSearchParams(queryString);
+    const emailParam = params.get('email');
 
     if (emailParam) {
       setEmail(emailParam);
@@ -57,7 +57,7 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
     
-    // בדיקת אימות בסיסית
+    // Basic validation check
     if (!email || !password) {
       setError('יש להזין אימייל וסיסמה');
       return;
@@ -67,12 +67,12 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // התחברות
+      // Login
       await login(email, password);
       
-      // הצגת הודעת הצלחה
+      // Show success message
       setOpenSnackbar(true);
-      // ניווט לדף הבית אחרי התחברות מוצלחת
+      // Navigate to the home page after successful login
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 1000);
@@ -83,11 +83,11 @@ const LoginPage = () => {
     }
   };
 
-  // העברת האימייל ל-context לפני פתיחת הדיאלוג
+  // Pass the email to the context before opening the dialog
   const handleForgotPasswordClick = () => {
-    // עדכון האימייל ב-context
+    // Update the email in the context
     setAuthEmail(email);
-    // פתיחת הדיאלוג
+    // Open the dialog
     setShowForgotPassword(true);
   };
 
@@ -178,7 +178,7 @@ const LoginPage = () => {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            inputRef={passwordRef} //  focuses the input
+            inputRef={passwordRef} // Focuses the input
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -209,8 +209,7 @@ const LoginPage = () => {
               color="primary"
               sx={{ cursor: "pointer" }}
               onClick={handleForgotPasswordClick}
-            >
-              שכחת סיסמה?
+            >שכחת סימה
             </Typography>
           </Box>
 
@@ -229,7 +228,7 @@ const LoginPage = () => {
               textTransform: "none",
             }}
           >
-            {loading ? "מתחבר..." : "התחבר"}
+            {loading ? "...מעביר אותך" : "התחבר"}
           </Button>
         </Paper>
       </Box>
@@ -241,14 +240,14 @@ const LoginPage = () => {
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
-          התחברת בהצלחה! מעביר אותך...
+          Successfully logged in! Redirecting...
         </Alert>
       </Snackbar>
 
 
-      {/* דיאלוג איפוס סיסמה - מועבר ל-AuthContext */}
-      <Dialog  open={showForgotPassword} onClose={() => setShowForgotPassword(false)}  fullWidth >  
-        <DialogTitle>איפוס סיסמה</DialogTitle>
+      {/* Password reset dialog - handled in AuthContext */}
+      <Dialog open={showForgotPassword} onClose={() => setShowForgotPassword(false)} fullWidth>
+        <DialogTitle>Password Reset</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -272,9 +271,9 @@ const LoginPage = () => {
           >
             {isSubmitting ? <CircularProgress size={24} /> : 'שלח'}
           </Button>
-        </DialogActions>
+שלח         </DialogActions>
       </Dialog>
-      </Box>
+    </Box>
   );
 };
 

@@ -3,27 +3,25 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import axios from '../../components/common/axiosConfig';
 import PropTypes from 'prop-types';
 
-// יצירת קונטקסט
+// Creating the context
 export const AuthContext = createContext(null);
 
-// הוק שימושי לגישה לקונטקסט
+// Useful hook for accessing the context
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  // משתני מצב להתחברות
+  // State variables for authentication
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // משתני מצב לאיפוס סיסמה
+  // State variables for password reset
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-
-
-  // בדיקת אם המשתמש מחובר בטעינה הראשונית
+  // Check if the user is logged in during the initial load
   useEffect(() => {
     const initAuth = () => {
       try {
@@ -51,13 +49,13 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // פונקציית התחברות
+  // Login function
   const login = async (email, password) => {
     try {
       const response = await axios.post(`/auth/login`, { email, password });
       
       if (response.data && response.data.token) {
-        // שמירה ב-localStorage
+        // Save to localStorage
         localStorage.setItem('token', response.data.token);
         const userData = {
           id: response.data.id,
@@ -68,10 +66,9 @@ export const AuthProvider = ({ children }) => {
         };
         localStorage.setItem('user', JSON.stringify(userData));
         
-        // עדכון המצב
+        // Update state
         setCurrentUser(userData);
         setIsAuthenticated(true);
-
       }
       
       return response.data;
@@ -81,20 +78,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // פונקציית התנתקות
+  // Logout function
   const logout = () => {
-    // ניקוי localStorage
+    // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setCurrentUser(null);
     setIsAuthenticated(false);
-    // window.location.href = '/bgroup3/test2/halocare/#/login';
+// window.location.href = '/bgroup3/test2/halocare/#/login';
     window.location.href = '/#/login';
   };
 
-  // פונקציה לבקשת איפוס סיסמה
+  // Function to request password reset
   const handleRequestPasswordReset = async (emailToReset) => {
-    // השתמש באימייל שהועבר כפרמטר, אם לא קיים השתמש במצב האימייל הפנימי
+    // Use the email passed as a parameter, if not available use the internal email state
     const emailToUse = emailToReset || email;
     
     if (!emailToUse) {
@@ -106,19 +103,19 @@ export const AuthProvider = ({ children }) => {
     setMessage('');
     
     try {
-      // קריאה לשרת לבקשת איפוס סיסמה
-      const response = await axios.post('/Auth/request-password-reset',{ email: emailToUse });
+      // Call the server to request password reset
+      const response = await axios.post('/Auth/request-password-reset', { email: emailToUse });
       
-      // הצגת הודעת הצלחה
+      // Display success message
       setMessage(response.data.message || 'קישור לאיפוס סיסמה נשלח למייל');
       
-      // סגירת הדיאלוג אחרי השהייה
+      // Close the dialog after a delay
       setTimeout(() => {
         setShowForgotPassword(false);
         setMessage('');
       }, 3000);
     } catch (error) {
-      // הצגת הודעת שגיאה
+      // Display error message
       setMessage(
         error.response?.data?.message || 
         'אירעה שגיאה בשליחת בקשת איפוס סיסמה'
@@ -128,7 +125,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // פונקציה לאיפוס הסיסמה עצמה (תשומש בעמוד איפוס הסיסמה)
+  // Function to reset the password itself (used on the password reset page)
   const resetPassword = async (email, token, newPassword) => {
     try {
       const response = await axios.post('/Auth/reset-password', {
@@ -144,18 +141,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // נתונים שיהיו זמינים בקונטקסט
+  // Data that will be available in the context
   const value = {
-    // מצב התחברות
+    // Authentication state
     currentUser,
     isAuthenticated,
     loading,
     
-    // פונקציות התחברות/התנתקות
+    // Login/logout functions
     login,
     logout,
     
-    // מצב איפוס סיסמה
+    // Password reset state
     email,
     setEmail,
     isSubmitting,
@@ -163,7 +160,7 @@ export const AuthProvider = ({ children }) => {
     showForgotPassword,
     setShowForgotPassword,
     
-    // פונקציות איפוס סיסמה
+    // Password reset functions
     handleRequestPasswordReset,
     resetPassword
   };

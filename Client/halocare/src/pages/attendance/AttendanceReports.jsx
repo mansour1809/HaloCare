@@ -31,13 +31,13 @@ import { useAttendance } from "../../components/context/AttendanceContext";
 import { generateAttendanceReport } from '../../utils/pdfGenerator';
 import 'dayjs/locale/he';
 
-// רכיבי גרף
+// Graph components
 import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 import { fetchAttendanceByKidId } from "../../Redux/features/attendanceSlice";
 import { useDispatch } from "react-redux";
 import Swal from 'sweetalert2';
 
-// תמה מדהימה לדוחות
+// Amazing theme for reports
 const reportsTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -105,10 +105,10 @@ const reportsTheme = createTheme({
   }
 });
 
-// מערך צבעים מעוצבים לגרפים
+// Styled color array for graphs
 const COLORS = ['#10b981', '#ef4444'];
 
-// כרטיס בקרה מעוצב
+// Styled control card
 const ControlCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
@@ -129,7 +129,7 @@ const ControlCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כרטיס דוח מעוצב
+// Styled report card
 const ReportCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -150,7 +150,7 @@ const ReportCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כפתור מעוצב עם זוהר
+// Styled glowing button
 const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   borderRadius: 16,
   fontWeight: 600,
@@ -177,7 +177,7 @@ const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   }
 }));
 
-// Select מעוצב
+// Styled select
 const StyledSelect = styled(Select)(({ theme }) => ({
   borderRadius: 16,
   background: 'rgba(255, 255, 255, 0.9)',
@@ -202,7 +202,7 @@ const StyledSelect = styled(Select)(({ theme }) => ({
   }
 }));
 
-// כרטיס סטטיסטיקה מעוצב
+// Styled statistics card
 const StatCard = styled(Card)(({ borderColor }) => ({
   height: '100%',
   borderRadius: 16,
@@ -228,7 +228,7 @@ const StatCard = styled(Card)(({ borderColor }) => ({
   }
 }));
 
-// קומפוננטה לצפייה בתוכן הדוח
+// Component for viewing report content
 const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
   const theme = useTheme();
 
@@ -239,13 +239,13 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
   const absent = total - present;
   const percent = total > 0 ? Math.round((present / total) * 100) : 0;
   
-  // הכנת נתונים לגרף פאי
+  // Prepare data for pie chart
   const pieData = [
     { name: 'נוכחות', value: present },
     { name: 'היעדרות', value: absent }
   ];
   
-  // הכנת נתונים לגרף מגמות
+  // Prepare data for trend chart
   const trendData = [];
   let currentDate = dayjs(startDate);
   const endDateObj = dayjs(endDate);
@@ -264,7 +264,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     currentDate = currentDate.add(1, 'day');
   }
   
-  // ניתוח רצף נוכחות
+  // Analyze attendance streaks
   let longestStreak = 0;
   let currentStreak = 0;
   let recentTrend = null;
@@ -284,7 +284,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     }
   });
   
-  // ניתוח דפוסי היעדרות
+  // Analyze absence patterns
   const absencesByReason = {};
   attendanceRecords.filter(r => !r.isPresent).forEach(record => {
     const reason = record.absenceReason || 'לא צוין';
@@ -295,7 +295,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     <Fade in timeout={800}>
       <ReportCard sx={{ mt: 3 }}>
         <CardContent sx={{ p: 0 }}>
-          {/* כותרת הדוח */}
+          {/* Report title */}
           <Box sx={{ 
             p: 4, 
             background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(16,185,129,0.1) 100%)',
@@ -342,7 +342,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             
             <Divider sx={{ mb: 3 }} />
             
-            {/* גרפים */}
+            {/* Graphs */}
             <Grid container spacing={4}>
               <Grid item xs={12} md={6}>
                 <Box sx={{ textAlign: 'center' }}>
@@ -418,7 +418,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             </Grid>
           </Box>
           
-          {/* סטטיסטיקות מפורטות */}
+          {/* Detailed statistics */}
           <Box sx={{ p: 4 }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
               סיכום נתונים
@@ -511,7 +511,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               </Grid>
             </Grid>
             
-            {/* ניתוח נוסף */}
+            {/* Additional analysis */}
             {total > 0 && (
               <Box sx={{ mt: 4 }}>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
@@ -621,7 +621,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               </Box>
             )}
             
-            {/* טבלת הנוכחות */}
+            {/* Attendance table */}
             <Box sx={{ mt: 4 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
                 פירוט נוכחות יומי
@@ -729,7 +729,7 @@ const AttendanceReports = () => {
   
   const theme = useTheme();
   
-  // עדכון הילד הנבחר לדוח
+  // Update selected child for report
   useEffect(() => {
     if (childId && kids?.length > 0) {
       const child = kids.find(k => k.id.toString() === childId);
@@ -739,7 +739,7 @@ const AttendanceReports = () => {
     }
   }, [childId, kids]);
   
-  // עדכון תאריכים לפי הטווח הנבחר
+  // Update dates based on selected range
   useEffect(() => {
     if (rangeType === "week") {
       setStartDate(dayjs().startOf("week"));
@@ -754,7 +754,7 @@ const AttendanceReports = () => {
     }
   }, [rangeType, updateDateRange]);
   
-  // טעינת נתוני נוכחות לדוח
+  // Load attendance data for report
   const fetchAttendanceData = async () => {
     if (!childId || !startDate || !endDate) {
       Swal.fire({
@@ -781,7 +781,7 @@ const AttendanceReports = () => {
     try {
       const data = await loadKidAttendance(childId);
       
-      // סינון לפי טווח תאריכים
+      // Filter by date range
       const filteredData = data?.filter(record => {
         const recordDate = dayjs(record.attendanceDate);
         return (!startDate || recordDate.isAfter(startDate.startOf('day')) || recordDate.isSame(startDate.startOf('day'), 'day')) && 
@@ -804,7 +804,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // יצירת תצוגה מקדימה של הדוח
+  // Generate report preview
   const handlePreviewReport = async () => {
     const data = await fetchAttendanceData();
     if (data?.length > 0 && selectedChild) {
@@ -819,7 +819,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // יצירת דוח והורדתו
+  // Generate and download report
   const handleGenerateReport = async () => {
     try {
       if (!attendanceData.length && !showPreview) {
@@ -857,7 +857,7 @@ const AttendanceReports = () => {
     <ThemeProvider theme={reportsTheme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="he">
         <Box>
-          {/* כרטיס בקרה */}
+          {/* Control Card */}
           <Fade in timeout={500}>
             <ControlCard>
               <CardContent sx={{ p: 4 }}>
@@ -1046,7 +1046,7 @@ const AttendanceReports = () => {
             </ControlCard>
           </Fade>
 
-          {/* תצוגה מקדימה של הדוח */}
+          {/* Report Preview */}
           {showPreview && attendanceData.length > 0 && (
             <ReportPreview 
               child={selectedChild}
@@ -1056,7 +1056,7 @@ const AttendanceReports = () => {
             />
           )}
           
-          {/* הודעה כשאין נתונים */}
+          {/* No data message */}
           {showPreview && attendanceData.length === 0 && (
             <Fade in>
               <Card sx={{ 

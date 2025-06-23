@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  Typography, Box, Tabs, Tab, Container, Card, CardContent,
+  Typography, Box, Container, Card, CardContent,
   Fade, Zoom, Avatar, Stack, Chip, useTheme, alpha
 } from "@mui/material";
 import { 
@@ -19,7 +19,7 @@ import AttendanceMarking from "./AttendanceMarking";
 import AttendanceReports from "./AttendanceReports";
 import AttendanceAnalytics from "./AttendanceAnalytics";
 
-// תמה מדהימה למערכת נוכחות
+// Amazing theme for the attendance system
 const attendanceTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -127,7 +127,7 @@ const attendanceTheme = createTheme({
   }
 });
 
-// קונטיינר עם רקע מדהים
+// Container with an amazing background
 const GradientContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #10b981 100%)',
@@ -135,7 +135,7 @@ const GradientContainer = styled(Container)(({ theme }) => ({
   paddingBottom: theme.spacing(4),
 }));
 
-// כותרת ראשית מעוצבת
+// Styled main header
 const MainHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   marginBottom: theme.spacing(4),
@@ -153,36 +153,7 @@ const MainHeader = styled(Box)(({ theme }) => ({
   }
 }));
 
-// // טאב מעוצב עם אייקון
-// const TabWithIcon = ({ icon, label, ...props }) => {
-//   return (
-//     <Tab
-//       icon={
-//         <Avatar sx={{ 
-//           background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
-//           width: 32,
-//           height: 32,
-//           mb: 1
-//         }}>
-//           {icon}
-//         </Avatar>
-//       }
-//       label={
-//         <Typography variant="subtitle1" fontWeight={600}>
-//           {label}
-//         </Typography>
-//       }
-//       sx={{ 
-//         flexDirection: 'column',
-//         minWidth: 190,
-//         padding: '16px 24px'
-//       }}
-//       {...props}
-//     />
-//   );
-// };
-
-// כרטיס תוכן מעוצב
+// Styled content card
 const ContentCard = styled(Card)(({ theme }) => ({
   marginTop: theme.spacing(3),
   '&::before': {
@@ -196,7 +167,7 @@ const AttendanceDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // טעינת רשימת הילדים
+  // Load the list of kids
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -211,12 +182,12 @@ const AttendanceDashboard = () => {
     loadData();
   }, [dispatch]);
 
-  // מעבר בין טאבים
+  // Handle tab switching
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // נתוני הטאבים
+  // Tab data
   const tabs = [
     { 
       icon: <AttendanceIcon />, 
@@ -267,7 +238,7 @@ const AttendanceDashboard = () => {
     <ThemeProvider theme={attendanceTheme}>
       <AttendanceProvider>
         <GradientContainer maxWidth="xl" dir="rtl">
-          {/* כותרת ראשית */}
+          {/* Main header */}
           <Fade in timeout={800}>
             <MainHeader>
               <Typography
@@ -301,7 +272,7 @@ const AttendanceDashboard = () => {
             </MainHeader>
           </Fade>
 
-          {/* סקירה כללית של הטאבים */}
+          {/* Overview of tabs */}
           <Zoom in timeout={1000}>
             <Card sx={{ mb: 4 }}>
               <CardContent sx={{ p: 3 }}>
@@ -370,54 +341,25 @@ const AttendanceDashboard = () => {
             </Card>
           </Zoom>
           
-          {/* טאבים מעוצבים */}
-          {/* <Zoom in timeout={1200}>
-            <Card sx={{ mb: 3 }}>
-              <CardContent sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <Tabs 
-                    value={tabValue} 
-                    onChange={handleTabChange}
-                    variant="fullWidth"
-                    sx={{ minWidth: 400 }}
-                  >
-                    <TabWithIcon
-                      icon={<AttendanceIcon />}
-                      label="סימון נוכחות"
-                    />
-                    <TabWithIcon
-                      icon={<ReportsIcon />}
-                      label="דוחות נוכחות"
-                    />
-                    <TabWithIcon
-                      icon={<AnalyticsIcon />}
-                      label="אנליטיקה"
-                    />
-                  </Tabs>
-                </Box>
-              </CardContent>
-            </Card>
-          </Zoom> */}
-
-          {/* תוכן הטאבים */}
+          {/* Tab content */}
           <Fade in timeout={1400}>
             <ContentCard>
               <CardContent sx={{ p: 0 }}>
-                {/* תוכן טאב סימון נוכחות */}
+                {/* Tab content for marking attendance */}
                 {tabValue === 0 && (
                   <Box sx={{ p: 3 }}>
                     <AttendanceMarking />
                   </Box>
                 )}
 
-                {/* תוכן טאב דוחות */}
+                {/* Tab content for reports */}
                 {tabValue === 1 && (
                   <Box sx={{ p: 3 }}>
                     <AttendanceReports />
                   </Box>
                 )}
                 
-                {/* תוכן טאב אנליטיקה */}
+                {/* Tab content for analytics */}
                 {tabValue === 2 && (
                   <Box sx={{ p: 3 }}>
                     <Typography 
@@ -441,7 +383,7 @@ const AttendanceDashboard = () => {
             </ContentCard>
           </Fade>
 
-          {/* פוטר מידע */}
+          {/* Footer information */}
           <Fade in timeout={1600}>
             <Card sx={{ 
               mt: 4, 

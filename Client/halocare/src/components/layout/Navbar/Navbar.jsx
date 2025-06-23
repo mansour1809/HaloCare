@@ -7,7 +7,6 @@ import {
   Typography,
   Menu,
   Avatar,
-  Button,
   Tooltip,
   MenuItem,
   InputBase,
@@ -23,7 +22,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-// יצירת theme מקצועי
+
+// Creating a professional theme
 const navbarTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -38,7 +38,7 @@ const navbarTheme = createTheme({
   }
 });
 
-// AppBar מעוצב
+// Styled AppBar
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -59,7 +59,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   }
 }));
 
-// חיפוש מעוצב ומתקדם
+// Styled search container
 const SearchContainer = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: 20,
@@ -117,7 +117,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-// כפתורי פעולות מעוצבים
+// Styled action buttons
 const ActionButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: 'rgba(76, 181, 195, 0.08)',
   border: '2px solid rgba(76, 181, 195, 0.15)',
@@ -136,7 +136,7 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
-// פרופיל משתמש מעוצב
+// Styled user profile container
 const UserProfileContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -154,11 +154,11 @@ const UserProfileContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// לוגו מעוצב
+// Styled logo container
 const LogoContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-gap:'16px',
+  gap: '16px',
   padding: theme.spacing(0.5, 2),
   borderRadius: 20,
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(42, 138, 149, 0.1) 100%)',
@@ -170,7 +170,7 @@ gap:'16px',
   }
 }));
 
-// תפריט מעוצב
+// Styled menu
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
     borderRadius: 16,
@@ -230,7 +230,6 @@ const Navbar = () => {
     { name: 'התנתקות', icon: <LogoutIcon />, action: () => {} }
   ];
   
-  // דוגמה להתראות מעוצבות
   const notifications = [
     { id: 1, content: 'התקבלה בקשת הרשמה חדשה', time: 'לפני 5 דקות', type: 'info' },
     { id: 2, content: 'הוספת ילד חדש למערכת', time: 'לפני שעה', type: 'success' },
@@ -242,10 +241,10 @@ const Navbar = () => {
       <StyledAppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
           
-          {/* צד ימין - פרופיל וכפתורים */}
+          {/* Right side - Profile and buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             
-            {/* פרופיל משתמש */}
+            {/* User menu */}
             <Tooltip title="תפריט משתמש" arrow>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
@@ -275,7 +274,7 @@ const Navbar = () => {
               </UserProfileContainer>
             </Tooltip>
 
-            {/* תפריט משתמש */}
+            {/* User menu */}
             <StyledMenu
               id="menu-appbar"
               anchorEl={anchorElUser}
@@ -300,7 +299,7 @@ const Navbar = () => {
               ))}
             </StyledMenu>
             
-            {/* כפתורי פעולות */}
+            {/* Action buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Tooltip title="הודעות" arrow>
                 <ActionButton size="medium">
@@ -319,7 +318,7 @@ const Navbar = () => {
               </Tooltip>
             </Box>
 
-            {/* תפריט התראות */}
+            {/* Notifications menu */}
             <StyledMenu
               id="notifications-menu"
               anchorEl={anchorElNotifications}
@@ -370,7 +369,7 @@ const Navbar = () => {
             </StyledMenu>
           </Box>
           
-          {/* צד שמאל - לוגו */}
+          {/* Left side - Logo */}
           <LogoContainer>
             <img 
               src={'./logo.png'} 
