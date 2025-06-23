@@ -106,7 +106,7 @@ const rtlTheme = createTheme({
 });
 
 // קונטיינר מסך מלא מעוצב
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   position: 'relative',

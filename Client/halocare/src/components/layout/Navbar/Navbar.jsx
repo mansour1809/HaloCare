@@ -23,7 +23,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-
 // יצירת theme מקצועי
 const navbarTheme = createTheme({
   direction: 'rtl',
