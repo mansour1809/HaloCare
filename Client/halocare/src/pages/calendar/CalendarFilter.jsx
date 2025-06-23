@@ -1,5 +1,4 @@
 import { 
-  Paper, 
   Box, 
   Grid, 
   FormControl, 
@@ -33,7 +32,7 @@ import { styled } from '@mui/material/styles';
 
 import { useCalendar } from './CalendarContext';
 
-// כרטיס סינון מעוצב
+// Styled Filter Card
 const FilterCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
@@ -54,7 +53,7 @@ const FilterCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כותרת סינון מעוצבת
+// Styled Filter Header
 const FilterHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -66,7 +65,7 @@ const FilterHeader = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
 }));
 
-// FormControl מעוצב
+// Styled FormControl
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
@@ -86,7 +85,6 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
   }
 }));
 
-// Chip מעוצב עם אנימציה
 const AnimatedChip = styled(Chip)(({ theme }) => ({
   background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
   color: 'white',
@@ -99,7 +97,6 @@ const AnimatedChip = styled(Chip)(({ theme }) => ({
   }
 }));
 
-// כפתור נקה עם אפקט זוהר
 const GlowButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   fontWeight: 600,
@@ -129,7 +126,7 @@ const GlowButton = styled(Button)(({ theme }) => ({
 }));
 
 const CalendarFilter = () => {
-  // קבלת ערכים ופונקציות מהקונטקסט
+  
   const {
     filterOptions,
     handleFilterChange,
@@ -142,13 +139,11 @@ const CalendarFilter = () => {
   
   const theme = useTheme();
   
-  // בדיקה אם יש מסננים פעילים
   const hasActiveFilters = 
     filterOptions.kidId || 
     filterOptions.employeeId || 
     filterOptions.eventTypeId;
   
-  // ספירת מסננים פעילים
   const activeFilterCount = Object.values(filterOptions)
     .filter(value => value !== '').length;
   
@@ -202,7 +197,7 @@ const CalendarFilter = () => {
           </FilterHeader>
           
           <Grid container spacing={3}>
-            {/* סינון לפי ילד */}
+            {/* Filter by kid */}
             <Grid item xs={12} sm={4}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר ילד</InputLabel>
@@ -260,7 +255,7 @@ const CalendarFilter = () => {
               </StyledFormControl>
             </Grid>
             
-            {/* סינון לפי איש צוות */}
+           {/* Filter by employee */}
             <Grid item xs={12} sm={4}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר איש צוות</InputLabel>
@@ -330,7 +325,7 @@ const CalendarFilter = () => {
               </StyledFormControl>
             </Grid>
             
-            {/* סינון לפי סוג אירוע */}
+           {/* Filter by event type */}
             <Grid item xs={12} sm={4}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר סוג אירוע</InputLabel>
@@ -402,7 +397,7 @@ const CalendarFilter = () => {
             </Grid>
           </Grid>
           
-          {/* אינדיקטור טעינה */}
+         {/* Loading indicator */}
           {isLoadingReferenceData && (
             <Fade in>
               <Box sx={{ 

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useCalendar } from './CalendarContext';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  IconButton, 
-  Button, 
-  Chip, 
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  Chip,
   Divider,
   TextField,
   InputAdornment,
@@ -29,12 +28,10 @@ import {
   alpha,
   useTheme
 } from '@mui/material';
-import { 
+import {
   Search as SearchIcon,
-  FilterList as FilterListIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Event as EventIcon,
   Link as LinkIcon,
   AccessTime as AccessTimeIcon,
   Room as RoomIcon,
@@ -50,7 +47,7 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
-// תמה מותאמת לרשימת אירועים
+// Custom theme for the events list
 const eventsTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -100,7 +97,6 @@ const eventsTheme = createTheme({
   }
 });
 
-// קונטיינר עם רקע מדהים
 const GradientContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
@@ -108,7 +104,6 @@ const GradientContainer = styled(Container)(({ theme }) => ({
   paddingBottom: theme.spacing(4),
 }));
 
-// כותרת ראשית מעוצבת
 const MainHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   marginBottom: theme.spacing(4),
@@ -126,7 +121,6 @@ const MainHeader = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס בקרה מעוצב
 const ControlCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   background: 'rgba(255, 255, 255, 0.98)',
@@ -142,7 +136,6 @@ const ControlCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// TextField מעוצב לחיפוש
 const SearchField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 25,
@@ -160,7 +153,6 @@ const SearchField = styled(TextField)(({ theme }) => ({
   }
 }));
 
-// כפתור ניווט מעוצב
 const NavButton = styled(IconButton)(({ theme }) => ({
   background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
   color: 'white',
@@ -172,7 +164,7 @@ const NavButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
-// כרטיס אירוע מעוצב
+// Styled Event Card
 const EventCard = styled(Card)(({ borderColor }) => ({
   cursor: 'pointer',
   height: '100%',
@@ -203,7 +195,6 @@ const EventCard = styled(Card)(({ borderColor }) => ({
   }
 }));
 
-// Chip סטטיסטיקה מעוצב
 const StatsChip = styled(Chip)(({ theme }) => ({
   background: 'linear-gradient(45deg, #10b981 30%, #34d399 90%)',
   color: 'white',
@@ -216,13 +207,13 @@ const StatsChip = styled(Chip)(({ theme }) => ({
   }
 }));
 
-// פונקציה עזר לקיבוץ אירועים לפי תאריך
+// Helper function to group events by date
 const groupEventsByDate = (events) => {
   const grouped = {};
-  
+
   events.forEach(event => {
     const date = event.start.split('T')[0];
-    
+
     if (!grouped[date]) {
       grouped[date] = [];
     }
@@ -237,25 +228,22 @@ const groupEventsByDate = (events) => {
     }, {});
 };
 
-// פורמט תאריך לעברית
 const formatHebrewDate = (dateStr) => {
   const date = new Date(dateStr);
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
+  const options = {
+    year: 'numeric',
+    month: 'long',
     day: 'numeric',
     weekday: 'long'
   };
   return date.toLocaleDateString('he-IL', options);
 };
 
-// המרת שעה לפורמט HH:MM
 const formatTime = (timeStr) => {
   const date = new Date(timeStr);
   return date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
 };
 
-// חישוב משך זמן באירוע בדקות
 const getDurationInMinutes = (start, end) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -280,56 +268,51 @@ const EventsList = () => {
 
   const theme = useTheme();
 
-  // מצבים מקומיים
   const [groupedEvents, setGroupedEvents] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [localFilteredEvents, setLocalFilteredEvents] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // עדכון האירועים המקובצים
+  // Update grouped events
   useEffect(() => {
     let eventsToShow = filteredEvents.length > 0 ? filteredEvents : events;
-    
+
     if (searchTerm) {
-      eventsToShow = eventsToShow.filter(event => 
-        event.title.includes(searchTerm) || 
+      eventsToShow = eventsToShow.filter(event =>
+        event.title.includes(searchTerm) ||
         (event.extendedProps.location && event.extendedProps.location.includes(searchTerm)) ||
         (event.extendedProps.description && event.extendedProps.description.includes(searchTerm))
       );
     }
-    
+
     setLocalFilteredEvents(eventsToShow);
     setGroupedEvents(groupEventsByDate(eventsToShow));
   }, [events, filteredEvents, searchTerm]);
 
-  // ניווט לחודש הקודם
   const goToPreviousMonth = () => {
     const newMonth = new Date(currentMonth);
     newMonth.setMonth(newMonth.getMonth() - 1);
     setCurrentMonth(newMonth);
   };
 
-  // ניווט לחודש הבא
   const goToNextMonth = () => {
     const newMonth = new Date(currentMonth);
     newMonth.setMonth(newMonth.getMonth() + 1);
     setCurrentMonth(newMonth);
   };
 
-  // ניווט לחודש הנוכחי
   const goToCurrentMonth = () => {
     setCurrentMonth(new Date());
   };
 
-  // מציאת שם ילד לפי מזהה
   const getKidName = (kidId) => {
     if (!kidId) return 'ללא ילד';
     const kid = kids.find(k => k.id === parseInt(kidId));
     return kid ? `${kid.firstName} ${kid.lastName}` : 'ילד לא מוכר';
   };
 
-  // מציאת שמות עובדים לפי מזהים
+  // Finding employee names by IDs
   const getEmployeeNames = (employeeIds) => {
     if (!employeeIds || employeeIds.length === 0) return 'ללא מטפלים';
     return employeeIds.map(id => {
@@ -338,7 +321,6 @@ const EventsList = () => {
     }).join(', ');
   };
 
-  // טיפול בלחיצה על אירוע
   const onEventClick = (event) => {
     handleEventClick({ event });
   };
@@ -346,7 +328,7 @@ const EventsList = () => {
   return (
     <ThemeProvider theme={eventsTheme}>
       <GradientContainer maxWidth="xl" dir="rtl">
-        {/* כותרת ראשית */}
+        {/* Main Header */}
         <Fade in timeout={800}>
           <MainHeader>
             <Typography
@@ -370,12 +352,12 @@ const EventsList = () => {
           </MainHeader>
         </Fade>
 
-        {/* כלי ניווט וסינון */}
+        {/* Navigation and Filtering Tools */}
         <Zoom in timeout={1000}>
           <ControlCard>
             <CardContent sx={{ p: 3 }}>
               <Grid container spacing={3} alignItems="center">
-                {/* חיפוש */}
+                {/* Search */}
                 <Grid item xs={12} md={4}>
                   <SearchField
                     placeholder="חיפוש באירועים..."
@@ -393,8 +375,8 @@ const EventsList = () => {
                     }}
                   />
                 </Grid>
-                
-                {/* ניווט חודשי */}
+
+                {/* Monthly Navigation */}
                 <Grid item xs={12} md={4}>
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                     <Tooltip title="חודש קודם" arrow>
@@ -402,11 +384,11 @@ const EventsList = () => {
                         <ChevronRightIcon />
                       </NavButton>
                     </Tooltip>
-                    
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        mx: 2, 
+
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        mx: 2,
                         fontWeight: 600,
                         color: 'primary.main',
                         minWidth: 150,
@@ -415,17 +397,17 @@ const EventsList = () => {
                     >
                       {currentMonth.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
                     </Typography>
-                    
+
                     <Tooltip title="חודש הבא" arrow>
                       <NavButton onClick={goToNextMonth} size="small">
                         <ChevronLeftIcon />
                       </NavButton>
                     </Tooltip>
-                    
+
                     <Tooltip title="חזור להיום" arrow>
-                      <IconButton 
-                        onClick={goToCurrentMonth} 
-                        sx={{ 
+                      <IconButton
+                        onClick={goToCurrentMonth}
+                        sx={{
                           mx: 1,
                           background: 'linear-gradient(45deg, #10b981 30%, #34d399 90%)',
                           color: 'white',
@@ -442,19 +424,19 @@ const EventsList = () => {
                   </Stack>
                 </Grid>
 
-                {/* כפתורים וסטטיסטיקות */}
+                {/* Buttons and Statistics */}
                 <Grid item xs={12} md={4}>
                   <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
-                    <StatsChip 
+                    <StatsChip
                       label={`${localFilteredEvents.length} אירועים`}
                       icon={<ScheduleIcon />}
                     />
-                    
+
                     <Button
                       variant={filterOpen ? "contained" : "outlined"}
                       startIcon={filterOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                       onClick={() => setFilterOpen(!filterOpen)}
-                      sx={{ 
+                      sx={{
                         borderRadius: 4,
                         fontWeight: 600,
                         ...(filterOpen && {
@@ -465,13 +447,13 @@ const EventsList = () => {
                     >
                       סינון מתקדם
                     </Button>
-                    
+
                     <Button
                       variant="contained"
                       color="primary"
                       onClick={createNewEvent}
                       startIcon={<CelebrationIcon />}
-                      sx={{ 
+                      sx={{
                         borderRadius: 4,
                         fontWeight: 600,
                         background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
@@ -487,11 +469,10 @@ const EventsList = () => {
                   </Stack>
                 </Grid>
               </Grid>
-              
-              {/* אזור סינון מורחב */}
+
               <Collapse in={filterOpen}>
                 <Divider sx={{ my: 3 }} />
-                
+
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6} md={3}>
                     <FormControl fullWidth size="medium">
@@ -510,7 +491,7 @@ const EventsList = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
+
                   <Grid item xs={12} sm={6} md={3}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>ילד</InputLabel>
@@ -530,7 +511,7 @@ const EventsList = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
+
                   <Grid item xs={12} sm={6} md={3}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>מטפל</InputLabel>
@@ -556,7 +537,7 @@ const EventsList = () => {
                       variant="outlined"
                       onClick={resetFilters}
                       fullWidth
-                      sx={{ 
+                      sx={{
                         height: 56,
                         borderRadius: 3,
                         fontWeight: 600,
@@ -577,18 +558,17 @@ const EventsList = () => {
             </CardContent>
           </ControlCard>
         </Zoom>
-        
-        {/* אינדיקטור טעינה */}
+
         {isLoading && (
           <Fade in>
             <Card sx={{ p: 4, textAlign: 'center', mb: 3 }}>
-              <CircularProgress 
-                size={60} 
+              <CircularProgress
+                size={60}
                 thickness={4}
-                sx={{ 
+                sx={{
                   color: 'primary.main',
                   filter: 'drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3))'
-                }} 
+                }}
               />
               <Typography variant="h6" sx={{ mt: 2, fontWeight: 600 }}>
                 טוען אירועים...
@@ -596,13 +576,13 @@ const EventsList = () => {
             </Card>
           </Fade>
         )}
-        
-        {/* הודעת שגיאה */}
+
+        {/* Error message */}
         {error && (
           <Fade in>
-            <Card sx={{ 
-              p: 3, 
-              mb: 3, 
+            <Card sx={{
+              p: 3,
+              mb: 3,
               background: 'linear-gradient(45deg, #fee2e2 30%, #fef2f2 90%)',
               border: '1px solid #f87171',
               '&::before': {
@@ -620,15 +600,15 @@ const EventsList = () => {
             </Card>
           </Fade>
         )}
-        
-        {/* רשימת אירועים */}
+
+        {/* Events list*/}
         {!isLoading && Object.keys(groupedEvents).length > 0 ? (
           Object.keys(groupedEvents).map((date, dateIndex) => (
             <Fade in timeout={1200 + (dateIndex * 200)} key={date}>
               <Box sx={{ mb: 4 }}>
-                {/* כותרת תאריך */}
-                <Card sx={{ 
-                  mb: 3, 
+                {/* Date Header */}
+                <Card sx={{
+                  mb: 3,
                   background: 'rgba(255, 255, 255, 0.9)',
                   '&::before': {
                     background: 'linear-gradient(90deg, #f59e0b, #fbbf24, #d97706)',
@@ -637,7 +617,7 @@ const EventsList = () => {
                   <CardContent sx={{ p: 2 }}>
                     <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
                       <Stack direction="row" spacing={2} alignItems="center">
-                        <Avatar sx={{ 
+                        <Avatar sx={{
                           background: 'linear-gradient(45deg, #f59e0b 30%, #fbbf24 90%)',
                           boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
                         }}>
@@ -652,9 +632,9 @@ const EventsList = () => {
                           </Typography>
                         </Box>
                       </Stack>
-                      
-                      <Chip 
-                        label={`${groupedEvents[date].length} אירועים`} 
+
+                      <Chip
+                        label={`${groupedEvents[date].length} אירועים`}
                         color="warning"
                         variant="outlined"
                         icon={<AutoAwesomeIcon />}
@@ -662,24 +642,24 @@ const EventsList = () => {
                     </Stack>
                   </CardContent>
                 </Card>
-                
-                {/* רשת אירועים */}
+
+                {/* Events Grid */}
                 <Grid container spacing={3}>
                   {groupedEvents[date].map((event, eventIndex) => {
                     const duration = getDurationInMinutes(event.start, event.end);
                     const backgroundColor = event.backgroundColor || '#667eea';
-                    
+
                     return (
                       <Grid item xs={12} sm={6} lg={4} key={event.id}>
                         <Zoom in timeout={300 + (eventIndex * 100)}>
-                          <EventCard 
+                          <EventCard
                             borderColor={backgroundColor}
                             onClick={() => onEventClick(event)}
                           >
                             <CardContent sx={{ p: 3 }}>
-                              {/* כותרת אירוע */}
+                              {/* Event header */}
                               <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ mb: 2 }}>
-                                <Avatar sx={{ 
+                                <Avatar sx={{
                                   background: backgroundColor,
                                   width: 40,
                                   height: 40,
@@ -688,10 +668,10 @@ const EventsList = () => {
                                   🎯
                                 </Avatar>
                                 <Box flex={1}>
-                                  <Typography 
-                                    variant="h6" 
-                                    component="h3" 
-                                    sx={{ 
+                                  <Typography
+                                    variant="h6"
+                                    component="h3"
+                                    sx={{
                                       fontWeight: 700,
                                       color: backgroundColor,
                                       mb: 0.5,
@@ -700,11 +680,11 @@ const EventsList = () => {
                                   >
                                     {event.title}
                                   </Typography>
-                                  
-                                  <Chip 
+
+                                  <Chip
                                     label={`${duration} דקות`}
                                     size="small"
-                                    sx={{ 
+                                    sx={{
                                       background: alpha(backgroundColor, 0.1),
                                       color: backgroundColor,
                                       fontWeight: 600
@@ -712,8 +692,8 @@ const EventsList = () => {
                                   />
                                 </Box>
                               </Stack>
-                              
-                              {/* פרטי אירוע */}
+
+                              {/* Evevnt details*/}
                               <Stack spacing={1.5}>
                                 <Stack direction="row" spacing={1} alignItems="center">
                                   <AccessTimeIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
@@ -721,25 +701,25 @@ const EventsList = () => {
                                     {formatTime(event.start)} - {formatTime(event.end)}
                                   </Typography>
                                 </Stack>
-                                
+
                                 <Stack direction="row" spacing={1} alignItems="center">
                                   <RoomIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
                                   <Typography variant="body2" color="text.secondary">
                                     {event.extendedProps.location || 'ללא מיקום מוגדר'}
                                   </Typography>
                                 </Stack>
-                                
+
                                 <Stack direction="row" spacing={1} alignItems="center">
                                   <ChildIcon sx={{ color: 'primary.main', fontSize: 18 }} />
                                   <Typography variant="body2" color="text.secondary">
                                     {getKidName(event.extendedProps.kidId)}
                                   </Typography>
                                 </Stack>
-                                
+
                                 <Stack direction="row" spacing={1} alignItems="center">
                                   <PersonIcon sx={{ color: 'secondary.main', fontSize: 18 }} />
-                                  <Typography 
-                                    variant="body2" 
+                                  <Typography
+                                    variant="body2"
                                     color="text.secondary"
                                     sx={{
                                       overflow: 'hidden',
@@ -750,12 +730,12 @@ const EventsList = () => {
                                     {getEmployeeNames(event.extendedProps.employeeIds)}
                                   </Typography>
                                 </Stack>
-                                
+
                                 {event.extendedProps.description && (
-                                  <Typography 
-                                    variant="body2" 
-                                    color="text.secondary" 
-                                    sx={{ 
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{
                                       mt: 1,
                                       display: '-webkit-box',
                                       WebkitLineClamp: 2,
@@ -770,7 +750,7 @@ const EventsList = () => {
                                 )}
                               </Stack>
                             </CardContent>
-                            
+
                             <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
                               <Tooltip title="פרטים נוספים" arrow>
                                 <IconButton
@@ -805,17 +785,17 @@ const EventsList = () => {
           ))
         ) : !isLoading && (
           <Fade in>
-            <Card sx={{ 
-              p: 6, 
+            <Card sx={{
+              p: 6,
               textAlign: 'center',
               background: 'rgba(255, 255, 255, 0.9)',
               '&::before': {
                 background: 'linear-gradient(90deg, #6b7280, #9ca3af, #d1d5db)',
               }
             }}>
-              <Avatar sx={{ 
-                width: 80, 
-                height: 80, 
+              <Avatar sx={{
+                width: 80,
+                height: 80,
                 margin: '0 auto 16px',
                 background: 'linear-gradient(45deg, #6b7280 30%, #9ca3af 90%)',
                 fontSize: '2rem'

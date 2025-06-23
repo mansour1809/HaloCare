@@ -3,7 +3,7 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { Box, Typography, Button, Divider } from '@mui/material';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 
-// אייקונים מינימליסטיים ונקיים
+// Minimalist and clean icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -60,7 +60,6 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
   marginBottom: '2px',
   borderBottom: '1px solid rgba(76, 181, 195, 0.1)',
   position: 'relative',
-  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -113,21 +112,15 @@ const ProSidebar = () => {
       margin: '1px 6px',
       borderRadius: '8px',
       transition: 'all 0.3s ease',
-        overflow: 'none',
-
     },
     icon: {
       color: '#64748b',
       fontSize: '1.1rem',
       marginLeft: '6px',
-        overflow: 'hidden',
-
     },
     button: {
       padding: '8px 12px',
       borderRadius: '8px',
-              overflow: 'hidden',
-
       '&:hover': {
         backgroundColor: 'rgba(76, 181, 195, 0.08)',
         color: '#2a8a95',
@@ -193,11 +186,12 @@ const ProSidebar = () => {
           background: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(20px)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          overflowX: 'hidden', 
         }}
         rootStyles={{
           backgroundColor: 'transparent',
           borderLeft: '1px solid rgba(76, 181, 195, 0.1)',
-          overflowX: 'hidden',
+          overflowX: 'hidden', 
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -207,9 +201,27 @@ const ProSidebar = () => {
             height: '100%',
             background: 'linear-gradient(180deg, #4cb5c3, #ff7043, #10b981)',
           },
+          
+          '& .ps-menu-root': {
+            overflowX: 'hidden !important',
+          },
+          '& .ps-submenu-content': {
+            overflowX: 'hidden !important',
+          },
+          '& .ps-menu-button': {
+            whiteSpace: 'nowrap !important',
+            overflow: 'hidden !important',
+            textOverflow: 'ellipsis !important',
+          },
         }}
       >
-        <Box sx={{ padding: '8px 0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ 
+          padding: '8px 0', 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          overflowX: 'hidden',
+        }}>
           {/* Main menu */}
           <Menu menuItemStyles={menuItemStyles}>
             <MenuItem icon={<DashboardIcon />} onClick={() => navigate('/')} style={getActiveStyle('/')}>
@@ -297,11 +309,14 @@ const ProSidebar = () => {
             </StyledSubMenu>
           </Menu>
 
+          {/* Automatic spacing */}
           <Box sx={{ flex: 1 }} />
 
+          {/* Compact bottom section */}
           <Box sx={{ px: 1, pb: 1 }}>
             <Divider sx={{ mb: 1, borderColor: 'rgba(76, 181, 195, 0.2)' }} />
 
+            {/* Logout button */}
             <LogoutButton
               onClick={handleLogout}
               startIcon={<LogoutIcon sx={{ fontSize: '1rem' }} />}

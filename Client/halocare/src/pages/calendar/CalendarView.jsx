@@ -5,8 +5,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import heLocale from '@fullcalendar/core/locales/he';
 import { 
   Box, 
-  Skeleton, 
-  Card, 
   CardContent, 
   Typography, 
   Fade, 
@@ -14,7 +12,6 @@ import {
   Stack,
   Avatar,
   Chip,
-  alpha,
   useTheme
 } from '@mui/material';
 import { 
@@ -27,22 +24,18 @@ import {
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 
-// שימוש בקונטקסט
+
 import { useCalendar } from './CalendarContext';
 
-// קונטיינר מעוצב לFullCalendar
+// Styled container for FullCalendar
 const CalendarContainer = styled(Box)(({ theme }) => ({
   
   '& .fc': {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     background: 'transparent',
-    // width: '100vw !important', // נסה את זה
-    // maxWidth: 'none !important',
   },
 
-
-
-  // סגנון מותאם לכל רכיבי FullCalendar
+  // Custom styling for all FullCalendar components
   '& .fc-toolbar': {
     padding: '24px',
     marginBottom: '20px',
@@ -131,7 +124,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     }
   },
 
-  // עיצוב כותרות הימים
   '& .fc-col-header': {
     background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
     borderRadius: '12px',
@@ -153,7 +145,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     letterSpacing: '1px',
   },
 
-  // עיצוב תאי היומן
   '& .fc-daygrid-day, & .fc-timegrid-slot': {
     transition: 'all 0.3s ease',
     borderColor: 'rgba(0,0,0,0.05)',
@@ -164,7 +155,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     }
   },
 
-  // היום הנוכחי
   '& .fc-day-today': {
     background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(52,211,153,0.1) 100%)',
     border: '2px solid rgba(16,185,129,0.3)',
@@ -181,7 +171,7 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     }
   },
 
-  // עיצוב אירועים
+  // Event styling
   '& .fc-event': {
     borderRadius: '12px',
     border: 'none',
@@ -246,7 +236,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     }
   },
 
-  // מחוון זמן נוכחי
   '& .fc-timegrid-now-indicator-line': {
     borderColor: '#ef4444',
     borderWidth: '3px',
@@ -275,7 +264,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     filter: 'drop-shadow(0 2px 4px rgba(239,68,68,0.3))',
   },
 
-  // אנימציות
   '@keyframes pulse': {
     '0%, 100%': {
       transform: 'scale(1)',
@@ -288,7 +276,7 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-// קומפוננט Loading מעוצב
+// Styled Loading component
 const LoadingCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -320,7 +308,7 @@ const CalendarView = ({
   events,
   isLoadingFromRedux
 }) => {
-  // קבלת ערכים ופונקציות מהקונטקסט
+  
   const {
     calendarView,
     handleDateClick,
@@ -329,7 +317,7 @@ const CalendarView = ({
 
   const theme = useTheme();
 
-  // אם טוען אירועים, הצג loading מעוצב
+  // If loading events, display styled loading
   if (isLoadingFromRedux) {
     return (
       <Fade in timeout={500}>
@@ -433,7 +421,6 @@ const CalendarView = ({
           stickyHeaderDates={true}
           nowIndicator={true}
           
-          // פורמט זמן
           eventTimeFormat={{
             hour: '2-digit',
             minute: '2-digit',
@@ -446,7 +433,6 @@ const CalendarView = ({
             hour12: false
           }}
           
-          // טקסט כפתורים
           buttonText={{
             today: 'היום',
             month: 'חודש',
@@ -454,7 +440,7 @@ const CalendarView = ({
             day: 'יום'
           }}
           
-          // פורמט תאריכים בכותרת
+            // Date format in the title
           views={{
             timeGridDay: {
               titleFormat: { day: 'numeric', month: 'long', year: 'numeric' }
@@ -467,10 +453,8 @@ const CalendarView = ({
             }
           }}
           
-          // עיצוב האירועים
           eventContent={renderEventContent}
           
-          // סגנון כללי
           dayHeaderClassNames="fc-day-header"
           eventClassNames="fc-event-custom"
         />
@@ -480,7 +464,7 @@ const CalendarView = ({
   );
 };
 
-// פונקציה מעוצבת לרינדור תוכן האירוע
+// Function to render event content
 const renderEventContent = (eventInfo) => {
   const event = eventInfo.event;
   const location = event.extendedProps.location;
@@ -488,13 +472,11 @@ const renderEventContent = (eventInfo) => {
   const employeeIds = event.extendedProps.employeeIds || [];
   const eventTimeC = (event.end - event.start) / (1000 * 60);
 
-  // קביעת כמות האיקונים לפי משך האירוע
   let maxIcons = 0;
   if (eventTimeC >= 90) maxIcons = 3;
   else if (eventTimeC >= 60) maxIcons = 2;
   else if (eventTimeC >= 30) maxIcons = 1;
 
-  // בניית רשימת אלמנטים זמינים
   const availableElements = [];
 
   if (location) {
@@ -553,7 +535,6 @@ const renderEventContent = (eventInfo) => {
     );
   }
 
-  // בחירת האלמנטים הנראים
   const visibleElements = availableElements.slice(0, maxIcons);
 
   return (
@@ -580,7 +561,6 @@ const renderEventContent = (eventInfo) => {
           {event.title}
         </Box>
         
-        {/* הצגת איקונים מוגבלים */}
         {eventInfo.view.type !== 'dayGridMonth' && (
           <Stack direction="row" spacing={0.5} sx={{ marginTop: '4px' }}>
             {visibleElements}

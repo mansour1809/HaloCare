@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
   MenuItem,
   IconButton,
   Typography,
@@ -23,11 +23,10 @@ import {
   Card,
   CardContent,
   Slide,
-  Zoom,
   alpha,
   useTheme
 } from '@mui/material';
-import { 
+import {
   Close as CloseIcon,
   Delete as DeleteIcon,
   Save as SaveIcon,
@@ -46,16 +45,16 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
-// שימוש בקונטקסט
+
 import { useCalendar } from './CalendarContext';
 import { useSelector } from 'react-redux';
 
-// אנימציית כניסה מותאמת
+
 const SlideTransition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-// דיאלוג מעוצב עם אפקטים
+// Styled dialog with effects
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
     borderRadius: 24,
@@ -78,7 +77,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   }
 }));
 
-// כותרת דיאלוג מעוצבת
+// Styled dialog title
 const StyledDialogTitle = styled(DialogTitle)(({ eventColor }) => ({
   background: `linear-gradient(135deg, ${eventColor} 0%, ${alpha(eventColor, 0.8)} 100%)`,
   color: '#ffffff',
@@ -101,7 +100,7 @@ const StyledDialogTitle = styled(DialogTitle)(({ eventColor }) => ({
   }
 }));
 
-// TextField מעוצב
+// TextField
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
@@ -118,7 +117,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   }
 }));
 
-// FormControl מעוצב
+// FormControl
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
@@ -135,7 +134,7 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
   }
 }));
 
-// כפתור מעוצב עם זוהר
+// Styled button with glow effect
 const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   borderRadius: 16,
   fontWeight: 600,
@@ -162,7 +161,7 @@ const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   }
 }));
 
-// Chip מעוצב לפרטיטנטים
+// Styled Chip for participants
 const ParticipantChip = styled(Chip)(({ theme }) => ({
   borderRadius: 12,
   fontWeight: 600,
@@ -175,7 +174,6 @@ const ParticipantChip = styled(Chip)(({ theme }) => ({
 }));
 
 const EventDialog = () => {
-  // קבלת ערכים ופונקציות מהקונטקסט
   const {
     openDialog,
     setOpenDialog,
@@ -185,14 +183,13 @@ const EventDialog = () => {
     handleSaveEvent,
     handleDeleteEvent,
   } = useCalendar();
-  
+
   const { eventTypes } = useSelector(state => state.eventTypes);
   const { kids } = useSelector(state => state.kids);
   const { employees } = useSelector(state => state.employees);
-  
+
   const theme = useTheme();
-  
-  // מצב לשמירת שגיאות ולידציה
+
   const [validationErrors, setValidationErrors] = useState({
     title: false,
     eventTypeId: false,
@@ -200,7 +197,6 @@ const EventDialog = () => {
     end: false
   });
 
-  // פונקציה לטיפול בשינויים במשתתפים
   const handleParticipantsChange = (event) => {
     const { name, value } = event.target;
     if (name === 'kidIds' || name === 'employeeIds') {
@@ -216,12 +212,12 @@ const EventDialog = () => {
     }
   };
 
-  // מציאת היוצר המקורי של האירוע
+  // Finding the original creator of the event
   const getCreatorName = () => {
     if (selectedEvent?.extendedProps?.createdBy) {
       const creatorId = selectedEvent.extendedProps.createdBy;
       const creatorEmployee = employees.find(emp => emp.employeeId === creatorId);
-      if (creatorEmployee) 
+      if (creatorEmployee)
         return `${creatorEmployee.firstName} ${creatorEmployee.lastName}`;
       return `משתמש #${creatorId}`;
     }
@@ -232,8 +228,7 @@ const EventDialog = () => {
     }
     return 'לא ידוע';
   }
-  
-  // פונקציית בדיקת תקינות הטופס
+
   const validateForm = () => {
     const errors = {
       title: !newEvent.title,
@@ -241,42 +236,42 @@ const EventDialog = () => {
       start: !newEvent.start,
       end: !newEvent.end || new Date(newEvent.end) <= new Date(newEvent.start)
     };
-    
+
     setValidationErrors(errors);
     return !Object.values(errors).some(hasError => hasError);
   };
-  
-  // טיפול בשמירת האירוע עם ולידציה
+
+  // Handling event saving with validation
   const handleSaveEventWithValidation = () => {
     if (validateForm()) {
       handleSaveEvent();
     }
   };
-  
-  // קבלת צבע עבור סוג האירוע הנוכחי
+
+  // Get color for the current event type
   const getCurrentEventColor = () => {
     if (!newEvent.eventTypeId) return '#667eea';
     const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
     return selectedType ? selectedType.color : '#667eea';
   };
-  
+
   const currentEventColor = getCurrentEventColor();
-  
+
   return (
-    <StyledDialog 
-      open={openDialog} 
-      onClose={() => setOpenDialog(false)} 
-      maxWidth="md" 
+    <StyledDialog
+      open={openDialog}
+      onClose={() => setOpenDialog(false)}
+      maxWidth="md"
       fullWidth
       dir="rtl"
       TransitionComponent={SlideTransition}
       TransitionProps={{ timeout: 600 }}
     >
-      {/* כותרת הדיאלוג */}
+      {/* Dialog Title */}
       <StyledDialogTitle eventColor={currentEventColor}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar sx={{ 
+            <Avatar sx={{
               background: 'rgba(255,255,255,0.2)',
               backdropFilter: 'blur(10px)',
               boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
@@ -292,15 +287,15 @@ const EventDialog = () => {
               </Typography>
             </Box>
           </Stack>
-          
+
           <Tooltip title="סגור" arrow>
-            <IconButton 
+            <IconButton
               onClick={() => setOpenDialog(false)}
-              sx={{ 
+              sx={{
                 color: 'white',
                 background: 'rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(10px)',
-                '&:hover': { 
+                '&:hover': {
                   background: 'rgba(255,255,255,0.2)',
                   transform: 'scale(1.1) rotate(90deg)'
                 },
@@ -312,10 +307,10 @@ const EventDialog = () => {
           </Tooltip>
         </Box>
       </StyledDialogTitle>
-      
+
       <DialogContent sx={{ p: 4, mt: 2 }}>
         <Grid container spacing={3}>
-          {/* שורה ראשונה - כותרת וסוג אירוע */}
+          {/* Title and Event Type */}
           <Grid item xs={12} md={7}>
             <StyledTextField
               label="כותרת האירוע"
@@ -323,7 +318,7 @@ const EventDialog = () => {
               value={newEvent.title || ''}
               onChange={handleEventChange}
               fullWidth
-              required 
+              required
               variant="outlined"
               error={validationErrors.title}
               helperText={validationErrors.title ? "נדרשת כותרת לאירוע" : ""}
@@ -335,7 +330,7 @@ const EventDialog = () => {
               placeholder="הכנס כותרת מעניינת לאירוע"
             />
           </Grid>
-          
+
           <Grid item xs={12} md={5}>
             <StyledFormControl fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
               <InputLabel>סוג אירוע</InputLabel>
@@ -357,10 +352,10 @@ const EventDialog = () => {
                 }}
               >
                 {eventTypes.map(type => (
-                  <MenuItem 
-                    key={type.eventTypeId} 
+                  <MenuItem
+                    key={type.eventTypeId}
                     value={type.eventTypeId}
-                    sx={{ 
+                    sx={{
                       borderRight: `6px solid ${type.color || '#1976d2'}`,
                       borderRadius: '8px !important',
                       margin: '4px 8px',
@@ -391,8 +386,8 @@ const EventDialog = () => {
               )}
             </StyledFormControl>
           </Grid>
-          
-          {/* שורה שנייה - תאריך ושעה */}
+
+          {/* Date and time */}
           <Grid item xs={12} md={6}>
             <StyledTextField
               label="תאריך ושעת התחלה"
@@ -411,7 +406,7 @@ const EventDialog = () => {
               }}
             />
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
             <StyledTextField
               label="תאריך ושעת סיום"
@@ -430,8 +425,8 @@ const EventDialog = () => {
               }}
             />
           </Grid>
-          
-          {/* שורה שלישית - מיקום */}
+
+          {/* Location */}
           <Grid item xs={12}>
             <StyledTextField
               label="מיקום האירוע"
@@ -446,11 +441,11 @@ const EventDialog = () => {
               placeholder="היכן יתקיים האירוע?"
             />
           </Grid>
-          
-          {/* שורה רביעית - משתתפים */}
+
+          {/* Participants */}
           <Grid item xs={12} md={6}>
             <StyledFormControl fullWidth variant="outlined">
-              <InputLabel>ילדים משתתפים</InputLabel>              
+              <InputLabel>ילדים משתתפים</InputLabel>
               <Select
                 name="kidIds"
                 multiple
@@ -462,12 +457,12 @@ const EventDialog = () => {
                     {selected.map((value) => {
                       const kid = kids.find(k => k.id === value);
                       return (
-                        <ParticipantChip 
-                          key={value} 
+                        <ParticipantChip
+                          key={value}
                           label={kid ? `${kid.firstName} ${kid.lastName}` : value}
                           size="small"
                           avatar={
-                            <Avatar sx={{ 
+                            <Avatar sx={{
                               background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
                               width: 20,
                               height: 20
@@ -483,7 +478,7 @@ const EventDialog = () => {
                 )}
                 MenuProps={{
                   PaperProps: {
-                    sx: { 
+                    sx: {
                       borderRadius: 3,
                       maxHeight: 250,
                       boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
@@ -505,8 +500,8 @@ const EventDialog = () => {
               </Select>
             </StyledFormControl>
           </Grid>
-          
-          {/* אנשי צוות */}
+
+          {/* Staff */}
           <Grid item xs={12} md={6}>
             <StyledFormControl fullWidth variant="outlined">
               <InputLabel>צוות משתתף</InputLabel>
@@ -521,12 +516,12 @@ const EventDialog = () => {
                     {selected.map((value) => {
                       const employee = employees.find(emp => emp.employeeId === value);
                       return (
-                        <ParticipantChip 
-                          key={value} 
+                        <ParticipantChip
+                          key={value}
                           label={employee ? `${employee.firstName} ${employee.lastName}` : value}
                           size="small"
                           avatar={
-                            <Avatar sx={{ 
+                            <Avatar sx={{
                               background: 'linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)',
                               width: 20,
                               height: 20,
@@ -543,7 +538,7 @@ const EventDialog = () => {
                 )}
                 MenuProps={{
                   PaperProps: {
-                    sx: { 
+                    sx: {
                       borderRadius: 3,
                       maxHeight: 250,
                       boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
@@ -555,9 +550,9 @@ const EventDialog = () => {
                 {employees.map(emp => (
                   <MenuItem key={emp.employeeId} value={emp.employeeId}>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Avatar sx={{ 
-                        width: 24, 
-                        height: 24, 
+                      <Avatar sx={{
+                        width: 24,
+                        height: 24,
                         fontSize: '0.6rem',
                         background: 'linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)'
                       }}>
@@ -570,8 +565,7 @@ const EventDialog = () => {
               </Select>
             </StyledFormControl>
           </Grid>
-          
-          {/* שורה חמישית - תיאור */}
+
           <Grid item xs={12}>
             <StyledTextField
               label="תיאור מפורט"
@@ -592,19 +586,18 @@ const EventDialog = () => {
           </Grid>
         </Grid>
       </DialogContent>
-      
+
       <Divider />
-      
+
       <DialogActions sx={{ p: 3, justifyContent: 'space-between', background: alpha('#f8f9fa', 0.5) }}>
-        {/* כפתור מחיקה */}
         <Box>
           {selectedEvent && (
-            <GlowButton 
-              onClick={handleDeleteEvent} 
+            <GlowButton
+              onClick={handleDeleteEvent}
               variant="outlined"
               startIcon={<DeleteIcon />}
               glowColor="#ef4444"
-              sx={{ 
+              sx={{
                 color: '#ef4444',
                 borderColor: '#ef4444',
                 '&:hover': {
@@ -618,8 +611,8 @@ const EventDialog = () => {
             </GlowButton>
           )}
         </Box>
-        
-        {/* מידע על יוצר האירוע */}
+
+        {/* Information about the event creator */}
         <Card sx={{ background: alpha('#f8f9fa', 0.8), borderRadius: 2 }}>
           <CardContent sx={{ p: '8px 16px !important' }}>
             <Tooltip title="יוצר האירוע" arrow>
@@ -632,11 +625,11 @@ const EventDialog = () => {
             </Tooltip>
           </CardContent>
         </Card>
-        
-        {/* כפתורי פעולה */}
+
+        {/* Action Buttons */}
         <Stack direction="row" spacing={2}>
-          <GlowButton 
-            onClick={() => setOpenDialog(false)} 
+          <GlowButton
+            onClick={() => setOpenDialog(false)}
             variant="outlined"
             startIcon={<CancelIcon />}
             glowColor="#6b7280"
@@ -644,13 +637,13 @@ const EventDialog = () => {
           >
             ביטול
           </GlowButton>
-          
-          <GlowButton 
-            onClick={handleSaveEventWithValidation} 
+
+          <GlowButton
+            onClick={handleSaveEventWithValidation}
             variant="contained"
             startIcon={selectedEvent ? <SaveIcon /> : <AutoAwesomeIcon />}
             glowColor={currentEventColor}
-            sx={{ 
+            sx={{
               background: `linear-gradient(45deg, ${currentEventColor} 30%, ${alpha(currentEventColor, 0.8)} 90%)`,
               minWidth: 140,
               fontWeight: 700
