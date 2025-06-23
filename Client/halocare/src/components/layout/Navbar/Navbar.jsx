@@ -100,6 +100,7 @@ const UserProfileContainer = styled(Box)(({ theme }) => ({
 const LogoContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+gap:'16px',
   padding: theme.spacing(0.5, 2),
   borderRadius: 20,
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(42, 138, 149, 0.1) 100%)',
@@ -317,7 +318,7 @@ const Navbar = () => {
               src={'./logo-noLett.png'} 
               alt="HALO CARE" 
               style={{ 
-                height: '32px', 
+                height: '45px', 
                 marginLeft: '8px',
                 borderRadius: '6px',
               }}

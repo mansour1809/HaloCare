@@ -137,7 +137,7 @@ const AppContent = () => {
               minHeight: (isAuthenticated && !isPublicPath)
                 ? `calc(100vh - ${NAVBAR_HEIGHT}px)`
                 : "100vh",
-              overflow: "auto",
+              overflow: "hidden" ,
             }}
           >
             <Routes>

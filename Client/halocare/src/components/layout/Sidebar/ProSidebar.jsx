@@ -47,7 +47,7 @@ const DRAWER_WIDTH = 240;
 
 // כפתור התנתקות מעוצב אבל קומפקטי יותר
 const LogoutButton = styled(Button)(({ theme }) => ({
-  width: '85%',
+  width: '100%',
   margin: '8px auto',
   borderRadius: 12,
   padding: '8px 16px',
@@ -76,7 +76,7 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
     content: '""',
     position: 'absolute',
     bottom: '-1px',
-    right: '16px',
+    left: '16px',
     width: '20px',
     height: '1px',
     background: '#4cb5c3',
@@ -96,15 +96,14 @@ const StyledSubMenu = styled(SubMenu)(({ theme }) => ({
   '& .ps-menu-button': {
     padding: '8px 12px !important',
     borderRadius: '8px !important',
-    backgroundColor: 'rgba(76, 181, 195, 0.05) !important',
-    border: '1px solid rgba(76, 181, 195, 0.1) !important',
+    // backgroundColor: 'rgba(76, 181, 195, 0.05) !important',
+    // border: '1px solid rgba(76, 181, 195, 0.1) !important',
     fontWeight: '700 !important',
     fontSize: '0.9rem !important',
     color: '#2a8a95 !important',
-    
+        
     '&:hover': {
-      backgroundColor: 'rgba(76, 181, 195, 0.1) !important',
-      transform: 'translateX(1px) !important',
+      backgroundColor: 'rgba(76, 181, 195, 0.1) !important'
     }
   },
   
@@ -147,8 +146,7 @@ const ProSidebar = () => {
 
       '&:hover': {
         backgroundColor: 'rgba(76, 181, 195, 0.08)',
-        color: '#2a8a95',
-        transform: 'translateX(2px)',
+        color: '#2a8a95'
       },
     },
     label: {
@@ -164,8 +162,7 @@ const ProSidebar = () => {
       backgroundColor: 'rgba(76, 181, 195, 0.15)',
       color: '#2a8a95',
       fontWeight: 700,
-      borderLeft: '3px solid #4cb5c3',
-      transform: 'translateX(2px)',
+      borderLeft: '3px solid #4cb5c3'
     } : {};
   };
   
@@ -214,6 +211,7 @@ const ProSidebar = () => {
         rootStyles={{
           backgroundColor: "transparent",
           borderLeft: "1px solid rgba(76, 181, 195, 0.1)",
+          overflowX: "hidden",
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -241,7 +239,6 @@ const ProSidebar = () => {
 
             <StyledSubMenu
               label="ניהול ילדים"
-              icon={<ChildCareIcon />}
             >
               <MenuItem
                 icon={<GroupIcon />}
@@ -262,8 +259,7 @@ const ProSidebar = () => {
             <CategoryLabel emoji="👥">צוות</CategoryLabel>
 
             <StyledSubMenu 
-              label="ניהול צוות" 
-              icon={<PeopleAltIcon />}
+              label="ניהול צוות"
             >
               <MenuItem
                 icon={<GroupIcon />}
@@ -284,8 +280,7 @@ const ProSidebar = () => {
             <CategoryLabel emoji="📅">יומן</CategoryLabel>
 
             <StyledSubMenu 
-              label="לוח זמנים" 
-              icon={<CalendarMonthIcon />}
+              label="ניהול לוח זמנים"
             >
               <MenuItem
                 icon={<EventIcon />}
@@ -306,7 +301,6 @@ const ProSidebar = () => {
             <CategoryLabel emoji="⚙️">מערכת</CategoryLabel>
 
             <MenuItem
-              icon={<SettingsIcon />}
               onClick={() => navigate("/settings")}
               style={getActiveStyle("/settings")}
             >
@@ -314,7 +308,7 @@ const ProSidebar = () => {
             </MenuItem>
 
             <StyledSubMenu 
-              label="דוחות" 
+              label="ניהול דוחות" 
               icon={<AssessmentIcon />}
             >
               <MenuItem
@@ -341,36 +335,6 @@ const ProSidebar = () => {
           <Box sx={{ px: 1, pb: 1 }}>
             <Divider sx={{ mb: 1, borderColor: 'rgba(76, 181, 195, 0.2)' }} />
             
-            {/* מידע על המערכת קומפקטי */}
-            <Box sx={{ 
-              background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(42, 138, 149, 0.05) 100%)',
-              border: '1px solid rgba(76, 181, 195, 0.1)',
-              borderRadius: 2,
-              p: 1,
-              mb: 1,
-              textAlign: 'center'
-            }}>
-              <Typography variant="caption" sx={{ 
-                display: 'block',
-                color: '#64748b',
-                fontWeight: 600,
-                fontSize: '0.7rem'
-              }}>
-                HALO CARE
-              </Typography>
-              <Chip 
-                label="v2.1" 
-                size="small"
-                sx={{ 
-                  backgroundColor: 'rgba(76, 181, 195, 0.1)',
-                  color: '#2a8a95',
-                  fontWeight: 600,
-                  fontSize: '0.65rem',
-                  height: '18px'
-                }}
-              />
-            </Box>
-
             {/* כפתור התנתקות */}
             <LogoutButton
               onClick={handleLogout}
