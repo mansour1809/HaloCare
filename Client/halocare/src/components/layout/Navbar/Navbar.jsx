@@ -15,13 +15,13 @@ import {
   Chip
 } from '@mui/material';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { baseURL } from '../../common/axiosConfig';
 
 // Creating a professional theme
 const navbarTheme = createTheme({
@@ -57,64 +57,6 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     height: '2px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
   }
-}));
-
-// Styled search container
-const SearchContainer = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: 20,
-  backgroundColor: 'rgba(76, 181, 195, 0.08)',
-  border: '2px solid rgba(76, 181, 195, 0.15)',
-  transition: 'all 0.3s ease',
-  marginLeft: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  width: 'auto',
-  '&:hover': {
-    backgroundColor: 'rgba(76, 181, 195, 0.12)',
-    borderColor: 'rgba(76, 181, 195, 0.3)',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 15px rgba(76, 181, 195, 0.2)',
-  },
-  '&:focus-within': {
-    backgroundColor: 'rgba(76, 181, 195, 0.12)',
-    borderColor: '#4cb5c3',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
-  },
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#4cb5c3',
-  fontSize: '1.2rem'
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: '#2d3748',
-  fontWeight: 500,
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1.2, 1.5, 1.2, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    fontSize: '0.95rem',
-    [theme.breakpoints.up('md')]: {
-      width: '30ch',
-      '&:focus': {
-        width: '35ch',
-      },
-    },
-  },
 }));
 
 // Styled action buttons
@@ -248,9 +190,10 @@ const Navbar = () => {
             <Tooltip title="תפריט משתמש" arrow>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
+                {console.log(currentUser)}
                 <Avatar 
                   alt={currentUser?.firstName || "משתמש"} 
-                  src="/static/images/avatar/1.jpg" 
+                  src={`${baseURL}/Documents/content-by-path?path=${encodeURIComponent(currentUser.photo)}`}
                   sx={{ 
                     width: 36, 
                     height: 36, 

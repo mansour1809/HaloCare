@@ -12,6 +12,7 @@ import {
   Stack,
   Avatar,
   Chip,
+  Card,
   useTheme
 } from '@mui/material';
 import { 
@@ -28,7 +29,7 @@ import PropTypes from 'prop-types';
 import { useCalendar } from './CalendarContext';
 
 // Styled container for FullCalendar
-const CalendarContainer = styled(Box)(({ theme }) => ({
+const CalendarContainer = styled(Box)(() => ({
   
   '& .fc': {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',

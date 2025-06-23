@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`/auth/login`, { email, password });
       
       if (response.data && response.data.token) {
+        console.log(response.data)
         // Save to localStorage
         localStorage.setItem('token', response.data.token);
         const userData = {
@@ -62,7 +63,8 @@ export const AuthProvider = ({ children }) => {
           firstName: response.data.firstName || '',
           lastName: response.data.lastName || '',
           email: response.data.email || email,
-          role: response.data.role || ''
+          role: response.data.role || '',
+          photo: response.data.photo || ''
         };
         localStorage.setItem('user', JSON.stringify(userData));
         

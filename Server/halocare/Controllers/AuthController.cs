@@ -50,7 +50,8 @@ namespace halocare.Controllers
                     id = employee.EmployeeId,
                     firstName = $"{employee.FirstName} ",
                     lastName = $"{employee.LastName}",
-                    role = employee.RoleName
+                    role = employee.RoleName,
+                    photo = employee.Photo,
                 });
             }
             catch (Exception ex)
