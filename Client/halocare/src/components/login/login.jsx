@@ -72,7 +72,6 @@ const LoginPage = () => {
       
       // Show success message
       setOpenSnackbar(true);
-      // Navigate to the home page after successful login
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 1000);
@@ -85,9 +84,7 @@ const LoginPage = () => {
 
   // Pass the email to the context before opening the dialog
   const handleForgotPasswordClick = () => {
-    // Update the email in the context
     setAuthEmail(email);
-    // Open the dialog
     setShowForgotPassword(true);
   };
 

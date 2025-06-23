@@ -12,9 +12,7 @@ import {
   Button,
   Paper,
   alpha,
-  IconButton,
   Chip,
-  useTheme,
   ThemeProvider,
   createTheme,
   Stack,
@@ -29,8 +27,6 @@ import {
   Assessment as ReportsIcon,
   TrendingUp as TrendingIcon,
   CheckCircle as CompleteIcon,
-Login as LoginIcon,
-  ContactSupport as ContactIcon,
   Dashboard as DashboardIcon,
   LocalHospital as MedicalIcon,
   CalendarMonth as CalendarIcon,
@@ -38,10 +34,6 @@ Login as LoginIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   CheckCircle,
-  Star as StarIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  Celebration as CelebrationIcon,
-  EmojiEvents as TrophyIcon
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -165,7 +157,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// Header with glass design and effects
+
 const ModernHeader = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.15)',
   backdropFilter: 'blur(20px)',
@@ -290,7 +282,7 @@ const StyledIcon = styled(Avatar)(({ theme, color }) => ({
   }
 }));
 
-// Dashboard card with gradient background and glass effect
+// Dashboard card
 const DashboardCard = styled(Card)(({ theme, gradientColor }) => ({
   height: '320px',
   background: gradientColor,
