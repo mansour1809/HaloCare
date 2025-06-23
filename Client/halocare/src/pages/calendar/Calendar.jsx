@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { 
   Box, 
-  Paper, 
   Typography, 
   Button, 
   IconButton, 
@@ -27,15 +26,15 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
-// קומפוננטות משנה
+// Sub-components
 import CalendarFilter from './CalendarFilter';
 import CalendarView from './CalendarView';
 import EventDialog from './EventDialog';
 
-// שימוש בקונטקסט
+
 import { useCalendar } from './CalendarContext';
 
-// תמה מדהימה מותאמת
+// Customized theme
 const calendarTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -125,7 +124,7 @@ const calendarTheme = createTheme({
   }
 });
 
-// קונטיינר עם רקע מדהים
+
 const GradientContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
@@ -133,7 +132,7 @@ const GradientContainer = styled(Container)(({ theme }) => ({
   paddingBottom: theme.spacing(4),
 }));
 
-// כותרת מעוצבת עם אנימציה
+// Animated styled header
 const AnimatedHeader = styled(Box)(({ theme }) => ({
   position: 'relative',
   textAlign: 'center',
@@ -151,7 +150,7 @@ const AnimatedHeader = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס כלי בקרה מעוצב
+// Styled control panel card
 const ControlCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   '&::before': {
@@ -159,14 +158,14 @@ const ControlCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כרטיס יומן ראשי
+// Primary calendar card
 const CalendarCard = styled(Card)(({ theme }) => ({
   '&::before': {
     background: 'linear-gradient(90deg, #667eea, #818cf8, #4338ca)',
   }
 }));
 
-// סטטיסטיקה מעוצבת
+// Styled statistics section
 const StatsChip = styled(Chip)(({ theme }) => ({
   fontSize: '1rem',
   fontWeight: 600,
@@ -181,7 +180,6 @@ const StatsChip = styled(Chip)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 }));
 
-// כפתור מעוצב עם אפקטים
 const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   position: 'relative',
   overflow: 'hidden',
@@ -201,7 +199,6 @@ const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
 }));
 
 const Calendar = () => {
-  // שימוש בערכים ופונקציות מהקונטקסט
   const {
     events,
     filteredEvents,
@@ -216,21 +213,18 @@ const Calendar = () => {
   
   const theme = useTheme();
   
-  // הפניה ל-fullCalendar
   const calendarRef = useRef(null);
 
-  // קביעת האירועים המוצגים - מסוננים או הכל
   const displayEvents = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId 
     ? filteredEvents 
     : events;
   
-  // בדיקה אם יש מסננים פעילים
   const hasActiveFilters = filterOptions.kidId || filterOptions.employeeId || filterOptions.eventTypeId;
   
   return (
     <ThemeProvider theme={calendarTheme}>
       <GradientContainer maxWidth="xl" dir="rtl">
-        {/* כותרת ראשית מעוצבת */}
+        {/* Main styled header */}
         <Fade in timeout={800}>
           <AnimatedHeader>
             <Typography
@@ -265,7 +259,7 @@ const Calendar = () => {
           </AnimatedHeader>
         </Fade>
 
-        {/* כלי בקרה */}
+        {/* Control panel */}
         <Zoom in timeout={1000}>
           <ControlCard>
             <CardContent sx={{ p: 3 }}>
@@ -275,7 +269,7 @@ const Calendar = () => {
                 alignItems="center" 
                 justifyContent="space-between"
               >
-                {/* סטטיסטיקות */}
+                {/* Statistics */}
                 <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <EventIcon sx={{ color: 'primary.main', fontSize: '2rem' }} />
@@ -296,7 +290,7 @@ const Calendar = () => {
                   )}
                 </Stack>
 
-                {/* כפתורי פעולה */}
+                {/* Action buttons */}
                 <Stack direction="row" spacing={2} flexWrap="wrap">
                   <GlowButton 
                     variant="contained" 
@@ -351,7 +345,7 @@ const Calendar = () => {
           </ControlCard>
         </Zoom>
         
-        {/* טופס סינון */}
+        {/* Filter form */}
         {showFilterForm && (
           <Fade in timeout={500}>
             <Box>
@@ -360,7 +354,7 @@ const Calendar = () => {
           </Fade>
         )}
         
-        {/* היומן עצמו */}
+        {/* Calendar component */}
         <Zoom in timeout={1200}>
           <CalendarCard>
             <CardContent sx={{ p: 0 }}>
@@ -373,7 +367,7 @@ const Calendar = () => {
           </CalendarCard>
         </Zoom>
         
-        {/* דיאלוג עריכה/יצירה של אירוע */}
+        {/* Event creation/edit dialog */}
         <EventDialog />
       </GradientContainer>
     </ThemeProvider>

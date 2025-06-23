@@ -15,7 +15,6 @@ import {
   CalendarToday as CalendarTodayIcon,
   Save as SaveIcon,
   School as SchoolIcon,
-  HowToReg as HowToRegIcon,
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
   Today as TodayIcon,
@@ -182,18 +181,18 @@ const AttendanceMarking = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedClass, setSelectedClass] = useState('all');
   
-  // Load attendance data for the selected day
+  
   useEffect(() => {
     loadTodayAttendance(selectedDate.format('YYYY-MM-DD'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [selectedDate]);
   
-  // Function to switch between days
+ 
   const changeDay = (days) => {
     setSelectedDate(prevDate => prevDate.add(days, 'day'));
   };
   
-  // Open absence reasons dialog
+  
   const handleSaveClick = (classId = null) => {
     setSelectedClass(classId === null ? 'all' : classId.toString());
     setOpenDialog(true);
