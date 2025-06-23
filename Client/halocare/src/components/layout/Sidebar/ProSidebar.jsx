@@ -71,6 +71,7 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
   marginBottom: '2px',
   borderBottom: '1px solid rgba(76, 181, 195, 0.1)',
   position: 'relative',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -86,11 +87,12 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
 const StyledSubMenu = styled(SubMenu)(({ theme }) => ({
   margin: '1px 6px !important',
   borderRadius: '8px !important',
-  
+    overflow: 'hidden',
+
   '& .ps-submenu-expand-icon': {
     color: '#4cb5c3 !important',
   },
-  
+
   '& .ps-menu-button': {
     padding: '8px 12px !important',
     borderRadius: '8px !important',
@@ -110,6 +112,8 @@ const StyledSubMenu = styled(SubMenu)(({ theme }) => ({
     color: '#4cb5c3 !important',
     fontSize: '1.1rem !important',
     marginLeft: '6px !important',
+      overflow: 'hidden',
+
   }
 }));
 
@@ -126,15 +130,21 @@ const ProSidebar = () => {
       margin: '1px 6px',
       borderRadius: '8px',
       transition: 'all 0.3s ease',
+        overflow: 'none',
+
     },
     icon: {
       color: '#64748b',
       fontSize: '1.1rem',
       marginLeft: '6px',
+        overflow: 'hidden',
+
     },
     button: {
       padding: '8px 12px',
       borderRadius: '8px',
+              overflow: 'hidden',
+
       '&:hover': {
         backgroundColor: 'rgba(76, 181, 195, 0.08)',
         color: '#2a8a95',

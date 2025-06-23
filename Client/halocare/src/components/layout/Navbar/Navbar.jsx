@@ -7,7 +7,6 @@ import {
   Typography,
   Menu,
   Avatar,
-  Button,
   Tooltip,
   MenuItem,
   InputBase,
@@ -15,7 +14,7 @@ import {
   Divider,
   Chip
 } from '@mui/material';
-import { styled, alpha, createTheme, ThemeProvider } from '@mui/material/styles';
+import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -23,6 +22,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+
 // יצירת theme מקצועי
 const navbarTheme = createTheme({
   direction: 'rtl',
@@ -57,64 +57,6 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     height: '2px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
   }
-}));
-
-// חיפוש מעוצב ומתקדם
-const SearchContainer = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: 20,
-  backgroundColor: 'rgba(76, 181, 195, 0.08)',
-  border: '2px solid rgba(76, 181, 195, 0.15)',
-  transition: 'all 0.3s ease',
-  marginLeft: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  width: 'auto',
-  '&:hover': {
-    backgroundColor: 'rgba(76, 181, 195, 0.12)',
-    borderColor: 'rgba(76, 181, 195, 0.3)',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 4px 15px rgba(76, 181, 195, 0.2)',
-  },
-  '&:focus-within': {
-    backgroundColor: 'rgba(76, 181, 195, 0.12)',
-    borderColor: '#4cb5c3',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
-  },
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#4cb5c3',
-  fontSize: '1.2rem'
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: '#2d3748',
-  fontWeight: 500,
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1.2, 1.5, 1.2, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    fontSize: '0.95rem',
-    [theme.breakpoints.up('md')]: {
-      width: '30ch',
-      '&:focus': {
-        width: '35ch',
-      },
-    },
-  },
 }));
 
 // כפתורי פעולות מעוצבים
@@ -372,13 +314,12 @@ const Navbar = () => {
           {/* צד שמאל - לוגו */}
           <LogoContainer>
             <img 
-              src={'./logo.png'} 
+              src={'./logo-noLett.png'} 
               alt="HALO CARE" 
               style={{ 
                 height: '32px', 
                 marginLeft: '8px',
                 borderRadius: '6px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}
             />
             <Typography
