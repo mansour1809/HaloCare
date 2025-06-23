@@ -80,7 +80,6 @@ namespace halocare.DAL.Repositories
                 { "@BirthDate", employee.BirthDate },
                 { "@MobilePhone", employee.MobilePhone },
                 { "@Email", employee.Email },
-                //{ "@Password", employee.Password },
                 { "@PhotoPath", employee.Photo },
                 { "@LicenseNum", employee.LicenseNum },
                 { "@StartDate", employee.StartDate },

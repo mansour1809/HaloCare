@@ -60,7 +60,11 @@ namespace halocare.Controllers
                           : BadRequest(new { success = false, message = "שגיאה בשמירת הטופס" });
         }
     }
-
+    public class SubmitParentFormRequest
+    {
+        public string Token { get; set; } // 🆕 הוספה
+        public List<halocare.BL.Services.ParentAnswerDto> Answers { get; set; }  // 🔥 שימוש מפורש
+    }
     public class SendFormToParentRequest
     {
         public int KidId { get; set; }
