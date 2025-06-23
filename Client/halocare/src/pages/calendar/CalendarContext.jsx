@@ -8,10 +8,10 @@ import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
 import { fetchEvents } from '../../Redux/features/eventsSlice';
 import { useSelector } from 'react-redux';
 
-// יצירת הקונטקסט
+
 const CalendarContext = createContext();
 
-// פרובידר לקונטקסט
+
 export const CalendarProvider = ({ children }) => {
 
   const dispatch = useDispatch();
@@ -37,13 +37,10 @@ export const CalendarProvider = ({ children }) => {
   }, [dispatch, kidsStatus, employeesStatus, eventTypesStatus, eventsStatus]);
   
 
-  // מצבים - אירועים
+  // States - Events
   const [filteredEvents, setFilteredEvents] = useState([]);
-  // const [error, setError] = useState(null);
   const isLoadingFromRedux = (eventsStatus === 'loading');
-// console.log('errorsadasdas',error);
-  const [createdByUserId, setCreatedByUserId] = useState(0); // מזהה יוצר האירוע - ברירת מחדל
-  // מצבים - עריכה/יצירת אירוע
+  const [createdByUserId, setCreatedByUserId] = useState(0); 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -52,19 +49,19 @@ export const CalendarProvider = ({ children }) => {
     location: '',
     description: '',
     createdBy: 0,
-    eventTypeId: 0, // שינוי - שימוש במזהה סוג אירוע במקום מחרוזת
-    type: '', // שמירה לנוחות ממשק המשתמש
-    color: '', // צבע האירוע - חדש
+    eventTypeId: 0,
+    type: '', 
+    color: '', 
     kidIds: [],
     employeeIds: []
   });
 
-  // תצוגה והצגת דיאלוגים
+  // Display and show dialogs
   const [openDialog, setOpenDialog] = useState(false);
   const [calendarView, setCalendarView] = useState('timeGridWeek');
   const [showFilterForm, setShowFilterForm] = useState(false);
 
-  // סינון
+  // Filtering
   const [filterOptions, setFilterOptions] = useState({
     kidId: '',
     employeeId: '',
@@ -76,7 +73,7 @@ export const CalendarProvider = ({ children }) => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (user && user.id) {
-        setCreatedByUserId(user.id); // הגדרת מזהה יוצר האירוע
+        setCreatedByUserId(user.id);
       }
     } catch (error) {
       console.error('Error reading user from localStorage:', error);
@@ -129,35 +126,33 @@ export const CalendarProvider = ({ children }) => {
   }, [createdByUserId]);
 
 
-  // הוספת אירוע חדש
+  // Adding a new event
   const addEvent = useCallback(async (eventData) => {
 
       const serverEventData = prepareEventData(eventData);
       const response = await axios.post('/Events', serverEventData);
-      dispatch(fetchEvents());//refreshing the events list
+      dispatch(fetchEvents());
       return response.data;
 
   }, [prepareEventData, dispatch]);
 
-  // עדכון אירוע קיים
+  // Update an existing event
   const updateEvent = useCallback(async (eventData) => {
 
     const serverEventData = prepareEventData(eventData);
       const response = await axios.put(`/Events/${eventData.id}`, serverEventData);
-      dispatch(fetchEvents());//refreshing the events list
+      dispatch(fetchEvents());
       return response.data;
   }, [prepareEventData,dispatch]);
 
-  // מחיקת אירוע
+  // Delete event
   const deleteEvent = useCallback(async (eventId) => {
-    // setIsLoading(true);
-    // setError(null);
     await axios.delete(`Events/${eventId}`);
-    dispatch(fetchEvents());//refreshing the events list
+    dispatch(fetchEvents());
   },[dispatch]);
 
 
-  // פונקציית סינון אירועים
+  // Event filtering function
   const filterEvents = useCallback(() => {
     let filtered = [...events];
 
@@ -184,7 +179,6 @@ export const CalendarProvider = ({ children }) => {
     setFilteredEvents(filtered);
   }, [events, filterOptions]);
 
-  // איפוס מסננים
   const resetFilters = useCallback(() => {
     setFilterOptions({
       kidId: '',
@@ -193,7 +187,6 @@ export const CalendarProvider = ({ children }) => {
     });
   }, []);
 
-  // טיפול בשינוי מסננים
   const handleFilterChange = useCallback((e) => {
     const { name, value } = e.target;
     setFilterOptions(prev => ({
@@ -202,20 +195,18 @@ export const CalendarProvider = ({ children }) => {
     }));
   }, []);
 
-  // טיפול בשינוי ערכי האירוע
   const handleEventChange = useCallback((e) => {
     const { name, value } = e.target;
 
     setNewEvent(prev => {
-      // update the color if eventType updated
       if (name === 'eventTypeId') {
         const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(value));
 
         return {
           ...prev,
           [name]: value,
-          type: selectedType ? selectedType.eventType : '', // שמירת המחרוזת של סוג האירוע
-          color: selectedType ? selectedType.color : '', // עדכון הצבע
+          type: selectedType ? selectedType.eventType : '', 
+          color: selectedType ? selectedType.color : '',
         };
       }
 
@@ -226,18 +217,15 @@ export const CalendarProvider = ({ children }) => {
     });
   }, [eventTypes]);
 
-  // הפעלת הסינון בעת שינוי במסנן או באירועים
   useEffect(() => {
     filterEvents();
   }, [events, filterOptions, filterEvents]);
 
-  // loading the events on component mount
   useEffect(() => {
      dispatch(fetchEvents());
   }, [dispatch]);
 
 
-  // טיפול בלחיצה על תאריך ביומן
   const handleDateClick = useCallback((info) => {
     const defaultVal= getDefaultEventValues(info.date, null);
     setSelectedEvent(null);
@@ -245,11 +233,9 @@ export const CalendarProvider = ({ children }) => {
     setOpenDialog(true);
   }, [getDefaultEventValues]);
 
-  // טיפול בלחיצה על אירוע קיים
   const handleEventClick = useCallback((info) => {
     const event = info.event;
 
-    // המר תאריכים לפורמט HTML datetime-local
     const startStr = toISOStringWithoutTimezone(new Date(event.start));
     const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
 
@@ -263,9 +249,9 @@ export const CalendarProvider = ({ children }) => {
       location: event.extendedProps.location || '',
       description: event.extendedProps.description || '',
       createdBy: event.extendedProps.createdBy,
-      eventTypeId: event.extendedProps.eventTypeId || '', // שמירת המזהה
-      type: event.extendedProps.type || '', // שמירת המחרוזת
-      color: event.extendedProps.color || '', // שמירת הצבע
+      eventTypeId: event.extendedProps.eventTypeId || '', 
+      type: event.extendedProps.type || '', 
+      color: event.extendedProps.color || '',
       kidIds: event.extendedProps.kidIds || [],
       employeeIds: event.extendedProps.employeeIds || []
     });
@@ -273,11 +259,11 @@ export const CalendarProvider = ({ children }) => {
     setOpenDialog(true);
   }, []);
 
-  // שמירת אירוע
+
   const handleSaveEvent = useCallback(async () => {
-    // מציאת סוג האירוע לפי המזהה
+ 
     const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
-    // בניית אובייקט הנתונים לשליחה
+
     const eventData = {
       id: selectedEvent ? selectedEvent.id : 0,
       title: newEvent.title,
@@ -286,9 +272,9 @@ export const CalendarProvider = ({ children }) => {
       location: newEvent.location || '',
       description: newEvent.description || '',
       createdBy: newEvent.createdBy || 1,
-      color: selectedType.color || '', // שמירת הצבע שנבחר
-      eventType: selectedType.eventType, // שליחת שם סוג האירוע
-      eventTypeId: parseInt(newEvent.eventTypeId), // מזהה סוג האירוע
+      color: selectedType.color || '', 
+      eventType: selectedType.eventType, 
+      eventTypeId: parseInt(newEvent.eventTypeId), 
       kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds.map(id => parseInt(id)) : [],
       employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds.map(id => parseInt(id)) : []
     };
@@ -412,7 +398,6 @@ export const CalendarProvider = ({ children }) => {
     events,
     filteredEvents,
     isLoadingFromRedux,
-    // error,
     kids,
     employees,
     eventTypes,
@@ -429,7 +414,6 @@ export const CalendarProvider = ({ children }) => {
     addEvent,
     updateEvent,
     deleteEvent,
-    // fetchReferenceData,
     filterEvents,
     resetFilters,
     handleFilterChange,
