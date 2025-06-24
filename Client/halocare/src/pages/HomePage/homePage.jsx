@@ -157,7 +157,6 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-
 const ModernHeader = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.15)',
   backdropFilter: 'blur(20px)',
@@ -214,7 +213,6 @@ const StatCard = styled(Card)(({ theme, color }) => ({
     pointerEvents: 'none',
   }
 }));
-
 
 // Animated feature card
 const FeatureCard = styled(Card)(({ theme, color }) => ({
@@ -289,6 +287,7 @@ const DashboardCard = styled(Card)(({ theme, gradientColor }) => ({
   border: 'none',
   position: 'relative',
   overflow: 'hidden',
+  cursor: 'pointer', // הוספתי cursor
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -320,54 +319,33 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const stats = [
-    { label: 'ילדים פעילים', value: '24', icon: <GroupIcon fontSize="large" />, color: 'primary' },
-    { label: 'הושלמו השבוע', value: '8', icon: <CompleteIcon fontSize="large" />, color: 'success' },
-    { label: 'בתהליך כעת', value: '12', icon: <ProgressIcon fontSize="large" />, color: 'warning' },
-    { label: 'אחוז השלמה', value: '85%', icon: <TrendingIcon fontSize="large" />, color: 'error' }
-];
-
-  const features = [
     {
-      title: 'ניהול ילדים',
-      description: 'הוספה, עריכה ומעקב מקצועי אחרי כל הילדים בגן עם מעקב התפתחות מפורט ותיעוד מתקדם',
-      icon: <GroupIcon />,
+      label: 'ילדים פעילים',
+      value: '24',
+      icon: <GroupIcon fontSize="large" />,
       color: 'primary',
-      path: '/kids'
+      onClick: () => navigate('/kids/list')
     },
     {
-      title: 'נוכחות יומית',
-      description: 'רישום נוכחות חכם ויצוא דוחות מפורטים לפי תאריכים עם ניתוח סטטיסטי ומעקב מגמות',
-      icon: <CalendarIcon />,
+      label: 'הושלמו השבוע',
+      value: '8',
+      icon: <CompleteIcon fontSize="large" />,
       color: 'success',
-      path: '/attendance'
+      onClick: () => navigate('/reports/attendance')
     },
     {
-      title: 'טפסים רפואיים',
-      description: 'ניהול מקצועי של טופסי בריאות, תזונה ואישורים רפואיים - הכל דיגיטלי, מאובטח ונגיש',
-      icon: <MedicalIcon />,
+      label: 'ילדים בתהליך',
+      value: '12',
+      icon: <ProgressIcon fontSize="large" />,
       color: 'warning',
-      path: '/medical-forms'
+      onClick: () => navigate('/reports/treatments')
     },
     {
-      title: 'דוחות ואנליטיקה',
-      description: 'מערכת דוחות מתקדמת עם ויזואליזציה של נתונים וניתוח טרנדים להתפתחות הילדים',
-      icon: <ReportsIcon />,
+      label: 'אחוזי השלמה',
+      value: '85%',
+      icon: <TrendingIcon fontSize="large" />,
       color: 'error',
-      path: '/reports'
-    },
-    {
-      title: 'הגדרות מערכת',
-      description: 'ניהול הגדרות המערכת, הרשאות משתמשים וקונפיגורציות מתקדמות לגן',
-      icon: <SettingsIcon />,
-      color: 'secondary',
-      path: '/settings'
-    },
-    {
-      title: 'התראות ועדכונים',
-      description: 'מערכת התראות חכמה להורים והצוות עם עדכונים בזמן אמת על אירועים חשובים',
-      icon: <NotificationsIcon />,
-      color: 'primary',
-      path: '/notifications'
+      onClick: () => navigate('/reports')
     }
   ];
 
@@ -377,28 +355,28 @@ const HomePage = () => {
       description: 'התחל תהליך קליטה מקצועי',
       icon: <AddIcon />,
       color: 'primary',
-      path: '/kids/new'
+      path: '/kids/onboarding/new'
     },
     {
       title: 'לוח בקרה',
-      description: 'מבט כללי על המצב',
+      description: 'מבט על הגדרות המערכת',
       icon: <DashboardIcon />,
       color: 'secondary',
-      path: '/dashboard'
+      path: '/SystemSetting/CitiesTab'
     },
     {
       title: 'יצירת דוחות',
       description: 'דוחות מפורטים וסטטיסטיקות',
       icon: <FormIcon />,
       color: 'warning',
-      path: '/reports'
+      path: '/reports/attendance'
     },
     {
       title: 'מעקב התקדמות',
       description: 'צפייה בהתקדמות הילדים',
       icon: <ProgressIcon />,
       color: 'success',
-      path: '/progress'
+      path: '/reports/treatments'
     }
   ];
 
@@ -406,73 +384,16 @@ const HomePage = () => {
     <ThemeProvider theme={rtlTheme}>
       <Box sx={{ direction: 'rtl' }}>
         <FullScreenContainer>
-          {/* Professional header with glass effects */}
-          <Fade in timeout={800}>
-            <ModernHeader elevation={0}>
-              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-                <Stack 
-                  direction={{ xs: 'column', md: 'row' }}
-                  justifyContent="space-between" 
-                  alignItems="center"
-                  spacing={2}
-                  sx={{ py: 3 }}
-                >
-                  <Stack direction="row" spacing={3} alignItems="center">
-                    <Avatar 
-                      sx={{ 
-                        background: 'linear-gradient(45deg, #667eea 30%, #f093fb 90%)',
-                        width: 64, 
-                        height: 64,
-                        fontSize: '2rem',
-                        fontWeight: 'bold',
-                        boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
-                        animation: 'pulse 2s infinite'
-                      }}
-                    >
-                      🌟
-                    </Avatar>
-                    <Box>
-                      <Typography 
-                        variant="h4"
-                        sx={{
-                          fontWeight: 800,
-                          background: 'linear-gradient(45deg, #ffffff 30%, rgba(255,255,255,0.8) 90%)',
-                          backgroundClip: 'text',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                          lineHeight: 1.2
-                        }}
-                      >
-                        Halo Care
-                      </Typography>
-                      <Typography 
-                        variant="subtitle1"
-                        sx={{ 
-                          color: 'rgba(255,255,255,0.9)',
-                          fontWeight: 500,
-                          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                        }}
-                      >
-                        מערכת לניהול
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Stack>
-              </Container>
-            </ModernHeader>
-          </Fade>
-
           {/* Main content */}
           <Container maxWidth="lg" sx={{ flex: 1, py: 6, position: 'relative', zIndex: 2 }}>
             {/* Central statistics */}
             <Zoom in timeout={1000}>
               <Box sx={{ mb: 8 }}>
-                <Typography 
-                  variant="h4" 
-                  fontWeight="bold" 
-                  textAlign="center" 
-                  sx={{ 
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  textAlign="center"
+                  sx={{
                     mb: 6,
                     color: 'white',
                     textShadow: '0 4px 8px rgba(0,0,0,0.3)'
@@ -484,7 +405,11 @@ const HomePage = () => {
                   {stats.map((stat, index) => (
                     <Grid item xs={6} sm={3} key={index}>
                       <Fade in timeout={1200 + (index * 200)}>
-                        <StatCard color={stat.color}>
+                        <StatCard
+                          color={stat.color}
+                          onClick={stat.onClick}
+                          sx={{ cursor: 'pointer' }}
+                        >
                           <Avatar
                             sx={{
                               background: `linear-gradient(135deg, ${rtlTheme.palette[stat.color]?.main}, ${rtlTheme.palette[stat.color]?.dark})`,
@@ -513,14 +438,14 @@ const HomePage = () => {
               </Box>
             </Zoom>
 
-            {/* Calander */}
+            {/* Calendar */}
             <Fade in timeout={1400}>
               <Box sx={{ mb: 8 }}>
-                <Typography 
-                  variant="h4" 
-                  fontWeight="bold" 
-                  textAlign="center" 
-                  sx={{ 
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
+                  textAlign="center"
+                  sx={{
                     mb: 6,
                     color: 'white',
                     textShadow: '0 4px 8px rgba(0,0,0,0.3)'
@@ -529,9 +454,12 @@ const HomePage = () => {
                   🎯 מה קורה בגן שלנו היום
                 </Typography>
                 <Grid container spacing={4}>
-                  {/* Weekly events*/}
+                  {/* Weekly events */}
                   <Grid item xs={12} md={6} lg={3}>
-                    <DashboardCard gradientColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                    <DashboardCard
+                      gradientColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      onClick={() => navigate('/calendar/schedule')}
+                    >
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                           <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
@@ -566,8 +494,8 @@ const HomePage = () => {
                   {/* Attendance */}
                   <Grid item xs={12} md={6} lg={3}>
                     <DashboardCard gradientColor="linear-gradient(135deg, #10b981 0%, #34d399 100%)">
-                      <CardActionArea 
-                        onClick={() => navigate('/attendance')}
+                      <CardActionArea
+                        onClick={() => navigate('/reports/attendance')} // תוקן הנתיב
                         sx={{ height: '100%' }}
                       >
                         <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column' }}>
@@ -579,7 +507,7 @@ const HomePage = () => {
                               נוכחות יומית
                             </Typography>
                           </Stack>
-                          
+
                           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                             <Typography variant="h2" fontWeight="bold" color="white" sx={{ mb: 1, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                               18/24
@@ -587,13 +515,13 @@ const HomePage = () => {
                             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)', mb: 3 }}>
                               ילדים נוכחים היום
                             </Typography>
-                            
-                            <Button 
-                              variant="contained" 
+
+                            <Button
+                              variant="contained"
                               size="large"
                               startIcon={<CheckCircle />}
                               fullWidth
-                              sx={{ 
+                              sx={{
                                 background: 'rgba(255,255,255,0.2)',
                                 backdropFilter: 'blur(10px)',
                                 color: 'white',
@@ -613,7 +541,10 @@ const HomePage = () => {
 
                   {/* Recent progress */}
                   <Grid item xs={12} md={6} lg={3}>
-                    <DashboardCard gradientColor="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)">
+                    <DashboardCard
+                      gradientColor="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)"
+                      onClick={() => navigate('/reports/treatments')} // הוספתי ניתוב
+                    >
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                           <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
@@ -647,7 +578,10 @@ const HomePage = () => {
 
                   {/* Important alerts */}
                   <Grid item xs={12} md={6} lg={3}>
-                    <DashboardCard gradientColor="linear-gradient(135deg, #f093fb 0%, #e879f9 100%)">
+                    <DashboardCard
+                      gradientColor="linear-gradient(135deg, #f093fb 0%, #e879f9 100%)"
+                      onClick={() => navigate('/settings')} // הוספתי ניתוב להגדרות
+                    >
                       <CardContent sx={{ p: 4, height: '100%', position: 'relative', zIndex: 2 }}>
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                           <Avatar sx={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}>
@@ -688,11 +622,11 @@ const HomePage = () => {
             {/* Quick tasks */}
             <Zoom in timeout={1600}>
               <Box sx={{ mb: 8 }}>
-                <Typography 
-                  variant="h5" 
-                  fontWeight="bold" 
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
                   textAlign="center"
-                  sx={{ 
+                  sx={{
                     mb: 4,
                     color: 'white',
                     textShadow: '0 4px 8px rgba(0,0,0,0.3)'
@@ -740,10 +674,10 @@ const HomePage = () => {
 
           {/* Footer with glass design */}
           <Fade in timeout={2000}>
-            <Paper 
-              component="footer" 
-              sx={{ 
-                py: 4, 
+            <Paper
+              component="footer"
+              sx={{
+                py: 4,
                 textAlign: 'center',
                 background: 'rgba(255, 255, 255, 0.15)',
                 backdropFilter: 'blur(20px)',
