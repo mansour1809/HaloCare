@@ -23,14 +23,14 @@ const DigitalSignature = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
 
-  // טעינת חתימה קיימת
+  // Loading existing signature
   useEffect(() => {
     if (value && canvasRef.current) {
       loadSignature(value);
     }
   }, [value, dialogOpen]);
 
-  // טעינת חתימה מ-base64
+  // Loading signature from base64
   const loadSignature = (base64Data) => {
     if (!base64Data || !canvasRef.current) return;
     
@@ -47,12 +47,12 @@ const DigitalSignature = ({
     img.src = base64Data;
   };
 
-  // פונקציה לחישוב מיקום נכון של העכבר
+  // Function to calculate the correct position of the mouse
   const getMousePos = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;   // יחס רוחב
-    const scaleY = canvas.height / rect.height; // יחס גובה
+    const scaleX = canvas.width / rect.width;   
+    const scaleY = canvas.height / rect.height; 
     
     return {
       x: (e.clientX - rect.left) * scaleX,
@@ -60,7 +60,7 @@ const DigitalSignature = ({
     };
   };
 
-  // התחלת ציור - מעודכן
+  // Start drawing - updated
   const startDrawing = (e) => {
     if (readOnly) return;
     
@@ -71,14 +71,14 @@ const DigitalSignature = ({
     ctx.beginPath();
     ctx.moveTo(pos.x, pos.y);
     
-    // הגדרות ציור טובות יותר
+    // Drawing settings
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#000';
   };
 
-  // ציור - מעודכן
+  // Drawing - updated
   const draw = (e) => {
     if (!isDrawing || readOnly) return;
     
@@ -89,7 +89,7 @@ const DigitalSignature = ({
     ctx.stroke();
   };
 
-  // תמיכה במגע (טאבלט/מובייל)
+  // Touch support (tablet/mobile)
   const handleTouchStart = (e) => {
     e.preventDefault();
     const touch = e.touches[0];
@@ -115,25 +115,23 @@ const DigitalSignature = ({
     stopDrawing();
   };
 
-  // אתחול Canvas
   const initCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
     
-    // הגדרות בסיסיות
+    // Basic settings
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 2;
     
-    // רקע לבן
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
-  // אתחול כשהדיאלוג נפתח
+  // Initialization when the dialog opens
   useEffect(() => {
     if (dialogOpen && canvasRef.current) {
       initCanvas();
@@ -143,7 +141,6 @@ const DigitalSignature = ({
     }
   }, [dialogOpen]);
 
-  // סיום ציור
   const stopDrawing = () => {
     if (isDrawing) {
       setIsDrawing(false);
@@ -151,7 +148,6 @@ const DigitalSignature = ({
     }
   };
 
-  // ניקוי החתימה
   const clearSignature = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -159,7 +155,7 @@ const DigitalSignature = ({
     setHasSignature(false);
   };
 
-  // שמירת החתימה
+  // Save the signature
   const saveSignature = () => {
     if (!hasSignature) return;
     
@@ -169,7 +165,6 @@ const DigitalSignature = ({
     setDialogOpen(false);
   };
 
-  // ביטול שינויים
   const cancelSignature = () => {
     setDialogOpen(false);
     if (value) {
@@ -183,7 +178,7 @@ const DigitalSignature = ({
 
   return (
     <Box>
-      {/* תצוגת החתימה */}
+      {/* Signature display */}
       <Paper 
         sx={{ 
           p: 2, 
@@ -203,7 +198,7 @@ const DigitalSignature = ({
           minHeight: 80
         }}>
           {value ? (
-            // תצוגת חתימה קיימת
+            
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                <img 
                 src={value} 
@@ -222,7 +217,7 @@ const DigitalSignature = ({
               </Typography>
             </Box>
           ) : (
-            // אין חתימה
+            // No signature
             <Typography variant="body2" color="text.secondary">
               לא נחתם
             </Typography>
@@ -256,7 +251,7 @@ const DigitalSignature = ({
         </Box>
       </Paper>
 
-      {/* דיאלוג חתימה */}
+      {/* Signature Dialog */}
       <Dialog 
         open={dialogOpen} 
         onClose={cancelSignature}
@@ -291,7 +286,7 @@ const DigitalSignature = ({
             )}
           </Box>
           
-          {/* אזור החתימה */}
+          
           <Paper 
             sx={{ 
               p: 1, 
@@ -303,21 +298,18 @@ const DigitalSignature = ({
           >
             <canvas
               ref={canvasRef}
-              // width={500}
               height={150}
               style={{ 
                 border: '1px solid #eee',
                 borderRadius: 4,
                 width: '100%',
                 cursor: readOnly ? 'default' : 'crosshair',
-                display: 'block', // 🔥 חשוב - מונע בעיות מיקום
-                touchAction: 'none' // 🔥 מונע scroll במובייל
+                display: 'block',
+                touchAction: 'none'
               }}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
-              // onMouseLeave={stopDrawing}
-              // 🔥 תמיכה במגע
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}

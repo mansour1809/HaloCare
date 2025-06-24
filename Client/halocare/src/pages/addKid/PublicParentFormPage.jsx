@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container, Box, Paper, Typography, TextField, Button, 
   CircularProgress, Alert, Stepper, Step, StepLabel,
-  Card, CardContent, Dialog, DialogTitle, DialogContent,
+  Dialog, DialogTitle, DialogContent,
   DialogActions
 } from '@mui/material';
 import {
@@ -22,7 +22,7 @@ const PublicParentFormPage = () => {
   const navigate = useNavigate();
   
   // States
-  const [currentStep, setCurrentStep] = useState(0); // 0: אימות, 1: טופס, 2: סיום
+  const [currentStep, setCurrentStep] = useState(0);
   const [kidIdNumber, setKidIdNumber] = useState('');
   const [formData, setFormData] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -33,7 +33,7 @@ const PublicParentFormPage = () => {
 
   const steps = ['אימות זהות', 'מילוי הטופס', 'סיום'];
 
-// 🆕 פונקציה לטיפול במידע מורכב
+// Function to handle complex data
   const handleMultipleEntriesChange = (questionNo, entriesData) => {
     setMultipleEntriesData(prev => ({
       ...prev,
@@ -43,7 +43,7 @@ const PublicParentFormPage = () => {
 
 
 
-  // אימות גישה
+  // Access Validation
   const handleValidation = async () => {
     if (!kidIdNumber.trim()) {
       setError('נא להזין תעודת זהות');
@@ -54,20 +54,20 @@ const PublicParentFormPage = () => {
     setError('');
 
     try {
-      // בדיקת תקינות הטוקן ותעודת הזהות
+      // Token and ID validation
       const validateResponse = await axios.post('/ParentForm/validate', {
         token,
         kidIdNumber: kidIdNumber.trim()
       });
 
       if (validateResponse.data.success) {
-        // טעינת נתוני הטופס
+        // Loading form data
         const formResponse = await axios.get(`/ParentForm/form/${token}`);
         
         if (formResponse.data) {
           setFormData(formResponse.data);
           
-          // טעינת תשובות קיימות
+            // Loading existing answers
           const existingAnswers = {};
           formResponse.data.existingAnswers?.forEach(answer => {
             existingAnswers[answer.questionNo] = {
@@ -77,7 +77,7 @@ const PublicParentFormPage = () => {
           });
           setAnswers(existingAnswers);
           
-          setCurrentStep(1); // מעבר לטופס
+          setCurrentStep(1);
         } else {
           setError('שגיאה בטעינת נתוני הטופס');
         }
@@ -92,7 +92,7 @@ const PublicParentFormPage = () => {
     }
   };
 
-  // עדכון תשובה
+  // Answer update
   const handleAnswerChange = (questionNo, answer, other = '') => {
     setAnswers(prev => ({
       ...prev,
@@ -100,12 +100,11 @@ const PublicParentFormPage = () => {
     }));
   };
 
-  // שמירת הטופס
   const handleSubmit = async () => {
     setLoading(true);
     
     try {
-      // המרת התשובות לפורמט הנדרש
+      // Convert answers to the required format
       const formattedAnswers = Object.entries(answers).map(([questionNo, answerData]) => {
         const question = formData.questions.find(q => q.questionNo === parseInt(questionNo));
         
@@ -115,7 +114,7 @@ const PublicParentFormPage = () => {
           other: answerData.other || ''
         };
 
-        // 🆕 הוספת מידע מורכב אם קיים
+        // Adding complex data if available
         if (question?.requiresMultipleEntries && answerData.answer === 'כן') {
           const entriesData = multipleEntriesData[questionNo];
           if (entriesData && entriesData.length > 0) {
@@ -139,7 +138,7 @@ const PublicParentFormPage = () => {
       const response = await axios.post('/ParentForm/submit', payload);
       
       if (response.data.success) {
-        setCurrentStep(2); // מעבר לשלב הסיום
+        setCurrentStep(2);
       } else {
         setError(response.data.message || 'שגיאה בשמירת הטופס');
       }
@@ -153,7 +152,6 @@ const PublicParentFormPage = () => {
   };
        
 
-  // חישוב התקדמות
   const calculateProgress = () => {
     if (!formData?.questions?.length) return 0;
     
@@ -168,7 +166,6 @@ const PublicParentFormPage = () => {
       : 0;
   };
 
-  // קבלת ערך תשובה
   const getAnswerValue = (questionNo) => {
     const answer = answers[questionNo];
     return {
@@ -222,17 +219,16 @@ const PublicParentFormPage = () => {
         ))}
       </Stepper>
 
-      {/* שגיאות */}
+      {/* Errors */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
 
-      {/* תוכן לפי שלב */}
+      {/* Content by step */}
       <Paper sx={{ p: 4, borderRadius: 3 }}>
         {currentStep === 0 && (
-          // שלב אימות
           <Box sx={{ textAlign: 'center' }}>
             <SecurityIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
             <Typography variant="h5" gutterBottom>
@@ -269,7 +265,6 @@ const PublicParentFormPage = () => {
         )}
 
         {currentStep === 1 && formData && (
-          // שלב מילוי הטופס
           <Box>
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography variant="h5" gutterBottom>
@@ -282,7 +277,7 @@ const PublicParentFormPage = () => {
                 {formData.form.formDescription}
               </Typography>
               
-              {/* התקדמות */}
+              {/* Progress */}
               <Box sx={{ mt: 2, mx: 'auto', maxWidth: 400 }}>
                 <Typography variant="body2" color="primary" sx={{ mb: 1 }}>
                   התקדמות: {calculateProgress()}%
@@ -308,7 +303,7 @@ const PublicParentFormPage = () => {
               </Box>
             </Box>
 
-            {/* שאלות הטופס */}
+            {/* Form questions */}
             <Box sx={{ mb: 4 }}>
               {formData.questions.map((question) => {
                 const { answer, other } = getAnswerValue(question.questionNo);
@@ -329,7 +324,7 @@ const PublicParentFormPage = () => {
                       readOnly={false}
                     />
 
-                    {/* 🆕 הוספת רכיב מידע מורכב */}
+                    {/* Adding complex data component */}
                     {question.requiresMultipleEntries &&
                       answer === "כן" && (
                         <Box sx={{ mt: 2 }}>
@@ -357,7 +352,7 @@ const PublicParentFormPage = () => {
               })}
             </Box>
 
-            {/* כפתור שמירה */}
+            {/* Save button */}
             <Box sx={{ textAlign: 'center' }}>
               <Button
                 variant="contained"
@@ -379,7 +374,6 @@ const PublicParentFormPage = () => {
         )}
 
         {currentStep === 2 && (
-          // שלב סיום
           <Box sx={{ textAlign: 'center' }}>
             <SuccessIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
             <Typography variant="h4" gutterBottom color="success.main">
@@ -395,7 +389,7 @@ const PublicParentFormPage = () => {
         )}
       </Paper>
 
-      {/* דיאלוג אישור שליחה */}
+      {/* Submission Confirmation Dialog */}
       <Dialog open={submitDialog} onClose={() => setSubmitDialog(false)}>
         <DialogTitle>אישור שליחת טופס</DialogTitle>
         <DialogContent>

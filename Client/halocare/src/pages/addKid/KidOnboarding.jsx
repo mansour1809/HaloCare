@@ -1,4 +1,4 @@
-// src/pages/kids/KidOnboarding.jsx - גרסה מתוקנת עם אפשרות צפייה ועריכה
+// src/pages/kids/KidOnboarding.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,13 +9,11 @@ import {
 import {
   Home as HomeIcon,
   Group as GroupIcon,
-  Refresh as RefreshIcon,
-  CheckCircle as SuccessIcon,
   Edit as EditIcon,
   Visibility as ViewIcon
 } from '@mui/icons-material';
 
-// Redux החדש
+// New Redux
 import { 
   fetchOnboardingStatus, 
   setCurrentKid,
@@ -29,7 +27,6 @@ import {
   clearSelectedKid
 } from '../../Redux/features/kidsSlice';
 
-// קומפוננטים
 import PersonalInfoForm from './PersonalInfoForm';
 import DynamicFormRenderer from './DynamicFormRenderer';
 import OnboardingDashboard from './OnboardingDashboard';
@@ -48,17 +45,17 @@ const KidOnboarding = () => {
   const onboardingError = useSelector(selectOnboardingError);
   const { selectedKid } = useSelector(state => state.kids);
   
-  // State מקומי
-  const [viewMode, setViewMode] = useState('dashboard'); // 'dashboard' | 'form' | 'personalInfo'
+  // Local State 
+  const [viewMode, setViewMode] = useState('dashboard'); 
   const [selectedForm, setSelectedForm] = useState(null);
-  const [formReadOnly, setFormReadOnly] = useState(false); // 🔥 מצב צפייה/עריכה
+  const [formReadOnly, setFormReadOnly] = useState(false); 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
   const isNewKid = kidId === undefined;
 
-  // טעינה ראשונית
+
   useEffect(() => {
     initializeOnboarding();
     
@@ -90,7 +87,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // רענון נתונים
+  // Data Refresh
   const handleRefresh = async () => {
     if (!kidId || isNewKid) return;
     
@@ -105,7 +102,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // יצירת ילד חדש
+  // Create a new kid
   const handleKidCreated = async (newKidData) => {
     try {
       showNotification('ילד נוצר בהצלחה! מעביר לתהליך קליטה...', 'success');
@@ -119,20 +116,19 @@ const KidOnboarding = () => {
     }
   };
 
-  // 🔥 פתיחת טופס למילוי/צפייה - מתוקן עם טיפול בטופס פרטים אישיים
+  // Open form for filling/viewing 
   const handleFormClick = (form, mode = 'auto') => {
-    // 🔥 טיפול מיוחד בטופס פרטים אישיים (formId = 1002)
     if (form.formId === 1002) {
       setSelectedForm({ ...form, buttonText: mode === 'view' ? 'צפייה' : 'עריכה' });
       setFormReadOnly(mode === 'view');
-      setViewMode('personalInfo'); // 🔥 מצב מיוחד לטופס פרטים אישיים
+      setViewMode('personalInfo');
       return;
     }
 
     let readOnlyMode = false;
     let buttonText = '';
 
-    // קביעת מצב לפי סטטוס הטופס ובקשת המשתמש
+    // Setting mode based on form status and user request
     if (mode === 'view') {
       readOnlyMode = true;
       buttonText = 'צפייה';
@@ -140,7 +136,7 @@ const KidOnboarding = () => {
       readOnlyMode = false;
       buttonText = 'עריכה';
     } else {
-      // מצב אוטומטי לפי סטטוס
+      // Automatic mode based on status
       if (['Completed', 'CompletedByParent'].includes(form.status)) {
         readOnlyMode = true;
         buttonText = 'צפייה';
@@ -155,34 +151,32 @@ const KidOnboarding = () => {
     setViewMode('form');
   };
 
-  // השלמת טופס
+  // Form completion
   const handleFormComplete = async (formId) => {
     showNotification('הטופס נשמר בהצלחה!', 'success');
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
     
-    // רענון אוטומטי
     setTimeout(() => {
       dispatch(fetchOnboardingStatus(kidId));
     }, 500);
   };
 
-  // חזרה לדשבורד
   const handleBackToDashboard = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
   };
 
-  // 🔥 מעבר ממצב צפייה לעריכה
+  // Switch from view mode to edit mode
   const switchToEditMode = () => {
     setFormReadOnly(false);
     setSelectedForm(prev => ({ ...prev, buttonText: 'עריכה' }));
     showNotification('עברת למצב עריכה', 'info');
   };
 
-  // שליחה להורים
+  // Send to parents
   const handleSendToParent = (form) => {
     console.log('שליחה להורים:', form);
   };
@@ -230,7 +224,7 @@ const KidOnboarding = () => {
           </Typography>
         </Breadcrumbs>
 
-        {/* שגיאות */}
+        {/* Errors */}
         {onboardingError && (
           <Alert severity="error" sx={{ mb: 3 }}>
             <AlertTitle>שגיאה</AlertTitle>
@@ -238,7 +232,7 @@ const KidOnboarding = () => {
           </Alert>
         )}
 
-        {/* הלוגו עם הפרוגרס */}
+        {/* LOgo with progress */}
         {!isNewKid && currentOnboarding && (
           <ProgressLogo 
             onboardingData={currentOnboarding}
@@ -248,10 +242,10 @@ const KidOnboarding = () => {
           />
         )}
 
-        {/* תוכן דינמי לפי מצב */}
+        {/* Dynamic content based on state */}
         <Fade in={true} timeout={500}>
           <Box>
-            {/* 🔥 טופס פרטים אישיים לילד חדש */}
+            {/* Personal information form for a new child */}
             {isNewKid && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50' }}>
@@ -283,7 +277,7 @@ const KidOnboarding = () => {
                       {selectedForm.formDescription}
                     </Typography>
                     
-                    {/* אינדיקטור מצב */}
+                    {/* Status Indicator */}
                     <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Chip
                         icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
@@ -314,20 +308,19 @@ const KidOnboarding = () => {
                 
                 <Box sx={{ p: 3 }}>
                   <PersonalInfoForm
-                    data={isNewKid ? null : selectedKid} // 🔥 העברת נתוני הילד הקיימים
+                    data={isNewKid ? null : selectedKid}
                     onUpdate={(updatedData) => {
-                      // עדכון לאחר שמירה
                       showNotification('פרטי הילד עודכנו בהצלחה', 'success');
                       handleBackToDashboard();
                     }}
-                    isEditMode={!isNewKid} // 🔥 תמיד במצב עריכה (PersonalInfoForm מטפל בצפייה פנימית)
-                    readOnly={formReadOnly} // 🔥 נעביר את זה אם PersonalInfoForm יתמוך בזה
+                    isEditMode={!isNewKid} 
+                    readOnly={formReadOnly} 
                   />
                 </Box>
               </Paper>
             )}
 
-            {/* דשבורד תהליך קליטה */}
+            {/* Onboarding Process Dashboard */}
             {viewMode === 'dashboard' && currentOnboarding && (
               <>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -347,7 +340,7 @@ const KidOnboarding = () => {
               </>
             )}
 
-            {/* 🔥 מילוי/צפייה בטופס דינמי  */}
+            {/* Filling/Viewing Dynamic Form */}
             {viewMode === 'form' && selectedForm && (
               <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
                 <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -359,7 +352,7 @@ const KidOnboarding = () => {
                       {selectedForm.formDescription}
                     </Typography>
                     
-                    {/* 🔥 אינדיקטור מצב */}
+                    {/* Status Indicator */}
                     <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Chip
                         icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
@@ -378,7 +371,6 @@ const KidOnboarding = () => {
                   </Box>
                   
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {/* 🔥 כפתור מעבר בין מצבים */}
                     {formReadOnly && !selectedForm.formName.includes('אישור') && (
                       <Button
                         variant="outlined"
@@ -407,7 +399,7 @@ const KidOnboarding = () => {
                     formData={selectedForm}
                     onComplete={handleFormComplete}
                     onBack={handleBackToDashboard}
-                    readOnly={formReadOnly} // 🔥 העברת מצב הצפייה/עריכה
+                    readOnly={formReadOnly}
                   />
                 </Box>
               </Paper>
@@ -415,7 +407,7 @@ const KidOnboarding = () => {
           </Box>
         </Fade>
 
-        {/* התראות */}
+        {/* Notifications */}
         <Snackbar
           open={notification.open}
           autoHideDuration={4000}

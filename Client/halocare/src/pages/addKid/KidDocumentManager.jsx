@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Tabs, Tab, Button, Alert, Fade, 
   CircularProgress, Chip, Dialog, DialogTitle, DialogContent,
-  DialogActions, Grid, Card, CardContent, IconButton, Tooltip,
+  DialogActions, IconButton,
   Collapse
 } from '@mui/material';
 import {
@@ -13,11 +13,8 @@ import {
   Description as DocumentIcon,
   Refresh as RefreshIcon,
   ExpandMore as ExpandIcon,
-  ExpandLess as CollapseIcon,
-  Info as InfoIcon
 } from '@mui/icons-material';
 
-// Import הקומפוננטות הקיימות
 import FileUploader from '../../components/common/FileUploader';
 import FilesList from '../../components/common/FilesList';
 
@@ -30,10 +27,10 @@ import {
 const KidDocumentManager = ({ 
   kidId, 
   kidName = '',
-  compact = false,           // מצב קומפקטי לדשבורד
-  showUpload = true,         // האם להציג אזור העלאה
-  showStats = true,          // האם להציג סטטיסטיקות
-  maxHeight = null           // גובה מקסימלי לתצוגה
+  compact = false,         
+  showUpload = true,        
+  showStats = true,         
+  maxHeight = null          
 }) => {
   const dispatch = useDispatch();
   
@@ -48,14 +45,12 @@ const KidDocumentManager = ({
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(!compact);
 
-  // טעינת מסמכים
   useEffect(() => {
     if (kidId) {
       loadDocuments();
     }
     
     return () => {
-      // ניקוי כשעוזבים את הקומפוננטה
       dispatch(clearDocuments());
     };
   }, [kidId]);
@@ -77,20 +72,18 @@ const KidDocumentManager = ({
   const handleUploadSuccess = (uploadedFiles) => {
     console.log('קבצים הועלו בהצלחה:', uploadedFiles);
     setUploadDialog(false);
-    // רענון אוטומטי
     setTimeout(() => {
       loadDocuments();
     }, 500);
   };
 
   const handleDeleteSuccess = () => {
-    // רענון אוטומטי אחרי מחיקה
     setTimeout(() => {
       loadDocuments();
     }, 500);
   };
 
-  // סטטיסטיקות
+    // Statistics
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
     
@@ -103,7 +96,7 @@ const KidDocumentManager = ({
 
   const stats = getDocumentStats();
 
-  // מצב קומפקטי לדשבורד
+    // Compact mode for dashboard
   if (compact) {
     return (
       <Paper 
@@ -118,7 +111,7 @@ const KidDocumentManager = ({
           flexDirection: 'column'
         }}
       >
-        {/* כותרת */}
+        {/* Title */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <FolderIcon color="primary" sx={{ mr: 1 }} />
@@ -156,7 +149,7 @@ const KidDocumentManager = ({
 
         <Collapse in={expanded}>
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            {/* כפתורי פעולה */}
+            {/* Action Buttons */}
             {showUpload && (
               <Box sx={{ mb: 2 }}>
                 <Button
@@ -171,7 +164,7 @@ const KidDocumentManager = ({
               </Box>
             )}
 
-            {/* רשימת מסמכים */}
+            {/* Document List */}
             <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 250 }}>
               {documentsStatus === 'loading' ? (
                 <Box sx={{ textAlign: 'center', py: 3 }}>
@@ -194,7 +187,7 @@ const KidDocumentManager = ({
           </Box>
         </Collapse>
 
-        {/* דיאלוג העלאה */}
+        {/* Upload Dialog */}
         <Dialog 
           open={uploadDialog} 
           onClose={() => setUploadDialog(false)}
@@ -225,10 +218,11 @@ const KidDocumentManager = ({
     );
   }
 
-  // מצב מלא (לפרופיל ילד)
+    // Full mode (for kid profile)
+
   return (
     <Box dir='rtl' sx={{ maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' , ml:2 ,mr:2 }}>
-      {/* כותרת עם סטטיסטיקות */}
+      {/* Title with statistics */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box>
           <Typography variant="h5" gutterBottom>
@@ -287,7 +281,7 @@ const KidDocumentManager = ({
         </Box>
       </Box>
 
-      {/* טאבים */}
+      {/* Tabs */}
       <Paper sx={{ borderRadius: 2, overflow: 'hidden', flex: 2, display: 'flex', flexDirection: 'column' }}>
         <Tabs 
           value={currentTab} 
@@ -300,7 +294,7 @@ const KidDocumentManager = ({
           <Tab label="מסמכים רגילים" />
         </Tabs>
 
-        {/* תוכן הטאבים */}
+        {/* Tab content */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
           {documentsStatus === 'loading' ? (
             <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -351,7 +345,7 @@ const KidDocumentManager = ({
         </Box>
       </Paper>
 
-      {/* דיאלוג העלאה */}
+      {/* Upload Dialog */}
       <Dialog 
         open={uploadDialog} 
         onClose={() => setUploadDialog(false)}

@@ -9,7 +9,7 @@ const MultipleEntriesComponent = ({
 }) => {
   const dispatch = useDispatch();
 
-  // הגדרת שדות לכל סוג מידע
+  // Define fields for each type of information
   const getFieldsConfig = (type) => {
     const configs = {
       'medications': [
@@ -35,7 +35,7 @@ const MultipleEntriesComponent = ({
     return configs[type] || [];
   };
 
-  // הגדרת UI config לכל סוג
+  // Define UI config for each type
   const getUIConfig = (type) => {
     const configs = {
       'medications': {
@@ -66,7 +66,7 @@ const MultipleEntriesComponent = ({
   const fields = getFieldsConfig(question.multipleEntryType);
   const uiConfig = getUIConfig(question.multipleEntryType);
 
-  // יצירת פריט ריק
+  // Create an empty entry
   const createEmptyEntry = () => {
     const entry = {};
     fields.forEach(field => {
@@ -75,7 +75,7 @@ const MultipleEntriesComponent = ({
     return entry;
   };
 
-  // טעינת נתונים קיימים או יצירת פריט ראשון
+  // Loading existing data or creating the first entry
   const initializeEntries = () => {
     if (existingAnswer?.multipleEntries) {
       try {
@@ -91,16 +91,15 @@ const MultipleEntriesComponent = ({
 
   const [entries, setEntries] = useState(initializeEntries);
 
-  // עדכון כשהנתונים הקיימים משתנים
+  // Update when existing data changes
   useEffect(() => {
     setEntries(initializeEntries());
   }, [existingAnswer]);
 
-  // פונקציה לעדכון פריט
+  // Function to update an entry
   const updateEntry = (index, fieldName, value) => {
     const newEntries = entries.map((entry, entryIndex) => {
       if (entryIndex === index) {
-        // ✅ יוצר אובייקט חדש במקום לשנות את הקיים
         return { ...entry, [fieldName]: value };
       }
       return entry;
@@ -108,17 +107,15 @@ const MultipleEntriesComponent = ({
     
     setEntries(newEntries);
     
-    // עדכון ב-Redux
     dispatch && dispatch(updateLocalMultipleEntries({
       questionNo: question.questionNo,
       multipleEntries: newEntries
     }));
     
-    // עדכון הקומפוננטה ההורה
     onDataChange && onDataChange(newEntries);
   };
 
-  // הוספת פריט חדש
+  // Adding a new item
   const addEntry = () => {
     const newEntries = [...entries, createEmptyEntry()];
     setEntries(newEntries);
@@ -131,7 +128,7 @@ const MultipleEntriesComponent = ({
     onDataChange && onDataChange(newEntries);
   };
 
-  // הסרת פריט
+  // Remove item
   const removeEntry = (index) => {
     if (entries.length > 1) {
       const newEntries = entries.filter((_, i) => i !== index);
@@ -146,7 +143,7 @@ const MultipleEntriesComponent = ({
     }
   };
 
-  // רנדור שדה יחיד
+  // Render single field
   const renderField = (field, entryIndex, value) => {
     const inputProps = {
       value: value || '',
@@ -180,17 +177,17 @@ const MultipleEntriesComponent = ({
 
   return (
     <div className={`border rounded-lg p-4 mt-4 ${uiConfig.bgColor} ${uiConfig.borderColor}`} dir="rtl">
-      {/* כותרת */}
+      {/* Headline */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">{uiConfig.icon}</span>
         <h3 className="text-lg font-semibold text-gray-800">{uiConfig.title}</h3>
       </div>
 
-      {/* רשימת פריטים */}
+      {/* List of items */}
       <div className="space-y-4">
         {entries.map((entry, entryIndex) => (
           <div key={entryIndex} className="border border-gray-300 rounded-lg p-4 bg-white">
-            {/* כותרת פריט */}
+            {/* Item headline */}
             <div className="flex justify-between items-center mb-3">
               <span className="text-sm font-medium text-gray-600">
                 פריט {entryIndex + 1}
@@ -205,7 +202,7 @@ const MultipleEntriesComponent = ({
               )}
             </div>
 
-            {/* שדות הפריט */}
+            {/* Item fields*/}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {fields.map((field) => (
                 <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
@@ -221,7 +218,7 @@ const MultipleEntriesComponent = ({
         ))}
       </div>
 
-      {/* כפתור הוספה */}
+      {/* Add button */}
       <button
         onClick={addEntry}
         className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2 transition-colors"
@@ -230,7 +227,7 @@ const MultipleEntriesComponent = ({
         {uiConfig.addButtonText}
       </button>
 
-      {/* סיכום המידע */}
+      {/* Summary of information */}
       {entries.length > 0 && entries.some(entry => Object.values(entry).some(val => val && val.toString().trim())) && (
         <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
           <h4 className="text-sm font-medium text-green-800 mb-2">מידע שנשמר:</h4>

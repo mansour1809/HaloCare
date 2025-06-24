@@ -3,40 +3,32 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Grid, Typography, TextField, MenuItem, FormControl,
-  InputLabel, Select, Button, Box, Avatar, FormHelperText, 
+  InputLabel, Select, Button, Box, Avatar, FormHelperText,
   Alert, AlertTitle, InputAdornment, Tooltip, CircularProgress,
-  Paper, Divider, Chip, RadioGroup, FormControlLabel, Radio,
-  FormLabel, Fade, Zoom, Card, CardContent, Badge, 
-  IconButton, Stack, Switch, Collapse, useTheme
+  Paper, Chip, RadioGroup, FormControlLabel, Radio,
+  Zoom, Card, CardContent, Badge,
+  IconButton, Switch, Collapse, useTheme
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon,
   DeleteOutline as DeleteIcon,
   CloudUpload as UploadIcon,
   Info as InfoIcon,
   ContactPhone as CallIcon,
   Email as EmailIcon,
   Home as HomeIcon,
-  Work as WorkIcon,
   Person as PersonIcon,
   PersonAdd as PersonAddIcon,
   Cake as CakeIcon,
-  Wc as GenderIcon,
-  MedicalServices as MedicalIcon,
   LocationCity as CityIcon,
   LocalHospital as HospitalIcon,
-  CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
-  Event as EventIcon,
   Face as FaceIcon,
   NavigateNext as NextIcon,
-  LocalPhone as PhoneIcon,
   School as SchoolIcon,
-  AddToPhotos as FileIcon,
 } from '@mui/icons-material';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female'
@@ -54,7 +46,7 @@ import { baseURL } from "../../components/common/axiosConfig";
 
 
 
-// כרטיסיה מוגדלת עם הנפשה לפתיחה
+// Enlarged card with animation for opening
 const AnimatedSection = styled(Card)(({ theme, expanded }) => ({
   marginBottom: theme.spacing(4),
   borderRadius: theme.spacing(2),
@@ -69,7 +61,7 @@ const AnimatedSection = styled(Card)(({ theme, expanded }) => ({
   },
 }));
 
-// כותרת סקשן מקצועית
+// Professional section header
 const SectionHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2, 3),
   background: 'linear-gradient(90deg, rgba(33,150,243,0.05) 0%, rgba(33,150,243,0.1) 100%)',
@@ -83,7 +75,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   },
 }));
 
-// כותרת כרטיסיה
+// Card title
 const SectionTitle = styled(Typography)(({ theme, expanded }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -92,7 +84,7 @@ const SectionTitle = styled(Typography)(({ theme, expanded }) => ({
   transition: 'color 0.3s ease',
 }));
 
-// אייקון סקשן מונפש
+// Animated section icon
 const SectionIcon = styled(Box)(({ theme, expanded }) => ({
   marginLeft: theme.spacing(2),
   marginRight: theme.spacing(2),
@@ -106,7 +98,7 @@ const SectionIcon = styled(Box)(({ theme, expanded }) => ({
   transition: 'all 0.3s ease',
 }));
 
-// כפתור מונפש
+// Animated button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
@@ -126,7 +118,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-// כפתור העלאת תמונה מעוצב
+// Styled upload button
 const UploadButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(2),
   borderRadius: '20px',
@@ -141,7 +133,7 @@ const UploadButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// תיבת כפתורי פעולה
+// Action buttons container
 const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -151,14 +143,13 @@ const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.02))',
 }));
 
-// סכימת ולידציה משופרת
+// Enhanced validation schema
 const validationSchema = yup.object({
-  // פרטי הילד
   firstName: yup.string().required('שם פרטי הוא שדה חובה'),
   lastName: yup.string().required('שם משפחה הוא שדה חובה'),
   birthDate: yup.date().required('תאריך לידה הוא שדה חובה')
     .max(new Date(), 'תאריך לידה לא יכול להיות בעתיד')
-    .test('age', 'הגיל חייב להיות בין 0-3 שנים', 
+    .test('age', 'הגיל חייב להיות בין 0-3 שנים',
       (value) => {
         if (!value) return true;
         const today = new Date();
@@ -173,8 +164,7 @@ const validationSchema = yup.object({
   idNumber: yup.string()
     .required('תעודת זהות היא שדה חובה')
     .matches(/^\d{9}$/, 'תעודת זהות צריכה להכיל 9 ספרות'),
-  
-  // פרטי הורה ראשי
+
   parent1FirstName: yup.string().required('שם הורה ראשי הוא שדה חובה'),
   parent1LastName: yup.string().required('שם משפחה הורה ראשי הוא שדה חובה'),
   parent1Mobile: yup.string()
@@ -182,7 +172,6 @@ const validationSchema = yup.object({
     .matches(/^05\d{8}$/, 'מספר טלפון לא תקין'),
   parent1Email: yup.string().email('כתובת דוא״ל לא תקינה').required('דוא״ל הורה ראשי חובה'),
 
-  // פרטי הורה משני (לא חובה)
   parent2Mobile: yup.string()
     .nullable()
     .test('valid-phone', 'מספר טלפון לא תקין', (value) => {
@@ -197,33 +186,32 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(data?.photoPath || null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  
-  // מצבי התרחבות הסקשנים
+
+  // Section expansion states
   const [expandedSections, setExpandedSections] = useState({
     childDetails: true,
     primaryParent: false,
-    secondaryParent: false, 
+    secondaryParent: false,
   });
-  
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
   };
-  
-  // שליפת נתוני רפרנס מהסטור
+
   const { cities, status: citiesStatus } = useSelector(state => state.cities);
   const { kids, status: kidStatus, error: kidError } = useSelector(state => state.kids);
   const { classes, status: classesStatus } = useSelector(state => state.classes || { classes: [], status: 'idle' });
   const { healthInsurances, status: healthInsurancesStatus } = useSelector(state => state.healthInsurances);
   const isLoading = kidStatus === 'loading';
-  
-  // הגדרת initialValues מתקנת להורים
+
+  // Corrected initialValues definition for parents
   const getInitialValues = () => {
     if (data && isEditMode) {
       return {
-        // פרטי הילד
+        // Child details
         id: data.id || 0,
         idNumber: data.id || 0,
         firstName: data.firstName || '',
@@ -237,8 +225,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         classId: data.classId || '',
         pathToFolder: data.pathToFolder || '',
         isActive: data.isActive !== undefined ? data.isActive : true,
-        
-        // פרטי הורה ראשי - עכשיו עם הנתונים הנכונים
+
+        // Primary parent details - now with the correct data
         parent1Id: data.parentId1 || 0,
         parent1FirstName: data.parent1FirstName || '',
         parent1LastName: data.parent1LastName || '',
@@ -246,8 +234,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         parent1Email: data.parent1Email || '',
         parent1Address: data.parent1Address || data.address || '',
         parent1CityName: data.parent1CityName || data.cityName || '',
-        
-        // פרטי הורה משני
+
+        // Secondary parent details
         parent2Id: data.parentId2 || 0,
         parent2FirstName: data.parent2FirstName || '',
         parent2LastName: data.parent2LastName || '',
@@ -255,13 +243,12 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         parent2Email: data.parent2Email || '',
         parent2Address: data.parent2Address || '',
         parent2CityName: data.parent2CityName || '',
-        
-        // פרטי קשר נוספים
+
         homePhone: data.homePhone || '',
       };
     }
-    
-    // ערכים ריקים עבור ילד חדש
+
+    // Empty values for a new child
     return {
       id: 0,
       idNumber: '',
@@ -294,25 +281,25 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     };
   };
 
-  // טעינת נתוני רפרנס + נתוני הורים במצב עריכה
+  // Loading reference data + parent data in edit mode
   useEffect(() => {
     dispatch(fetchCities());
     dispatch(fetchClasses());
     dispatch(fetchHealthInsurances());
     dispatch(fetchKids());
-    
-    // טעינת נתוני הורים במצב עריכה
+
+    // Loading parent data in edit mode
     if (isEditMode && data) {
       loadParentsData();
     }
   }, [dispatch, data, isEditMode]);
 
-  // טעינת נתוני הורים
+  // Loading parent data
   const loadParentsData = async () => {
     try {
       if (data.parentId1) {
         const parent1Result = await dispatch(fetchParentById(data.parentId1)).unwrap();
-        // עדכון הטופס עם נתוני הורה ראשי
+        // Update the form with primary parent data
         formik.setValues(prev => ({
           ...prev,
           parent1FirstName: parent1Result.firstName || '',
@@ -323,10 +310,10 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           parent1CityName: parent1Result.cityName || '',
         }));
       }
-      
+
       if (data.parentId2) {
         const parent2Result = await dispatch(fetchParentById(data.parentId2)).unwrap();
-        // עדכון הטופס עם נתוני הורה משני
+        // Update the form with secondary parent data
         formik.setValues(prev => ({
           ...prev,
           parent2FirstName: parent2Result.firstName || '',
@@ -354,12 +341,12 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   //   }
   // }, [isEditMode]);
 
-  // טיפול בהעלאת תמונה
- const handlePhotoChange = (event) => {
+  // Handling image upload
+  const handlePhotoChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // בדיקת סוג קובץ
+    // File type validation
     if (!file.type.startsWith('image/')) {
       Swal.fire({
         icon: 'error',
@@ -370,7 +357,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       return;
     }
 
-    // בדיקת גודל קובץ (מקס 5MB)
+    // File size check (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       Swal.fire({
         icon: 'error',
@@ -383,7 +370,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
 
     setPhotoFile(file);
 
-    // יצירת תצוגה מקדימה
+    // Create a preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPhotoPreview(e.target.result);
@@ -391,81 +378,77 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     reader.readAsDataURL(file);
   };
 
-  // פונקציה להעלאת תמונת פרופיל
-const uploadProfilePhoto = async (kidId) => {
-  if (!photoFile) return null;
+  // Function for uploading profile picture
+  const uploadProfilePhoto = async (kidId) => {
+    if (!photoFile) return null;
 
-  try {
-    setUploadingPhoto(true);
+    try {
+      setUploadingPhoto(true);
 
-    // מחיקת תמונת פרופיל קיימת אם יש
-    if (isEditMode) {
-      const existingDocs = await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
-      const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
-      
-      if (existingProfilePic) {
-        await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+      // Delete existing profile picture if present
+      if (isEditMode) {
+        const existingDocs = await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
+        const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
+
+        if (existingProfilePic) {
+          await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
+        }
       }
+
+      // Preparing upload data
+      const profileData = {
+        document: {
+          KidId: kidId.toString(),
+          DocType: "profile",
+          DocName: photoFile.name,
+        },
+        file: photoFile
+      };
+
+      // Uploading the image
+      const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
+
+       // Returning the path for embedding in the child
+
+    } catch (error) {
+      console.error('שגיאה בהעלאת תמונת פרופיל:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'שגיאה בהעלאת התמונה',
+        text: 'אירעה שגיאה בהעלאת תמונת הפרופיל. אנא נסה שוב.',
+        confirmButtonText: 'אישור'
+      });
+      return null;
+    } finally {
+      setUploadingPhoto(false);
     }
-
-    // הכנת נתוני ההעלאה
-    const profileData = {
-      document: {
-        KidId: kidId.toString(),
-        DocType: "profile",
-        DocName: photoFile.name,
-      },
-      file: photoFile
-    };
-
-    // העלאת התמונה
-    const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
-    
-    return uploadResult.docPath; // החזרת הנתיב להטמעה בילד
-    
-  } catch (error) {
-    console.error('שגיאה בהעלאת תמונת פרופיל:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'שגיאה בהעלאת התמונה',
-      text: 'אירעה שגיאה בהעלאת תמונת הפרופיל. אנא נסה שוב.',
-      confirmButtonText: 'אישור'
-    });
-    return null;
-  } finally {
-    setUploadingPhoto(false);
-  }
-};
-  // מימוש ה-Formik
- const formik = useFormik({
+  };
+  // Formik implementation
+  const formik = useFormik({
     initialValues: getInitialValues(),
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
         setSubmitting(true);
-        
-        // הכנת נתונים לשליחה
+
         const formDataForSlice = { ...values };
-        
+
         let result;
-        
+
         if (isEditMode) {
-          // עדכון ילד קיים
           result = await dispatch(updateKidWithParents(formDataForSlice)).unwrap();
-          
-          // העלאת תמונת פרופיל אם נבחרה
-         let updatedKid = result.kid;
-if (photoFile) {
-  const photoPath = await uploadProfilePhoto(result.kid.id);
-  if (photoPath) {
-    // ✅ יצירת אובייקט חדש במקום שינוי הקיים
-    updatedKid = {
-      ...result.kid,
-      photoPath: photoPath
-    };
-  }
-}
-          
+
+          let updatedKid = result.kid;
+          if (photoFile) {
+            const photoPath = await uploadProfilePhoto(result.kid.id);
+            if (photoPath) {
+              updatedKid = {
+                ...result.kid,
+                photoPath: photoPath
+              };
+            }
+          }
+
           Swal.fire({
             icon: 'success',
             title: 'עודכן בהצלחה!',
@@ -474,22 +457,19 @@ if (photoFile) {
             showConfirmButton: false
           });
         } else {
-          // יצירת ילד חדש
           result = await dispatch(createKidWithParents(formDataForSlice)).unwrap();
-          
-          // העלאת תמונת פרופיל אם נבחרה
+
           let updatedKid = result.kid;
-         if (photoFile) {
-  const photoPath = await uploadProfilePhoto(result.kid.id);
-  if (photoPath) {
-    // ✅ יצירת אובייקט חדש במקום שינוי הקיים
-    updatedKid = {
-      ...result.kid,
-      photoPath: photoPath
-    };
-  }
-}
-          
+          if (photoFile) {
+            const photoPath = await uploadProfilePhoto(result.kid.id);
+            if (photoPath) {
+              updatedKid = {
+                ...result.kid,
+                photoPath: photoPath
+              };
+            }
+          }
+
           Swal.fire({
             icon: 'success',
             title: 'נשמר בהצלחה!',
@@ -498,10 +478,10 @@ if (photoFile) {
             showConfirmButton: false
           });
         }
-        
-        // עדכון ה-parent component
+
+        // Update the parent component
         onUpdate(result.kid);
-        
+
       } catch (error) {
         console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
         Swal.fire({
@@ -515,12 +495,12 @@ if (photoFile) {
     },
   });
 
-  
+
   const isFormFilled = formik.dirty && Object.values(formik.values).some(val => val !== '');
 
   return (
     <form dir="rtl" onSubmit={formik.handleSubmit}>
-      {/* הודעת שגיאה אם יש */}
+      {/* Error message if exists */}
       {kidError && (
         <Zoom in={true}>
           <Alert
@@ -539,77 +519,77 @@ if (photoFile) {
         </Zoom>
       )}
 
-    {/* תמונת פרופיל */}
-<Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-  <Badge
-    overlap="circular"
-    anchorOrigin={{ vertical: "top", horizontal: "right" }}
-    badgeContent={
-      <Tooltip title="העלאת תמונה">
-        <label htmlFor="kid-photo-upload">
-          <IconButton
-            aria-label="העלאת תמונה"
-            component="span"
+      {/* Profile Picture */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+        <Badge
+          overlap="circular"
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          badgeContent={
+            <Tooltip title="העלאת תמונה">
+              <label htmlFor="kid-photo-upload">
+                <IconButton
+                  aria-label="העלאת תמונה"
+                  component="span"
+                  sx={{
+                    bgcolor: "primary.main",
+                    color: "white",
+                    "&:hover": { bgcolor: "primary.dark" },
+                  }}
+                  size="small"
+                  disabled={uploadingPhoto}
+                >
+                  {uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon fontSize="small" />}
+                </IconButton>
+              </label>
+            </Tooltip>
+          }
+        >
+          <Avatar
+            src={
+              isEditMode ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(photoPreview)}` : undefined
+            }
             sx={{
-              bgcolor: "primary.main",
-              color: "white",
-              "&:hover": { bgcolor: "primary.dark" },
+              width: 150,
+              height: 150,
+              border: '4px solid',
+              borderColor: 'background.paper',
+              boxShadow: 3
             }}
-            size="small"
-            disabled={uploadingPhoto}
           >
-            {uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon fontSize="small" />}
-          </IconButton>
-        </label>
-      </Tooltip>
-    }
-  >
-    <Avatar 
-      src={
-        isEditMode ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(photoPreview)}` : undefined
-      }
-      sx={{ 
-        width: 150, 
-        height: 150,
-        border: '4px solid',
-        borderColor: 'background.paper',
-        boxShadow: 3
-      }}
-    >
-      {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
-    </Avatar>
-  </Badge>
+            {!photoPreview && <FaceIcon sx={{ fontSize: 80, opacity: 0.7 }} />}
+          </Avatar>
+        </Badge>
 
-  <input
-    accept="image/*"
-    style={{ display: "none" }}
-    id="kid-photo-upload"
-    type="file"
-    onChange={handlePhotoChange}
-    disabled={uploadingPhoto}
-  />
+        <input
+          accept="image/*"
+          style={{ display: "none" }}
+          id="kid-photo-upload"
+          type="file"
+          onChange={handlePhotoChange}
+          disabled={uploadingPhoto}
+        />
 
-  <Button
-    variant="contained"
-    component="label"
-    htmlFor="kid-photo-upload"
-    startIcon={uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
-    size="small"
-    disabled={uploadingPhoto}
-    sx={{ mt: 1 }}
-  >
-    {photoPreview ? "החלף תמונה" : "העלאת תמונה"}
-  </Button>
+        <Button
+          variant="contained"
+          component="label"
+          htmlFor="kid-photo-upload"
+          startIcon={uploadingPhoto ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
+          size="small"
+          disabled={uploadingPhoto}
+          sx={{ mt: 1 }}
+        >
+          {photoPreview ? "החלף תמונה" : "העלאת תמונה"}
+        </Button>
 
-  {/* הצגת שם הקובץ אם נבחר */}
-  {photoFile && (
-    <Typography variant="caption" display="block" sx={{ mt: 1, textAlign: 'center' }}>
-      {photoFile.name} ({Math.round(photoFile.size / 1024)} KB)
-    </Typography>
-  )}
-</Box>
+        {/* Display file name if selected */}
+        {photoFile && (
+          <Typography variant="caption" display="block" sx={{ mt: 1, textAlign: 'center' }}>
+            {photoFile.name} ({Math.round(photoFile.size / 1024)} KB)
+          </Typography>
+        )}
+      </Box>
 
-      {/* קטע 1: פרטי הילד */}
+      {/* Section 1: Child Details */}
       <AnimatedSection expanded={expandedSections.childDetails}>
         <SectionHeader onClick={() => toggleSection("childDetails")}>
           <SectionIcon expanded={expandedSections.childDetails}>
@@ -819,7 +799,7 @@ if (photoFile) {
                         טוען ערים...
                       </MenuItem>
                     ) : (
-                      
+
                       cities.map((city) => (
                         <MenuItem key={city.id || city.name} value={city.cityName}>
                           {city.cityName}
@@ -893,7 +873,7 @@ if (photoFile) {
 
 
 
-              {/* שדה לבחירת כיתה אם קיים מידע הכיתות */}
+              {/* Field for selecting a class if class information exists */}
               {classes && classes.length > 0 && (
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
@@ -954,7 +934,7 @@ if (photoFile) {
         </Collapse>
       </AnimatedSection>
 
-      {/* קטע 2: פרטי הורה ראשי */}
+      {/* Section 2: Primary Parent Details */}
       <AnimatedSection expanded={expandedSections.primaryParent}>
         <SectionHeader onClick={() => toggleSection("primaryParent")}>
           <SectionIcon expanded={expandedSections.primaryParent}>
@@ -1160,7 +1140,7 @@ if (photoFile) {
         </Collapse>
       </AnimatedSection>
 
-      {/* חלק 3: פרטי הורה משני (אופציונלי) */}
+      {/* Section 3: Secondary Parent Details (Optional) */}
       <AnimatedSection expanded={expandedSections.secondaryParent}>
         <SectionHeader onClick={() => toggleSection("secondaryParent")}>
           <SectionIcon expanded={expandedSections.secondaryParent}>
@@ -1368,7 +1348,7 @@ if (photoFile) {
         </Collapse>
       </AnimatedSection>
 
-      {/* חלק 4: פרטי קשר נוספים
+      {/* Section 4: Additional Contact Information
       <AnimatedSection expanded={expandedSections.contactInfo}>
         <SectionHeader onClick={() => toggleSection("contactInfo")}>
           <SectionIcon expanded={expandedSections.contactInfo}>
@@ -1552,7 +1532,7 @@ if (photoFile) {
         </Collapse>
       </AnimatedSection> */}
 
-      {/* סיכום והשלמה */}
+      {/* Summary and Completion */}
       <Box sx={{ mt: 2, mb: 2 }}>
         <Alert
           severity={isFormFilled ? "info" : "warning"}
@@ -1569,7 +1549,7 @@ if (photoFile) {
         </Alert>
       </Box>
 
-      {/* כפתורי פעולה בתחתית הטופס */}
+      {/* Action buttons at the bottom of the form */}
       <Paper
         elevation={3}
         sx={{
@@ -1579,7 +1559,7 @@ if (photoFile) {
         }}
       >
         <ActionButtonsContainer>
-          {!isEditMode && ( <AnimatedButton
+          {!isEditMode && (<AnimatedButton
             variant="outlined"
             color="error"
             onClick={() => {
@@ -1625,7 +1605,6 @@ if (photoFile) {
                   <SaveIcon />
                 )
               }
-              // disabled={isLoading}
               sx={{
                 borderRadius: "50px",
                 px: 4,

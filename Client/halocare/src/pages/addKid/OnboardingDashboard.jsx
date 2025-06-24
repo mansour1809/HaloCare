@@ -6,30 +6,22 @@ import {
   Box, Grid, Card, CardContent, CardActions, Typography, Button,
   Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Alert, CircularProgress, Tooltip, LinearProgress,
-  Divider, Paper
+  Divider, 
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Send as SendIcon,
-  CheckCircle as CheckIcon,
-  Schedule as ScheduleIcon,
-  Email as EmailIcon,
-  VerifiedUser as CompletedByParentIcon,
-  HourglassEmpty as PendingIcon,
   Visibility as ViewIcon,
   Folder as FolderIcon,
-  CloudUpload as UploadIcon
 } from '@mui/icons-material';
 import axios from '../../components/common/axiosConfig';
 
-// Redux החדש
 import { 
   updateFormStatus,
 } from '../../Redux/features/onboardingSlice';
 
 import { fetchParentById } from '../../Redux/features/parentSlice';
 
-// 🔥 הקומפוננטה החדשה לניהול מסמכים
 import KidDocumentManager from './KidDocumentManager';
 
 const OnboardingDashboard = ({ 
@@ -40,13 +32,13 @@ const OnboardingDashboard = ({
 }) => {
   const dispatch = useDispatch();
   
-  // State מקומי
+  // Local State 
   const [sendDialog, setSendDialog] = useState({ open: false, form: null });
   const [parentEmail, setParentEmail] = useState('');
   const [sendingToParent, setSendingToParent] = useState(false);
   const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
-  // פונקציות שליחה להורה (הקוד הקיים)
+  // Parent sending functions (existing code)
   const handleSendToParent = async (form) => {
     try {
       setLoadingParentEmail(true);
@@ -104,7 +96,7 @@ const OnboardingDashboard = ({
     }
   };
 
-  // איפוס טופס לתחילה
+  // Reset form to start
   const handleResetForm = async (form) => {
     try {
       await dispatch(updateFormStatus({
@@ -123,7 +115,7 @@ const OnboardingDashboard = ({
     }
   };
 
-  // בדיקות הרשאות
+  // Permission checks
   const canEditForm = (form) => {
     return ['NotStarted', 'InProgress'].includes(form.status);
   };
@@ -142,7 +134,7 @@ const OnboardingDashboard = ({
 
   return (
     <Box dir="rtl">
-      {/* סטטיסטיקות כלליות */}
+      {/* General Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={3}>
           <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white', borderRadius: 20, width: '90px' }}>
@@ -194,7 +186,7 @@ const OnboardingDashboard = ({
         </Grid>
       </Grid>
 
-      {/* 🔥 אזור מסמכים חדש */}
+      {/* New Documents Area */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <FolderIcon sx={{ mr: 1, color: 'primary.main' }} />
@@ -226,7 +218,7 @@ const OnboardingDashboard = ({
 
       <Divider sx={{ my: 4 }} />
 
-      {/* כרטיסי הטפסים */}
+      {/* Form Cards */}
       <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
         טפסי קליטה
       </Typography>
@@ -255,19 +247,19 @@ const OnboardingDashboard = ({
                 }}
               >
                 <CardContent sx={{ flex: 1 }}>
-                  {/* כותרת וסטטוס */}
+                  {/* Title and Status */}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
                       {form.formName}
                     </Typography>
                   </Box>
 
-                  {/* תיאור */}
+                  {/* Description */}
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {form.formDescription}
                   </Typography>
 
-                  {/* התקדמות */}
+                  {/* Progress */}
                   {form.status === 'InProgress' && form.totalQuestions > 0 && (
                     <Box sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -289,7 +281,7 @@ const OnboardingDashboard = ({
                     </Box>
                   )}
 
-                  {/* תאריכים */}
+                  {/* Dates */}
                   <Box sx={{ mt: 'auto' }}>
                     {form.startDate && (
                       <Typography variant="caption" color="text.secondary" display="block">
@@ -304,10 +296,10 @@ const OnboardingDashboard = ({
                   </Box>
                 </CardContent>
 
-                {/* פעולות */}
+                {/* Actions */}
                 <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
                   <Box>
-                    {/* כפתורים לעריכה/צפייה */}
+                    {/* Buttons for Edit/View */}
                     { canEditForm(form) ? (
                       <Button
                         startIcon={<EditIcon />}
@@ -344,7 +336,7 @@ const OnboardingDashboard = ({
                     )}
                   </Box>
                   <Box>
-                    {/* שליחה להורה */}
+                    {/* Send to Parent */}
                     {canSendToParent(form) && form.formId != '1002' && (
                       <Tooltip title="שלח טופס להורה">
                         <IconButton
@@ -363,7 +355,7 @@ const OnboardingDashboard = ({
         })}
       </Grid>
 
-      {/* דיאלוג שליחה להורה - הקוד הקיים */}
+      {/* Parent Send Dialog - existing code */}
       <Dialog 
         open={sendDialog.open} 
         onClose={() => setSendDialog({ open: false, form: null })}

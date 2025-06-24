@@ -28,7 +28,6 @@ import QuestionRenderer from '../kids/QuestionRenderer';
 import MultipleEntriesComponent from './MultipleEntriesComponent';
 
 
-// 🎨 עיצוב כמו טופס נייר אמיתי
 const FormPaper = styled(Paper)(({ theme }) => ({
   maxWidth: '900px',
   margin: '0 auto',
@@ -37,7 +36,7 @@ const FormPaper = styled(Paper)(({ theme }) => ({
   backgroundColor: '#ffffff',
   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
   border: '1px solid #e0e0e0',
-  borderRadius: 0, // בלי פינות עגולות כמו נייר אמיתי
+  borderRadius: 0,
   position: 'relative',
   '&::before': {
     content: '""',
@@ -51,13 +50,13 @@ const FormPaper = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// 🎨 כותרת טופס רשמית
+// Official Form Header
 const FormHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
 }));
 
 
-// 🎨 אזור שאלות
+// Questions Area
 const QuestionsSection = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(4),
   '& > *:not(:last-child)': {
@@ -66,7 +65,7 @@ const QuestionsSection = styled(Box)(({ theme }) => ({
   dir: 'rtl'
 }));
 
-// 🎨 כותרת קטגוריה
+// Category Header
 const CategoryHeader = styled(Typography)(({ theme }) => ({
   fontSize: '1.1rem',
   fontWeight: 'bold',
@@ -97,17 +96,15 @@ const DynamicFormRenderer = ({
   const saveError = useSelector(selectSaveError);
   const { questions: currentFormQuestions, status: questionsStatus } = useSelector(state => state.forms);
   
-  // State מקומי
+  // Local State
   const [localAnswers, setLocalAnswers] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [multipleEntriesData, setMultipleEntriesData] = useState({});
 
 
-  // טעינה ראשונית
   useEffect(() => {
      if (kidId && formId) {
-      // ניקוי מלא של הנתונים הקיימים
       dispatch(clearCurrentFormAnswers());
       setLocalAnswers({});
       setMultipleEntriesData({});
@@ -166,7 +163,7 @@ const DynamicFormRenderer = ({
     }
   };
 
-  // 🆕 3. פונקציה חדשה לטיפול במידע מורכב
+  // New function to handle complex data
 const handleMultipleEntriesChange = (questionNo, entriesData) => {
   setMultipleEntriesData(prev => ({
     ...prev,
@@ -203,7 +200,6 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
         byParent: false
       };
 
-      // 🆕 רק הוסף את זה:
       if (question.requiresMultipleEntries && localAnswer?.answer === 'כן') {
         const entriesData = multipleEntriesData[question.questionNo];
         if (entriesData && entriesData.length > 0) {
@@ -238,8 +234,6 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
       showNotification('שגיאה בשמירת הטופס', 'error');
     }
     finally {
-      // איפוס סטטוס השמירה
-      // dispatch(saveAnswerWithMultipleEntries({}));
       setLocalAnswers({});
     }
   };
@@ -299,7 +293,7 @@ console.log('Saving answer:', fullAnswerData);
     }
   };
 
-  // חישוב התקדמות
+  // Progress Calculation
   const calculateProgress = () => {
     if (!currentFormQuestions.length) return 0;
     
@@ -322,7 +316,7 @@ console.log('Saving answer:', fullAnswerData);
     };
   };
 
-  // קיבוץ שאלות לפי קטגוריה
+  // Grouping questions by category
   const groupQuestionsByCategory = () => {
     const grouped = {};
     currentFormQuestions.forEach(question => {
@@ -350,7 +344,7 @@ console.log('Saving answer:', fullAnswerData);
     localAnswers[qNo]?.answer && localAnswers[qNo].answer.trim() !== ''
   ).length;
 
-  // מסך טעינה
+  // Loading screen
   if (questionsStatus === 'loading') {
     return (
       <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
@@ -362,7 +356,6 @@ console.log('Saving answer:', fullAnswerData);
     );
   }
 
-  // אין שאלות
   if (!currentFormQuestions.length) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
@@ -377,7 +370,7 @@ console.log('Saving answer:', fullAnswerData);
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <FormPaper elevation={3}>
-        {/* כותרת הטופס */}
+        {/* Form Title */}
         <FormHeader>
          
           
@@ -424,23 +417,22 @@ console.log('Saving answer:', fullAnswerData);
       
        
 
-        {/* שאלות הטופס */}
+        {/* Form Questions */}
         <QuestionsSection>
           {Object.entries(groupedQuestions).map(([category, questions], categoryIndex) => (
             <Box key={category} dir="rtl" >
-              {/* כותרת קטגוריה אם יש יותר מקטגוריה אחת */}
+              {/* Category title if there is more than one category */}
               {Object.keys(groupedQuestions).length > 1 && (
                 <CategoryHeader >
                   {category}
                 </CategoryHeader>
               )}
               
-              {/* שאלות הקטגוריה */}
+              {/* Category Questions */}
               {questions
                 .sort((a, b) => a.questionNo - b.questionNo)
                 .map((question, index) => {
                   const { answer, other } = getAnswerValue(question.questionNo);
-                  // מספור רצוף בכל הטופס
                   const questionIndex = [...currentFormQuestions]
                     .sort((a, b) => a.questionNo - b.questionNo)
                     .findIndex(q => q.questionNo === question.questionNo) + 1;
@@ -490,7 +482,7 @@ console.log('Saving answer:', fullAnswerData);
         </QuestionsSection>
 
       
-        {/* כפתורי פעולה */}
+        {/* Action Buttons */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between',
@@ -527,7 +519,7 @@ console.log('Saving answer:', fullAnswerData);
           </Stack>
         </Box>
 
-        {/* שגיאות שמירה */}
+        {/* Save Errors */}
         {saveError && (
           <Alert severity="error" sx={{ mt: 2 }}>
             {saveError}
@@ -535,7 +527,7 @@ console.log('Saving answer:', fullAnswerData);
         )}
       </FormPaper>
 
-      {/* התראות */}
+      {/* Notifications */}
       <Snackbar
         open={notification.open}
         autoHideDuration={4000}

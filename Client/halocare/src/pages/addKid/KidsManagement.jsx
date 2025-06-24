@@ -13,14 +13,12 @@ import {
   Group as GroupIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  Edit as EditIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon,
     Person as PersonIcon,
 } from '@mui/icons-material';
 
-// 🔥 Redux החדש
+// New Redux
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { 
   fetchOnboardingStatus,
@@ -30,7 +28,6 @@ import {
 import { baseURL } from "../../components/common/axiosConfig";
 
 
-// קומפוננטים עזר
 const OnboardingStatusChip = ({ onboardingData }) => {
   if (!onboardingData) {
     return <Chip label="לא התחיל" color="default" variant="outlined" size="small" />;
@@ -78,7 +75,7 @@ const DetailedProgress = ({ onboardingData }) => {
   const { completedForms, totalForms } = onboardingData;
   const completionPercentage = totalForms > 0 ? Math.round((completedForms / totalForms) * 100) : 0;
 
-  // ספירת סטטוסים
+  // Status counts
   const statusCounts = {
     completed: onboardingData.forms?.filter(f => ['Completed', 'CompletedByParent'].includes(f.status)).length || 0,
     inProgress: onboardingData.forms?.filter(f => f.status === 'InProgress').length || 0,
@@ -191,17 +188,16 @@ const KidsManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // 🔥 Redux state חדש
+  // New Redux state 
   const { kids, status, error } = useSelector(state => state.kids);
   const onboardingData = useSelector(selectOnboardingData);
   const onboardingStats = useSelector(selectOnboardingStats);
   
-  // State מקומי
+  // Local State
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 🔥 טעינה ראשונית מעודכנת
   useEffect(() => {
     loadData();
   }, [dispatch]);
@@ -209,16 +205,14 @@ const KidsManagement = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      // טעינת רשימת ילדים
       const kidsResult = await dispatch(fetchKids()).unwrap();
       
-      // 🔥 טעינת נתוני קליטה לכל ילד במקביל
       const onboardingPromises = kidsResult.map(kid => 
         dispatch(fetchOnboardingStatus(kid.id))
           .unwrap()
           .catch(error => {
             console.warn(`שגיאה בטעינת נתוני קליטה לילד ${kid.id}:`, error);
-            return null; // ממשיכים למרות השגיאה
+            return null; 
           })
       );
       
@@ -231,12 +225,10 @@ const KidsManagement = () => {
     }
   };
 
-  // 🔥 רענון נתונים
   const handleRefresh = async () => {
     await loadData();
   };
 
-  // חישוב גיל
   const calculateAge = (birthDate) => {
     if (!birthDate) return '–';
     
@@ -257,7 +249,7 @@ const KidsManagement = () => {
     }
   };
 
-  // 🔥 פילטור ילדים מעודכן
+  // Updated kids filtering
   const filteredKids = kids.filter(kid => {
     const searchMatch = !searchTerm || 
       (kid.firstName && kid.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -270,16 +262,16 @@ const KidsManagement = () => {
     return searchMatch && statusMatch;
   });
 
-  // 🔥 טיפול בפעולות
+  // Handling actions
   const handleAction = (action, kid) => {
     switch (action) {
       case 'start':
-        // התחלת תהליך קליטה חדש
+        // Start a new onboarding process
         navigate(`/kids/onboarding/${kid.id}`);
         break;
       case 'continue':
       case 'view':
-        // המשך או צפייה בתהליך קליטה
+        // Continue or view onboarding process
         navigate(`/kids/onboarding/${kid.id}`);
         break;
       default:
@@ -287,7 +279,7 @@ const KidsManagement = () => {
     }
   };
 
-  // 🔥 סטטיסטיקות מעודכנות
+  // Updated Statistics
   const stats = {
     total: kids.length,
     completed: Object.values(onboardingData).filter(data => data?.overallStatus === 'Completed').length,
@@ -312,7 +304,7 @@ const KidsManagement = () => {
         </Typography>
       </Breadcrumbs>
       
-      {/* כותרת ופעולות */}
+      {/* Title and Actions */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box>
@@ -341,7 +333,7 @@ const KidsManagement = () => {
           </Box>
         </Box>
         
-        {/* פילטרים */}
+        {/* Filters */}
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField
             size="small"
@@ -374,7 +366,7 @@ const KidsManagement = () => {
         </Box>
       </Paper>
 
-      {/* 🔥 סטטיסטיקות מעודכנות */}
+      {/* Updated Statistics */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={3}>
           <Card sx={{ textAlign: 'center', p: 2 }}>
@@ -418,14 +410,14 @@ const KidsManagement = () => {
         </Grid>
       </Grid>
 
-      {/* שגיאות */}
+      {/* Errors */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-      {/* 🔥 טבלת ילדים מעודכנת */}
+      {/* Updated Kids Table */}
       <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
         <Table>
           <TableHead>
@@ -543,7 +535,7 @@ const KidsManagement = () => {
         </Table>
       </TableContainer>
 
-      {/* כפתור צף */}
+      {/* Floating Button */}
       <Fab
         color="primary"
         onClick={() => navigate('/kids/onboarding/new')}
