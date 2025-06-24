@@ -1,50 +1,19 @@
 // src/components/EmployeesManagement.jsx 
 import { useState, useEffect } from "react";
 import { 
-  Paper, 
-  Button, 
-  Switch, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  TextField, 
-  DialogActions,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-  IconButton,
-  CircularProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Avatar,
-  InputAdornment,
-  Chip,
-  Tab,
-  Tabs,
-  Tooltip,
-  Container,
-  Fade,
-  Zoom,
-  Stack,
-  Card,
-  CardContent
+  Paper, Button, Switch, Dialog, DialogTitle, DialogContent, 
+  TextField, Box, FormControl, InputLabel, Select, MenuItem,
+  Typography, IconButton, CircularProgress, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Avatar,
+  Chip, Tooltip, Container, Fade, Zoom, Stack
 } from "@mui/material";
 import {
   Person as PersonIcon,
-  Add as AddIcon,
   Refresh as RefreshIcon,
   FilterList as FilterIcon,
   Group as GroupIcon,
   Star as StarIcon,
   AutoAwesome as AutoAwesomeIcon,
-  TrendingUp as TrendingUpIcon,
   Celebration as CelebrationIcon
 } from '@mui/icons-material';
 import { Link } from "react-router-dom";
@@ -52,19 +21,16 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { Alert } from '@mui/material';
-import FilesList from '../../components/common/FilesList';
-import FileUploader from '../../components/common/FileUploader';
 import { useNavigate } from 'react-router-dom';
 
-// ייבוא הוק הקונטקסט שיצרנו
+// Context and hooks
 import { useEmployees } from './EmployeesContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearDocuments, fetchDocumentsByEmployeeId } from '../../Redux/features/documentsSlice';
+import { clearDocuments} from '../../Redux/features/documentsSlice';
 import EmployeeForm from "./EmployeeForm";
-import { createTheme, ThemeProvider, styled, alpha } from "@mui/material/styles";
+import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
 import { baseURL } from "../../components/common/axiosConfig";
 
-// יצירת theme מדהים עם תמיכה ב-RTL
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -178,7 +144,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// מסך מלא מותאם RTL עם רקע מדהים
+// Full Screen Container
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
@@ -205,7 +171,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כותרת עם עיצוב זכוכית ואפקטים
+// Modern Header
 const ModernHeader = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.15)',
   backdropFilter: 'blur(20px)',
@@ -229,7 +195,7 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
 }));
 
 
-// טבלה מעוצבת עם אפקטים
+// Styled Table Container
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -250,7 +216,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-// כפתור מונפש מדהים
+// Animated Button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -285,7 +251,6 @@ const EmployeesManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // שימוש בקונטקסט
   const { 
     employees, 
     roles, 
@@ -296,7 +261,6 @@ const EmployeesManagement = () => {
     refreshEmployees,
   } = useEmployees();
   
-  // מצבים מקומיים
   const [open, setOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedRole, setSelectedRole] = useState('');
@@ -306,15 +270,13 @@ const EmployeesManagement = () => {
   const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false);
   const [selectedEmployeeForDocuments, setSelectedEmployeeForDocuments] = useState(null);
   
-  // קבלת המסמכים מהרדקס
   const documentsStatus = useSelector(state => state.documents.status);
   
-  // רענון נתונים בעלייה
   useEffect(() => {
     refreshEmployees();
   }, []);
 
-  // פונקציות לניהול דיאלוג עריכה
+  
   const handleToggleActive = async (id, currentStatus) => {
     const result = await toggleEmployeeStatus(id, currentStatus);
     if (!result.success) {
@@ -381,7 +343,7 @@ const EmployeesManagement = () => {
     return foundClass ? foundClass.className : classId.toString();
   };
 
-  // חישוב סטטיסטיקות
+  // Statistics calculation
   const getStats = () => {
     return {
       total: employees.length,
@@ -429,7 +391,7 @@ const EmployeesManagement = () => {
           <FullScreenContainer dir='rtl'>
             <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
               
-              {/* כותרת מקצועית עם סטטיסטיקות */}
+              {/* Modern headline */}
               <Fade in timeout={800}>
                 <ModernHeader elevation={0}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
@@ -447,7 +409,6 @@ const EmployeesManagement = () => {
                     <Stack direction="row" spacing={2}>
                       <AnimatedButton
                         variant="contained"
-                        // startIcon={<AddIcon />}
                         component={Link}
                         to="/employees/add"
                         sx={{
@@ -484,7 +445,7 @@ const EmployeesManagement = () => {
                     </Stack>
                   </Box>
 
-                  {/* סטטיסטיקות מהירות */}
+                  {/* Statistics */}
                   <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
                     <Chip
                       icon={<GroupIcon />}
@@ -538,7 +499,7 @@ const EmployeesManagement = () => {
                 </ModernHeader>
               </Fade>
 
-              {/* פילטרים וחיפוש */}
+              {/* Searchbar and filters */}
               <Zoom in timeout={1000}>
                 <Paper sx={{ 
                   p: 3, 
@@ -619,7 +580,7 @@ const EmployeesManagement = () => {
                 </Paper>
               </Zoom>
 
-              {/* הצגת שגיאות */}
+              {/* Errors */}
               {(error || localError) && (
                 <Fade in timeout={500}>
                   <Alert 
@@ -638,7 +599,7 @@ const EmployeesManagement = () => {
                 </Fade>
               )}
 
-              {/* טבלת עובדים מעוצבת */}
+              {/* Employees table */}
               <Fade in timeout={1200}>
                 <StyledTableContainer component={Paper}>
                   <Table>
@@ -681,7 +642,6 @@ const EmployeesManagement = () => {
                                   sx={{
                                     width: 50,
                                     height: 50,
-                                    // ml: 2,
                                     border: "3px solid rgba(76, 181, 195, 0.3)",
                                     boxShadow: "0 4px 12px rgba(76, 181, 195, 0.2)",
                                     transition: 'all 0.3s ease',
@@ -827,7 +787,7 @@ const EmployeesManagement = () => {
                 </StyledTableContainer>
               </Fade>
 
-              {/* דיאלוג עריכת עובד */}
+              {/* Edit employee dialog */}
               <Dialog
                 open={open}
                 onClose={handleClose}

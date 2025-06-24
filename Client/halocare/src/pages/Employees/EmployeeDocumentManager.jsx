@@ -1,29 +1,23 @@
-// src/components/employees/EmployeeDocumentManager.jsx - ניהול מסמכים לעובדים
+// src/components/employees/EmployeeDocumentManager.jsx
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Tabs, Tab, Button, Alert, Zoom, Fade,
   CircularProgress, Chip, Dialog, DialogTitle, DialogContent,
-  DialogActions, Grid, Card, CardContent, IconButton, Tooltip,
-  Collapse, Stack, Avatar
+  DialogActions, IconButton, Tooltip,
+ Stack
 } from '@mui/material';
 import {
-  CloudUpload as UploadIcon,
   Folder as FolderIcon,
   Description as DocumentIcon,
   Refresh as RefreshIcon,
-  ExpandMore as ExpandIcon,
-  ExpandLess as CollapseIcon,
-  Info as InfoIcon,
   Person as PersonIcon,
   Image as ImageIcon,
-  Star as StarIcon,
   AutoAwesome as AutoAwesomeIcon
 } from '@mui/icons-material';
-import { createTheme, ThemeProvider, styled, alpha } from '@mui/material/styles';
+import { createTheme, ThemeProvider, styled} from '@mui/material/styles';
 
-// Import הקומפוננטות הקיימות
 import FileUploader from '../../components/common/FileUploader';
 import FilesList from '../../components/common/FilesList';
 
@@ -33,7 +27,6 @@ import {
   clearDocuments
 } from '../../Redux/features/documentsSlice';
 
-// יצירת theme מדהים עם תמיכה ב-RTL
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -140,7 +133,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// מסך מלא מותאם RTL עם רקע מדהים
+// Full-screen RTL container
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg,rgb(195, 110, 76) 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
@@ -160,7 +153,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כותרת עם עיצוב זכוכית ואפקטים
+// Header with glass design and effects
 const ModernHeader = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.15)',
   backdropFilter: 'blur(20px)',
@@ -220,7 +213,7 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
 //   }
 // }));
 
-// כרטיס תוכן מעוצב
+// Styled content card
 const ContentCard = styled(Paper)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -241,7 +234,7 @@ const ContentCard = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// כפתור מונפש מדהים
+// Animated Button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -295,7 +288,7 @@ const EmployeeDocumentManager = ({
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(!compact);
 
-  // טעינת מסמכים
+  // Loading documents
   useEffect(() => {
     if (employeeId) {
       loadDocuments();
@@ -334,7 +327,7 @@ const EmployeeDocumentManager = ({
     }, 500);
   };
 
-  // סטטיסטיקות
+  // Statistics
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
 
@@ -347,7 +340,7 @@ const EmployeeDocumentManager = ({
 
   const stats = getDocumentStats();
 
-  // מצב קומפקטי
+  // Compact mode
   if (compact) {
     return (
       <ThemeProvider theme={rtlTheme}>
@@ -404,14 +397,14 @@ const EmployeeDocumentManager = ({
     );
   }
 
-  // מצב מלא
+  // Full state
   return (
     <ThemeProvider theme={rtlTheme}>
       <Box dir='rtl' sx={{ direction: 'rtl' }}>
         <FullScreenContainer sx={{ minHeight: 'auto', background: 'transparent' }}>
           <Box sx={{ position: 'relative', zIndex: 2, maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-            {/* כותרת מקצועית עם סטטיסטיקות */}
+            {/* Professional header with statistics */}
             <Fade in timeout={800}>
               <ModernHeader elevation={0}>
                 <Box dir='rtl' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
@@ -447,8 +440,8 @@ const EmployeeDocumentManager = ({
                             fontWeight: 600,
                             boxShadow: '0 2px 8px rgba(76, 181, 195, 0.3)',
                             '& .MuiChip-icon': {
-                              marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
-                              marginRight: '4px'  // רווח קטן יותר מהצד הימני
+                              marginLeft: '4px',
+                              marginRight: '4px'
                             }
                           }}
                           size="medium"
@@ -464,8 +457,8 @@ const EmployeeDocumentManager = ({
                               fontWeight: 600,
                               boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
                               '& .MuiChip-icon': {
-                                marginLeft: '4px',  // רווח קטן יותר מהצד השמאלי
-                                marginRight: '4px'  // רווח קטן יותר מהצד הימני
+                                marginLeft: '4px',
+                                marginRight: '4px'
                               }
                             }}
                             size="medium"
@@ -529,7 +522,7 @@ const EmployeeDocumentManager = ({
               </ModernHeader>
             </Fade>
 
-            {/* כרטיס תוכן עם טאבים */}
+            {/* Content card with tabs */}
             <Zoom in timeout={1000}>
               <ContentCard sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Tabs
@@ -571,7 +564,7 @@ const EmployeeDocumentManager = ({
                   />
                 </Tabs>
 
-                {/* תוכן הטאבים */}
+                {/* Tab content */}
                 <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
                   {documentsStatus === 'loading' ? (
                     <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -644,7 +637,7 @@ const EmployeeDocumentManager = ({
               </ContentCard>
             </Zoom>
 
-            {/* דיאלוג העלאה מעוצב */}
+            {/* Styled upload dialog */}
             <Dialog
               open={uploadDialog}
               onClose={() => setUploadDialog(false)}

@@ -9,19 +9,15 @@ import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchEmployees } from '../../Redux/features/employeesSlice';
 import Swal from 'sweetalert2';
 
-// יצירת קונטקסט לעובדים
 const EmployeesContext = createContext();
 
-// הוק שמאפשר גישה לקונטקסט בכל קומפוננטה
 export const useEmployees = () => useContext(EmployeesContext);
 
-// קונטקסט פרובידר לעובדים עם עיצוב מעודכן להודעות
 export const EmployeesProvider = ({ children }) => {
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
 
-  // קבלת נתונים מהרדקס סטור
   const { employees } = useSelector((state) => state.employees);
   const { cities } = useSelector((state) => state.cities);
   const { roles } = useSelector((state) => state.roles);
@@ -32,7 +28,6 @@ export const EmployeesProvider = ({ children }) => {
   const rolesStatus = useSelector((state) => state.roles.status);
   const classesStatus = useSelector((state) => state.classes.status);
 
-  // טעינת הנתונים מהשרת באמצעות Redux
   useEffect(() => {
     if (citiesStatus === "idle") {
       dispatch(fetchCities());
@@ -48,22 +43,18 @@ export const EmployeesProvider = ({ children }) => {
     }
   }, [dispatch, citiesStatus, rolesStatus, classesStatus, employeesStatus]);
 
-  // פונקציה לרענון רשימת העובדים
   const refreshEmployees = useCallback(() => {
     dispatch(fetchEmployees());
   }, [dispatch]);
 
-  // פונקציה להוספת עובד חדש עם הודעות מעוצבות
   const addEmployee = async (employeeData) => {
     try {
       setLoading(true);
 
-      // שליחת נתוני העובד החדש לשרת
       const response = await axios.post(`/Employees`, employeeData);
 
       setLoading(false);
       
-      // הודעת הצלחה מעוצבת
       await Swal.fire({
         icon: 'success',
         title: '🎉 העובד נוסף בהצלחה!',
@@ -91,7 +82,6 @@ export const EmployeesProvider = ({ children }) => {
       console.error("שגיאה בהוספת עובד חדש:", err);
       setLoading(false);
 
-      // הודעת שגיאה מעוצבת
       await Swal.fire({
         icon: 'error',
         title: '❌ שגיאה בהוספת עובד',
@@ -116,20 +106,19 @@ export const EmployeesProvider = ({ children }) => {
     }
   };
 
-  // פונקציה לעדכון עובד עם הודעות מעוצבות
+  // Update employee function
   const updateEmployee = async (updatedEmployee) => {
     try {
       setLoading(true);
       
-      // שליחת עדכון העובד לשרת
+      
       await axios.put(`/Employees/${updatedEmployee.employeeId}`, updatedEmployee);
       
-      // רענון רשימת העובדים
       refreshEmployees();
       
       setLoading(false);
       
-      // הודעת הצלחה מעוצבת
+      // Success message
       await Swal.fire({
         icon: 'success',
         title: '✅ העובד עודכן בהצלחה!',
@@ -154,7 +143,7 @@ export const EmployeesProvider = ({ children }) => {
       console.error("שגיאה בעדכון פרטי העובד:", err);
       setLoading(false);
       
-      // הודעת שגיאה מעוצבת
+      // Error message
       await Swal.fire({
         icon: 'error',
         title: '❌ שגיאה בעדכון',
@@ -176,12 +165,12 @@ export const EmployeesProvider = ({ children }) => {
     }
   };
 
-  // פונקציה לעדכון סטטוס עובד עם הודעות מעוצבות
+  // Update employee status function
   const toggleEmployeeStatus = async (id, currentStatus) => {
     try {
       setLoading(true);
       
-      // שאלת אישור מעוצבת
+      // Confirmation dialog
       const result = await Swal.fire({
         icon: 'question',
         title: `🤔 ${currentStatus ? 'השבתת' : 'הפעלת'} עובד`,
@@ -225,17 +214,15 @@ export const EmployeesProvider = ({ children }) => {
         return { success: false };
       }
       
-      // עדכון מצב העובד בשרת
       await axios.patch(`/Employees/${id}/deactivate`, {
         isActive: !currentStatus,
       });
       
-      // רענון רשימת העובדים
       refreshEmployees();
       
       setLoading(false);
       
-      // הודעת הצלחה מעוצבת
+      // Success message
       await Swal.fire({
         icon: 'success',
         title: `🎉 הסטטוס עודכן בהצלחה!`,
@@ -281,7 +268,7 @@ export const EmployeesProvider = ({ children }) => {
     }
   };
 
-  // פונקציה לשליחת מייל ברוכים הבאים עם הודעות מעוצבות
+  // Welcome email function
   const sendWelcomeEmail = async (email, password, firstName, lastName) => {
     try {
       const response = await axios.post(`/Employees/sendWelcomeEmail`, {
@@ -292,7 +279,7 @@ export const EmployeesProvider = ({ children }) => {
         loginUrl: window.location.origin + "/#/login",
       });
 
-      // הודעת הצלחה מעוצבת למייל
+      // Success email message
       await Swal.fire({
         icon: 'success',
         title: '📧 המייל נשלח בהצלחה!',
@@ -334,7 +321,7 @@ export const EmployeesProvider = ({ children }) => {
     } catch (err) {
       console.error("שגיאה בשליחת המייל:", err);
       
-      // הודעת שגיאה מעוצבת למייל
+      // Error email message
       await Swal.fire({
         icon: 'error',
         title: '📧 שגיאה בשליחת מייל',
@@ -374,7 +361,7 @@ export const EmployeesProvider = ({ children }) => {
     }
   };
 
-  // פונקציה ליצירת סיסמה אקראית מחוזקת
+  // Random password generator function
   const generateRandomPassword = (length = 12) => {
     const charset =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -390,7 +377,7 @@ export const EmployeesProvider = ({ children }) => {
     return password;
   };
 
-  // ערך הקונטקסט
+  // context value
   const value = {
     employees,
     roles,
@@ -409,7 +396,7 @@ export const EmployeesProvider = ({ children }) => {
     <EmployeesContext.Provider value={value}>
       {children}
       
-      {/* CSS מותאם להודעות SweetAlert2 */}
+      {/* CSS SweetAlert2 */}
       <style jsx global>{`
         .rtl-popup {
           direction: rtl !important;

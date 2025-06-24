@@ -29,7 +29,7 @@ import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
 import { baseURL } from '../../components/common/axiosConfig';
 import { useAuth } from '../../components/login/AuthContext';
-// עיצוב משופר לתמה עם פלטת צבעים מדהימה
+// Enhanced theme design
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -125,7 +125,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// קומפוננט מעוצב לאווטאר עם אפקטים
+// Styled component for avatar with effects
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 120,
   height: 120,
@@ -139,7 +139,7 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   }
 }));
 
-// קומפוננט מעוצב לכותרת סקציה
+// Styled component for section header
 const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -150,7 +150,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
 }));
 
-// קומפוננט מעוצב לקונטיינר הטופס
+// Styled component for the form container
 const FormContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
@@ -158,7 +158,7 @@ const FormContainer = styled(Container)(({ theme }) => ({
   paddingBottom: theme.spacing(4),
 }));
 
-// קומפוננט מעוצב לכרטיס ראשי
+// Styled component for the main card
 const MainCard = styled(Card)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   background: 'rgba(255, 255, 255, 0.95)',
@@ -169,7 +169,7 @@ const MainCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// אפקט טעינה מעוצב
+// Styled loading effect
 const LoadingOverlay = styled(Box)({
   position: 'absolute',
   top: 0,
@@ -185,7 +185,7 @@ const LoadingOverlay = styled(Box)({
   zIndex: 1000,
 });
 
-// ערכים ראשוניים לטופס
+// Initial values for the form
 const initialFormData = {
   firstName: '',
   lastName: '',
@@ -244,20 +244,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     } : initialFormData
   );
 
-  // מצבי טופס
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
   
-  // קבצים ותמונות
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   
-  // פונקציות טיפול בטופס
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -279,7 +276,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
-      // בדיקה שאכן מדובר בתמונה
       if (!file.type.startsWith('image/')) {
         Swal.fire({
           icon: 'error',
@@ -303,7 +299,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
       
       setProfilePhoto(file);
       
-      // יצירת תצוגה מקדימה
+      // Creating a preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfilePreview(e.target.result);
@@ -357,16 +353,14 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     try {
       setUploadingFiles(true);
       
-      // טיפול בתמונת פרופיל
+      // Handling profile picture
       if (profilePhoto) {
         try {
-          // בדיקה אם יש תמונת פרופיל קיימת
           const existingDocs = await dispatch(fetchDocumentsByEmployeeId(employeeId)).unwrap();
           const existingProfilePic = existingDocs.find(doc => 
             doc.docType === 'profile' || doc.docType === 'picture'
           );
           
-          // מחיקת התמונה הקודמת אם קיימת
           if (existingProfilePic) {
             try {
               await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
@@ -391,7 +385,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
           
           console.log('תמונת פרופיל הועלתה:', uploadResult);
 
-          // עדכון נתיב התמונה בפרופיל העובד
+            // Update the image path in the employee profile
           if (uploadResult && uploadResult.docPath) {
             const updateData = {
               employeeId: employeeId,
@@ -414,7 +408,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         }
       }
       
-      // טיפול במסמכים נוספים
+      // Handling additional documents
       if (documents.length > 0) {
         console.log(`מעלה ${documents.length} מסמכים נוספים`);
         
@@ -449,7 +443,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
   
-  // פונקציות ולידציה
+  // Validation functions
   const validateField = (name, value) => {
     const extraParams = {
       required: ['firstName', 'lastName', 'password', 'roleName',"classId","cityName"].includes(name)
@@ -544,7 +538,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
       
       const employeeId = isEditMode ? formData.employeeId : result.data.employeeId;
       
-      // שליחת אימייל (רק במצב הוספה חדשה)
+      // Sending email (only in new addition mode)
       if (!isEditMode && sendEmail && formData.email) {
         try {
           console.log('שולח אימייל ברוכים הבאים');
@@ -560,7 +554,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         }
       }
       
-      // העלאת קבצים
       try {
         console.log('מתחיל העלאת קבצים לעובד:', employeeId);
         await uploadFiles(employeeId);
@@ -576,7 +569,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         });
       }
       
-      // הודעת הצלחה  
       Swal.fire({
         title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
         text: isEditMode ? 'פרטי העובד עודכנו במערכת' : 'העובד נוסף למערכת בהצלחה',
@@ -606,7 +598,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
 
-  // פונקציות עזר להצגת שגיאות
+  // Helper functions for displaying errors
   const getFieldError = (fieldName) => errors[fieldName] || '';
   const hasFieldError = (fieldName) => Boolean(errors[fieldName]);
 
@@ -661,7 +653,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
               )}
 
               <CardContent sx={{ p: 4 }}>
-                {/* כותרת ראשית מעוצבת */}
+                {/* Styled Main Header */}
                 <Box textAlign="center" mb={4}>
                   <Typography
                     variant="h4"
@@ -707,7 +699,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* תמונת פרופיל מרכזית */}
+                  {/* Main profil picture*/}
                   <Box textAlign="center" mb={4}>
                     <input
                       type="file"
@@ -743,7 +735,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     )}
                   </Box>
 
-                  {/* פרטים אישיים */}
+                  {/* Personal info*/}
                   <Fade in timeout={1200}>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
@@ -882,7 +874,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     </Card>
                   </Fade>
 
-                  {/* פרטי העסקה */}
+                  {/* Work info*/}
                   <Fade in timeout={1400}>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
@@ -1070,7 +1062,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       </CardContent>
                     </Card>
                   </Fade>
-                  {/* פרטי כניסה למערכת */}
+                  {/* Login info*/}
                                     {!isEditMode && (
 
                     <Fade in timeout={1600}>
@@ -1198,7 +1190,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
 <Button>ddd</Button>
                   )}
 
-                  {/* כפתורי פעולה */}
+                  {/* Action buttons */}
                   <Fade in timeout={1800}>
                     <Box sx={{ 
                       display: "flex", 

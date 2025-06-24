@@ -7,24 +7,14 @@ import {
   Container, Paper, Typography, Button, Grid, Box, 
   Avatar, Chip, Tabs, Tab, Card, CardContent, 
   CircularProgress, Alert, Breadcrumbs, IconButton,
-  Fade, Zoom, Divider, Stack, Tooltip, Badge
+  Fade, Zoom, Stack
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Phone as PhoneIcon,
-  LocationOn as LocationIcon,
   Work as WorkIcon,
-  Badge as BadgeIcon,
   Event as EventIcon,
-  Folder as FolderIcon,
   Security as SecurityIcon,
-  Visibility as VisibilityIcon,
-  Settings as SettingsIcon,
-  PhotoCamera as PhotoCameraIcon,
-  Description as DocumentIcon,
   Star as StarIcon,
   AutoAwesome as AutoAwesomeIcon,
   Celebration as CelebrationIcon
@@ -33,13 +23,11 @@ import { createTheme, ThemeProvider, styled, alpha } from '@mui/material/styles'
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-// Import קומפוננטות
 import { useEmployees } from './EmployeesContext';
 import EmployeeForm from './EmployeeForm';
 import EmployeeDocumentManager from './EmployeeDocumentManager';
 import { baseURL } from '../../components/common/axiosConfig';
 
-// תמה מדהימה RTL
 const profileTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -150,7 +138,6 @@ const profileTheme = createTheme({
   }
 });
 
-// מסך מלא מותאם RTL עם רקע מדהים
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
@@ -177,7 +164,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// אווטאר מעוצב מדהים
+// Profile Avatar
 const ProfileAvatar = styled(Avatar)(({ theme }) => ({
   width: 150,
   height: 150,
@@ -208,7 +195,7 @@ const ProfileAvatar = styled(Avatar)(({ theme }) => ({
   }
 }));
 
-// כרטיס מידע מעוצב
+// Info Card
 const InfoCard = styled(Card)(({ theme }) => ({
   background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
@@ -225,7 +212,7 @@ const InfoCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// כותרת סקציה מעוצבת
+// Section Header
 const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -244,7 +231,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס פרופיל עליון מדהים
+// Hero Profile Card
 const HeroProfileCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   marginBottom: theme.spacing(4),
@@ -286,13 +273,13 @@ const EmployeeProfile = () => {
   // Redux/Context
   const { employees, loading } = useEmployees();
   
-  // State מקומי
+  // Local State
   const [employee, setEmployee] = useState(null);
   const [currentTab, setCurrentTab] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [loadingEmployee, setLoadingEmployee] = useState(true);
   
-  // טעינת העובד
+  
   useEffect(() => {
     const loadEmployee = () => {
       if (employees && employees.length > 0) {
@@ -310,7 +297,6 @@ const EmployeeProfile = () => {
     loadEmployee();
   }, [employeeId, employees]);
 
-  // פורמט תאריך
   const formatDate = (dateString) => {
     if (!dateString || dateString === 'NULL') return 'לא הוזן';
     try {
@@ -320,7 +306,6 @@ const EmployeeProfile = () => {
     }
   };
 
-  // קבלת צבע תפקיד
   const getRoleColor = (roleName) => {
     const roleColors = {
       'מנהל': '#e53e3e',
@@ -332,7 +317,7 @@ const EmployeeProfile = () => {
     return roleColors[roleName] || '#718096';
   };
 
-  // חישוב ותק בעבודה
+  // calculate Seniority
   const calculateSeniority = (startDate) => {
     if (!startDate) return 'לא הוזן';
     try {
@@ -353,13 +338,11 @@ const EmployeeProfile = () => {
     }
   };
 
-  // טיפול בעדכון עובד
   const handleEmployeeUpdate = (updatedEmployee) => {
     setEmployee(updatedEmployee);
     setEditMode(false);
   };
 
-  // מצב טעינה
   if (loading || loadingEmployee) {
     return (
       <ThemeProvider theme={profileTheme}>
@@ -389,7 +372,7 @@ const EmployeeProfile = () => {
     );
   }
 
-  // עובד לא נמצא
+  // employee not found
   if (!employee) {
     return (
       <ThemeProvider theme={profileTheme}>
@@ -466,7 +449,7 @@ const EmployeeProfile = () => {
               </Breadcrumbs>
             </Fade>
 
-            {/* כרטיס פרופיל עליון מדהים */}
+            {/* Profil card*/}
             <Zoom in timeout={800}>
               <HeroProfileCard elevation={8}>
                 <Grid container spacing={3} alignItems="center">
@@ -515,7 +498,6 @@ const EmployeeProfile = () => {
                      
                       <Chip
                         icon={employee.isActive ? <CelebrationIcon /> : <SecurityIcon />}
-                        // label={employee.isActive ? '✅ פעיל' : '❌ לא פעיל'}
                         label={employee.isActive ? ' פעיל' : ' לא פעיל'}
                         color={employee.isActive ? 'success' : 'error'}
                         sx={{ 
@@ -568,7 +550,7 @@ const EmployeeProfile = () => {
               </HeroProfileCard>
             </Zoom>
 
-            {/* טאבים ראשיים מעוצבים */}
+            {/* Main tabs*/}
             <Fade in timeout={1000}>
               <Paper sx={{ 
                 borderRadius: 4, 
@@ -600,11 +582,11 @@ const EmployeeProfile = () => {
                       fontWeight: 700,
                       py: 3,
                       transition: 'all 0.3s ease',
-                      borderBottom: '4px solid transparent', // גבול שקוף לכל הטאבים
+                      borderBottom: '4px solid transparent', 
                       '&.Mui-selected': {
                         color: '#2a8a95 !important',
                         background: 'rgba(76, 181, 195, 0.1)',
-                        borderBottom: '4px solid #4cb5c3'     // גבול צבעוני לטאב הפעיל
+                        borderBottom: '4px solid #4cb5c3'
                       }
                     },
                     '& .MuiTabs-indicator': {
@@ -612,26 +594,24 @@ const EmployeeProfile = () => {
                     }
                   }}
                 >
-                  <Tab 
-                    // icon={<PersonIcon />} 
+                  <Tab  
                     label="📋 מידע כללי" 
                     iconPosition="start"
                   />
                   <Tab 
-                    // icon={<FolderIcon />} 
                     label="📁 מסמכים וקבצים" 
                     iconPosition="start"
                   />
                 </Tabs>
 
-                {/* תוכן הטאבים */}
+                {/* Tabs content*/}
                 <Box sx={{ p: 4 }}>
-                  {/* טאב מידע כללי */}
+                  {/* General info tab */}
                   {currentTab === 0 && (
                     <Fade in timeout={500}>
                       <Box>
                         <Grid container spacing={4}>
-                          {/* פרטים אישיים */}
+                          {/* Personal info*/}
                           <Grid item xs={12} md={6}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
@@ -693,7 +673,7 @@ const EmployeeProfile = () => {
                             </InfoCard>
                           </Grid>
 
-                          {/* פרטי עבודה */}
+                          {/* work info */}
                           <Grid item xs={12} md={6}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
@@ -762,7 +742,7 @@ const EmployeeProfile = () => {
                     </Fade>
                   )}
 
-                  {/* טאב מסמכים */}
+                  {/* forms tabs */}
                   {currentTab === 1 && (
                     <Fade in timeout={500}>
                       <Box>
@@ -780,7 +760,7 @@ const EmployeeProfile = () => {
               </Paper>
             </Fade>
 
-            {/* דיאלוג עריכה מעוצב מדהים */}
+            {/* edit Mode dialog */}
             {editMode && (
               <Paper
                 sx={{
@@ -859,7 +839,7 @@ const EmployeeProfile = () => {
                       }
                     }}
                   >
-                    {/* כותרת דיאלוג מעוצבת */}
+                    {/* headline dialog */}
                     <Box sx={{
                       background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                       color: 'white',
@@ -907,7 +887,7 @@ const EmployeeProfile = () => {
                       </IconButton>
                     </Box>
 
-                    {/* תוכן הדיאלוג */}
+                    {/* dialog content */}
                     <Box sx={{ p: 3 }}>
                       <Alert 
                         severity="info" 
