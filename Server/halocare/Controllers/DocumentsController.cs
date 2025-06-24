@@ -98,27 +98,26 @@ namespace halocare.Controllers
 
         // GET: api/Documents/5/content
         [HttpGet("{id}/content")]
-
         public ActionResult GetDocumentContent(int id)
         {
             try
             {
-                // קבלת המסמך
+                // Retrieve the document
                 var document = _documentService.GetDocumentById(id);
                 if (document == null)
                 {
                     return NotFound($"מסמך עם מזהה {id} לא נמצא");
                 }
 
-                // קבלת תוכן המסמך
+                // Retrieve the document content
                 byte[] fileContent = _documentService.GetDocumentContent(id);
 
-                // הגדרת ההורדה עם סוג התוכן המתאים
+                // Set the download with the appropriate content type
                 return File(
                     fileContent,
                     document.ContentType ?? "application/octet-stream",
                     document.DocName ?? $"document_{id}",
-                    true // הוספת פרמטר להגדרה כקובץ להורדה
+                    true // Add parameter to specify as file for download
                 );
             }
             catch (FileNotFoundException ex)
@@ -135,7 +134,7 @@ namespace halocare.Controllers
             }
         }
 
-        // בקונטרולר DocumentsController
+        // In DocumentsController
         [HttpGet("content-by-path")]
         public ActionResult GetDocumentContentByPath([FromQuery] string path)
         {
@@ -159,14 +158,13 @@ namespace halocare.Controllers
             }
         }
 
-        
         // POST: api/Documents/upload
         [HttpPost("upload")]
         public ActionResult<Documentt> UploadDocument([FromForm] DocumentUploadModel model)
         {
             try
             {
-                // בדיקות תקינות
+                // Validation checks
                 if (model.File == null || model.File.Length == 0)
                 {
                     return BadRequest("לא נבחר קובץ או שהקובץ ריק");
@@ -182,7 +180,7 @@ namespace halocare.Controllers
                     return BadRequest("חובה לקשר את המסמך לילד או לעובד");
                 }
 
-                // קריאת תוכן הקובץ
+                // Read the file content
                 byte[] fileContent;
                 using (var ms = new MemoryStream())
                 {
@@ -190,15 +188,15 @@ namespace halocare.Controllers
                     fileContent = ms.ToArray();
                 }
 
-                // הוספת המסמך
+                // Add the document
                 int documentId = _documentService.AddDocument(
                     model.Document,
                     fileContent,
-                    Path.GetFileName(model.File.FileName), // וידוא שנשתמש רק בשם הקובץ ללא נתיב
+                    Path.GetFileName(model.File.FileName), // Ensure only filename is used without path
                     model.File.ContentType
                 );
 
-                // קבלת המסמך המלא לאחר השמירה
+                // Retrieve the full document after saving
                 var savedDocument = _documentService.GetDocumentById(documentId);
 
                 return CreatedAtAction(nameof(GetDocument), new { id = documentId }, savedDocument);
@@ -216,6 +214,7 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה בשרת: {ex.Message}");
             }
         }
+
         // DELETE: api/Documents/5
         [HttpDelete("{id}")]
         public IActionResult DeleteDocument(int id)
@@ -242,21 +241,22 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
-    
-    // פונקציית עזר לקביעת סוג התוכן לפי סיומת הקובץ
-    private string GetContentTypeFromPath(string path)
-    {
-        string extension = Path.GetExtension(path).ToLower();
 
-        return extension switch
+        // Helper function to determine content type based on file extension
+        private string GetContentTypeFromPath(string path)
         {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            _ => "application/octet-stream"
-        };
+            string extension = Path.GetExtension(path).ToLower();
+
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                _ => "application/octet-stream"
+            };
+        }
     }
-    }
+
     public class DocumentUploadModel
     {
         public Documentt Document { get; set; }

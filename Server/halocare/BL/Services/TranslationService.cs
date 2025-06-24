@@ -22,67 +22,67 @@ namespace halocare.BL.Services
             _httpClient = new HttpClient();
             _apiKey = _configuration.GetValue<string>("GoogleTranslateApiKey");
 
-            // מילון מונחים מיוחדים לתרגום - מורחב עם מושגים מתחום הטיפול בילדים
+            // Dictionary of special terms for translation - expanded with terms from child therapy field
             _specialTerms = new Dictionary<string, Dictionary<string, string>>
-        {
-            // מעברית לערבית
-            {"he-ar", new Dictionary<string, string>
-                {
-                    {"תש\"ה", "خطة تنمية إعادة التأهيل"},
-                    {"גן הילד", "روضة الطفل"},
-                    {"טיפול רגשי", "العلاج العاطفي"},
-                    {"פיזיותרפיה", "العلاج الطبيعي"},
-                    {"ריפוי בעיסוק", "العلاج المهني"},
-                    {"קלינאית תקשורת", "معالج النطق واللغة"},
-                    {"טיפול התפתחותי", "العلاج التنموي"},
-                    {"פגישת אינטייק", "لقاء استقبال أولي"},
-                    {"מעקב נוכחות", "تتبع الحضور"},
-                    {"דוח טיפול", "تقرير العلاج"},
-                    {"ביקור בית", "زيارة منزلية"}
+            {
+                // From Hebrew to Arabic
+                {"he-ar", new Dictionary<string, string>
+                    {
+                        {"תש\"ה", "خطة تنمية إعادة التأهيل"},
+                        {"גן הילד", "روضة الطفل"},
+                        {"טיפול רגשי", "العلاج العاطفي"},
+                        {"פיזיותרפיה", "العلاج الطبيعي"},
+                        {"ריפוי בעיסוק", "العلاج المهني"},
+                        {"קלינאית תקשורת", "معالج النطق واللغة"},
+                        {"טיפול התפתחותי", "العلاج التنموي"},
+                        {"פגישת אינטייק", "لقاء استقبال أولي"},
+                        {"מעקב נוכחות", "تتبع الحضور"},
+                        {"דוח טיפול", "تقرير العلاج"},
+                        {"ביקור בית", "زيارة منزلية"}
+                    }
+                },
+
+                // From Hebrew to Russian
+                {"he-ru", new Dictionary<string, string>
+                    {
+                        {"תש\"ה", "План реабилитационного развития"},
+                        {"גן הילד", "Детский сад"},
+                        {"טיפול רגשי", "Эмоциональная терапия"},
+                        {"פיזיותרפיה", "Физиотерапия"},
+                        {"ריפוי בעיסוק", "Трудотерапия"},
+                        {"קלינאית תקשורת", "Логопед"},
+                        {"טיפול התפתחותי", "Терапия развития"},
+                        {"פגישת אינטייק", "Первичная встреча"},
+                        {"מעקב נוכחות", "Учет посещаемости"},
+                        {"דוח טיפול", "Отчет о лечении"},
+                        {"ביקור בית", "Домашний визит"}
+                    }
+                },
+
+                // From Hebrew to Amharic
+                {"he-am", new Dictionary<string, string>
+                    {
+                        {"תש\"ה", "የመልሶ ማቋቋም ልማት እቅድ"},
+                        {"גן הילד", "የህጻናት መዋያ"},
+                        {"טיפול רגשי", "የስሜት ሕክምና"},
+                        {"פיזיותרפיה", "ፊዚዮቴራፒ"},
+                        {"ריפוי בעיסוק", "የሙያ ሕክምና"},
+                        {"קלינאית תקשורת", "የንግግር ሕክምና"},
+                        {"טיפול התפתחותי", "የእድገት ሕክምና"},
+                        {"פגישת אינטייק", "የመጀመሪያ ግንኙነት"},
+                        {"מעקב נוכחות", "የመገኘት መቆጣጠሪያ"},
+                        {"דוח טיפול", "የህክምና ሪፖርት"},
+                        {"ביקור בית", "የቤት ጉብኝት"}
+                    }
                 }
-            },
-            
-            // מעברית לרוסית
-            {"he-ru", new Dictionary<string, string>
-                {
-                    {"תש\"ה", "План реабилитационного развития"},
-                    {"גן הילד", "Детский сад"},
-                    {"טיפול רגשי", "Эмоциональная терапия"},
-                    {"פיזיותרפיה", "Физиотерапия"},
-                    {"ריפוי בעיסוק", "Трудотерапия"},
-                    {"קלינאית תקשורת", "Логопед"},
-                    {"טיפול התפתחותי", "Терапия развития"},
-                    {"פגישת אינטייק", "Первичная встреча"},
-                    {"מעקב נוכחות", "Учет посещаемости"},
-                    {"דוח טיפול", "Отчет о лечении"},
-                    {"ביקור בית", "Домашний визит"}
-                }
-            },
-            
-            // מעברית לאמהרית
-            {"he-am", new Dictionary<string, string>
-                {
-                    {"תש\"ה", "የመልሶ ማቋቋም ልማት እቅድ"},
-                    {"גן הילד", "የህጻናት መዋያ"},
-                    {"טיפול רגשי", "የስሜት ሕክምና"},
-                    {"פיזיותרפיה", "ፊዚዮቴራፒ"},
-                    {"ריפוי בעיסוק", "የሙያ ሕክምና"},
-                    {"קלינאית תקשורת", "የንግግር ሕክምና"},
-                    {"טיפול התפתחותי", "የእድገት ሕክምና"},
-                    {"פגישת אינטייק", "የመጀመሪያ ግንኙነት"},
-                    {"מעקב נוכחות", "የመገኘት መቆጣጠሪያ"},
-                    {"דוח טיפול", "የህክምና ሪፖርት"},
-                    {"ביקור בית", "የቤት ጉብኝት"}
-                }
-            }
-        };
+            };
         }
 
         public async Task<string> TranslateTextAsync(string text, string sourceLanguage, string targetLanguage)
         {
             try
             {
-                // החלפת מונחים מיוחדים לפני התרגום
+                // Replace special terms before translation
                 string textToTranslate = text;
                 string langPair = $"{sourceLanguage}-{targetLanguage}";
                 Dictionary<string, string> specialTermReplacements = new Dictionary<string, string>();
@@ -99,7 +99,7 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // בניית הבקשה ל-Google Cloud Translation API
+                // Build the request to Google Cloud Translation API
                 string url = $"https://translation.googleapis.com/language/translate/v2?key={_apiKey}";
 
                 var requestBody = new
@@ -115,12 +115,12 @@ namespace halocare.BL.Services
                     Encoding.UTF8,
                     "application/json");
 
-                // שליחת הבקשה
+                // Send the request
                 HttpResponseMessage response = await _httpClient.PostAsync(url, content);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // קריאת התגובה
+                    // Read the response
                     string responseBody = await response.Content.ReadAsStringAsync();
                     var translationResponse = System.Text.Json.JsonSerializer.Deserialize<TranslationResponse>(responseBody);
 
@@ -128,7 +128,7 @@ namespace halocare.BL.Services
                     {
                         string translatedText = translationResponse.Data.Translations[0].TranslatedText;
 
-                        // החזרת המונחים המיוחדים
+                        // Restore special terms
                         foreach (var replacement in specialTermReplacements)
                         {
                             translatedText = translatedText.Replace(replacement.Key, replacement.Value);
@@ -148,7 +148,7 @@ namespace halocare.BL.Services
 
         public async Task<string> DetectLanguageAsync(string text)
         {
-            // בניית הבקשה ל-Google Cloud Translation API לזיהוי שפה
+            // Build the request to Google Cloud Translation API for language detection
             string url = $"https://translation.googleapis.com/language/translate/v2/detect?key={_apiKey}";
 
             var requestBody = new
@@ -161,12 +161,12 @@ namespace halocare.BL.Services
                 Encoding.UTF8,
                 "application/json");
 
-            // שליחת הבקשה
+            // Send the request
             HttpResponseMessage response = await _httpClient.PostAsync(url, content);
 
             if (response.IsSuccessStatusCode)
             {
-                // קריאת התגובה
+                // Read the response
                 string responseBody = await response.Content.ReadAsStringAsync();
                 var detectionResponse = JsonSerializer.Deserialize<DetectionResponse>(responseBody);
 
@@ -182,7 +182,7 @@ namespace halocare.BL.Services
         }
     }
 
-    // מחלקות עזר לפענוח תשובת ה-API
+    // Helper classes to parse the API response
     public class TranslationResponse
     {
         public TranslationData Data { get; set; }

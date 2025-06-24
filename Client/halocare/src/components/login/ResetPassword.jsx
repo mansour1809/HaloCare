@@ -36,8 +36,6 @@ const ResetPassword = () => {
     const params = new URLSearchParams(location.search);
     const tokenFromUrl = params.get('token');
     const emailFromUrl = params.get('email');
-    console.log("Token from URL:", tokenFromUrl);
-    console.log("Email from URL:", emailFromUrl);
     if (!tokenFromUrl || !emailFromUrl) {
       setError('קישור לא תקין. אנא בקש קישור חדש לאיפוס סיסמה.');
       return;

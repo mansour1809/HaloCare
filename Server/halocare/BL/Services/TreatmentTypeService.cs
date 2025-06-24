@@ -22,23 +22,24 @@ namespace halocare.BL.Services
 
         public TreatmentType GetTreatmentTypeById(int typeId)
         {
-            //if (string.IsNullOrEmpty(typeId))
-            //{
-            //    throw new ArgumentException("שם סוג הטיפול לא יכול להיות ריק");
-            //}
+            // Validation: typeId cannot be empty or invalid
+            // if (string.IsNullOrEmpty(typeId))
+            // {
+            //     throw new ArgumentException("שם סוג הטיפול לא יכול להיות ריק");
+            // }
 
             return _treatmentTypeRepository.GetTreatmentTypeById(typeId);
         }
 
         public bool AddTreatmentType(TreatmentType treatmentType)
         {
-            // וידוא שיש שם לסוג הטיפול
+            // Ensure the treatment type name is provided
             if (string.IsNullOrEmpty(treatmentType.TreatmentTypeName))
             {
                 throw new ArgumentException("שם סוג הטיפול הוא שדה חובה");
             }
 
-            // בדיקה אם סוג הטיפול כבר קיים
+            // Check if the treatment type already exists
             TreatmentType existingType = _treatmentTypeRepository.GetTreatmentTypeById(treatmentType.TreatmentTypeId);
             if (existingType != null)
             {
@@ -50,47 +51,47 @@ namespace halocare.BL.Services
 
         public bool UpdateTreatmentType(int treatmentTypeId, string newTreatmentTypeName)
         {
-            // וידוא שיש שמות סוג טיפול
-            if ( string.IsNullOrEmpty(newTreatmentTypeName))
+            // Ensure new treatment type name is provided
+            if (string.IsNullOrEmpty(newTreatmentTypeName))
             {
                 throw new ArgumentException("שמות סוגי הטיפול לא יכולים להיות ריקים");
             }
 
-            // בדיקה אם סוג הטיפול הישן קיים
+            // Check if the old treatment type exists
             TreatmentType existingOldType = _treatmentTypeRepository.GetTreatmentTypeById(treatmentTypeId);
             if (existingOldType == null)
             {
                 throw new ArgumentException($"סוג הטיפול '{treatmentTypeId}' לא נמצא במערכת");
             }
 
-            // בדיקה אם סוג הטיפול החדש כבר קיים (אם זה לא אותו שם)
-
-                TreatmentType existingNewType = _treatmentTypeRepository.GetTreatmentTypeById(treatmentTypeId);
-                if (existingNewType != null)
-                {
-                    throw new ArgumentException($"סוג הטיפול '{newTreatmentTypeName}' כבר קיים במערכת");
-                }
+            // Check if the new treatment type already exists (if it's a different name)
+            TreatmentType existingNewType = _treatmentTypeRepository.GetTreatmentTypeById(treatmentTypeId);
+            if (existingNewType != null)
+            {
+                throw new ArgumentException($"סוג הטיפול '{newTreatmentTypeName}' כבר קיים במערכת");
+            }
 
             return _treatmentTypeRepository.UpdateTreatmentType(treatmentTypeId, newTreatmentTypeName);
         }
 
         public bool DeleteTreatmentType(int treatmentTypeId)
         {
-            // וידוא שיש שם סוג טיפול
+            // Validate that treatment type ID is valid
+            // Note: int is a value type, can't be null, so this check might be redundant
             if (treatmentTypeId == null)
             {
                 throw new ArgumentException("שם סוג הטיפול לא יכול להיות ריק");
             }
 
-            // בדיקה אם סוג הטיפול קיים
+            // Check if treatment type exists
             TreatmentType existingType = _treatmentTypeRepository.GetTreatmentTypeById(treatmentTypeId);
             if (existingType == null)
             {
                 throw new ArgumentException($"סוג הטיפול '{treatmentTypeId}' לא נמצא במערכת");
             }
 
-            // כאן אפשר להוסיף בדיקה אם יש טיפולים מסוג זה, ואם כן - למנוע מחיקה
-            // (צריך להוסיף שירות שיבדוק אם קיימים טיפולים מסוג זה)
+            // Here you can add a check if there are treatments of this type, and if so - prevent deletion
+            // (You would need a service method that verifies if treatments exist for this type)
 
             return _treatmentTypeRepository.DeleteTreatmentType(treatmentTypeId);
         }

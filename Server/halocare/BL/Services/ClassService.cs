@@ -31,7 +31,7 @@ namespace halocare.BL.Services
 
         public int AddClass(Class classItem)
         {
-            // וידוא שהמחנכת קיימת ופעילה
+            // Ensure the teacher exists and is active
             Employee teacher = _employeeRepository.GetEmployeeById(classItem.TeacherId);
             if (teacher == null)
             {
@@ -47,14 +47,14 @@ namespace halocare.BL.Services
 
         public bool UpdateClass(Class classItem)
         {
-            // וידוא שהכיתה קיימת
+            // Ensure the class exists
             Class existingClass = _classRepository.GetClassById(classItem.ClassId);
             if (existingClass == null)
             {
                 throw new ArgumentException("הכיתה לא נמצאה במערכת");
             }
 
-            // וידוא שהמחנכת קיימת ופעילה
+            // Ensure the teacher exists and is active
             Employee teacher = _employeeRepository.GetEmployeeById(classItem.TeacherId);
             if (teacher == null)
             {
@@ -70,23 +70,23 @@ namespace halocare.BL.Services
 
         public List<Kid> GetKidsInClass(int classId)
         {
-            // קבלת כל הילדים
+            // Retrieve all kids
             List<Kid> allKids = _kidRepository.GetAllKids();
 
-            // סינון הילדים ששייכים לכיתה הספציפית
+            // Filter kids that belong to the specified class
             return allKids.FindAll(kid => kid.ClassId == classId);
         }
 
         public bool DeleteClass(int id)
         {
-            // וידוא שהכיתה קיימת
+            // Ensure the class exists
             Class existingClass = _classRepository.GetClassById(id);
             if (existingClass == null)
             {
                 throw new ArgumentException("הכיתה לא נמצאה במערכת");
             }
 
-            // בדיקה אם יש ילדים בכיתה
+            // Check if there are kids in the class
             List<Kid> kidsInClass = GetKidsInClass(id);
             if (kidsInClass.Count > 0)
             {

@@ -19,7 +19,7 @@ namespace halocare.Middleware
         {
             try
             {
-                // לוגינג הבקשה הנכנסת
+                // Logging the incoming request
                 LogIncomingRequest(context);
 
                 await _next(context);
@@ -43,7 +43,7 @@ namespace halocare.Middleware
                 request.ContentLength
             );
 
-            // לוגינג מיוחד לבקשות העלאת קבצים
+            // Special logging for file upload requests
             if (request.ContentType?.Contains("multipart/form-data") == true)
             {
                 _logger.LogInformation("File upload request detected. Content-Length: {ContentLength} bytes", request.ContentLength);
@@ -67,11 +67,11 @@ namespace halocare.Middleware
                     break;
 
                 //case ArgumentNullException nullEx:
-                    //errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
-                    //errorResponse.Message = $"Required parameter '{nullEx.ParamName}' is missing";
-                    //errorResponse.Details = nullEx.Message;
-                    //_logger.LogWarning(nullEx, "Null argument exception: {ParamName}", nullEx.ParamName);
-                    //break;
+                //    errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
+                //    errorResponse.Message = $"Required parameter '{nullEx.ParamName}' is missing";
+                //    errorResponse.Details = nullEx.Message;
+                //    _logger.LogWarning(nullEx, "Null argument exception: {ParamName}", nullEx.ParamName);
+                //    break;
 
                 case FileNotFoundException fileEx:
                     errorResponse.StatusCode = (int)HttpStatusCode.NotFound;
@@ -147,7 +147,7 @@ namespace halocare.Middleware
 
             response.StatusCode = errorResponse.StatusCode;
 
-            // הוספת headers לצורך debugging
+            // Add headers for debugging purposes
             if (!response.Headers.ContainsKey("X-Error-Type"))
             {
                 response.Headers.Add("X-Error-Type", exception.GetType().Name);

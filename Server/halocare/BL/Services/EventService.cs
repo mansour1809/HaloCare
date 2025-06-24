@@ -26,7 +26,7 @@ namespace halocare.BL.Services
             _employeeRepository = new EmployeeRepository(configuration);
         }
 
-        // רשימת סוגי אירועים - הוספה של פונקציה חדשה
+        // List of event types - new function added
         public List<EventTypes> GetAllEventTypes()
         {
             return _eventTypeRepository.GetAllEventTypes();
@@ -51,7 +51,7 @@ namespace halocare.BL.Services
         {
             return _eventRepository.GetEventById(id);
         }
-        
+
         public List<Event> GetEventsByDate(DateTime date)
         {
             return _eventRepository.GetEventsByDate(date);
@@ -64,7 +64,7 @@ namespace halocare.BL.Services
 
         public int AddEvent(Event eventItem, List<int> kidIds = null, List<int> employeeIds = null)
         {
-            // וידוא שהעובד היוצר קיים ופעיל
+            // Verify the creator employee exists and is active
             Employee creator = _employeeRepository.GetEmployeeById(eventItem.CreatedBy);
             if (creator == null)
             {
@@ -75,21 +75,21 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן ליצור אירוע על ידי עובד שאינו פעיל");
             }
 
-            // וידוא שזמן הסיום מאוחר יותר מזמן ההתחלה
+            // Verify that the end time is after the start time
             if (eventItem.EndTime <= eventItem.StartTime)
             {
                 throw new ArgumentException("זמן הסיום חייב להיות מאוחר יותר מזמן ההתחלה");
             }
 
-            // יצירת האירוע
+            // Create the event
             int eventId = _eventRepository.AddEvent(eventItem);
 
-            // הוספת ילדים לאירוע, אם צוינו
+            // Add kids to the event, if provided
             if (kidIds != null && kidIds.Count > 0)
             {
                 foreach (int kidId in kidIds)
                 {
-                    // וידוא שהילד קיים ופעיל
+                    // Verify the kid exists and is active
                     Kid kid = _kidRepository.GetKidById(kidId);
                     if (kid == null)
                     {
@@ -104,12 +104,12 @@ namespace halocare.BL.Services
                 }
             }
 
-            // הוספת עובדים לאירוע, אם צוינו
+            // Add employees to the event, if provided
             if (employeeIds != null && employeeIds.Count > 0)
             {
                 foreach (int employeeId in employeeIds)
                 {
-                    // וידוא שהעובד קיים ופעיל
+                    // Verify the employee exists and is active
                     Employee employee = _employeeRepository.GetEmployeeById(employeeId);
                     if (employee == null)
                     {
@@ -129,29 +129,29 @@ namespace halocare.BL.Services
 
         public bool UpdateEvent(Event eventItem, List<int> kidIds = null, List<int> employeeIds = null)
         {
-            // וידוא שהאירוע קיים
+            // Verify the event exists
             Event existingEvent = _eventRepository.GetEventById(eventItem.EventId);
             if (existingEvent == null)
             {
                 throw new ArgumentException("האירוע לא נמצא במערכת");
             }
 
-            // וידוא שזמן הסיום מאוחר יותר מזמן ההתחלה
+            // Verify that the end time is after the start time
             if (eventItem.EndTime <= eventItem.StartTime)
             {
                 throw new ArgumentException("זמן הסיום חייב להיות מאוחר יותר מזמן ההתחלה");
             }
 
-            // עדכון האירוע
+            // Update the event
             bool updated = _eventRepository.UpdateEvent(eventItem);
 
-            // אם צוינו ילדים, עדכון הילדים באירוע
+            // If kids are specified, update the kids in the event
             if (kidIds != null)
             {
-                // קבלת הילדים הקיימים באירוע
+                // Get existing kids in the event
                 List<EventKid> existingKids = _eventKidRepository.GetEventKidsByEventId(eventItem.EventId);
 
-                // מחיקת ילדים שאינם ברשימה החדשה
+                // Delete kids not in the new list
                 foreach (EventKid existingKid in existingKids)
                 {
                     if (!kidIds.Contains(existingKid.KidId))
@@ -160,7 +160,7 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // הוספת ילדים חדשים
+                // Add new kids
                 foreach (int kidId in kidIds)
                 {
                     bool exists = false;
@@ -175,7 +175,7 @@ namespace halocare.BL.Services
 
                     if (!exists)
                     {
-                        // וידוא שהילד קיים ופעיל
+                        // Verify the kid exists and is active
                         Kid kid = _kidRepository.GetKidById(kidId);
                         if (kid == null)
                         {
@@ -191,13 +191,13 @@ namespace halocare.BL.Services
                 }
             }
 
-            // אם צוינו עובדים, עדכון העובדים באירוע
+            // If employees are specified, update the employees in the event
             if (employeeIds != null)
             {
-                // קבלת העובדים הקיימים באירוע
+                // Get existing employees in the event
                 List<EventEmployee> existingEmployees = _eventEmployeeRepository.GetEventEmployeesByEventId(eventItem.EventId);
 
-                // מחיקת עובדים שאינם ברשימה החדשה
+                // Delete employees not in the new list
                 foreach (EventEmployee existingEmployee in existingEmployees)
                 {
                     if (!employeeIds.Contains(existingEmployee.EmployeeId))
@@ -206,7 +206,7 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // הוספת עובדים חדשים
+                // Add new employees
                 foreach (int employeeId in employeeIds)
                 {
                     bool exists = false;
@@ -221,7 +221,7 @@ namespace halocare.BL.Services
 
                     if (!exists)
                     {
-                        // וידוא שהעובד קיים ופעיל
+                        // Verify the employee exists and is active
                         Employee employee = _employeeRepository.GetEmployeeById(employeeId);
                         if (employee == null)
                         {
@@ -242,28 +242,28 @@ namespace halocare.BL.Services
 
         public bool DeleteEvent(int id)
         {
-            // וידוא שהאירוע קיים
+            // Verify the event exists
             Event existingEvent = _eventRepository.GetEventById(id);
             if (existingEvent == null)
             {
                 throw new ArgumentException("האירוע לא נמצא במערכת");
             }
 
-            // מחיקת הילדים מהאירוע
+            // Delete kids from the event
             List<EventKid> eventKids = _eventKidRepository.GetEventKidsByEventId(id);
             foreach (EventKid eventKid in eventKids)
             {
                 _eventKidRepository.DeleteEventKid(id, eventKid.KidId);
             }
 
-            // מחיקת העובדים מהאירוע
+            // Delete employees from the event
             List<EventEmployee> eventEmployees = _eventEmployeeRepository.GetEventEmployeesByEventId(id);
             foreach (EventEmployee eventEmployee in eventEmployees)
             {
                 _eventEmployeeRepository.DeleteEventEmployee(id, eventEmployee.EmployeeId);
             }
 
-            // מחיקת האירוע עצמו
+            // Delete the event itself
             return _eventRepository.DeleteEvent(id);
         }
 
@@ -271,10 +271,10 @@ namespace halocare.BL.Services
         {
             List<Kid> kids = new List<Kid>();
 
-            // קבלת רשימת הילדים באירוע
+            // Get list of kids in the event
             List<EventKid> eventKids = _eventKidRepository.GetEventKidsByEventId(eventId);
 
-            // קבלת פרטי הילדים
+            // Get kid details
             foreach (EventKid eventKid in eventKids)
             {
                 Kid kid = _kidRepository.GetKidById(eventKid.KidId);
@@ -291,10 +291,10 @@ namespace halocare.BL.Services
         {
             List<Employee> employees = new List<Employee>();
 
-            // קבלת רשימת העובדים באירוע
+            // Get list of employees in the event
             List<EventEmployee> eventEmployees = _eventEmployeeRepository.GetEventEmployeesByEventId(eventId);
 
-            // קבלת פרטי העובדים
+            // Get employee details
             foreach (EventEmployee eventEmployee in eventEmployees)
             {
                 Employee employee = _employeeRepository.GetEmployeeById(eventEmployee.EmployeeId);
@@ -306,7 +306,7 @@ namespace halocare.BL.Services
 
             return employees;
         }
-        //for the events types
+        // for the event types
 
         public EventTypes GetEventTypeById(int id)
         {
@@ -315,23 +315,23 @@ namespace halocare.BL.Services
 
         public int AddEventType(EventTypes eventType)
         {
-            // בדיקה שהשם אינו ריק
+            // Check that the name is not empty
             if (string.IsNullOrWhiteSpace(eventType.EventType))
             {
                 throw new ArgumentException("שם סוג האירוע לא יכול להיות ריק");
             }
 
-            // בדיקה שאין כבר סוג אירוע עם אותו שם
+            // Check that there is no existing event type with the same name
             List<EventTypes> existingTypes = _eventTypeRepository.GetAllEventTypes();
             if (existingTypes.Any(et => et.EventType.Equals(eventType.EventType, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException($"סוג אירוע בשם '{eventType.EventType}' כבר קיים");
             }
 
-            // אם לא הוגדר צבע, הגדרת צבע ברירת מחדל
+            // If no color is defined, set default color
             if (string.IsNullOrWhiteSpace(eventType.Color))
             {
-                eventType.Color = "#3788d8"; // כחול בסיסי
+                eventType.Color = "#3788d8"; // Basic blue
             }
 
             return _eventTypeRepository.AddEventType(eventType);
@@ -339,13 +339,13 @@ namespace halocare.BL.Services
 
         public bool UpdateEventType(EventTypes eventType)
         {
-            // בדיקה שהשם אינו ריק
+            // Check that the name is not empty
             if (string.IsNullOrWhiteSpace(eventType.EventType))
             {
                 throw new ArgumentException("שם סוג האירוע לא יכול להיות ריק");
             }
 
-            // בדיקה שסוג האירוע קיים
+            // Check that the event type exists
             EventTypes existingType = _eventTypeRepository.GetEventTypeById(eventType.EventTypeId);
 
             if (existingType == null)
@@ -353,14 +353,14 @@ namespace halocare.BL.Services
                 throw new ArgumentException("סוג האירוע לא נמצא");
             }
 
-            // בדיקה שאין כבר סוג אירוע אחר עם אותו שם
+            // Check that no other event type has the same name
             List<EventTypes> allTypes = _eventTypeRepository.GetAllEventTypes();
             if (allTypes.Any(et => et.EventType.Equals(eventType.EventType, StringComparison.OrdinalIgnoreCase) && et.EventTypeId != eventType.EventTypeId))
             {
                 throw new ArgumentException($"סוג אירוע בשם '{eventType.EventType}' כבר קיים");
             }
 
-            // אם לא הוגדר צבע, שימור הצבע הקיים
+            // If no color is defined, preserve existing color
             if (string.IsNullOrWhiteSpace(eventType.Color))
             {
                 eventType.Color = existingType.Color;
@@ -371,14 +371,14 @@ namespace halocare.BL.Services
 
         public bool DeleteEventType(int id)
         {
-            // בדיקה אם סוג האירוע קיים
+            // Check if the event type exists
             EventTypes existingType = _eventTypeRepository.GetEventTypeById(id);
             if (existingType == null)
             {
                 throw new ArgumentException("סוג האירוע לא נמצא");
             }
 
-            // בדיקה אם יש אירועים מסוג זה
+            // Check if there are events of this type
             List<Event> events = _eventRepository.GetAllEvents();
             if (events.Any(e => e.EventTypeId == id))
             {
@@ -393,7 +393,5 @@ namespace halocare.BL.Services
             List<EventTypes> allTypes = _eventTypeRepository.GetAllEventTypes();
             return allTypes.FirstOrDefault(et => et.EventType.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
-
-     
     }
 }

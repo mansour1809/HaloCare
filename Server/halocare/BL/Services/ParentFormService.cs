@@ -5,14 +5,14 @@ using halocare.DAL.Repositories;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace halocare.BL.Services  
+namespace halocare.BL.Services
 {
     public class ParentFormService
     {
         private readonly KidRepository _kidRepository;
         private readonly FormService _formService;
         private readonly AnswerToQuestionRepository _answerRepository;
-        private readonly KidOnboardingService _onboardingService;  
+        private readonly KidOnboardingService _onboardingService;
         private readonly EmailService _emailService;
         private readonly ParentService _parentService;
         private readonly IConfiguration _configuration;
@@ -21,7 +21,7 @@ namespace halocare.BL.Services
             KidRepository kidRepository,
             FormService formService,
             AnswerToQuestionRepository answerRepository,
-            KidOnboardingService onboardingService,  
+            KidOnboardingService onboardingService,
             EmailService emailService,
             ParentService parentService,
             IConfiguration configuration)
@@ -39,36 +39,36 @@ namespace halocare.BL.Services
         {
             try
             {
-                // קבלת פרטי הילד והטופס
+                // Get kid and form details
                 Kid kid = _kidRepository.GetKidById(kidId);
                 Form form = _formService.GetFormById(formId);
                 Parent parent = _parentService.GetParentById(kid.ParentId1!.Value);
 
                 if (kid == null || form == null) return false;
 
-                // יצירת טוקן מאובטח
+                // Generate secure token
                 var token = GenerateSecureToken(kidId, formId);
 
-                // יצירת קישור
+                // Create link
                 var baseUrl = _configuration["AppSettings:BaseUrl"];
                 var parentFormUrl = $"{baseUrl}#/parent-form/{token}";
 
-                // קבלת שם ההורה
+                // Get parent's name
                 var parentName = parent?.FirstName ?? "הורה יקר";
 
-                // שליחת מייל
+                // Send email
                 var emailSent = await _emailService.SendFormToParent(
                     parentEmail,
                     parentName,
                     $"{kid.FirstName} {kid.LastName}",
                     form.FormName,
                     parentFormUrl,
-                    kid.Id.ToString()  
+                    kid.Id.ToString()
                 );
 
                 if (emailSent)
                 {
-                    // עדכון סטטוס הטופס ל-"SentToParent"
+                    // Update form status to "SentToParent"
                     _onboardingService.UpdateFormStatus(kidId, formId, "SentToParent",
                         notes: $"נשלח להורה בתאריך {DateTime.Now:dd/MM/yyyy} למייל: {parentEmail}");
                 }
@@ -86,16 +86,16 @@ namespace halocare.BL.Services
         {
             try
             {
-                // פענוח הטוקן
+                // Decode token
                 var tokenData = DecryptToken(token);
                 if (tokenData == null || tokenData.ExpiresAt < DateTime.Now)
                     return false;
 
-                // קבלת פרטי הילד
+                // Get kid details
                 var kid = _kidRepository.GetKidById(tokenData.KidId);
                 if (kid == null) return false;
 
-                // אימות תעודת זהות
+                // Validate ID number
                 return kid.Id.ToString() == kidIdNumber.Trim();
             }
             catch
@@ -109,7 +109,7 @@ namespace halocare.BL.Services
             var tokenData = DecryptToken(token);
             if (tokenData == null) return null;
 
-            // קבלת נתוני הילד, הטופס והתשובות הקיימות
+            // Get kid, form, and existing answers data
             var kid = _kidRepository.GetKidById(tokenData.KidId);
             var form = _formService.GetFormById(tokenData.FormId);
             var questions = _formService.GetFormQuestions(tokenData.FormId);
@@ -133,10 +133,10 @@ namespace halocare.BL.Services
                 if (tokenData == null || tokenData.ExpiresAt < DateTime.Now)
                     return false;
 
-                // שמירת התשובות
+                // Save answers
                 foreach (var answer in answers)
                 {
-                    // 🆕 המרת מידע מורכב ל-JSON
+                    // Convert complex data to JSON
                     string multipleEntriesJson = null;
                     if (answer.MultipleEntries != null && answer.MultipleEntries.Count > 0)
                     {
@@ -153,10 +153,10 @@ namespace halocare.BL.Services
                         AnsDate = DateTime.Now,
                         ByParent = true,
                         EmployeeId = null,
-                        MultipleEntries = multipleEntriesJson // 🆕 הוספה
+                        MultipleEntries = multipleEntriesJson // added
                     };
 
-                    // בדיקה אם קיימת תשובה - עדכון או הוספה
+                    // Check if answer exists - update or add
                     var existingAnswer = _answerRepository.GetAnswerByKidFormQuestion(
                         tokenData.KidId, tokenData.FormId, answer.QuestionNo);
 
@@ -173,7 +173,6 @@ namespace halocare.BL.Services
 
                 _onboardingService.CheckFormCompletion(tokenData.KidId, tokenData.FormId);
 
-
                 return true;
             }
             catch (Exception ex)
@@ -183,7 +182,7 @@ namespace halocare.BL.Services
             }
         }
 
-        // פונקציות עזר לטוקן
+        // Helper functions for token
         private string GenerateSecureToken(int kidId, int formId)
         {
             var data = new TokenData
@@ -243,6 +242,6 @@ namespace halocare.BL.Services
         public int QuestionNo { get; set; }
         public string Answer { get; set; }
         public string Other { get; set; }
-        public List<Dictionary<string, object>>? MultipleEntries { get; set; } // 🆕 הוספה
+        public List<Dictionary<string, object>>? MultipleEntries { get; set; } // added
     }
 }

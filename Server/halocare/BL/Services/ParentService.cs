@@ -31,7 +31,7 @@ namespace halocare.BL.Services
 
         public int AddParent(Parent parent)
         {
-            // וידוא שיש לפחות מספר טלפון אחד
+            // Ensure at least one phone number is provided
             if (string.IsNullOrEmpty(parent.MobilePhone) && string.IsNullOrEmpty(parent.HomePhone))
             {
                 throw new ArgumentException("חובה למלא לפחות מספר טלפון אחד (נייד או בבית)");
@@ -42,8 +42,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("הדואר האלקטרוני כבר קיים במערכת");
             }
 
-
-            // וידוא שהעיר קיימת, אם צוינה
+            // Ensure city exists, if specified
             if (!string.IsNullOrEmpty(parent.CityName))
             {
                 City city = _cityRepository.GetCityByName(parent.CityName);
@@ -58,20 +57,20 @@ namespace halocare.BL.Services
 
         public bool UpdateParent(Parent parent)
         {
-            // וידוא שההורה קיים
+            // Ensure parent exists
             Parent existingParent = _parentRepository.GetParentById(parent.ParentId);
             if (existingParent == null)
             {
                 throw new ArgumentException("ההורה לא נמצא במערכת");
             }
 
-            // וידוא שיש לפחות מספר טלפון אחד
+            // Ensure at least one phone number is provided
             if (string.IsNullOrEmpty(parent.MobilePhone) && string.IsNullOrEmpty(parent.HomePhone))
             {
                 throw new ArgumentException("חובה למלא לפחות מספר טלפון אחד (נייד או בבית)");
             }
 
-            // וידוא שהעיר קיימת, אם צוינה
+            // Ensure city exists, if specified
             if (!string.IsNullOrEmpty(parent.CityName))
             {
                 City city = _cityRepository.GetCityByName(parent.CityName);
@@ -86,10 +85,10 @@ namespace halocare.BL.Services
 
         public List<Kid> GetParentKids(int parentId)
         {
-            // קבלת כל הילדים
+            // Get all kids
             List<Kid> allKids = _kidRepository.GetAllKids();
 
-            // סינון הילדים ששייכים להורה הספציפי
+            // Filter kids belonging to the specific parent
             return allKids.FindAll(kid => kid.ParentId1 == parentId || kid.ParentId2 == parentId);
         }
     }

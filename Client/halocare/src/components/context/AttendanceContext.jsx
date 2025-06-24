@@ -10,6 +10,7 @@ import {
   updateAttendanceRecord
 } from '../../Redux/features/attendanceSlice';
 import PropTypes from 'prop-types';
+import { useAuth } from '../login/AuthContext';
 
 const AttendanceContext = createContext();
 
@@ -19,7 +20,8 @@ export const AttendanceProvider = ({ children }) => {
   const dispatch = useDispatch();
   const { todayRecords, kidRecords, monthlySummary, status, error } = useSelector(state => state.attendance);
   const { kids } = useSelector(state => state.kids);
-  
+    const {currentUser} = useAuth(); // current user - from local storage
+
   // States
   const [attendance, setAttendance] = useState({});
   const [absenceReasons, setAbsenceReasons] = useState({});
@@ -104,8 +106,7 @@ export const AttendanceProvider = ({ children }) => {
       return k.isActive;
     });
     
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userId = user?.id;
+    const userId = currentUser?.id;
     
     try {
       // Iterate over all kids and save/update data

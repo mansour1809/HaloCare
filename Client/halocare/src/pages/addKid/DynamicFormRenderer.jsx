@@ -26,6 +26,7 @@ import {
 import axios from '../../components/common/axiosConfig'; 
 import QuestionRenderer from '../kids/QuestionRenderer';
 import MultipleEntriesComponent from './MultipleEntriesComponent';
+import { useAuth } from '../../components/login/AuthContext';
 
 
 const FormPaper = styled(Paper)(({ theme }) => ({
@@ -101,6 +102,8 @@ const DynamicFormRenderer = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [multipleEntriesData, setMultipleEntriesData] = useState({});
+
+    const {currentUser} = useAuth();
 
 
   useEffect(() => {
@@ -239,8 +242,7 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
   };
 
   const saveAnswersWithUpsert = async (answersToSave) => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const userId = user?.id;
+    const userId = currentUser?.id;
 
     for (const answerData of answersToSave) {
       
@@ -257,7 +259,6 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
  multipleEntries: answerData.multipleEntries ? 
           JSON.stringify(answerData.multipleEntries) : null
       };
-console.log('Saving answer:', fullAnswerData);
       try {
         if (answerData.answerId) {
           await axios.put(`/Forms/answers/${answerData.answerId}`, fullAnswerData);

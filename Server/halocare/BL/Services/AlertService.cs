@@ -34,7 +34,7 @@ namespace halocare.BL.Services
 
         public int AddAlert(Alert alert)
         {
-            // וידוא שהילד קיים ופעיל
+            // Ensure the child exists and is active
             Kid kid = _kidRepository.GetKidById(alert.KidId);
             if (kid == null)
             {
@@ -45,13 +45,13 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן להוסיף התראה לילד שאינו פעיל");
             }
 
-            // וידוא שהסטטוס תקין
+            // Ensure the status is valid
             if (alert.Status != "פעיל" && alert.Status != "טופל" && alert.Status != "בוטל")
             {
                 throw new ArgumentException("סטטוס ההתראה אינו תקין");
             }
 
-            // הגדרת תאריך יצירת ההתראה
+            // Set the creation date for the alert
             alert.CreatedDate = DateTime.Now;
 
             return _alertRepository.AddAlert(alert);
@@ -59,14 +59,14 @@ namespace halocare.BL.Services
 
         public bool UpdateAlert(Alert alert)
         {
-            // וידוא שההתראה קיימת
+            // Ensure the alert exists
             Alert existingAlert = _alertRepository.GetAlertById(alert.AlertId);
             if (existingAlert == null)
             {
                 throw new ArgumentException("ההתראה לא נמצאה במערכת");
             }
 
-            // וידוא שהסטטוס תקין
+            // Ensure the status is valid
             if (alert.Status != "פעיל" && alert.Status != "טופל" && alert.Status != "בוטל")
             {
                 throw new ArgumentException("סטטוס ההתראה אינו תקין");
@@ -77,7 +77,7 @@ namespace halocare.BL.Services
 
         public bool DeleteAlert(int id)
         {
-            // וידוא שההתראה קיימת
+            // Ensure the alert exists
             Alert existingAlert = _alertRepository.GetAlertById(id);
             if (existingAlert == null)
             {
@@ -89,19 +89,19 @@ namespace halocare.BL.Services
 
         public List<Alert> GetActiveAlerts()
         {
-            // קבלת כל ההתראות
+            // Retrieve all alerts
             List<Alert> allAlerts = _alertRepository.GetAllAlerts();
 
-            // סינון ההתראות הפעילות
+            // Filter active alerts
             return allAlerts.FindAll(alert => alert.Status == "פעיל");
         }
 
         public List<Alert> GetOverdueAlerts()
         {
-            // קבלת כל ההתראות
+            // Retrieve all alerts
             List<Alert> allAlerts = _alertRepository.GetAllAlerts();
 
-            // סינון ההתראות הפעילות שחלף מועדן
+            // Filter active alerts that are overdue
             return allAlerts.FindAll(alert => alert.Status == "פעיל" && alert.DueDate < DateTime.Today);
         }
     }

@@ -83,7 +83,7 @@ public class EmailService
     {
         MailjetClient client = new MailjetClient(_apiKey, _apiSecret);
 
-        // הודעה בעברית עם הסבר על הצורך בתעודת זהות
+        // Message in Hebrew explaining the need for the ID number
         MailjetRequest request = new MailjetRequest
         {
             Resource = Send.Resource,

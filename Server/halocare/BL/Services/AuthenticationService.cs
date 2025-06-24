@@ -25,22 +25,19 @@ namespace halocare.BL.Services
             _employeeService = new EmployeeService(configuration);
             _configuration = configuration;
             _employeeRepository = new EmployeeRepository(configuration);
-
         }
 
         public Employee Authenticate(string email, string password)
         {
             try
             {
-                
-                //validate employee 
+                // Validate employee credentials
                 Employee employee = _employeeService.Login(email, password);
                 return employee;
             }
             catch (ArgumentException)
             {
-
-                //return null (not throwing exeption) to handle it in controller
+                // Return null (instead of throwing exception) to handle it in the controller
                 return null;
             }
         }
@@ -73,9 +70,6 @@ namespace halocare.BL.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
-
-
         public string GeneratePasswordResetToken(string email)
         {
             var jwtKey = _configuration["Jwt:Key"];
@@ -104,7 +98,7 @@ namespace halocare.BL.Services
 
         public bool ValidatePasswordResetToken(string token, out string email)
         {
-            email = null; // ערך ברירת מחדל
+            email = null; // Default value
             try
             {
                 var jwtKey = _configuration["Jwt:Key"];
@@ -113,33 +107,33 @@ namespace halocare.BL.Services
 
                 var tokenHandler = new JwtSecurityTokenHandler();
 
-                // בדיקה בסיסית אם זה בכלל טוקן תקין
+                // Basic check if the token can be read
                 if (!tokenHandler.CanReadToken(token))
                 {
                     return false;
                 }
 
-                // קריאת הטוקן ישירות לפני הוולידציה כדי לחלץ את הקלייימים
+                // Read the token directly before validation to extract claims
                 var jwtToken = tokenHandler.ReadJwtToken(token);
 
-                // בדיקה אם ה-claim של המייל קיים
+                // Check if the email claim exists
                 var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == JwtRegisteredClaimNames.Email);
                 if (emailClaim == null)
                 {
-                    return false; // אין טענת אימייל בטוקן
+                    return false; // No email claim found
                 }
 
-                // חילוץ האימייל מהטוקן
+                // Extract email from token
                 email = emailClaim.Value;
 
-                // בדיקה אם המטרה של הטוקן היא איפוס סיסמה
+                // Check if token's purpose is password reset
                 var purposeClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "purpose");
                 if (purposeClaim == null || purposeClaim.Value != "password-reset")
                 {
-                    return false; // זה לא טוקן לאיפוס סיסמה
+                    return false; // Not a password reset token
                 }
 
-                // וולידציה מלאה של הטוקן
+                // Full token validation
                 var key = Encoding.ASCII.GetBytes(jwtKey);
                 var validationParameters = new TokenValidationParameters
                 {
@@ -153,14 +147,14 @@ namespace halocare.BL.Services
                     ClockSkew = TimeSpan.Zero
                 };
 
-                // בדיקת תקינות הטוקן
+                // Perform the actual validation
                 tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 return true;
             }
             catch (Exception ex)
             {
-                // הוספת לוג של השגיאה לצורכי דיבוג
+                // Log the error for debugging purposes
                 Console.WriteLine($"Token validation error: {ex.Message}");
                 return false;
             }

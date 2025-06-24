@@ -34,7 +34,7 @@ namespace halocare.BL.Services
 
         public int AddHomeVisit(HomeVisit homeVisit)
         {
-            // וידוא שהילד קיים ופעיל
+            // Verify that the kid exists and is active
             Kid kid = _kidRepository.GetKidById(homeVisit.KidId);
             if (kid == null)
             {
@@ -45,7 +45,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לתעד ביקור בית לילד שאינו פעיל");
             }
 
-            // הגדרת תאריך הביקור אם לא צוין
+            // Set the visit date if not specified
             if (homeVisit.VisitDate == DateTime.MinValue)
             {
                 homeVisit.VisitDate = DateTime.Now;
@@ -56,7 +56,7 @@ namespace halocare.BL.Services
 
         public bool UpdateHomeVisit(HomeVisit homeVisit)
         {
-            // וידוא שהביקור קיים
+            // Verify that the visit exists
             HomeVisit existingVisit = _homeVisitRepository.GetHomeVisitById(homeVisit.VisitId);
             if (existingVisit == null)
             {
@@ -68,7 +68,7 @@ namespace halocare.BL.Services
 
         public bool DeleteHomeVisit(int id)
         {
-            // וידוא שהביקור קיים
+            // Verify that the visit exists
             HomeVisit existingVisit = _homeVisitRepository.GetHomeVisitById(id);
             if (existingVisit == null)
             {
@@ -80,10 +80,10 @@ namespace halocare.BL.Services
 
         public List<HomeVisit> GetUpcomingHomeVisits(int daysAhead = 7)
         {
-            // קבלת כל ביקורי הבית
+            // Get all home visits
             List<HomeVisit> allVisits = _homeVisitRepository.GetAllHomeVisits();
 
-            // סינון הביקורים המתוכננים עבור X הימים הבאים
+            // Filter visits scheduled for the next X days
             DateTime today = DateTime.Today;
             DateTime maxDate = today.AddDays(daysAhead);
 

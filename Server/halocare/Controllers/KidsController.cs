@@ -1,4 +1,4 @@
-﻿// KidsController - עדכון עם תמיכה ביצירת מבנה תיקיות ושילוב עם DocumentService
+﻿// KidsController - Updated to support folder structure creation and integration with DocumentService
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace halocare.Controllers
             _documentService = new DocumentService(configuration);
         }
 
-        // GET: api/Kids
+        // Retrieve all kids
         [HttpGet]
         public ActionResult<IEnumerable<Kid>> GetKids()
         {
@@ -38,7 +38,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Kids/5
+        // Retrieve a specific kid by ID
         [HttpGet("{id}")]
         public ActionResult<Kid> GetKid(int id)
         {
@@ -59,7 +59,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Kids/5/file
+        // Retrieve file information for a kid
         [HttpGet("{id}/file")]
         public ActionResult<Kid> GetKidFile(int id)
         {
@@ -78,7 +78,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Kids/5/treatments
+        // Retrieve treatments associated with a kid
         [HttpGet("{id}/treatments")]
         public ActionResult<IEnumerable<Treatment>> GetKidTreatments(int id)
         {
@@ -93,7 +93,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Kids/5/alerts
+        // Retrieve alerts for a kid
         [HttpGet("{id}/alerts")]
         public ActionResult<IEnumerable<Alert>> GetKidAlerts(int id)
         {
@@ -108,7 +108,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Kids/5/attendance
+        // Retrieve attendance records for a kid
         [HttpGet("{id}/attendance")]
         public ActionResult<IEnumerable<Attendance>> GetKidAttendance(int id)
         {
@@ -123,17 +123,17 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Kids
+        // Add a new kid
         [HttpPost]
         public ActionResult<Kid> PostKid([FromBody] Kid kid)
         {
             try
             {
-                // יצירת הילד במסד הנתונים
+                // Create the kid in the database
                 int kidId = _kidService.AddKid(kid);
                 kid.Id = kidId;
 
-                // יצירת מבנה תיקיות עבור הילד החדש
+                // Create folder structure for the new kid
                 try
                 {
                     string folderPath = _documentService.CreateKidFolderStructure(
@@ -142,13 +142,13 @@ namespace halocare.Controllers
                         kid.LastName
                     );
 
-                    // עדכון נתיב התיקייה בילד
+                    // Update folder path in the kid record
                     kid.PathToFolder = folderPath;
                     _kidService.UpdateKid(kid);
                 }
                 catch (Exception folderEx)
                 {
-                    // לוג השגיאה אבל לא נכשיל את יצירת הילד
+                    // Log the error but do not fail the creation
                     Console.WriteLine($"שגיאה ביצירת תיקיית ילד: {folderEx.Message}");
                 }
 
@@ -164,20 +164,20 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Kids/create-folder-structure
+        // Manually create folder structure for a kid
         [HttpPost("create-folder-structure")]
         public ActionResult CreateKidFolderStructure([FromBody] CreateFolderRequest request)
         {
             try
             {
-                // יצירת מבנה תיקיות
+                // Create the folder structure
                 string folderPath = _documentService.CreateKidFolderStructure(
                     request.KidId,
                     request.FirstName,
                     request.LastName
                 );
 
-                // עדכון הילד עם נתיב התיקייה החדש
+                // Update the kid with the new folder path
                 var kid = _kidService.GetKidById(request.KidId);
                 if (kid != null)
                 {
@@ -202,7 +202,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PUT: api/Kids/5
+        // Update kid information
         [HttpPut("{id}")]
         public IActionResult PutKid(int id, Kid kid)
         {
@@ -213,7 +213,7 @@ namespace halocare.Controllers
 
             try
             {
-                // בדיקה אם נדרש ליצור מבנה תיקיות (אם PathToFolder ריק)
+                // Create folder structure if missing
                 if (string.IsNullOrEmpty(kid.PathToFolder))
                 {
                     try
@@ -235,7 +235,7 @@ namespace halocare.Controllers
 
                 if (updated)
                 {
-                    return Ok(kid); // החזרת הילד המעודכן
+                    return Ok(kid); // Return the updated kid
                 }
                 else
                 {
@@ -252,7 +252,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PATCH: api/Kids/5/deactivate
+        // Deactivate a kid
         [HttpPatch("{id}/deactivate")]
         public IActionResult DeactivateKid(int id)
         {
@@ -279,7 +279,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PATCH: api/Kids/5/photo
+        // Update profile photo path for a kid
         [HttpPatch("{id}/photo")]
         public IActionResult UpdateKidPhoto(int id, [FromBody] UpdatePhotoRequest request)
         {
@@ -291,7 +291,7 @@ namespace halocare.Controllers
                     return NotFound($"kid with id {id} not found");
                 }
 
-                // עדכון נתיב התמונה
+                // Update photo path
                 kid.PhotoPath = request.PhotoPath;
                 bool updated = _kidService.UpdateKid(kid);
 
@@ -315,7 +315,7 @@ namespace halocare.Controllers
         }
     }
 
-    // מחלקות עזר לבקשות
+    // Helper classes for request models
     public class CreateFolderRequest
     {
         public int KidId { get; set; }

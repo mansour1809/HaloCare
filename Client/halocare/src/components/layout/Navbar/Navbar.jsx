@@ -143,11 +143,14 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
   }
 }));
 
+import { useAuth } from '../../login/AuthContext';
+
 const Navbar = () => {
+  const {currentUser} = useAuth();
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElNotifications, setAnchorElNotifications] = useState(null);
 
-  const currentUser = JSON.parse(localStorage.getItem('user'));
+  console.log(currentUser)
   const selectedEmployeeId = currentUser?.id; 
   
   const handleOpenUserMenu = (event) => {
@@ -190,7 +193,6 @@ const Navbar = () => {
             <Tooltip title="תפריט משתמש" arrow>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
-                {console.log(currentUser)}
                 <Avatar 
                   alt={currentUser?.firstName || "משתמש"} 
                   src={`${baseURL}/Documents/content-by-path?path=${encodeURIComponent(currentUser.photo)}`}

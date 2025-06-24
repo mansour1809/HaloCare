@@ -1,4 +1,4 @@
-﻿// DocumentService - הוספת תמיכה ליצירת תיקיות ילד ועדכון נתיב תמונה
+﻿// DocumentService - Adding support for creating kid folders and updating image paths
 
 using System;
 using System.Collections.Generic;
@@ -22,29 +22,29 @@ namespace halocare.BL.Services
             _kidRepository = new KidRepository(configuration);
             _employeeRepository = new EmployeeRepository(configuration);
 
-            // קבלת נתיב הבסיס לשמירת קבצים מהקונפיגורציה
+            // Get base path for saving files from configuration
             _uploadsBasePath = configuration.GetValue<string>("UploadsBasePath") ??
                                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
         }
 
-        // פונקציה חדשה ליצירת מבנה תיקיות לילד
+        // New function to create folder structure for a kid
         public string CreateKidFolderStructure(int kidId, string firstName, string lastName)
         {
             try
             {
-                // יצירת שם תיקייה: FirstName_LastName_ID
+                // Create folder name: FirstName_LastName_ID
                 string folderName = $"{firstName}_{lastName}_{kidId}";
 
-                // נתיב התיקייה הראשית של הילד
+                // Path to kid's main folder
                 string kidMainFolder = Path.Combine(_uploadsBasePath, "kids", folderName);
 
-                // יצירת התיקייה הראשית
+                // Create main folder
                 if (!Directory.Exists(kidMainFolder))
                 {
                     Directory.CreateDirectory(kidMainFolder);
                 }
 
-                // יצירת תת-תיקיות
+                // Create subfolders
                 string profileFolder = Path.Combine(kidMainFolder, "profile");
                 string documentsFolder = Path.Combine(kidMainFolder, "documents");
 
@@ -58,7 +58,7 @@ namespace halocare.BL.Services
                     Directory.CreateDirectory(documentsFolder);
                 }
 
-                // החזרת הנתיב היחסי לתיקייה (ללא uploads base path)
+                // Return relative path to folder (without uploads base path)
                 return Path.Combine("kids", folderName).Replace("\\", "/");
             }
             catch (Exception ex)
@@ -67,12 +67,12 @@ namespace halocare.BL.Services
             }
         }
 
-        // פונקציה מעודכנת להעלאת מסמך עם תמיכה בילדים
+        // Updated function for uploading document with kid support
         public int AddDocument(Documentt document, byte[] fileContent, string fileName, string contentType)
         {
             try
             {
-                // בדיקות תקינות
+                // Validation checks
                 if (document == null)
                 {
                     throw new ArgumentException("נתוני המסמך לא יכולים להיות ריקים");
@@ -91,23 +91,23 @@ namespace halocare.BL.Services
                 string relativePath;
                 string fullPath;
 
-                // טיפול בהעלאה עבור ילד
+                // Handling upload for kid
                 if (document.KidId.HasValue)
                 {
-                    // קבלת פרטי הילד
+                    // Get kid details
                     Kid kid = _kidRepository.GetKidById(document.KidId.Value);
                     if (kid == null)
                     {
                         throw new ArgumentException($"ילד עם מזהה {document.KidId.Value} לא נמצא במערכת");
                     }
 
-                    // יצירת מבנה תיקיות אם לא קיים
+                    // Create folder structure if not exists
                     string kidFolderPath;
                     if (string.IsNullOrEmpty(kid.PathToFolder))
                     {
                         kidFolderPath = CreateKidFolderStructure(kid.Id, kid.FirstName, kid.LastName);
 
-                        // עדכון שדה PathToFolder בטבלת הילד
+                        // Update PathToFolder field in kid table
                         kid.PathToFolder = kidFolderPath;
                         _kidRepository.UpdateKid(kid);
                     }
@@ -116,37 +116,37 @@ namespace halocare.BL.Services
                         kidFolderPath = kid.PathToFolder;
                     }
 
-                    // קביעת תיקיית יעד בהתאם לסוג המסמך
+                    // Set target folder according to document type
                     string targetFolder = document.DocType == "profile" ? "profile" : "documents";
 
-                    // יצירת שם קובץ ייחודי
+                    // Create unique file name
                     string fileExtension = Path.GetExtension(fileName);
                     string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
 
-                    // נתיב יחסי (לשמירה במסד הנתונים)
+                    // Relative path (to save in DB)
                     relativePath = Path.Combine(kidFolderPath, targetFolder, uniqueFileName).Replace("\\", "/");
 
-                    // נתיב מלא לשמירת הקובץ
+                    // Full path to save the file
                     fullPath = Path.Combine(_uploadsBasePath, relativePath.Replace("/", "\\"));
                 }
-                // טיפול בהעלאה עבור עובד (הקוד הקיים)
+                // Handling upload for employee (existing code)
                 else if (document.EmployeeId.HasValue)
                 {
-                    // קבלת פרטי העובד
+                    // Get employee details
                     Employee employee = _employeeRepository.GetEmployeeById(document.EmployeeId.Value);
                     if (employee == null)
                     {
                         throw new ArgumentException($"עובד עם מזהה {document.EmployeeId.Value} לא נמצא במערכת");
                     }
 
-                    // יצירת תיקיית עובדים אם לא קיימת
+                    // Create employees folder if not exists
                     string employeesFolder = Path.Combine(_uploadsBasePath, "employees");
                     if (!Directory.Exists(employeesFolder))
                     {
                         Directory.CreateDirectory(employeesFolder);
                     }
 
-                    // תיקיית תמונות עובדים
+                    // Employee pictures folder
                     string targetFolder = document.DocType == "profile" ? "pictures" : "documents";
                     string employeeTargetFolder = Path.Combine(employeesFolder, targetFolder);
 
@@ -155,14 +155,14 @@ namespace halocare.BL.Services
                         Directory.CreateDirectory(employeeTargetFolder);
                     }
 
-                    // יצירת שם קובץ ייחודי
+                    // Create unique file name
                     string fileExtension = Path.GetExtension(fileName);
                     string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
 
-                    // נתיב יחסי
+                    // Relative path
                     relativePath = Path.Combine("employees", targetFolder, uniqueFileName).Replace("\\", "/");
 
-                    // נתיב מלא
+                    // Full path
                     fullPath = Path.Combine(_uploadsBasePath, relativePath.Replace("/", "\\"));
                 }
                 else
@@ -170,27 +170,27 @@ namespace halocare.BL.Services
                     throw new ArgumentException("חובה לקשר את המסמך לילד או לעובד");
                 }
 
-                // וידוא שהתיקייה קיימת
+                // Ensure directory exists
                 string directory = Path.GetDirectoryName(fullPath);
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                // שמירת הקובץ
+                // Save file
                 File.WriteAllBytes(fullPath, fileContent);
 
-                // עדכון פרטי המסמך
+                // Update document details
                 document.DocPath = relativePath;
                 document.DocName = fileName;
                 document.ContentType = contentType ?? "application/octet-stream";
                 document.FileSize = fileContent.Length;
                 document.UploadDate = DateTime.Now;
 
-                // שמירת המסמך במסד הנתונים
+                // Save document in DB
                 int documentId = _documentRepository.AddDocument(document);
 
-                // עדכון שדה התמונה בטבלת הילד או העובד (אם מדובר בתמונת פרופיל)
+                // Update photo field in kid or employee table if it's a profile picture
                 if (document.DocType == "profile")
                 {
                     if (document.KidId.HasValue)
@@ -215,7 +215,7 @@ namespace halocare.BL.Services
             }
         }
 
-        // שאר הפונקציות הקיימות נשארות כמו שהן...
+        // Other existing functions remain as is...
         public List<Documentt> GetAllDocuments()
         {
             return _documentRepository.GetAllDocuments();
@@ -223,7 +223,7 @@ namespace halocare.BL.Services
 
         public List<Documentt> GetDocumentsByKidId(int kidId)
         {
-            // וידוא שהילד קיים
+            // Ensure the kid exists
             Kid existingKid = _kidRepository.GetKidById(kidId);
             if (existingKid == null)
             {
@@ -235,7 +235,7 @@ namespace halocare.BL.Services
 
         public List<Documentt> GetDocumentsByEmployeeId(int employeeId)
         {
-            // וידוא שהעובד קיים
+            // Ensure the employee exists
             Employee existingEmployee = _employeeRepository.GetEmployeeById(employeeId);
             if (existingEmployee == null)
             {
@@ -252,37 +252,37 @@ namespace halocare.BL.Services
 
         public bool UpdateDocument(Documentt document)
         {
-            // וידוא שהמסמך קיים
+            // Ensure the document exists
             Documentt existingDocument = _documentRepository.GetDocumentById(document.DocId);
             if (existingDocument == null)
             {
                 throw new ArgumentException($"מסמך עם מזהה {document.DocId} לא נמצא במערכת");
             }
 
-            // אין לשנות את הנתיב - רק מידע אחר
+            // Do not change the path - only other info
             document.DocPath = existingDocument.DocPath;
 
-            // עדכון המסמך
+            // Update document
             return _documentRepository.UpdateDocument(document);
         }
 
         public bool DeleteDocument(int id)
         {
-            // וידוא שהמסמך קיים
+            // Ensure the document exists
             Documentt existingDocument = _documentRepository.GetDocumentById(id);
             if (existingDocument == null)
             {
                 throw new ArgumentException($"מסמך עם מזהה {id} לא נמצא במערכת");
             }
 
-            // מחיקת הקובץ אם קיים
+            // Delete the file if exists
             string fullPath = Path.Combine(_uploadsBasePath, existingDocument.DocPath.Replace("/", "\\"));
             if (File.Exists(fullPath))
             {
                 File.Delete(fullPath);
             }
 
-            // מחיקת המסמך ממסד הנתונים
+            // Delete the document from DB
             return _documentRepository.DeleteDocument(id);
         }
 
@@ -293,13 +293,13 @@ namespace halocare.BL.Services
                 throw new ArgumentException("נתיב לא יכול להיות ריק");
             }
 
-            // פענוח URL אם צריך
+            // Decode URL if needed
             path = Uri.UnescapeDataString(path);
 
-            // החלפת / ב-\ (במערכת Windows) או להיפך (במערכת Linux)
+            // Replace / with \ (Windows) or vice versa (Linux)
             string normalizedPath = path.Replace("/", Path.DirectorySeparatorChar.ToString());
 
-            // יצירת הנתיב המלא
+            // Create full path
             string fullPath = Path.Combine(_uploadsBasePath, normalizedPath);
 
             if (!File.Exists(fullPath))
@@ -312,14 +312,14 @@ namespace halocare.BL.Services
 
         public byte[] GetDocumentContent(int id)
         {
-            // וידוא שהמסמך קיים
+            // Ensure the document exists
             Documentt existingDocument = _documentRepository.GetDocumentById(id);
             if (existingDocument == null)
             {
                 throw new ArgumentException($"מסמך עם מזהה {id} לא נמצא במערכת");
             }
 
-            // קריאת תוכן הקובץ
+            // Read file content
             string normalizePath = existingDocument.DocPath.Replace("/", Path.DirectorySeparatorChar.ToString());
             string fullPath = Path.Combine(_uploadsBasePath, normalizePath);
 

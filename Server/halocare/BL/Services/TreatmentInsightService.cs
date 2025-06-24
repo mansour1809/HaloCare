@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Google.Cloud.Language.V1;
 using halocare.DAL.Models;
 using Microsoft.Extensions.Configuration;
-using Google.Cloud.Translation.V2; 
+using Google.Cloud.Translation.V2;
 
 
 namespace halocare.BL.Services
@@ -31,19 +31,19 @@ namespace halocare.BL.Services
                 return insights;
             }
 
-            // ניתוח מגמת שיתוף פעולה לאורך זמן
+            // Analyze cooperation trend over time
             insights.CooperationTrend = AnalyzeCooperationTrend(treatments);
 
-            // ניתוח רגשות מתיאורי הטיפולים
+            // Sentiment analysis from treatment descriptions
             insights.SentimentAnalysis = await AnalyzeSentiment(treatments); // google service
 
-            // זיהוי מושגים חוזרים בתיאורי הטיפולים
+            // Identify recurring concepts in treatment descriptions
             insights.RecurringConcepts = IdentifyRecurringConcepts(treatments);
 
-            // זיהוי פעילויות מועדפות על סמך תיאורי הטיפולים
+            // Identify preferred activities based on treatment descriptions
             insights.PreferredActivities = IdentifyPreferredActivities(treatments);
 
-            // המלצה על מטרות להמשך
+            // Recommend goals for continuation
             insights.RecommendedGoals = GenerateGoalRecommendations(treatments, insights);
 
             return insights;
@@ -53,7 +53,7 @@ namespace halocare.BL.Services
         {
             var orderedTreatments = treatments.OrderBy(t => t.TreatmentDate).ToList();
 
-            // calculate a trend over time - מגמה
+            // Calculate a trend over time
             List<double> cooperationLevels = orderedTreatments.Select(t => (double)t.CooperationLevel).ToList();
 
             CooperationTrendAnalysis analysis = new CooperationTrendAnalysis
@@ -66,7 +66,7 @@ namespace halocare.BL.Services
                 TreatmentsCount = treatments.Count
             };
 
-            // trend calculation - is there an improvement or decline in collaboration?
+            // Trend calculation - is there improvement or decline in collaboration?
             if (cooperationLevels.Count >= 4)
             {
                 int midPoint = cooperationLevels.Count / 2;
@@ -99,16 +99,15 @@ namespace halocare.BL.Services
 
             try
             {
-                // Set up Google Cloud credentials - אישורים
+                // Set up Google Cloud credentials
                 string credentialPath = _configuration["GoogleCloud:CredentialFile"];
                 Console.WriteLine($"Using credential file: {credentialPath}");
                 Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialPath);
 
-                // יצירת לקוח Google NL
+                // Create Google NL client
                 LanguageServiceClient client = LanguageServiceClient.Create();
 
-                // הכנת הטקסט המאוחד מכל התיאורים והדגשים
-                // preparing the unified text from all descriptions and highlights
+                // Prepare unified text from all descriptions and highlights
                 StringBuilder sb = new StringBuilder();
                 foreach (Treatment treatment in treatments)
                 {
@@ -122,28 +121,27 @@ namespace halocare.BL.Services
                 string originalText = sb.ToString();
 
 
-                //  Google Translation API - translate to english
+                // Google Translation API - translate to English
                 string translatedText = await TranslateText(originalText, "he", "en");
 
                 Console.WriteLine("translatedText:", translatedText);
 
-                // preparing request
+                // Prepare request
                 Document document = new Document
                 {
                     Content = translatedText,
                     Type = Document.Types.Type.PlainText,
-                    Language = "en" 
+                    Language = "en"
                 };
 
-                // ניתוח רגשות
+                // Sentiment analysis
                 AnalyzeSentimentResponse response = await client.AnalyzeSentimentAsync(document);
 
-                // המרת תוצאות הניתוח למבנה מותאם
-                // convert the analysis results to a custom structure
+                // Convert analysis results to a custom structure
                 result.OverallScore = response.DocumentSentiment.Score;
                 result.OverallMagnitude = response.DocumentSentiment.Magnitude;
 
-                // interpretation of the results - פרשנות
+                // Interpretation of the results
                 if (result.OverallScore > 0.25)
                 {
                     result.OverallTone = "חיובי";
@@ -160,19 +158,19 @@ namespace halocare.BL.Services
                     result.Interpretation = "תיאורי הטיפולים מאוזנים בין אתגרים להתקדמות";
                 }
 
-                //  analyist by sentences
+                // Analysis by sentences
                 List<SentenceSentiment> sentenceAnalysis = new List<SentenceSentiment>();
 
                 foreach (var sentence in response.Sentences)
                 {
-                    // translate back to hebrew
+                    // Translate back to Hebrew
                     string translatedSentence = await TranslateText(sentence.Text.Content, "en", "he");
 
                     Console.WriteLine("translatedSentence:", translatedSentence);
 
                     sentenceAnalysis.Add(new SentenceSentiment
                     {
-                        Text = translatedSentence,  // hebrew
+                        Text = translatedSentence,  // Hebrew
                         Score = sentence.Sentiment.Score,
                         Magnitude = sentence.Sentiment.Magnitude
                     });
@@ -190,10 +188,10 @@ namespace halocare.BL.Services
 
         private List<RecurringConcept> IdentifyRecurringConcepts(List<Treatment> treatments)
         {
-            // simple approach for now - better use a complex NLP tool -natural language proccess
+            // Simple approach for now - better to use a complex NLP tool - natural language processing
             Dictionary<string, int> conceptCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
-            // keywords
+            // Keywords
             string[] keywordsToSearch = new string[]
             {
                 "קשר עין", "תקשורת", "שפה", "הבנה", "קשב", "ריכוז", "משחק", "שיתוף פעולה",
@@ -202,7 +200,7 @@ namespace halocare.BL.Services
                 "הצלחה", "אתגר", "קושי", "התקדמות", "שיפור", "ישיבה", "עמידה", "הליכה"
             };
 
-            // counting keywords in the description of the treatment, with highlight if found
+            // Counting keywords in the treatment description, with highlight if found
             foreach (Treatment treatment in treatments)
             {
                 string fullText = treatment.Description;
@@ -223,9 +221,9 @@ namespace halocare.BL.Services
                 }
             }
 
-            // sorting results by incidence -- common
+            // Sorting results by frequency
             return conceptCounts
-                .Where(c => c.Value > 1)  // only words that appears twice or more
+                .Where(c => c.Value > 1)  // only words that appear twice or more
                 .OrderByDescending(c => c.Value)
                 .Select(c => new RecurringConcept
                 {
@@ -238,8 +236,8 @@ namespace halocare.BL.Services
 
         private List<PreferredActivity> IdentifyPreferredActivities(List<Treatment> treatments)
         {
-            // activity categories
-            Dictionary<string,List<string>> activityCategories = new Dictionary<string, List<string>>
+            // Activity categories
+            Dictionary<string, List<string>> activityCategories = new Dictionary<string, List<string>>
             {
                 { "משחקי שולחן", new List<string> { "פאזל", "משחק קופסה", "הרכבה", "לגו", "קוביות" } },
                 { "משחק סימבולי", new List<string> { "בובות", "בית", "מטבח", "חיות", "מכוניות", "רופא" } },
@@ -250,8 +248,8 @@ namespace halocare.BL.Services
                 { "משחק חברתי", new List<string> { "תור", "משחק משותף", "מעגל", "תחרות", "קבוצה" } }
             };
 
-            // counting categories
-            Dictionary<string,ActivityAnalysis> activityCounts = new Dictionary<string, ActivityAnalysis>();
+            // Counting categories
+            Dictionary<string, ActivityAnalysis> activityCounts = new Dictionary<string, ActivityAnalysis>();
 
             foreach (Treatment treatment in treatments)
             {
@@ -298,7 +296,7 @@ namespace halocare.BL.Services
                 }
             }
 
-            // calculate average collaboration and convert to list of favprite activities 
+            // Calculate average cooperation and convert to list of favorite activities 
             return activityCounts
                 .Select(ac => new PreferredActivity
                 {
@@ -317,7 +315,6 @@ namespace halocare.BL.Services
         {
             List<GoalRecommendation> recommendations = new List<GoalRecommendation>();
 
-            // המלצות על בסיס המושגים החוזרים
             // Recommendations based on recurring concepts
             foreach (var concept in insights.RecurringConcepts.Take(3))
             {
@@ -368,7 +365,6 @@ namespace halocare.BL.Services
                 }
             }
 
-            // המלצות על בסיס ניתוח מגמת שיתוף הפעולה
             // Recommendations based on collaboration trend analysis
             if (insights.CooperationTrend.TrendDirection == "יורדת" && insights.CooperationTrend.TrendStrength >= 0.5)
             {
@@ -381,7 +377,7 @@ namespace halocare.BL.Services
                 });
             }
 
-            // המלצות על בסיס ניתוח הרגשות
+            // Recommendations based on sentiment analysis
             if (insights.SentimentAnalysis?.OverallTone == "שלילי")
             {
                 recommendations.Add(new GoalRecommendation
@@ -393,7 +389,7 @@ namespace halocare.BL.Services
                 });
             }
 
-            // המלצות על בסיס פעילויות מועדפות
+            // Recommendations based on preferred activities
             if (insights.PreferredActivities.Count > 0)
             {
                 var topActivity = insights.PreferredActivities[0];
@@ -407,10 +403,10 @@ namespace halocare.BL.Services
                 });
             }
 
-            // check if there at least 3 recommentadions
+            // Check if there are at least 3 recommendations
             if (recommendations.Count < 3)
             {
-                // add general recommendations if needed
+                // Add general recommendations if needed
                 recommendations.Add(new GoalRecommendation
                 {
                     Area = "כללי",
@@ -430,16 +426,16 @@ namespace halocare.BL.Services
 
             return recommendations.OrderByDescending(r => r.Priority == "גבוהה").ToList();
         }
-     
-        // translating text method
+
+        // Translate text method
         private async Task<string> TranslateText(string text, string sourceLanguage, string targetLanguage)
         {
             try
             {
-                // יצירת לקוח Google Translate
+                // Create Google Translate client
                 TranslationClient client = TranslationClient.Create();
 
-                // תרגום הטקסט
+                // Translate the text
                 TranslationResult response = await client.TranslateTextAsync(
                     text,
                     targetLanguage,
