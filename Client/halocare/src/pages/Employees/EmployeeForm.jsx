@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState  } from 'react';
 import { 
-  Container, Paper, Typography, Button, Grid, Box, 
+  Container,  Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   FormControlLabel, Switch, CircularProgress,
-  InputAdornment, IconButton, Divider, Alert,
+  InputAdornment, IconButton,  Alert,
   Breadcrumbs, Card, CardContent, Chip, Fade, Zoom,
   Avatar, Stack, useTheme, alpha, Tooltip
 } from '@mui/material';
@@ -28,7 +28,7 @@ import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../.
 import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
 import { baseURL } from '../../components/common/axiosConfig';
-
+import { useAuth } from '../../components/login/AuthContext';
 // עיצוב משופר לתמה עם פלטת צבעים מדהימה
 const rtlTheme = createTheme({
   direction: 'rtl',
@@ -207,7 +207,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const dispatch = useDispatch();
   const theme = useTheme();
   
-  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const {currentUser} = useAuth();
   
   const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
@@ -1071,7 +1071,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     </Card>
                   </Fade>
                   {/* פרטי כניסה למערכת */}
-                  {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
+                                    {!isEditMode && (
+
                     <Fade in timeout={1600}>
                       <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                         <CardContent sx={{ p: 3 }}>
@@ -1192,6 +1193,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         </CardContent>
                       </Card>
                     </Fade>
+                                    )}
+                                      {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
+<Button>ddd</Button>
                   )}
 
                   {/* כפתורי פעולה */}

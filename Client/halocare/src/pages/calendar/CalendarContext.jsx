@@ -7,6 +7,7 @@ import { fetchEmployees } from '../../Redux/features/employeesSlice';
 import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
 import { fetchEvents } from '../../Redux/features/eventsSlice';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../../components/login/AuthContext';
 
 
 const CalendarContext = createContext();
@@ -60,6 +61,7 @@ export const CalendarProvider = ({ children }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [calendarView, setCalendarView] = useState('timeGridWeek');
   const [showFilterForm, setShowFilterForm] = useState(false);
+  const {currentUser} = useAuth();
 
   // Filtering
   const [filterOptions, setFilterOptions] = useState({
@@ -71,9 +73,8 @@ export const CalendarProvider = ({ children }) => {
   useEffect(() => { // setup createdByUserId from localStorage
 
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user && user.id) {
-        setCreatedByUserId(user.id);
+      if (currentUser && currentUser.id) {
+        setCreatedByUserId(currentUser.id);
       }
     } catch (error) {
       console.error('Error reading user from localStorage:', error);
