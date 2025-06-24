@@ -362,7 +362,7 @@ const HomePage = () => {
       description: 'מבט על הגדרות המערכת',
       icon: <DashboardIcon />,
       color: 'secondary',
-      path: '/SystemSetting/CitiesTab'
+      path: '/settings'
     },
     {
       title: 'יצירת דוחות',
@@ -634,7 +634,7 @@ const HomePage = () => {
                 >
                   ⚡ פעולות מהירות
                 </Typography>
-                <Grid container spacing={3}>
+                <Grid container spacing={3} justifyContent="center">
                   {quickActions.map((action, index) => (
                     <Grid item xs={6} sm={3} key={index}>
                       <Fade in timeout={1800 + (index * 100)}>
