@@ -291,6 +291,8 @@ const ProSidebar = () => {
               הגדרות
             </MenuItem>
 
+            <CategoryLabel emoji="📋">ניהול דוחות</CategoryLabel>
+
             <StyledSubMenu label="ניהול דוחות" icon={<AssessmentIcon />}>
               <MenuItem
                 icon={<AutoStoriesIcon />}
