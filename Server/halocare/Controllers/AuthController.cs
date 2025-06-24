@@ -22,8 +22,6 @@ namespace halocare.Controllers
             _authService = new AuthenticationService(configuration);
             _employeeService = new EmployeeService(configuration);
             _emailService = new EmailService(configuration);
-
-
         }
 
         [HttpPost("login")]

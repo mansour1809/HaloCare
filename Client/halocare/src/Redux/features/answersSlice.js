@@ -4,6 +4,7 @@ import axios from '../../components/common/axiosConfig';
 
 // ייבוא thunks מ-onboardingSlice לעדכון סטטוס
 import { checkFormCompletion, fetchOnboardingStatus } from './onboardingSlice';
+import { useAuth } from '../../components/login/AuthContext';
 
 // =============================================================================
 // ASYNC THUNKS - פעולות אסינכרוניות
@@ -107,8 +108,8 @@ export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
   async ({ kidId, formId, answers }, { dispatch, rejectWithValue }) => {
     try {
       const savedAnswers = [];
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user?.id;
+  const {currentUser} = useAuth();
+      const userId = currentUser?.id;
 
       // שמירת כל התשובות אחת אחת
       for (const answer of answers) {

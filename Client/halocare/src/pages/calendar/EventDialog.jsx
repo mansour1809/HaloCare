@@ -48,6 +48,7 @@ import { styled } from '@mui/material/styles';
 
 import { useCalendar } from './CalendarContext';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../../components/login/AuthContext';
 
 
 const SlideTransition = React.forwardRef(function Transition(props, ref) {
@@ -55,7 +56,7 @@ const SlideTransition = React.forwardRef(function Transition(props, ref) {
 });
 
 // Styled dialog with effects
-const StyledDialog = styled(Dialog)(({ theme }) => ({
+const StyledDialog = styled(Dialog)(() => ({
   '& .MuiDialog-paper': {
     borderRadius: 24,
     boxShadow: '0 24px 48px rgba(0,0,0,0.15)',
@@ -101,7 +102,7 @@ const StyledDialogTitle = styled(DialogTitle)(({ eventColor }) => ({
 }));
 
 // TextField
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const StyledTextField = styled(TextField)(() => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
     transition: 'all 0.3s ease',
@@ -118,7 +119,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 // FormControl
-const StyledFormControl = styled(FormControl)(({ theme }) => ({
+const StyledFormControl = styled(FormControl)(({e }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
     transition: 'all 0.3s ease',
@@ -135,7 +136,7 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
 }));
 
 // Styled button with glow effect
-const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
+const GlowButton = styled(Button)(({  glowColor = '#667eea' }) => ({
   borderRadius: 16,
   fontWeight: 600,
   padding: '12px 24px',
@@ -162,7 +163,7 @@ const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
 }));
 
 // Styled Chip for participants
-const ParticipantChip = styled(Chip)(({ theme }) => ({
+const ParticipantChip = styled(Chip)(() => ({
   borderRadius: 12,
   fontWeight: 600,
   margin: '2px',
@@ -187,8 +188,8 @@ const EventDialog = () => {
   const { eventTypes } = useSelector(state => state.eventTypes);
   const { kids } = useSelector(state => state.kids);
   const { employees } = useSelector(state => state.employees);
+  const {currentUser} = useAuth();
 
-  const theme = useTheme();
 
   const [validationErrors, setValidationErrors] = useState({
     title: false,
@@ -223,8 +224,7 @@ const EventDialog = () => {
     }
 
     if (newEvent?.createdBy) {
-      const user = JSON.parse(localStorage.getItem('user'));
-      return `${user.firstName} ${user.lastName}`;
+      return `${currentUser.firstName} ${currentUser.lastName}`;
     }
     return 'לא ידוע';
   }
