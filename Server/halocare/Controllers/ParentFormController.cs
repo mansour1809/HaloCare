@@ -3,9 +3,7 @@ using halocare.BL.Services;
 using halocare.DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 
-
-
-namespace halocare.Controllers  
+namespace halocare.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -18,6 +16,7 @@ namespace halocare.Controllers
             _parentFormService = parentFormService;
         }
 
+        // Send a form to the parent's email
         [HttpPost("send")]
         [Authorize]
         public async Task<IActionResult> SendFormToParent([FromBody] SendFormToParentRequest request)
@@ -29,6 +28,7 @@ namespace halocare.Controllers
                           : BadRequest(new { success = false, message = "שגיאה בשליחת הטופס" });
         }
 
+        // Validate parent access via token and child ID number
         [HttpPost("validate")]
         [AllowAnonymous]
         public async Task<IActionResult> ValidateAccess([FromBody] ValidateAccessRequest request)
@@ -39,6 +39,7 @@ namespace halocare.Controllers
                            : BadRequest(new { success = false, message = "פרטי הגישה שגויים" });
         }
 
+        // Retrieve form data using token
         [HttpGet("form/{token}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetFormData(string token)
@@ -49,11 +50,12 @@ namespace halocare.Controllers
                                     : BadRequest(new { success = false, message = "טוקן לא תקין או פג תוקף" });
         }
 
+        // Submit form answers from parent
         [HttpPost("submit")]
         [AllowAnonymous]
         public async Task<IActionResult> SubmitForm([FromBody] SubmitParentFormRequest request)
         {
-            // 🔥 עכשיו זה יעבוד כי אנחנו משתמשים באותו ParentAnswerDto
+            // 🔥 This now works since we're using the same ParentAnswerDto
             var result = await _parentFormService.SaveParentFormAnswers(request.Token, request.Answers);
 
             return result ? Ok(new { success = true, message = "הטופס נשמר בהצלחה" })
@@ -61,6 +63,7 @@ namespace halocare.Controllers
         }
     }
 
+    // Request model for sending a form to a parent
     public class SendFormToParentRequest
     {
         public int KidId { get; set; }
@@ -68,15 +71,17 @@ namespace halocare.Controllers
         public string ParentEmail { get; set; }
     }
 
+    // Request model for validating access
     public class ValidateAccessRequest
     {
         public string Token { get; set; }
         public string KidIdNumber { get; set; }
     }
 
+    // Request model for submitting a filled parent form
     public class SubmitParentFormRequest
     {
         public string Token { get; set; }
-        public List<halocare.BL.Services.ParentAnswerDto> Answers { get; set; }  // 🔥 שימוש מפורש
+        public List<halocare.BL.Services.ParentAnswerDto> Answers { get; set; }  // 🔥 Explicit usage
     }
 }

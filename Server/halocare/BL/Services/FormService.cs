@@ -39,7 +39,7 @@ namespace halocare.BL.Services
 
         public int AddForm(Form form)
         {
-            // וידוא שיש שם טופס
+            // Verify that the form has a name
             if (string.IsNullOrEmpty(form.FormName))
             {
                 throw new ArgumentException("חובה לציין שם לטופס");
@@ -50,14 +50,14 @@ namespace halocare.BL.Services
 
         public bool UpdateForm(Form form)
         {
-            // וידוא שהטופס קיים
+            // Verify that the form exists
             Form existingForm = _formRepository.GetFormById(form.FormId);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // וידוא שיש שם טופס
+            // Verify that the form has a name
             if (string.IsNullOrEmpty(form.FormName))
             {
                 throw new ArgumentException("חובה לציין שם לטופס");
@@ -68,14 +68,14 @@ namespace halocare.BL.Services
 
         public bool DeleteForm(int id)
         {
-            // וידוא שהטופס קיים
+            // Verify that the form exists
             Form existingForm = _formRepository.GetFormById(id);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // בדיקה אם יש שאלות בטופס
+            // Check if the form contains questions
             List<Question> questions = _questionRepository.GetQuestionsByFormId(id);
             if (questions.Count > 0)
             {
@@ -92,27 +92,27 @@ namespace halocare.BL.Services
 
         public bool AddQuestion(Question question)
         {
-            // וידוא שהטופס קיים
+            // Verify that the form exists
             Form existingForm = _formRepository.GetFormById(question.FormId);
             if (existingForm == null)
             {
                 throw new ArgumentException("הטופס לא נמצא במערכת");
             }
 
-            // וידוא שהשאלה אינה כבר קיימת
+            // Verify that the question number is not already used
             Question existingQuestion = _questionRepository.GetQuestion(question.FormId, question.QuestionNo);
             if (existingQuestion != null)
             {
                 throw new ArgumentException("כבר קיימת שאלה עם המספר הזה בטופס");
             }
 
-            // וידוא שיש טקסט שאלה
+            // Verify that there is question text
             if (string.IsNullOrEmpty(question.QuestionText))
             {
                 throw new ArgumentException("חובה לציין טקסט לשאלה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שיש ערכים אפשריים
+            // If the question is not open, verify that possible values are set
             if (!question.IsOpen && string.IsNullOrEmpty(question.PossibleValues))
             {
                 throw new ArgumentException("חובה לציין ערכים אפשריים לשאלה שאינה פתוחה");
@@ -123,20 +123,20 @@ namespace halocare.BL.Services
 
         public bool UpdateQuestion(Question question)
         {
-            // וידוא שהשאלה קיימת
+            // Verify that the question exists
             Question existingQuestion = _questionRepository.GetQuestion(question.FormId, question.QuestionNo);
             if (existingQuestion == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // וידוא שיש טקסט שאלה
+            // Verify that there is question text
             if (string.IsNullOrEmpty(question.QuestionText))
             {
                 throw new ArgumentException("חובה לציין טקסט לשאלה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שיש ערכים אפשריים
+            // If the question is not open, verify that possible values are set
             if (!question.IsOpen && string.IsNullOrEmpty(question.PossibleValues))
             {
                 throw new ArgumentException("חובה לציין ערכים אפשריים לשאלה שאינה פתוחה");
@@ -147,7 +147,7 @@ namespace halocare.BL.Services
 
         public bool DeleteQuestion(int formId, int questionNo)
         {
-            // וידוא שהשאלה קיימת
+            // Verify that the question exists
             Question existingQuestion = _questionRepository.GetQuestion(formId, questionNo);
             if (existingQuestion == null)
             {
@@ -164,21 +164,21 @@ namespace halocare.BL.Services
 
         public int AddAnswer(AnswerToQuestion answer)
         {
-            // וידוא שהילד קיים
+            // Verify that the kid exists
             Kid kid = _kidRepository.GetKidById(answer.KidId);
             if (kid == null)
             {
                 throw new ArgumentException("הילד לא נמצא במערכת");
             }
 
-            // וידוא שהשאלה קיימת
+            // Verify that the question exists
             Question question = _questionRepository.GetQuestion(answer.FormId, answer.QuestionNo);
             if (question == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // אם העובד צוין, וידוא שהוא קיים
+            // If employee is specified, verify that the employee exists
             if (answer.EmployeeId.HasValue)
             {
                 Employee employee = _employeeRepository.GetEmployeeById(answer.EmployeeId.Value);
@@ -188,19 +188,19 @@ namespace halocare.BL.Services
                 }
             }
 
-            // וידוא שהתשובה הוזנה
+            // Verify that an answer was entered
             if (string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה");
             }
 
-            // אם השאלה חובה, וידוא שהתשובה אינה ריקה
+            // If the question is mandatory, verify that the answer is not empty
             if (question.IsMandatory && string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה לשאלת חובה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שהתשובה היא מהערכים האפשריים
+            // If the question is not open, verify the answer is among possible values
             if (!question.IsOpen && !string.IsNullOrEmpty(question.PossibleValues))
             {
                 string[] possibleValues = question.PossibleValues.Split(',');
@@ -215,12 +215,12 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // אם יש אפשרות "אחר", התשובה תקינה גם אם היא "אחר"
+                // If "Other" option exists, the answer is valid if it equals "Other"
                 if (question.HasOther && answer.Answer.Trim().Equals("אחר", StringComparison.OrdinalIgnoreCase))
                 {
                     validAnswer = true;
 
-                    // וידוא שיש ערך לתשובה "אחר"
+                    // Verify that a value was entered for the "Other" answer
                     if (string.IsNullOrEmpty(answer.Other))
                     {
                         throw new ArgumentException("חובה להזין ערך לתשובה 'אחר'");
@@ -233,7 +233,7 @@ namespace halocare.BL.Services
                 }
             }
 
-            // הגדרת תאריך התשובה
+            // Set the answer date if not set
             if (answer.AnsDate == DateTime.MinValue)
             {
                 answer.AnsDate = DateTime.Now;
@@ -248,27 +248,27 @@ namespace halocare.BL.Services
 
         public bool UpdateAnswer(AnswerToQuestion answer)
         {
-            // וידוא שהתשובה קיימת
+            // Verify that the answer exists
             AnswerToQuestion existingAnswer = _answerRepository.GetAnswerById(answer.AnswerId);
             if (existingAnswer == null)
             {
                 throw new ArgumentException("התשובה לא נמצאה במערכת");
             }
 
-            // וידוא שהשאלה קיימת
+            // Verify that the question exists
             Question question = _questionRepository.GetQuestion(answer.FormId, answer.QuestionNo);
             if (question == null)
             {
                 throw new ArgumentException("השאלה לא נמצאה במערכת");
             }
 
-            // אם השאלה חובה, וידוא שהתשובה אינה ריקה
+            // If the question is mandatory, verify that the answer is not empty
             if (question.IsMandatory && string.IsNullOrEmpty(answer.Answer))
             {
                 throw new ArgumentException("חובה להזין תשובה לשאלת חובה");
             }
 
-            // אם השאלה אינה פתוחה, וידוא שהתשובה היא מהערכים האפשריים
+            // If the question is not open, verify the answer is among possible values
             if (!question.IsOpen && !string.IsNullOrEmpty(question.PossibleValues))
             {
                 string[] possibleValues = question.PossibleValues.Split(',');
@@ -283,12 +283,12 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // אם יש אפשרות "אחר", התשובה תקינה גם אם היא "אחר"
+                // If "Other" option exists, the answer is valid if it equals "Other"
                 if (question.HasOther && answer.Answer.Trim().Equals("אחר", StringComparison.OrdinalIgnoreCase))
                 {
                     validAnswer = true;
 
-                    // וידוא שיש ערך לתשובה "אחר"
+                    // Verify that a value was entered for the "Other" answer
                     if (string.IsNullOrEmpty(answer.Other))
                     {
                         throw new ArgumentException("חובה להזין ערך לתשובה 'אחר'");
@@ -301,7 +301,7 @@ namespace halocare.BL.Services
                 }
             }
 
-            // עדכון התשובה
+            // Update the answer
             bool result = _answerRepository.UpdateAnswer(answer);
 
             if (result)
@@ -314,7 +314,7 @@ namespace halocare.BL.Services
 
         public bool DeleteAnswer(int answerId)
         {
-            // וידוא שהתשובה קיימת
+            // Verify that the answer exists
             AnswerToQuestion existingAnswer = _answerRepository.GetAnswerById(answerId);
             if (existingAnswer == null)
             {
@@ -328,6 +328,6 @@ namespace halocare.BL.Services
         {
             return _answerRepository.GetCriticalMedicalInfo(kidId);
         }
-       
+
     }
 }

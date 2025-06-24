@@ -36,7 +36,7 @@ namespace halocare.BL.Services
 
         public int AddAttendance(Attendance attendance)
         {
-            // וידוא שהילד קיים ופעיל
+            // Ensure the child exists and is active
             Kid kid = _kidRepository.GetKidById(attendance.KidId);
             if (kid == null)
             {
@@ -47,7 +47,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לדווח נוכחות לילד שאינו פעיל");
             }
 
-            // וידוא שהעובד המדווח קיים ופעיל
+            // Ensure the reporting employee exists and is active
             Employee reporter = _employeeRepository.GetEmployeeById(attendance.ReportedBy);
             if (reporter == null)
             {
@@ -58,13 +58,13 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לדווח נוכחות על ידי עובד שאינו פעיל");
             }
 
-            // אם הילד לא נוכח, חובה לציין סיבת היעדרות
+            // If the child is absent, an absence reason is required
             if (!attendance.IsPresent && string.IsNullOrEmpty(attendance.AbsenceReason))
             {
                 throw new ArgumentException("חובה לציין סיבת היעדרות כאשר הילד לא נוכח");
             }
 
-            // הגדרת תאריך הנוכחות אם לא צוין
+            // Set attendance date if not provided
             if (attendance.AttendanceDate == DateTime.MinValue)
             {
                 attendance.AttendanceDate = DateTime.Today;
@@ -75,7 +75,7 @@ namespace halocare.BL.Services
 
         public bool UpdateAttendance(Attendance attendance)
         {
-            // אם הילד לא נוכח, חובה לציין סיבת היעדרות
+            // If the child is absent, an absence reason is required
             if (!attendance.IsPresent && string.IsNullOrEmpty(attendance.AbsenceReason))
             {
                 throw new ArgumentException("חובה לציין סיבת היעדרות כאשר הילד לא נוכח");
@@ -88,17 +88,17 @@ namespace halocare.BL.Services
         {
             Dictionary<DateTime, int> summary = new Dictionary<DateTime, int>();
 
-            // קביעת תחילת וסוף החודש
+            // Determine start and end of the month
             DateTime startDate = new DateTime(year, month, 1);
             DateTime endDate = startDate.AddMonths(1).AddDays(-1);
 
-            // עבור כל יום בחודש
+            // Iterate through each day of the month
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                // קבלת רשימת הנוכחות ליום זה
+                // Get the attendance list for this day
                 List<Attendance> dailyAttendance = _attendanceRepository.GetAttendancesByDate(date);
 
-                // ספירת מספר הילדים שהיו נוכחים
+                // Count how many children were present
                 int presentCount = 0;
                 foreach (Attendance attendance in dailyAttendance)
                 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Controller for handling operations related to forms
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,6 @@ namespace halocare.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class FormsController : ControllerBase
     {
         private readonly FormService _formService;
@@ -21,7 +21,7 @@ namespace halocare.Controllers
             _formService = new FormService(configuration);
         }
 
-        // GET: api/Forms
+        // Get all forms
         [HttpGet]
         public ActionResult<IEnumerable<Form>> GetForms()
         {
@@ -35,7 +35,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Forms/5
+        // Get form by ID
         [HttpGet("{id}")]
         public ActionResult<Form> GetForm(int id)
         {
@@ -56,7 +56,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Forms/5/questions
+        // Get questions of a specific form
         [HttpGet("{id}/questions")]
         public ActionResult<IEnumerable<Question>> GetFormQuestions(int id)
         {
@@ -71,7 +71,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/Forms/answers/kid/5/form/3
+        // Get answers to a form for a specific child
         [HttpGet("answers/kid/{kidId}/form/{formId}")]
         public ActionResult<IEnumerable<AnswerToQuestion>> GetFormAnswers(int kidId, int formId)
         {
@@ -86,7 +86,7 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Forms
+        // Create a new form
         [HttpPost]
         public ActionResult<Form> PostForm(Form form)
         {
@@ -107,7 +107,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PUT: api/Forms/5
+        // Update existing form
         [HttpPut("{id}")]
         public IActionResult PutForm(int id, Form form)
         {
@@ -139,7 +139,7 @@ namespace halocare.Controllers
             }
         }
 
-        // DELETE: api/Forms/5
+        // Delete form by ID
         [HttpDelete("{id}")]
         public IActionResult DeleteForm(int id)
         {
@@ -166,7 +166,7 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Forms/questions
+        // Add a new question to a form
         [HttpPost("questions")]
         public IActionResult PostQuestion(Question question)
         {
@@ -193,7 +193,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PUT: api/Forms/questions/5/3 (formId/questionNo)
+        // Update existing question in a form
         [HttpPut("questions/{formId}/{questionNo}")]
         public IActionResult PutQuestion(int formId, int questionNo, Question question)
         {
@@ -225,7 +225,7 @@ namespace halocare.Controllers
             }
         }
 
-        // DELETE: api/Forms/questions/5/3 (formId/questionNo)
+        // Delete a question from a form
         [HttpDelete("questions/{formId}/{questionNo}")]
         public IActionResult DeleteQuestion(int formId, int questionNo)
         {
@@ -252,7 +252,7 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/Forms/answers
+        // Submit a new answer to a question
         [HttpPost("answers")]
         public ActionResult<AnswerToQuestion> PostAnswer(AnswerToQuestion answer)
         {
@@ -273,7 +273,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PUT: api/Forms/answers/5
+        // Update an existing answer
         [HttpPut("answers/{id}")]
         public IActionResult PutAnswer(int id, AnswerToQuestion answer)
         {
@@ -305,7 +305,7 @@ namespace halocare.Controllers
             }
         }
 
-        // DELETE: api/Forms/answers/5
+        // Delete answer by ID
         [HttpDelete("answers/{id}")]
         public IActionResult DeleteAnswer(int id)
         {
@@ -332,7 +332,7 @@ namespace halocare.Controllers
             }
         }
 
-        // 🆕 API חדש לשליפת מידע רפואי קריטי
+        // Get critical medical info for a child
         [HttpGet("critical-medical-info/{kidId}")]
         public ActionResult<IEnumerable<CriticalInfoData>> GetCriticalMedicalInfo(int kidId)
         {
@@ -347,13 +347,13 @@ namespace halocare.Controllers
             }
         }
 
-        // 🆕 API לשמירת תשובה עם מידע מורכב
+        // Add answer with multiple entries (complex data)
         [HttpPost("answers/with-multiple-entries")]
         public ActionResult<AnswerToQuestion> PostAnswerWithMultipleEntries([FromBody] AnswerWithMultipleEntriesRequest request)
         {
             try
             {
-                // המרה של המידע המורכב ל-JSON
+                // Convert complex data to JSON
                 string multipleEntriesJson = null;
                 if (request.MultipleEntries != null && request.MultipleEntries.Count > 0)
                 {
@@ -390,13 +390,13 @@ namespace halocare.Controllers
             }
         }
 
-        // 🆕 API לעדכון תשובה עם מידע מורכב
+        // Update answer with multiple entries
         [HttpPut("answers/{answerId}/with-multiple-entries")]
         public IActionResult PutAnswerWithMultipleEntries(int answerId, [FromBody] AnswerWithMultipleEntriesRequest request)
         {
             try
             {
-                // המרה של המידע המורכב ל-JSON
+                // Convert complex data to JSON
                 string multipleEntriesJson = null;
                 if (request.MultipleEntries != null && request.MultipleEntries.Count > 0)
                 {
@@ -434,17 +434,17 @@ namespace halocare.Controllers
             }
         }
     }
-        public class AnswerWithMultipleEntriesRequest
-        {
-            public int KidId { get; set; }
-            public int FormId { get; set; }
-            public int QuestionNo { get; set; }
-            public string Answer { get; set; }
-            public string Other { get; set; }
-            public int? EmployeeId { get; set; }
-            public bool ByParent { get; set; }
-            public List<Dictionary<string, object>> MultipleEntries { get; set; }
-        }
 
+    // Request model for complex answer entries
+    public class AnswerWithMultipleEntriesRequest
+    {
+        public int KidId { get; set; }
+        public int FormId { get; set; }
+        public int QuestionNo { get; set; }
+        public string Answer { get; set; }
+        public string Other { get; set; }
+        public int? EmployeeId { get; set; }
+        public bool ByParent { get; set; }
+        public List<Dictionary<string, object>> MultipleEntries { get; set; }
     }
-
+}

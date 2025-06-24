@@ -11,7 +11,6 @@ namespace halocare.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class HomeVisitsController : ControllerBase
     {
         private readonly HomeVisitService _homeVisitService;
@@ -21,7 +20,7 @@ namespace halocare.Controllers
             _homeVisitService = new HomeVisitService(configuration);
         }
 
-        // GET: api/HomeVisits
+        // Retrieve all home visits
         [HttpGet]
         public ActionResult<IEnumerable<HomeVisit>> GetHomeVisits()
         {
@@ -35,7 +34,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/HomeVisits/5
+        // Retrieve a specific home visit by ID
         [HttpGet("{id}")]
         public ActionResult<HomeVisit> GetHomeVisit(int id)
         {
@@ -56,7 +55,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/HomeVisits/kid/5
+        // Retrieve all home visits associated with a specific child
         [HttpGet("kid/{kidId}")]
         public ActionResult<IEnumerable<HomeVisit>> GetHomeVisitsByKidId(int kidId)
         {
@@ -70,7 +69,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/HomeVisits/upcoming
+        // Retrieve upcoming home visits within a specified number of days
         [HttpGet("upcoming")]
         public ActionResult<IEnumerable<HomeVisit>> GetUpcomingHomeVisits([FromQuery] int daysAhead = 7)
         {
@@ -84,7 +83,7 @@ namespace halocare.Controllers
             }
         }
 
-        // POST: api/HomeVisits
+        // Add a new home visit
         [HttpPost]
         public ActionResult<HomeVisit> PostHomeVisit(HomeVisit homeVisit)
         {
@@ -105,7 +104,7 @@ namespace halocare.Controllers
             }
         }
 
-        // PUT: api/HomeVisits/5
+        // Update an existing home visit
         [HttpPut("{id}")]
         public IActionResult PutHomeVisit(int id, HomeVisit homeVisit)
         {
@@ -137,7 +136,7 @@ namespace halocare.Controllers
             }
         }
 
-        // DELETE: api/HomeVisits/5
+        // Delete a home visit by ID
         [HttpDelete("{id}")]
         public IActionResult DeleteHomeVisit(int id)
         {

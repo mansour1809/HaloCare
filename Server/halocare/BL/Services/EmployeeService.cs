@@ -95,18 +95,18 @@ namespace halocare.BL.Services
             return _employeeRepository.DeactivateEmployee(id, status);
         }
 
-        
+
 
         public Employee Login(string email, string password)
         {
-            // קבלת העובד לפי אימייל
+            // Retrieve employee by email
             Employee employee = _employeeRepository.GetEmployeeByEmail(email);
             if (employee == null)
             {
                 throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים");
             }
 
-            // בדיקת סיסמה
+            // Check password
             string hashedPassword = HashPassword(password);
 
             if (!employee.Password.Equals(hashedPassword))
@@ -114,7 +114,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("שם המשתמש או הסיסמה אינם נכונים");
             }
 
-            // וידוא שהעובד פעיל
+            // Verify employee is active
             if (!employee.IsActive)
             {
                 throw new ArgumentException("המשתמש אינו פעיל במערכת");
@@ -122,6 +122,7 @@ namespace halocare.BL.Services
 
             return employee;
         }
+
 
 
 
