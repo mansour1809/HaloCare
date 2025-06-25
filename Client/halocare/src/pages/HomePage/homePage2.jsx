@@ -105,7 +105,7 @@ const QuickStat = ({ icon, label, value, color, trend }) => (
   </Box>
 );
 
-const HomePage = () => {
+const HomePage2 = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stats, setStats] = useState({
     totalKids: 18,
@@ -566,4 +566,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePage2;

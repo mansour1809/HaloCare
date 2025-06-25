@@ -192,7 +192,7 @@ namespace halocare.Controllers
                
                 if (!string.IsNullOrEmpty(request.CurrentPassword))
                 {
-                    var employee = _employeeService.GetEmployeeById(id);
+                    Employee employee = _employeeService.GetEmployeeById(id);
                     if (employee == null)
                         return NotFound("עובד לא נמצא");
 
@@ -231,7 +231,7 @@ namespace halocare.Controllers
         public class UpdateEmailRequest
         {
             public string NewEmail { get; set; }
-            public string CurrentPassword { get; set; } // אופציונלי - רק לעובד
+            public string CurrentPassword { get; set; } 
         }
 
         [HttpPost("sendWelcomeEmail")]
