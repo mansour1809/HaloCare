@@ -33,6 +33,7 @@ import EmployeeDocumentManager from './EmployeeDocumentManager';
 import { baseURL } from '../../components/common/axiosConfig';
 import { useAuth } from '../../components/login/AuthContext';
 import SharedCalendarWidget from './SharedCalendarWidget';
+import { useDispatch } from 'react-redux';
 
 
 const profileTheme = createTheme({
@@ -260,8 +261,8 @@ const HeroProfileCard = styled(Paper)(({ theme }) => ({
     position: 'absolute',
     bottom: 0,
     left: 0,
-    width: '200px',
-    height: '200px',
+    width: '150px',
+    height: '150px',
     background: 'rgba(255,255,255,0.05)',
     borderRadius: '50%',
     transform: 'translate(-50px, 50px)',
@@ -482,7 +483,6 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
       }}>
         <CardContent sx={{ p: 4 }}>
           <SectionHeader>
-            <EmailIcon sx={{ fontSize: 32, color: 'primary.main', mr: 2 }} />
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
               📧 עדכון כתובת מייל
             </Typography>
@@ -498,7 +498,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
 
           <form onSubmit={handleEmailSubmit}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <TextField
                   fullWidth
                   label="כתובת מייל חדשה"
@@ -520,7 +520,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
 
               {/* If the employee is updating their own email - require current password */}
               {currentUser.id === employee.employeeId && (
-                <Grid item xs={12}>
+                <Grid item size={{xs:12}}>
                   <TextField
                     fullWidth
                     label="סיסמה נוכחית (לאימות)"
@@ -553,7 +553,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -588,7 +588,6 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
         }}>
           <CardContent sx={{ p: 4 }}>
             <SectionHeader>
-              <LockIcon sx={{ fontSize: 32, color: 'error.main', mr: 2 }} />
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
                 🔐 עדכון סיסמה
               </Typography>
@@ -602,7 +601,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
 
             <form onSubmit={handlePasswordSubmit}>
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid item size={{xs:12 }}>
                   <TextField
                     fullWidth
                     label="סיסמה נוכחית"
@@ -634,7 +633,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid item size={{xs:12 }}>
                   <TextField
                     fullWidth
                     label="סיסמה חדשה"
@@ -666,7 +665,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid item size={{xs:12 }}>
                   <TextField
                     fullWidth
                     label="אימות סיסמה חדשה"
@@ -698,7 +697,7 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid item size={{xs:12 }}>
                   <Button
                     type="submit"
                     variant="contained"
@@ -731,9 +730,10 @@ const EmployeeProfile = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  
+
   // Redux/Context
   const { employees, loading  } = useEmployees();
+  const{roles} =useEmployees();
   
   // Local State
   const [employee, setEmployee] = useState(null);
@@ -768,14 +768,8 @@ const EmployeeProfile = () => {
   };
 
   const getRoleColor = (roleName) => {
-    const roleColors = {
-      'מנהל': '#e53e3e',
-      'מחנך': '#3182ce', 
-      'סייעת': '#38a169',
-      'מטפל': '#d69e2e',
-      'ממלא מקום': '#805ad5'
-    };
-    return roleColors[roleName] || '#718096';
+    const role = roles.find(role => role.roleName == roleName)
+    return role.description || '#718096'
   };
 
   const calculateSeniority = (startDate) => {
@@ -917,7 +911,7 @@ const EmployeeProfile = () => {
             <Zoom in timeout={800}>
               <HeroProfileCard elevation={8}>
                 <Grid container spacing={3} alignItems="center">
-                  <Grid item xs={12} md={3} textAlign="center">
+                  <Grid item size={{xs:12 , md:3 }} textAlign="center"  >
                     <ProfileAvatar
                       src={employee.photo ? 
                         `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}` : 
@@ -934,7 +928,7 @@ const EmployeeProfile = () => {
                     </ProfileAvatar>
                   </Grid>
                   
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{xs:12 , md:6 }}>
                     <Typography variant="h4" gutterBottom sx={{ 
                       fontWeight: 800,
                       display: 'flex',
@@ -985,10 +979,11 @@ const EmployeeProfile = () => {
                     </Typography>
                   </Grid>
                   
-                  <Grid item xs={12} md={3} textAlign="center">
+                  <Grid item size={{xs:12 , md:3 }} textAlign="center">
                     {canEdit && (
                       <Button
                         variant="contained"
+                        
                         onClick={() => setEditMode(true)}
                         sx={{
                           backgroundColor: 'rgba(255,255,255,0.2)',
@@ -1077,7 +1072,7 @@ const EmployeeProfile = () => {
                       <Box>
                         <Grid container spacing={4}>
                            {/* Personal Details */}
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
@@ -1136,7 +1131,7 @@ const EmployeeProfile = () => {
                           </Grid>
 
                           {/* Work Details */}
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
@@ -1199,7 +1194,7 @@ const EmployeeProfile = () => {
                               </CardContent>
                             </InfoCard>
                           </Grid>
-                            <Grid width={'50%'} item xs={12}>
+                            {/* <Grid width={'50%'} item xs={12}>
   <SharedCalendarWidget
     entityId={employee.employeeId}
     entityType="employee"
@@ -1208,7 +1203,7 @@ const EmployeeProfile = () => {
     showQuickActions={true}
     compact={false}
   />
-</Grid>
+</Grid> */}
                         </Grid>
                       </Box>
                     </Fade>

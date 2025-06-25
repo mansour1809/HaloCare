@@ -746,7 +746,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         </SectionHeader>
 
                         <Grid container spacing={3}>
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
                               label="שם פרטי"
@@ -767,7 +767,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
                               label="שם משפחה"
@@ -788,7 +788,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <DatePicker
                               label="תאריך לידה"
                               value={formData.birthDate}
@@ -811,7 +811,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
                               label="טלפון נייד"
@@ -832,7 +832,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <FormControl
                               fullWidth
                               required
@@ -885,7 +885,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         </SectionHeader>
 
                         <Grid container spacing={3}>
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <FormControl
                               fullWidth
                               variant="outlined"
@@ -922,7 +922,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
                               label="מספר רישיון"
@@ -942,7 +942,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <DatePicker
                               label="תאריך תחילת עבודה"
                               value={formData.startDate}
@@ -963,7 +963,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             />
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <FormControl required fullWidth variant="outlined">
                               <InputLabel>שיוך לכיתה</InputLabel>
                               <Select
@@ -990,7 +990,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             </FormControl>
                           </Grid>
 
-                          <Grid item xs={12} md={6}>
+                          <Grid item size={{xs:12 , md:6}}>
                             <Box sx={{ 
                               display: 'flex', 
                               alignItems: 'center',
@@ -1014,7 +1014,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             </Box>
                           </Grid>
 
-                          <Grid item xs={12}>
+                          <Grid item size={{xs:12}}>
                             <Button
                               variant="outlined"
                               component="label"
@@ -1075,7 +1075,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           </SectionHeader>
 
                           <Grid container spacing={3}>
-                            <Grid item xs={12}>
+                            <Grid item size={{xs:12}}>
                               <TextField
                                 fullWidth
                                 label="דוא״ל"
@@ -1097,7 +1097,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               />
                             </Grid>
 
-                            <Grid item xs={12}>
+                            <Grid item size={{xs:12}}>
                               <TextField
                                 fullWidth
                                 label="סיסמה ראשונית"
@@ -1149,7 +1149,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               </Button>
                             </Grid>
 
-                            <Grid item xs={12}>
+                            <Grid item size={{xs:12}}>
                               <Box sx={{ 
                                 p: 2,
                                 borderRadius: 2,
@@ -1185,53 +1185,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       </Card>
                     </Fade>
                     )}
-                     {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
-                       <Grid item xs={12}>
-                              <TextField
-                                fullWidth
-                                label="סיסמה נוכחית"
-                                name="password"
-                                type={showPassword ? "text" : "password"}
-                                value={formData.password}
-                                onChange={handleChange}
-                                variant="outlined"
-                                required
-                                error={hasFieldError("password")}
-                                helperText={getFieldError("password")}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <PasswordIcon color="secondary" />
-                                    </InputAdornment>
-                                  ),
-                                  endAdornment: (
-                                    <InputAdornment position="end">
-                                      <Tooltip title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
-                                        <IconButton
-                                          onClick={() => setShowPassword(!showPassword)}
-                                          edge="end"
-                                        >
-                                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                      </Tooltip>
-                                      <Tooltip title="העתק סיסמה">
-                                        <IconButton
-                                          disabled={!formData.password}
-                                          edge="end"
-                                          onClick={() => navigator.clipboard.writeText(formData.password)}
-                                        >
-                                          <ContentCopy />
-                                        </IconButton>
-                                      </Tooltip>
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-
-                             
-                            </Grid>
-                  )}
-
+                     
                   {/* Action buttons */}
                   <Fade in timeout={1800}>
                     <Box sx={{ 

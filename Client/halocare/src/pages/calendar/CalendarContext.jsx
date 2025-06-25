@@ -440,17 +440,7 @@ export const CalendarProvider = ({ children }) => {
   );
 };
 
-
-
-
-
-
-
-
-
-
-
-// הוק שימושי לשימוש בקונטקסט
+// Useful hook for using the context
 export const useCalendar = () => {
   const context = useContext(CalendarContext);
 

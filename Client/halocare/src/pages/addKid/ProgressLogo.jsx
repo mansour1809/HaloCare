@@ -272,7 +272,7 @@ const ProgressLogo = ({
                 justifyContent="center"
               >
                 {onboardingData.forms?.map((form, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={form.formId}>
+                  <Grid item size={{xs:12 , sm:6 , md:4 }}  key={form.formId}>
                     <Box
                       sx={{
                         display: "flex",

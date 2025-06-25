@@ -6,7 +6,7 @@ import {
 import { 
   Box, Typography, Card, CardContent, FormControl, Select, MenuItem, 
   InputLabel, ToggleButtonGroup, ToggleButton, CircularProgress,
-  Paper, Grid, Avatar, Stack, Chip, Fade, Zoom, alpha, useTheme
+   Grid, Avatar, Stack, Chip, Fade, Zoom, alpha, useTheme
 } from '@mui/material';
 import { 
   BarChart as BarChartIcon,
