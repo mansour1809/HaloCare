@@ -131,6 +131,7 @@ export const CalendarProvider = ({ children }) => {
   const addEvent = useCallback(async (eventData) => {
 
       const serverEventData = prepareEventData(eventData);
+      console.log(serverEventData)
       const response = await axios.post('/Events', serverEventData);
       dispatch(fetchEvents());
       return response.data;

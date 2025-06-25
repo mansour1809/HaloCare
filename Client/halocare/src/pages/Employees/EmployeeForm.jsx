@@ -208,11 +208,10 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const theme = useTheme();
   
   const {currentUser} = useAuth();
-  
+  const {employees} =useEmployees();
   const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
   const submitButtonText = isEditMode ? "שמור שינויים" : "שמירת עובד חדש";
-  
   //use employees context
   const { 
     addEmployee, 
@@ -1185,9 +1184,52 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         </CardContent>
                       </Card>
                     </Fade>
-                                    )}
-                                      {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
-<Button>ddd</Button>
+                    )}
+                     {isEditMode && (existingEmployee.employeeId === currentUser.id) && (
+                       <Grid item xs={12}>
+                              <TextField
+                                fullWidth
+                                label="סיסמה נוכחית"
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                value={formData.password}
+                                onChange={handleChange}
+                                variant="outlined"
+                                required
+                                error={hasFieldError("password")}
+                                helperText={getFieldError("password")}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <PasswordIcon color="secondary" />
+                                    </InputAdornment>
+                                  ),
+                                  endAdornment: (
+                                    <InputAdornment position="end">
+                                      <Tooltip title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
+                                        <IconButton
+                                          onClick={() => setShowPassword(!showPassword)}
+                                          edge="end"
+                                        >
+                                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                                        </IconButton>
+                                      </Tooltip>
+                                      <Tooltip title="העתק סיסמה">
+                                        <IconButton
+                                          disabled={!formData.password}
+                                          edge="end"
+                                          onClick={() => navigator.clipboard.writeText(formData.password)}
+                                        >
+                                          <ContentCopy />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+
+                             
+                            </Grid>
                   )}
 
                   {/* Action buttons */}

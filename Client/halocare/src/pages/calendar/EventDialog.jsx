@@ -223,7 +223,7 @@ const EventDialog = () => {
       return `משתמש #${creatorId}`;
     }
 
-    if (newEvent?.createdBy) {
+    if (newEvent) {
       return `${currentUser.firstName} ${currentUser.lastName}`;
     }
     return 'לא ידוע';

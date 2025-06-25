@@ -142,7 +142,6 @@ namespace halocare.DAL.Repositories
         }
 
 
-        //// הוספנו מתודה לעדכון סיסמה
         public bool UpdatePassword(int employeeId, string hashedPassword)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -155,7 +154,18 @@ namespace halocare.DAL.Repositories
             return rowsAffected > 0;
         }
 
-        // פונקציית עזר למיפוי תוצאות שאילתה לאובייקט Employee
+        public bool UpdateEmail(int employeeId, string newEmail)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+    {
+        { "@EmployeeId", employeeId },
+        { "@Email", newEmail }
+    };
+
+            int rowsAffected = ExecuteNonQuery("SP_UpdateEmployeeEmail", parameters);
+            return rowsAffected > 0;
+        }
+        
         private Employee MapToEmployee(DataRow row)
         {
             return new Employee

@@ -5,6 +5,9 @@ using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
 using halocare.DAL.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace halocare.Controllers
 {
@@ -140,6 +143,96 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
             }
         }
+        [HttpPatch("{id}/reset-password")]
+        public IActionResult UpdatePassword(int id, [FromBody] UpdatePasswordRequest request)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(request.CurrentPassword))
+                {
+                    var employee = _employeeService.GetEmployeeById(id);
+                    if (employee == null)
+                        return NotFound("עובד לא נמצא");
+
+                    // check current password
+                    string hashedCurrent = HashPassword(request.CurrentPassword);
+                    if (!employee.Password.Equals(hashedCurrent))
+                    {
+                        return BadRequest("הסיסמה הנוכחית שגויה");
+                    }
+                }
+
+                // update new password
+                bool result = _employeeService.UpdatePasswordProvidedCurrent(id, request.NewPassword);
+
+                if (result)
+                {
+                    return Ok(new { success = true, message = "הסיסמה עודכנה בהצלחה" });
+                }
+                else
+                {
+                    return BadRequest("שגיאה בעדכון הסיסמה");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        [HttpPatch("{id}/update-email")]
+        public IActionResult UpdateEmail(int id, [FromBody] UpdateEmailRequest request)
+        {
+            try
+            {
+               
+                if (!string.IsNullOrEmpty(request.CurrentPassword))
+                {
+                    var employee = _employeeService.GetEmployeeById(id);
+                    if (employee == null)
+                        return NotFound("עובד לא נמצא");
+
+                    string hashedCurrent = HashPassword(request.CurrentPassword);
+                    if (!employee.Password.Equals(hashedCurrent))
+                    {
+                        return BadRequest("הסיסמה הנוכחית שגויה");
+                    }
+                }
+
+                // check if the mail already exist
+                Employee existingEmployee = _employeeService.GetEmployeeByEmail(request.NewEmail);
+                if (existingEmployee != null && existingEmployee.EmployeeId != id)
+                {
+                    return BadRequest("כתובת המייל כבר קיימת במערכת");
+                }
+
+                // update mail
+                bool result = _employeeService.UpdateEmail(id, request.NewEmail);
+
+                if (result)
+                {
+                    return Ok(new { success = true, message = "כתובת המייל עודכנה בהצלחה" });
+                }
+                else
+                {
+                    return BadRequest("שגיאה בעדכון כתובת המייל");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+            }
+        }
+
+        public class UpdateEmailRequest
+        {
+            public string NewEmail { get; set; }
+            public string CurrentPassword { get; set; } // אופציונלי - רק לעובד
+        }
 
         [HttpPost("sendWelcomeEmail")]
         public async Task<IActionResult> SendWelcomeEmail([FromBody] WelcomeEmailDto emailData)
@@ -183,6 +276,25 @@ namespace halocare.Controllers
         {
             public bool IsActive { get; set; }
         }
+        public class UpdatePasswordRequest
+        {
+            public string CurrentPassword { get; set; } 
+            public string NewPassword { get; set; }
+        }
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
     }
 
     
