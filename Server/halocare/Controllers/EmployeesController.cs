@@ -163,7 +163,7 @@ namespace halocare.Controllers
                 }
 
                 // update new password
-                bool result = _employeeService.UpdatePasswordProvidedCurrent(id, request.NewPassword);
+                bool result = _employeeService.UpdatePassword(id, request.NewPassword);
 
                 if (result)
                 {

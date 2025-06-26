@@ -44,7 +44,7 @@ axios.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // 🔥 Extended check for public pages
       const currentPath = window.location.pathname + window.location.hash;
-      const publicPaths = ['/login', '/reset-password', '/parent-form'];
+      const publicPaths = [ '/reset-password', '/parent-form'];
       const isPublicPage = publicPaths.some((path) => currentPath.includes(path));
 
       // 🔥 Redirect to login only if it's not a public page
