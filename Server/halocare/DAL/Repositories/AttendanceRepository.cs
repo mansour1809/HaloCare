@@ -23,7 +23,7 @@ namespace halocare.DAL.Repositories
                     KidId = Convert.ToInt32(row["KidId"]),
                     AttendanceDate = Convert.ToDateTime(row["AttendanceDate"]),
                     IsPresent = Convert.ToBoolean(row["IsPresent"]),
-                    AbsenceReason = row["AbsenceReason"].ToString(),
+                    AbsenceReason = row["AbsenceReason"] != DBNull.Value ? row["AbsenceReason"].ToString() : "",
                     ReportedBy = Convert.ToInt32(row["ReportedBy"])
                 };
 
@@ -51,7 +51,7 @@ namespace halocare.DAL.Repositories
                     KidId = Convert.ToInt32(row["KidId"]),
                     AttendanceDate = Convert.ToDateTime(row["AttendanceDate"]),
                     IsPresent = Convert.ToBoolean(row["IsPresent"]),
-                    AbsenceReason = row["AbsenceReason"].ToString(),
+                    AbsenceReason = row["AbsenceReason"] != DBNull.Value ? row["AbsenceReason"].ToString() : "",
                     ReportedBy = Convert.ToInt32(row["ReportedBy"])
                 };
 
@@ -79,7 +79,7 @@ namespace halocare.DAL.Repositories
                     KidId = Convert.ToInt32(row["KidId"]),
                     AttendanceDate = Convert.ToDateTime(row["AttendanceDate"]),
                     IsPresent = Convert.ToBoolean(row["IsPresent"]),
-                    AbsenceReason = row["AbsenceReason"].ToString(),
+                    AbsenceReason = row["AbsenceReason"] != DBNull.Value ? row["AbsenceReason"].ToString() : "",
                     ReportedBy = Convert.ToInt32(row["ReportedBy"])
                 };
 
@@ -96,7 +96,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", attendance.KidId },
                 { "@AttendanceDate", attendance.AttendanceDate },
                 { "@IsPresent", attendance.IsPresent },
-                { "@AbsenceReason", attendance.AbsenceReason },
+                { "@AbsenceReason", attendance.AbsenceReason ?? (object)DBNull.Value},
                 { "@ReportedBy", attendance.ReportedBy }
             };
 
@@ -111,7 +111,7 @@ namespace halocare.DAL.Repositories
                 { "@KidId", attendance.KidId },
                 { "@AttendanceDate", attendance.AttendanceDate },
                 { "@IsPresent", attendance.IsPresent },
-                { "@AbsenceReason", attendance.AbsenceReason },
+                { "@AbsenceReason", attendance.AbsenceReason ?? (object)DBNull.Value},
                 { "@ReportedBy", attendance.ReportedBy }
             };
 

@@ -283,7 +283,7 @@ const AttendanceDashboard = () => {
                   color: 'primary.main'
                 }}>
                   <TrendingUpIcon sx={{ mr: 1 }} />
-                  מה תוכל לעשות במערכת
+                  מה תוכל לעשות 
                 </Typography>
                 
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mt: 2 }}>
@@ -304,7 +304,7 @@ const AttendanceDashboard = () => {
                       }}
                       onClick={() => setTabValue(index)}
                     >
-                      <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                      <CardContent sx={{ p: 2, textAlign: 'center' ,height:'20'}}>
                         <Avatar sx={{ 
                           background: `linear-gradient(45deg, ${tab.color} 30%, ${alpha(tab.color, 0.8)} 90%)`,
                           width: 48,
