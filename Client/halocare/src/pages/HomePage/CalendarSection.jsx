@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {useNavigate} from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -9,26 +10,16 @@ import {
   Button,
   Avatar,
   Stack,
-  Divider,
-  Tooltip,
   Chip,
   IconButton,
-  Badge,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Paper,
-  ToggleButton,
-  ToggleButtonGroup,
   Container,
   Fade,
   Zoom,
-  Slide,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   FormControl,
   InputLabel,
   Select,
@@ -42,39 +33,23 @@ import {
   Event as EventIcon,
   Today as TodayIcon,
   Add as AddIcon,
-  FilterList as FilterIcon,
   NavigateBefore as PrevIcon,
   NavigateNext as NextIcon,
-  Schedule as ScheduleIcon,
-  Groups as GroupIcon,
-  Person as PersonIcon,
   LocationOn as LocationIcon,
   AccessTime as TimeIcon,
   Analytics as AnalyticsIcon,
-  AutoAwesome as MagicIcon,
-  Refresh as RefreshIcon,
   Clear as ClearIcon,
   ViewWeek as WeekIcon,
-  ViewDay as DayIcon,
-  CalendarViewMonth as MonthIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
 import { fetchEvents } from '../../Redux/features/eventsSlice';
 import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { fetchEmployees } from '../../Redux/features/employeesSlice';
+import EventsCarousel from './EventsCarousel';
+import Swal from 'sweetalert2';
 
 // 🎨 Amazing animations
-const shimmer = keyframes`
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-`;
-
-const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4); }
-`;
-
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
@@ -86,9 +61,9 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-const slideInUp = keyframes`
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 `;
 
 // 🎭 Styled Components
@@ -110,7 +85,7 @@ const GradientContainer = styled(Container)(({ theme }) => ({
   }
 }));
 
-const MainCard = styled(Card)(({ theme }) => ({
+const MainCard = styled(Card)(() => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: '24px',
@@ -131,7 +106,7 @@ const MainCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const EventCard = styled(Card)(({ theme, eventColor = '#667eea' }) => ({
+const EventCard = styled(Card)(({  eventColor = '#667eea' }) => ({
   background: `linear-gradient(135deg, ${eventColor}15 0%, ${eventColor}05 100%)`,
   borderRadius: '16px',
   border: `2px solid ${eventColor}30`,
@@ -166,58 +141,20 @@ const EventCard = styled(Card)(({ theme, eventColor = '#667eea' }) => ({
   }
 }));
 
-const MiniCalendarCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+const StatsCard = styled(Card)(({  color = '#667eea' }) => ({
+  background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
   borderRadius: '20px',
-  border: '1px solid rgba(255,255,255,0.3)',
-  backdropFilter: 'blur(10px)',
-  transition: 'all 0.3s ease',
+  border: `2px solid ${color}20`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: `0 20px 40px ${color}30`,
   }
 }));
 
-const CalendarDay = styled(Box)(({ theme, isToday, hasEvents, isSelected }) => ({
-  width: 40,
-  height: 40,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '12px',
-  cursor: 'pointer',
-  transition: 'all 0.3s ease',
-  position: 'relative',
-  background: isToday 
-    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    : isSelected 
-    ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
-    : hasEvents 
-    ? 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)'
-    : 'transparent',
-  color: isToday || isSelected ? 'white' : 'inherit',
-  fontWeight: isToday || isSelected ? 700 : hasEvents ? 600 : 400,
-  '&:hover': {
-    background: isToday || isSelected 
-      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      : 'linear-gradient(135deg, rgba(102,126,234,0.2) 0%, rgba(102,126,234,0.1) 100%)',
-    transform: 'scale(1.1)',
-  },
-  '&::after': hasEvents ? {
-    content: '""',
-    position: 'absolute',
-    bottom: 4,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: 6,
-    height: 6,
-    borderRadius: '50%',
-    background: isToday || isSelected ? 'white' : '#667eea',
-    animation: `${pulse} 2s infinite`,
-  } : {}
-}));
-
-const GlowingButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
+const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
   borderRadius: '16px',
   textTransform: 'none',
   fontWeight: 600,
@@ -247,21 +184,20 @@ const GlowingButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   }
 }));
 
-const StatsCard = styled(Card)(({ theme, color = '#667eea' }) => ({
-  background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-  borderRadius: '20px',
-  border: `2px solid ${color}20`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
+// Styled Chip for participants
+const ParticipantChip = styled(Chip)(() => ({
+  borderRadius: 12,
+  fontWeight: 600,
+  margin: '2px',
+  transition: 'all 0.3s ease',
   '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 20px 40px ${color}30`,
-    animation: `${glow} 2s infinite`,
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 12px rgba(116, 11, 11, 0.15)',
   }
 }));
 
-const EnhancedCalendarSection = ({ onNavigateToFull }) => {
+const CalendarSection = () => {
+const navigate = useNavigate();
   const dispatch = useDispatch();
   
   // Redux state
@@ -272,11 +208,10 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
   
   // Local state
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('day'); 
   const [filters, setFilters] = useState({
     eventTypeId: '',
     employeeId: '',
-    kidId: ''
+    kidId:''
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -302,62 +237,59 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
     });
   };
 
-  
-
-  const getMonthDays = (date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startDay = firstDay.getDay();
+  const getWeekDays = (date) => {
+    const week = [];
+    const startOfWeek = new Date(date);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day;
     
-    const days = [];
-    
-    // Previous month days
-    for (let i = startDay - 1; i >= 0; i--) {
-      const prevDate = new Date(year, month, -i);
-      days.push({ date: prevDate, isCurrentMonth: false });
+    for (let i = 0; i < 7; i++) {
+      const weekDay = new Date(startOfWeek);
+      weekDay.setDate(diff + i);
+      week.push(weekDay);
     }
-    
-    // Current month days
-    for (let i = 1; i <= daysInMonth; i++) {
-      const currentDate = new Date(year, month, i);
-      days.push({ date: currentDate, isCurrentMonth: true });
-    }
-    
-    // Next month days to complete the grid
-    const remainingDays = 42 - days.length;
-    for (let i = 1; i <= remainingDays; i++) {
-      const nextDate = new Date(year, month + 1, i);
-      days.push({ date: nextDate, isCurrentMonth: false });
-    }
-    
-    return days;
+    return week;
   };
-
-  // Filter events
+const handleCreateEvent = () => {
+  console.log('ukbjn')
+  Swal.fire({
+    title: '🗓️ יצירת אירוע חדש',
+    html: 'ליצירה ועריכה של אירועים,<br>עבור ליומן המלא עם כל הכלים המתקדמים!',
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: '📅 עבור ליומן מלא',
+    cancelButtonText: 'לא משנה',
+    confirmButtonColor: '#667eea'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      navigate('/calendar/schedule');
+    }
+  });
+};
+  // Filter events - Only for selected day
   const filteredEvents = useMemo(() => {
-    console.log(events)
     if (!events || events.length === 0) return [];
     
     return events.filter(event => {
       const eventDate = new Date(event.start);
-      console.log(eventDate)
-      // Date filter based on view mode
-      let dateMatch = false;
-      if (viewMode === 'day') {
-        dateMatch = eventDate.toDateString() === selectedDate.toDateString();
-      } 
       
-      // Other filters
-      const typeMatch = !filters.eventTypeId || event.eventTypeId === parseInt(filters.eventTypeId);
-      const employeeMatch = !filters.employeeId || event.employeeIds?.includes(parseInt(filters.employeeId));
-      const kidMatch = !filters.kidId || event.kidIds?.includes(parseInt(filters.kidId));
+      // Only show events for selected day
+      const dateMatch = eventDate.toDateString() === selectedDate.toDateString();
       
-      return dateMatch && typeMatch && employeeMatch && kidMatch;
-    });
-  }, [events, selectedDate, viewMode, filters]);
+      // Apply filters
+      const typeMatch = !filters.eventTypeId || event.extendedProps.eventTypeId === parseInt(filters.eventTypeId);
+      const employeeMatch = !filters.employeeId || event.extendedProps.employeeIds?.includes(parseInt(filters.employeeId));
+      const kidsMatch = !filters.kidId || event.extendedProps.kidIds?.includes(parseInt(filters.kidId));
+      
+      // Search filter
+      const searchMatch = !searchTerm || 
+        event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.extendedProps.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.extendedProps.location?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return dateMatch && typeMatch && employeeMatch && searchMatch && kidsMatch;
+    }).sort((a, b) => new Date(a.start) - new Date(b.start));
+  }, [events, selectedDate, filters, searchTerm]);
 
   // Get today's events
   const todaysEvents = useMemo(() => {
@@ -369,45 +301,22 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
     }).sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [events]);
 
-  // Get events for specific date
-  const getEventsForDate = (date) => {
-    if (!events || events.length === 0) return [];
-    return events.filter(event => {
-      const eventDate = new Date(event.start);
-      return eventDate.toDateString() === date.toDateString();
-    });
-  };
-
-  // Filter kids based on search term
-  const filteredKids = useMemo(() => {
-    if (!kids) return [];
-    const activeKids = kids.filter(kid => kid.isActive);
-    if (!searchTerm) return activeKids;
-    
-    return activeKids.filter(kid => 
-      kid.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      kid.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [kids, searchTerm]);
-
   // Stats
   const stats = useMemo(() => {
-    const total = filteredEvents.length;
-    const today = todaysEvents.length;
+    const todayCount = todaysEvents.length;
+    const selectedDayCount = filteredEvents.length;
     const thisWeek = events?.filter(event => {
       const eventDate = new Date(event.start);
+      const weekDays = getWeekDays(new Date());
+      return weekDays.some(day => day.toDateString() === eventDate.toDateString());
     }).length || 0;
     
-    return { total, today, thisWeek };
+    return { todayCount, selectedDayCount, thisWeek };
   }, [filteredEvents, todaysEvents, events]);
 
   const handleDateNavigation = (direction) => {
     const newDate = new Date(selectedDate);
-    if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() + direction);
-    } else if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() + (direction * 7));
-    }
+    newDate.setDate(newDate.getDate() + direction);
     setSelectedDate(newDate);
   };
 
@@ -419,8 +328,7 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
   const clearFilters = () => {
     setFilters({
       eventTypeId: '',
-      employeeId: '',
-      kidId: ''
+      employeeId: ''
     });
     setSearchTerm('');
   };
@@ -428,14 +336,8 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
   const isLoading = eventsStatus === 'loading' || eventTypesStatus === 'loading';
   const hasFilters = Object.values(filters).some(filter => filter !== '') || searchTerm !== '';
 
-  // Debug: Add console logs to see what's happening
-  console.log('Events from Redux:', events);
-  console.log('Filtered Events:', filteredEvents);
-  console.log('Selected Date:', selectedDate);
-  console.log('View Mode:', viewMode);
-
   return (
-    <GradientContainer maxWidth="xl">
+    <GradientContainer maxWidth="xl" dir='rtl'>
       <Fade in timeout={800}>
         <MainCard elevation={0}>
           {/* Magic Header */}
@@ -446,16 +348,6 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><defs><pattern id=\'grain\' width=\'100\' height=\'100\' patternUnits=\'userSpaceOnUse\'><circle cx=\'50\' cy=\'50\' r=\'1\' fill=\'%23667eea\' opacity=\'0.1\'/></pattern></defs><rect width=\'100\' height=\'100\' fill=\'url(%23grain)\'/></svg>")',
-              opacity: 0.3
-            }} />
-            
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} sx={{ position: 'relative', zIndex: 1 }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Zoom in timeout={600}>
@@ -489,7 +381,7 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
                     />
                     {hasFilters && (
                       <Chip 
-                        icon={<FilterIcon />}
+                        icon={<SearchIcon />}
                         label="מסונן"
                         color="warning"
                         size="small"
@@ -502,25 +394,19 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
               </Stack>
               
               <Stack direction="row" spacing={2}>
-                <GlowingButton
-                  startIcon={<RefreshIcon />}
-                  onClick={() => dispatch(fetchEvents())}
-                  disabled={isLoading}
-                >
-                  רענן
-                </GlowingButton>
                 
                 <GlowingButton
-                  startIcon={<AddIcon />}
-                  onClick={() => console.log('Create new event')}
-                  glowColor="#10b981"
-                >
-                  אירוע חדש
-                </GlowingButton>
-                
+  startIcon={<AddIcon />}
+  onClick={() => 
+    handleCreateEvent()
+  }
+  glowColor="#10b981"
+>
+  אירוע חדש
+</GlowingButton>
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
-                  onClick={onNavigateToFull}
+                  onClick={()=> navigate('/calendar/schedule')}
                   glowColor="#f59e0b"
                 >
                   יומן מלא
@@ -528,7 +414,7 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
               </Stack>
             </Stack>
 
-            {/* Amazing Stats */}
+            {/* Amazing Stats - Simplified */}
             <Grid container spacing={3} mb={3}>
               <Grid item size={{xs:12,sm:4}}>
                 <Zoom in timeout={800}>
@@ -544,7 +430,7 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
                         </Avatar>
                         <Box>
                           <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981' }}>
-                            {stats.today}
+                            {stats.todayCount}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" fontWeight={600}>
                             אירועי היום
@@ -596,10 +482,10 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
                         </Avatar>
                         <Box>
                           <Typography variant="h4" sx={{ fontWeight: 800, color: '#f59e0b' }}>
-                            {stats.total}
+                            {stats.selectedDayCount}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                            בתצוגה
+                            ביום שנבחר
                           </Typography>
                         </Box>
                       </Stack>
@@ -609,652 +495,279 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
               </Grid>
             </Grid>
 
-            {/* Navigation & View Controls */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <IconButton onClick={() => handleDateNavigation(-1)} sx={{ 
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
-                }}>
-                  <PrevIcon />
-                </IconButton>
+            {/* Compact Filters Bar */}
+            <Paper elevation={1} sx={{ 
+              p: 3, 
+              mb: 3,
+              borderRadius: '16px',
+              background: 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item size={{xs:12}}>
+                  <TextField
+                    size="small"
+                    placeholder="🔍 חיפוש אירועים..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    fullWidth
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon color="primary" />
+                        </InputAdornment>
+                      )
+                    }}
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                      }
+                    }}
+                  />
+                </Grid>
                 
-                <Typography variant="h6" sx={{ 
-                  minWidth: 200, 
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  color: '#667eea'
-                }}>
-                  {viewMode === 'month' 
-                    ? selectedDate.toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })
-                    : formatDate(selectedDate)
-                  }
-                </Typography>
-                
-                <IconButton onClick={() => handleDateNavigation(1)} sx={{ 
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
-                }}>
-                  <NextIcon />
-                </IconButton>
-              </Stack>
+                <Grid item size={{xs:12,sm:3}}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>סוג אירוע</InputLabel>
+                    <Select
+                      value={filters.eventTypeId}
+                      onChange={(e) => setFilters(prev => ({ ...prev, eventTypeId: e.target.value }))}
+                      label="סוג אירוע"
+                      sx={{ borderRadius: '12px' }}
+                    >
 
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={(e, newValue) => newValue && setViewMode(newValue)}
-                sx={{
-                  '& .MuiToggleButton-root': {
-                    borderRadius: '12px',
-                    margin: '0 4px',
-                    fontWeight: 600,
-                    background: 'rgba(255,255,255,0.2)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    '&.Mui-selected': {
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white',
-                    }
-                  }
+                      <MenuItem value="">כל הסוגים</MenuItem>
+                      {eventTypes?.map(type => (
+                        <MenuItem key={type.eventTypeId} value={type.eventTypeId}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Box sx={{ 
+                              width: 12, 
+                              height: 12, 
+                              borderRadius: '50%', 
+                              background: type.color 
+                            }} />
+                            {type.eventType}
+                          </Stack>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item size={{xs:12,sm:3}}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>מטפל</InputLabel>
+                    <Select
+                      value={filters.employeeId}
+                      onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value }))}
+                      label="מטפל"
+                      sx={{ borderRadius: '12px' }}
+                      renderValue={(selected) => {
+  const employee = employees.find(emp => emp.employeeId === selected);
+  return (
+    <ParticipantChip
+      label={employee ? `${employee.firstName} ${employee.lastName}` : selected}
+      size="small"
+      color="primary"
+    />
+  );
+}}
+
+                    >
+                      <MenuItem value="">כל המטפלים</MenuItem>
+                      {employees?.filter(emp => emp.isActive).map(employee => (
+                        <MenuItem key={employee.employeeId} value={employee.employeeId}>
+                          {employee.firstName} {employee.lastName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item size={{xs:12,sm:3}}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>ילד</InputLabel>
+                    <Select
+                      value={filters.kidId}
+                      onChange={(e) => setFilters(prev => ({ ...prev, kidId: e.target.value }))}
+                      label="ילד"
+                      sx={{ borderRadius: '12px' }}
+                       renderValue={(selected) => {
+  const kid = kids.find(k => k.id === selected);
+  return (
+    <ParticipantChip
+      label={kid ? `${kid.firstName} ${kid.lastName}` : selected}
+      size="small"
+      color="primary"
+    />
+  );
+}}
+                    >
+                      <MenuItem value="">כל המטפלים</MenuItem>
+                      {kids?.filter(kid => kid.isActive).map(kid => (
+                        <MenuItem key={kid.id} value={kid.id}>
+                          {kid.firstName} {kid.lastName}
+                        </MenuItem>
+                        
+                      ))}
+                      
+                    </Select>
+                    
+                  </FormControl>
+                </Grid>
+
+                <Grid item size={{xs:12,sm:3}}>
+                  <Stack direction="row" spacing={1}>
+                    {hasFilters && (
+                      <GlowingButton
+                        size="small"
+                        startIcon={<ClearIcon />}
+                        onClick={clearFilters}
+                        glowColor="#ef4444"
+                      >
+                        נקה
+                      </GlowingButton>
+                    )}
+                  
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Paper>
+
+            {/* Simple Navigation */}
+            <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} mb={3}>
+              <IconButton 
+                onClick={() => handleDateNavigation(1)} 
+                sx={{ 
+                  background: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
                 }}
               >
-                <ToggleButton value="day">
-                  <DayIcon sx={{ mr: 1 }} />
-                  יום
-                </ToggleButton>
-                <ToggleButton value="week">
-                  <WeekIcon sx={{ mr: 1 }} />
-                  שבוע
-                </ToggleButton>
-              </ToggleButtonGroup>
+                                <NextIcon />
+              </IconButton>
+              
+              <Paper sx={{ 
+                px: 4, 
+                py: 2, 
+                borderRadius: '20px',
+                background: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(20px)',
+                textAlign: 'center',
+                minWidth: 250
+              }}>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 700,
+                  color: '#667eea',
+                  mb: 0.5
+                }}>
+                  {formatDate(selectedDate)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedDate.toLocaleDateString('he-IL', { weekday: 'long' })}
+                </Typography>
+              </Paper>
+              
+              <IconButton 
+                onClick={() => handleDateNavigation(-1)} 
+                sx={{ 
+                  background: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
+                }}
+              >
+                <PrevIcon />
+              </IconButton>
+              
+              <GlowingButton
+                size="small"
+                onClick={() => setSelectedDate(new Date())}
+                glowColor="#10b981"
+                disabled={selectedDate.toDateString() === new Date().toDateString()}
+              >
+                📅 היום
+              </GlowingButton>
             </Stack>
           </Box>
 
-          {/* Main Content */}
+          {/* Main Content - Simplified */}
           <CardContent sx={{ p: 4 }}>
-            <Grid container spacing={4}>
-              {/* Left Side - Filters & Mini Calendar */}
-              <Grid item size={{xs:12,lg:3}}>
-                <Stack spacing={3}>
-                  {/* Quick Filters */}
-                  <Fade in timeout={1000}>
-                    <MiniCalendarCard>
-                      <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          fontWeight: 700,
-                          color: '#667eea'
-                        }}>
-                          <FilterIcon sx={{ mr: 1 }} />
-                          מסננים מהירים
-                        </Typography>
-                        
-                        <Stack spacing={2}>
-                          <FormControl fullWidth size="small">
-                            <InputLabel>סוג אירוע</InputLabel>
-                            <Select
-                              value={filters.eventTypeId}
-                              onChange={(e) => setFilters(prev => ({ ...prev, eventTypeId: e.target.value }))}
-                              label="סוג אירוע"
-                            >
-                              <MenuItem value="">כל הסוגים</MenuItem>
-                              {eventTypes?.map(type => (
-                                <MenuItem key={type.eventTypeId} value={type.eventTypeId}>
-                                  <Stack direction="row" spacing={1} alignItems="center">
-                                    <Box sx={{ 
-                                      width: 12, 
-                                      height: 12, 
-                                      borderRadius: '50%', 
-                                      background: type.color 
-                                    }} />
-                                    {type.eventType}
-                                  </Stack>
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+            <Fade in timeout={1000}>
+              <Box>
+                <Typography variant="h5" gutterBottom sx={{ 
+                  fontWeight: 700,
+                  color: '#667eea',
+                  mb: 3,
+                  textAlign: 'center'
+                }}>
+                  📅 אירועי {formatDate(selectedDate)}
+                </Typography>
+                
+                {filteredEvents.length > 0 ? (
 
-                          <FormControl fullWidth size="small">
-                            <InputLabel>מטפל</InputLabel>
-                            <Select
-                              value={filters.employeeId}
-                              onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value }))}
-                              label="מטפל"
-                            >
-                              <MenuItem value="">כל המטפלים</MenuItem>
-                              {employees?.map(employee => (
-                                <MenuItem key={employee.id} value={employee.id}>
-                                  {employee.firstName} {employee.lastName}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-
-                          <FormControl fullWidth size="small">
-                            <InputLabel>ילד</InputLabel>
-                            <Select
-                              value={filters.kidId}
-                              onChange={(e) => setFilters(prev => ({ ...prev, kidId: e.target.value }))}
-                              label="ילד"
-                            >
-                              <MenuItem value="">
-                                <TextField
-                                  size="small"
-                                  placeholder="🔍 חיפוש ילד..."
-                                  value={searchTerm}
-                                  onChange={(e) => {
-                                    e.stopPropagation();
-                                    setSearchTerm(e.target.value);
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                  InputProps={{
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                        <SearchIcon color="primary" fontSize="small" />
-                                      </InputAdornment>
-                                    )
-                                  }}
-                                  sx={{ width: '100%', mb: 1 }}
-                                />
-                              </MenuItem>
-                              <MenuItem value="">כל הילדים</MenuItem>
-                              {filteredKids?.map(kid => (
-                                <MenuItem key={kid.id} value={kid.id}>
-                                  <Stack direction="row" spacing={1} alignItems="center">
-                                    <Avatar sx={{ 
-                                      width: 24, 
-                                      height: 24, 
-                                      fontSize: '0.7rem',
-                                      background: 'linear-gradient(135deg, #10b981 30%, #34d399 90%)'
-                                    }}>
-                                      {kid.firstName?.charAt(0)}
-                                    </Avatar>
-                                    {kid.firstName} {kid.lastName}
-                                  </Stack>
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </Stack>
-                      </CardContent>
-                    </MiniCalendarCard>
-                  </Fade>
-
-                  {/* Mini Calendar - Only for week view */}
-                  {viewMode === 'week' && (
-                    <Fade in timeout={1200}>
-                      <MiniCalendarCard>
-                        <CardContent sx={{ p: 3 }}>
-                          <Typography variant="h6" gutterBottom sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            fontWeight: 700,
-                            color: '#667eea'
-                          }}>
-                            <CalendarIcon sx={{ mr: 1 }} />
-                            השבוע הנוכחי
-                          </Typography>
-                          
-                          <Grid container spacing={0.5}>
-                            {['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'].map(day => (
-                              <Grid item xs key={day} sx={{ textAlign: 'center' }}>
-                                <Typography variant="caption" fontWeight="bold" color="text.secondary">
-                                  {day}
-                                </Typography>
-                              </Grid>
-                            ))}
-                            {getWeekDays(selectedDate).map((date, index) => {
-                              const hasEvents = getEventsForDate(date).length > 0;
-                              const isToday = date.toDateString() === new Date().toDateString();
-                              const isSelected = date.toDateString() === selectedDate.toDateString();
-                              
-                              return (
-                                <Grid item xs key={index} sx={{ textAlign: 'center' }}>
-                                  <CalendarDay
-                                    isToday={isToday}
-                                    hasEvents={hasEvents}
-                                    isSelected={isSelected}
-                                    onClick={() => setSelectedDate(new Date(date))}
-                                    sx={{ fontSize: '0.8rem' }}
-                                  >
-                                    {date.getDate()}
-                                  </CalendarDay>
-                                </Grid>
-                              );
-                            })}
-                          </Grid>
-                        </CardContent>
-                      </MiniCalendarCard>
-                    </Fade>
-                  )}
-
-                  {/* Today's Events */}
-                  <Fade in timeout={1400}>
-                    <MiniCalendarCard>
-                      <CardContent sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          fontWeight: 700,
-                          color: '#10b981'
-                        }}>
-                          <TodayIcon sx={{ mr: 1 }} />
-                          אירועי היום ({todaysEvents.length})
-                        </Typography>
-                        
-                        {todaysEvents.length > 0 ? (
-                          <List dense>
-                            {todaysEvents.slice(0, 5).map((event, index) => {
-                              const eventType = eventTypes?.find(type => type.eventTypeId === event.eventTypeId);
-                              return (
-                                <Zoom in timeout={1600 + index * 100} key={event.eventId}>
-                                  <ListItem 
-                                    sx={{ 
-                                      p: 1, 
-                                      borderRadius: '8px',
-                                      mb: 1,
-                                      background: `${eventType?.color}15`,
-                                      border: `1px solid ${eventType?.color}30`,
-                                      cursor: 'pointer',
-                                      '&:hover': { 
-                                        background: `${eventType?.color}25`,
-                                        transform: 'translateX(-4px)'
-                                      },
-                                      transition: 'all 0.3s ease'
-                                    }}
-                                    onClick={() => handleEventClick(event)}
-                                  >
-                                    <ListItemAvatar>
-                                      <Avatar sx={{ 
-                                        width: 32, 
-                                        height: 32, 
-                                        background: eventType?.color,
-                                        fontSize: '0.8rem'
-                                      }}>
-                                        <ScheduleIcon />
-                                      </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                      primary={
-                                        <Typography variant="body2" fontWeight={600}>
-                                          {event.eventTitle}
-                                        </Typography>
-                                      }
-                                      secondary={
-                                        <Typography variant="caption" color="text.secondary">
-                                          {formatTime(event.start)} - {formatTime(event.end)}
-                                        </Typography>
-                                      }
-                                    />
-                                  </ListItem>
-                                </Zoom>
-                              );
-                            })}
-                            {todaysEvents.length > 5 && (
-                              <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', display: 'block', mt: 1 }}>
-                                ועוד {todaysEvents.length - 5} אירועים...
-                              </Typography>
-                            )}
-                          </List>
-                        ) : (
-                          <Box sx={{ textAlign: 'center', py: 3 }}>
-                            <MagicIcon sx={{ fontSize: '3rem', color: 'grey.300', mb: 1 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              אין אירועים היום
-                            </Typography>
-                            {isLoading && (
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                טוען אירועים...
-                              </Typography>
-                            )}
-                          </Box>
-                        )}
-                      </CardContent>
-                    </MiniCalendarCard>
-                  </Fade>
-                </Stack>
-              </Grid>
-
-              {/* Right Side - Events Display */}
-              <Grid item xs={12} lg={9}>
-                {viewMode === 'day' && (
-                  <Fade in timeout={1000}>
-                    <Box>
-                      <Typography variant="h5" gutterBottom sx={{ 
-                        fontWeight: 700,
-                        color: '#667eea',
-                        mb: 3
-                      }}>
-                        📅 אירועי {formatDate(selectedDate)}
+                  <EventsCarousel
+    events={filteredEvents}
+    eventTypes={eventTypes}
+    onEventClick={handleEventClick}
+    formatTime={formatTime}
+    maxVisible={3}
+    showExpand={true}
+  />
+                ) : (
+                  <Paper sx={{ 
+                    p: 6, 
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%)',
+                    borderRadius: '20px'
+                  }}>
+                    <Avatar sx={{ 
+                      width: 80, 
+                      height: 80, 
+                      margin: '0 auto 16px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                    }}>
+                      <CalendarIcon sx={{ fontSize: '2.5rem' }} />
+                    </Avatar>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      אין אירועים ב{formatDate(selectedDate)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      {hasFilters ? 'נסה לשנות את המסננים' : 'אין אירועים מתוכננים לתאריך זה'}
+                    </Typography>
+                    {isLoading && (
+                      <Typography variant="caption" color="primary" display="block">
+                        טוען אירועים מהשרת...
                       </Typography>
-                      
-                      {filteredEvents.length > 0 ? (
-                        <Grid container spacing={3}>
-                          {filteredEvents.map((event, index) => {
-                            const eventType = eventTypes?.find(type => type.eventTypeId === event.eventTypeId);
-                            return (
-                              <Grid item xs={12} sm={6} md={4} key={event.eventId}>
-                                <Zoom in timeout={1200 + index * 100}>
-                                  <EventCard 
-                                    eventColor={eventType?.color}
-                                    onClick={() => handleEventClick(event)}
-                                  >
-                                    <CardContent sx={{ p: 3 }}>
-                                      <Stack spacing={2}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                          <Avatar sx={{ 
-                                            background: eventType?.color,
-                                            width: 40,
-                                            height: 40
-                                          }}>
-                                            <EventIcon />
-                                          </Avatar>
-                                          <Box flex={1}>
-                                            <Typography variant="h6" fontWeight="bold">
-                                              {event.eventTitle}
-                                            </Typography>
-                                            <Chip 
-                                              label={eventType?.eventType}
-                                              size="small"
-                                              sx={{ 
-                                                background: eventType?.color,
-                                                color: 'white',
-                                                fontWeight: 600
-                                              }}
-                                            />
-                                          </Box>
-                                        </Stack>
-                                        
-                                        <Stack spacing={1}>
-                                          <Stack direction="row" spacing={1} alignItems="center">
-                                            <TimeIcon color="action" fontSize="small" />
-                                            <Typography variant="body2">
-                                              {formatTime(event.start)} - {formatTime(event.end)}
-                                            </Typography>
-                                          </Stack>
-                                          
-                                          {event.location && (
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                              <LocationIcon color="action" fontSize="small" />
-                                              <Typography variant="body2">
-                                                {event.location}
-                                              </Typography>
-                                            </Stack>
-                                          )}
-                                          
-                                          {event.kidIds?.length > 0 && (
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                              <GroupIcon color="action" fontSize="small" />
-                                              <Typography variant="body2">
-                                                {event.kidIds.length} ילדים
-                                              </Typography>
-                                            </Stack>
-                                          )}
-                                          
-                                          {event.employeeIds?.length > 0 && (
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                              <PersonIcon color="action" fontSize="small" />
-                                              <Typography variant="body2">
-                                                {event.employeeIds.length} מטפלים
-                                              </Typography>
-                                            </Stack>
-                                          )}
-                                        </Stack>
-                                      </Stack>
-                                    </CardContent>
-                                  </EventCard>
-                                </Zoom>
-                              </Grid>
-                            );
-                          })}
-                        </Grid>
-                      ) : (
-                        <Paper sx={{ 
-                          p: 6, 
-                          textAlign: 'center',
-                          background: 'linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%)',
-                          borderRadius: '20px'
-                        }}>
-                          <MagicIcon sx={{ fontSize: '4rem', color: 'grey.300', mb: 2 }} />
-                          <Typography variant="h6" color="text.secondary" gutterBottom>
-                            אין אירועים ב{formatDate(selectedDate)}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            נסה לשנות את המסננים או לבחור תאריך אחר
-                          </Typography>
-                          {isLoading && (
-                            <Typography variant="caption" color="primary" display="block" sx={{ mt: 1 }}>
-                              טוען אירועים מהשרת...
-                            </Typography>
-                          )}
-                          {!isLoading && events?.length === 0 && (
-                            <Typography variant="caption" color="warning.main" display="block" sx={{ mt: 1 }}>
-                              לא נמצאו אירועים במערכת
-                            </Typography>
-                          )}
-                        </Paper>
-                      )}
-                    </Box>
-                  </Fade>
-                )}
-
-                {viewMode === 'week' && (
-                  <Fade in timeout={1000}>
-                    <Box>
-                      <Typography variant="h5" gutterBottom sx={{ 
-                        fontWeight: 700,
-                        color: '#667eea',
-                        mb: 3
-                      }}>
-                        📅 השבוע של {formatDate(selectedDate)}
+                    )}
+                    {!isLoading && events?.length === 0 && (
+                      <Typography variant="caption" color="warning.main" display="block">
+                        לא נמצאו אירועים במערכת
                       </Typography>
-                      
-                      <Grid container spacing={2}>
-                        {getWeekDays(selectedDate).map((day, dayIndex) => {
-                          const dayEvents = getEventsForDate(day).filter(event => {
-                            const typeMatch = !filters.eventTypeId || event.eventTypeId === parseInt(filters.eventTypeId);
-                            const employeeMatch = !filters.employeeId || event.employeeIds?.includes(parseInt(filters.employeeId));
-                            const kidMatch = !filters.kidId || event.kidIds?.includes(parseInt(filters.kidId));
-                            return typeMatch && employeeMatch && kidMatch;
-                          });
-                          
-                          const isToday = day.toDateString() === new Date().toDateString();
-                          
-                          return (
-                            <Grid item xs key={dayIndex}>
-                              <Zoom in timeout={1200 + dayIndex * 100}>
-                                <MiniCalendarCard sx={{ 
-                                  border: isToday ? '2px solid #667eea' : '1px solid rgba(255,255,255,0.3)',
-                                  background: isToday 
-                                    ? 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)'
-                                    : 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)'
-                                }}>
-                                  <CardContent sx={{ p: 2 }}>
-                                    <Typography variant="subtitle2" textAlign="center" gutterBottom sx={{
-                                      fontWeight: 700,
-                                      color: isToday ? '#667eea' : 'text.primary'
-                                    }}>
-                                      {day.toLocaleDateString('he-IL', { weekday: 'short' })}
-                                    </Typography>
-                                    <Typography variant="h6" textAlign="center" gutterBottom sx={{
-                                      fontWeight: 800,
-                                      color: isToday ? '#667eea' : 'text.primary'
-                                    }}>
-                                      {day.getDate()}
-                                    </Typography>
-                                    
-                                    <Stack spacing={1}>
-                                      {dayEvents.slice(0, 3).map((event, eventIndex) => {
-                                        const eventType = eventTypes?.find(type => type.eventTypeId === event.eventTypeId);
-                                        return (
-                                          <Box
-                                            key={event.eventId}
-                                            onClick={() => handleEventClick(event)}
-                                            sx={{
-                                              p: 1,
-                                              borderRadius: '6px',
-                                              background: `${eventType?.color}20`,
-                                              border: `1px solid ${eventType?.color}40`,
-                                              cursor: 'pointer',
-                                              fontSize: '0.75rem',
-                                              '&:hover': {
-                                                background: `${eventType?.color}30`,
-                                                transform: 'scale(1.02)'
-                                              },
-                                              transition: 'all 0.2s ease',
-                                              animation: `${slideInUp} 0.3s ease ${eventIndex * 0.1}s both`
-                                            }}
-                                          >
-                                            <Typography variant="caption" fontWeight="bold" display="block">
-                                              {event.eventTitle}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                              {formatTime(event.start)}
-                                            </Typography>
-                                          </Box>
-                                        );
-                                      })}
-                                      {dayEvents.length > 3 && (
-                                        <Typography variant="caption" color="text.secondary" textAlign="center">
-                                          +{dayEvents.length - 3} עוד
-                                        </Typography>
-                                      )}
-                                      {dayEvents.length === 0 && (
-                                        <Typography variant="caption" color="text.secondary" textAlign="center" sx={{ py: 2 }}>
-                                          אין אירועים
-                                        </Typography>
-                                      )}
-                                    </Stack>
-                                  </CardContent>
-                                </MiniCalendarCard>
-                              </Zoom>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
+                    )}
+                    
+                    <Box sx={{ mt: 3 }}>
+                      <GlowingButton
+                        startIcon={<AddIcon />}
+                        onClick={() => console.log('Create new event for date:', selectedDate)}
+                        glowColor="#10b981"
+                      >
+                        ➕ צור אירוע חדש
+                      </GlowingButton>
                     </Box>
-                  </Fade>
+                  </Paper>
                 )}
-
-                {viewMode === 'month' && (
-                  <Fade in timeout={1000}>
-                    <Box>
-                      <Typography variant="h5" gutterBottom sx={{ 
-                        fontWeight: 700,
-                        color: '#667eea',
-                        mb: 3
-                      }}>
-                        📅 {selectedDate.toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })}
-                      </Typography>
-                      
-                      <MiniCalendarCard>
-                        <CardContent sx={{ p: 3 }}>
-                          <Grid container spacing={1}>
-                            {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map(day => (
-                              <Grid item xs key={day}>
-                                <Typography variant="subtitle2" textAlign="center" fontWeight="bold" color="text.secondary" sx={{ p: 1 }}>
-                                  {day}
-                                </Typography>
-                              </Grid>
-                            ))}
-                            {getMonthDays(selectedDate).map(({ date, isCurrentMonth }, index) => {
-                              const dayEvents = getEventsForDate(date).filter(event => {
-                                const typeMatch = !filters.eventTypeId || event.eventTypeId === parseInt(filters.eventTypeId);
-                                const employeeMatch = !filters.employeeId || event.employeeIds?.includes(parseInt(filters.employeeId));
-                                const kidMatch = !filters.kidId || event.kidIds?.includes(parseInt(filters.kidId));
-                                return typeMatch && employeeMatch && kidMatch;
-                              });
-                              
-                              const isToday = date.toDateString() === new Date().toDateString();
-                              const isSelected = date.toDateString() === selectedDate.toDateString();
-                              
-                              return (
-                                <Grid item xs key={index}>
-                                  <Box
-                                    onClick={() => setSelectedDate(new Date(date))}
-                                    sx={{
-                                      minHeight: 80,
-                                      p: 1,
-                                      border: '1px solid',
-                                      borderColor: isToday ? '#667eea' : 'grey.200',
-                                      borderRadius: '8px',
-                                      cursor: 'pointer',
-                                      background: isToday 
-                                        ? 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)'
-                                        : isSelected
-                                        ? 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%)'
-                                        : isCurrentMonth ? 'white' : 'grey.50',
-                                      opacity: isCurrentMonth ? 1 : 0.5,
-                                      '&:hover': {
-                                        background: 'linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(102,126,234,0.08) 100%)',
-                                        transform: 'scale(1.02)'
-                                      },
-                                      transition: 'all 0.2s ease'
-                                    }}
-                                  >
-                                    <Typography variant="body2" fontWeight={isToday || isSelected ? 'bold' : 'normal'} sx={{ mb: 1 }}>
-                                      {date.getDate()}
-                                    </Typography>
-                                    
-                                    <Stack spacing={0.5}>
-                                      {dayEvents.slice(0, 2).map((event, eventIndex) => {
-                                        const eventType = eventTypes?.find(type => type.eventTypeId === event.eventTypeId);
-                                        return (
-                                          <Box
-                                            key={event.eventId}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleEventClick(event);
-                                            }}
-                                            sx={{
-                                              fontSize: '0.7rem',
-                                              p: 0.5,
-                                              borderRadius: '4px',
-                                              background: eventType?.color,
-                                              color: 'white',
-                                              fontWeight: 600,
-                                              overflow: 'hidden',
-                                              textOverflow: 'ellipsis',
-                                              whiteSpace: 'nowrap',
-                                              '&:hover': {
-                                                opacity: 0.8
-                                              }
-                                            }}
-                                          >
-                                            {event.eventTitle}
-                                          </Box>
-                                        );
-                                      })}
-                                      {dayEvents.length > 2 && (
-                                        <Typography variant="caption" color="text.secondary">
-                                          +{dayEvents.length - 2}
-                                        </Typography>
-                                      )}
-                                    </Stack>
-                                  </Box>
-                                </Grid>
-                              );
-                            })}
-                          </Grid>
-                        </CardContent>
-                      </MiniCalendarCard>
-                    </Box>
-                  </Fade>
-                )}
-              </Grid>
-            </Grid>
+              </Box>
+            </Fade>
           </CardContent>
         </MainCard>
       </Fade>
 
-      {/* Event Details Dialog */}
+      {/* Event Details Dialog - Simplified */}
       <Dialog 
+      dir='rtl'
         open={eventDetailsDialog} 
         onClose={() => setEventDetailsDialog(false)}
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
@@ -1267,14 +780,14 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
       >
         {selectedEvent && (
           <>
-            <DialogTitle dir='rtl' sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
+            <DialogTitle sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
               <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
                 <Avatar sx={{ 
-                  width: 80, 
-                  height: 80,
+                  width: 60, 
+                  height: 60,
                   background: eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.color || '#667eea'
                 }}>
-                  <EventIcon sx={{ fontSize: '2.5rem' }} />
+                  <EventIcon sx={{ fontSize: '2rem' }} />
                 </Avatar>
                 <Box>
                   <Typography variant="h5" fontWeight="bold">
@@ -1285,157 +798,146 @@ const EnhancedCalendarSection = ({ onNavigateToFull }) => {
                     sx={{ 
                       background: eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.color,
                       color: 'white',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      mt: 1
                     }}
                   />
                 </Box>
               </Stack>
             </DialogTitle>
             
-            <DialogContent dir='rtl' sx={{ p: 4 }}>
-              <Grid container spacing={3}>
-                <Grid item size={{xs:12,md:6}}>
-                  <Paper elevation={2} sx={{ 
-                    p: 3, 
-                    borderRadius: '16px',
+            <DialogContent sx={{ p: 3 }}>
+              <Stack spacing={2}>
+                <Paper elevation={1} sx={{ 
+                  p: 2, 
+                  borderRadius: '12px',
                     background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)'
+                }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <TimeIcon color="primary" />
+                    <Box>
+                      <Typography variant="body1" fontWeight={600}>
+                        {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(selectedEvent.start).toLocaleDateString('he-IL')}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Paper>
+                
+                {selectedEvent.extendedProps.location && (
+                  <Paper elevation={1} sx={{ 
+                    p: 2, 
+                    borderRadius: '12px',
+                      background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%)'
                   }}>
-                    <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#667eea' }}>
-                      ⏰ פרטי זמן
-                    </Typography>
-                    <Stack spacing={2}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <TimeIcon color="primary" />
-                        <Typography variant="body1">
-                          {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <CalendarIcon color="primary" />
-                        <Typography variant="body1">
-                          {new Date(selectedEvent.start).toLocaleDateString('he-IL')}
-                        </Typography>
-                      </Stack>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <LocationIcon sx={{ color: '#10b981' }} />
+                      <Typography variant="body1">
+                        {selectedEvent.extendedProps.location}
+                      </Typography>
                     </Stack>
                   </Paper>
-                </Grid>
-                {selectedEvent.extendedProps.location && (
-                  <Grid item size={{xs:12,md:6}}>
-                    <Paper elevation={2} sx={{ 
-                      p: 3, 
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%)'
-                    }}>
-                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#10b981' }}>
-                        📍 מיקום
-                      </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <LocationIcon sx={{ color: '#10b981' }} />
-                        <Typography variant="body1">
-                          {selectedEvent.extendedProps.location}
-                        </Typography>
-                      </Stack>
-                    </Paper>
-                  </Grid>
                 )}
                 
                 {selectedEvent.extendedProps.description && (
-                  <Grid item size={{xs:12}}>
-                    <Paper elevation={2} sx={{ 
-                      p: 3, 
-                      borderRadius: '16px',
+                  <Paper elevation={1} sx={{ 
+                    p: 2, 
+                    borderRadius: '12px',
                       background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%)'
-                    }}>
-                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#f59e0b' }}>
-                        📝 תיאור
-                      </Typography>
-                      <Typography variant="body1">
-                        {selectedEvent.extendedProps.description}
-                      </Typography>
-                    </Paper>
-                  </Grid>
+                  }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      📝 תיאור:
+                    </Typography>
+                    <Typography variant="body1">
+                      {selectedEvent.extendedProps.description}
+                    </Typography>
+                  </Paper>
                 )}
                 
                 {(selectedEvent.extendedProps.kidIds?.length > 0 || selectedEvent.extendedProps.employeeIds?.length > 0) && (
-                  <Grid item size={{xs:12}}>
-                    <Paper elevation={2} sx={{ 
-                      p: 3, 
-                      borderRadius: '16px',
+                  <Paper elevation={1} sx={{ 
+                    p: 2, 
+                    borderRadius: '12px',
                       background: 'linear-gradient(135deg, rgba(139,69,19,0.1) 0%, rgba(139,69,19,0.05) 100%)'
-                    }}>
-                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#8b4513' }}>
-                        👥 משתתפים
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {selectedEvent.extendedProps.kidIds?.length > 0 && (
-                          <Grid item size={{xs:12,sm:6}}>
-                            <Typography variant="subtitle2" gutterBottom fontWeight="bold">
-                              ילדים:
-                            </Typography>
-                            <Stack spacing={1}>
-                              {selectedEvent.extendedProps.kidIds.map(kidId => {
-                                const kid = kids?.find(k => k.id === kidId);
-                                return kid ? (
-                                  <Chip 
-                                    key={kidId}
-                                    label={`${kid.firstName} ${kid.lastName}`}
-                                    size="small"
-                                    color="primary"
-                                    variant="outlined"
-                                  />
-                                ) : null;
-                              })}
-                            </Stack>
-                          </Grid>
-                        )}
-                        
-                        {selectedEvent.extendedProps.employeeIds?.length > 0 && (
-                          <Grid item size={{xs:12,sm:6}}>
-                            <Typography variant="subtitle2" gutterBottom fontWeight="bold">
-                              מטפלים:
-                            </Typography>
-                            <Stack spacing={1}>
-                              {selectedEvent.extendedProps.employeeIds.map(employeeId => {
-                                const employee = employees?.find(e => e.employeeId === employeeId);
-                                return employee ? (
-                                  <Chip 
-                                    key={employeeId}
-                                    label={`${employee.firstName} ${employee.lastName}`}
-                                    size="small"
-                                    color="secondary"
-                                    variant="outlined"
-                                  />
-                                ) : null;
-                              })}
-                            </Stack>
-                          </Grid>
-                        )}
-                      </Grid>
-                    </Paper>
-                  </Grid>
+                  }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
+                      👥 משתתפים:
+                    </Typography>
+                    <Stack spacing={1}>
+                      {selectedEvent.extendedProps.kidIds?.length > 0 && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            ילדים:
+                          </Typography>
+                          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 0.5 }}>
+                            {selectedEvent.extendedProps.kidIds.map(kidId => {
+                              const kid = kids?.find(k => k.id === kidId);
+                              return kid ? (
+                                <Chip 
+                                  key={kidId}
+                                  label={`${kid.firstName} ${kid.lastName}`}
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                />
+                              ) : null;
+                            })}
+                          </Stack>
+                        </Box>
+                      )}
+                      
+                      {selectedEvent.extendedProps.employeeIds?.length > 0 && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            מטפלים:
+                          </Typography>
+                          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 0.5 }}>
+                            {selectedEvent.extendedProps.employeeIds.map(employeeId => {
+                              const employee = employees?.find(e => e.employeeId === employeeId);
+                              return employee ? (
+                                <Chip 
+                                  key={employeeId}
+                                  label={`${employee.firstName} ${employee.lastName}`}
+                                  size="small"
+                                  color="secondary"
+                                  variant="outlined"
+                                />
+                              ) : null;
+                            })}
+                          </Stack>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Paper>
                 )}
-              </Grid>
+              </Stack>
             </DialogContent>
             
-            <DialogActions sx={{ p: 4, justifyContent: 'space-between' }}>
+            <DialogActions sx={{ p: 3, justifyContent: 'space-between' }}>
               <GlowingButton
                 onClick={() => setEventDetailsDialog(false)}
                 glowColor="#6b7280"
               >
                 ❌ סגור
               </GlowingButton>
-              <GlowingButton
-                onClick={() => console.log('Edit event:', selectedEvent)}
-                glowColor="#667eea"
-              >
-                ✏️ ערוך אירוע
-              </GlowingButton>
+             <GlowingButton
+  onClick={() => 
+    handleCreateEvent()
+  }
+  glowColor="#667eea"
+>
+  ✏️ ערוך אירוע
+</GlowingButton>
             </DialogActions>
           </>
         )}
       </Dialog>
+
+
     </GradientContainer>
   );
 };
 
-export default EnhancedCalendarSection;
+export default CalendarSection;
