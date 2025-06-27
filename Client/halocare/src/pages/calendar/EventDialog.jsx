@@ -311,7 +311,7 @@ const EventDialog = () => {
       <DialogContent sx={{ p: 4, mt: 2 }}>
         <Grid container spacing={3}>
           {/* Title and Event Type */}
-          <Grid item xs={12} md={7}>
+          <Grid item size={{xs:12,md:7}}>
             <StyledTextField
               label="כותרת האירוע"
               name="title"
@@ -331,7 +331,7 @@ const EventDialog = () => {
             />
           </Grid>
 
-          <Grid item xs={12} md={5}>
+          <Grid item size={{xs:12,md:5}}>
             <StyledFormControl fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
               <InputLabel>סוג אירוע</InputLabel>
               <Select
@@ -388,7 +388,7 @@ const EventDialog = () => {
           </Grid>
 
           {/* Date and time */}
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12,md:6}}>
             <StyledTextField
               label="תאריך ושעת התחלה"
               name="start"
@@ -407,7 +407,7 @@ const EventDialog = () => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12,md:6}}>
             <StyledTextField
               label="תאריך ושעת סיום"
               name="end"
@@ -427,7 +427,7 @@ const EventDialog = () => {
           </Grid>
 
           {/* Location */}
-          <Grid item xs={12}>
+          <Grid item size={{xs:12}}>
             <StyledTextField
               label="מיקום האירוע"
               name="location"
@@ -443,7 +443,7 @@ const EventDialog = () => {
           </Grid>
 
           {/* Participants */}
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12,md:6}}>
             <StyledFormControl fullWidth variant="outlined">
               <InputLabel>ילדים משתתפים</InputLabel>
               <Select
@@ -454,8 +454,9 @@ const EventDialog = () => {
                 label="ילדים משתתפים"
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {console.log(selected)}
                     {selected.map((value) => {
-                      const kid = kids.find(k => k.id === value);
+                      const kid = kids.find(k => (k.id === value && k.isActive));
                       return (
                         <ParticipantChip
                           key={value}
@@ -487,7 +488,7 @@ const EventDialog = () => {
                 }}
                 startAdornment={<ChildCareIcon sx={{ color: 'primary.main', mr: 1 }} />}
               >
-                {kids.map(kid => (
+                {kids.filter(kid => kid.isActive).map(kid => (
                   <MenuItem key={kid.id} value={kid.id}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
@@ -502,7 +503,7 @@ const EventDialog = () => {
           </Grid>
 
           {/* Staff */}
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12,md:6}}>
             <StyledFormControl fullWidth variant="outlined">
               <InputLabel>צוות משתתף</InputLabel>
               <Select
@@ -547,7 +548,7 @@ const EventDialog = () => {
                 }}
                 startAdornment={<PersonIcon sx={{ color: 'secondary.main', mr: 1 }} />}
               >
-                {employees.map(emp => (
+                {employees.filter(emp => emp.isActive).map(emp => (
                   <MenuItem key={emp.employeeId} value={emp.employeeId}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Avatar sx={{
@@ -566,7 +567,7 @@ const EventDialog = () => {
             </StyledFormControl>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item size={{xs:12}}>
             <StyledTextField
               label="תיאור מפורט"
               name="description"

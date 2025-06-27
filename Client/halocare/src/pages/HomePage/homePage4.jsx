@@ -66,15 +66,15 @@ const HomePage4 = () => {
       {/* לייאוט ראשי */}
       <Grid container spacing={3}>
         {/* עמודה ראשית - כיתות */}
-        <Grid item size={{sx:12 , lg:12}}>
+        {/* <Grid item size={{sx:12 , lg:12}}>
           <ClassroomsSection 
             onKidClick={handleKidClick}
             onViewAllKids={handleViewAllKids}
           />
-        </Grid>
+        </Grid> */}
 
         {/* עמודה ימנית - יומן */}
-        <Grid item size={{sx:12 , lg:4}}>
+        <Grid item size={{sx:12 , lg:8}}>
           <CalendarSection 
             onViewFullCalendar={handleViewFullCalendar}
             onEventClick={handleEventClick}

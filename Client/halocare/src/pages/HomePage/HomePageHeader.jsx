@@ -46,6 +46,7 @@ const HomePageHeader = ({ onRefresh }) => {
 
   return (
     <Paper
+    dir='rtl'
       elevation={3}
       sx={{
         p: 3,
@@ -66,7 +67,7 @@ const HomePageHeader = ({ onRefresh }) => {
             👋 ברוכה הבאה, מנהלת הגן
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            📅 {currentDate} • מעקב ובקרה יומית
+            📅 {currentDate}
           </Typography>
         </Box>
         

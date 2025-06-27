@@ -273,7 +273,7 @@ export const CalendarProvider = ({ children }) => {
       end: newEvent.end,
       location: newEvent.location || '',
       description: newEvent.description || '',
-      createdBy: newEvent.createdBy || 1,
+      createdBy: newEvent.createdBy || currentUser.id || 1,
       color: selectedType.color || '', 
       eventType: selectedType.eventType, 
       eventTypeId: parseInt(newEvent.eventTypeId), 

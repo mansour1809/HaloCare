@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import {useNavigate} from 'react-router-dom'
 import {
   Box,
   Grid,
@@ -12,8 +13,6 @@ import {
   Divider,
   Tooltip,
   Chip,
-  IconButton,
-  Badge,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +22,6 @@ import {
   ListItemAvatar,
   ListItemText,
   Switch,
-  FormControlLabel,
   TextField,
   InputAdornment,
   LinearProgress,
@@ -47,10 +45,8 @@ import {
   CheckCircle as PresentIcon,
   Cancel as AbsentIcon,
   QuestionMark as UnknownIcon,
-  Refresh as RefreshIcon,
   Search as SearchIcon,
   CalendarToday as CalendarIcon,
-  TrendingUp as TrendingIcon,
   Warning as WarningIcon,
   Call as CallIcon,
   Save as SaveIcon,
@@ -60,11 +56,14 @@ import {
   AutoAwesome as AwesomeIcon,
   Insights as InsightsIcon
 } from '@mui/icons-material';
+import {useAuth} from '../../components/login/AuthContext'
 import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { fetchAttendanceByDate, addAttendanceRecord, updateAttendanceRecord } from '../../Redux/features/attendanceSlice';
-import { exportAttendanceToPDF, exportQuickSummary } from '../../utils/attendanceExport';
+import { exportAttendanceToPDF } from '../../utils/attendanceExport';
 import { baseURL } from '../../components/common/axiosConfig';
+import Swal from 'sweetalert2';
+
 
 
 // 🎨 Stunning animations and styled components
@@ -256,8 +255,10 @@ const AnimatedChip = styled(Chip)(({ theme, color = 'primary' }) => ({
   }
 }));
 
-const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
+const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const {currentUser} = useAuth();
   
   // Redux state
   const { classes, status: classesStatus } = useSelector(state => state.classes);
@@ -366,18 +367,102 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
       });
       return;
     }
-
     const absentKids = Object.entries(attendanceUpdates).filter(([kidId, isPresent]) => !isPresent);
-    
     if (absentKids.length > 0) {
-      setSnackbar({
-        open: true,
-        message: 'שים לב: לא ניתן לרשום סיבת היעדרות במסך זה. לרישום מפורט, השתמש במסך הנוכחות המלא.',
-        severity: 'warning'
+      const result = await Swal.fire({
+        title: '⚠️ שים לב',
+        html: `
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 18px; margin-bottom: 15px; color: #f59e0b; font-weight: bold;">
+              יש ${absentKids.length} ילדים שסומנו כנעדרים
+            </div>
+            <div style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              במסך זה לא ניתן לרשום סיבת היעדרות מפורטת.<br>
+              לרישום מלא של סיבות היעדרות, מומלץ לעבור למסך הנוכחות המלא.
+            </div>
+            <div style="font-size: 14px; color: #6b7280; background: #f3f4f6; padding: 15px; border-radius: 10px;">
+              💡 <strong>טיפ:</strong> במסך הנוכחות המלא תוכל לרשום סיבות מפורטות, לשלוח הודעות להורים ולנהל נוכחות בצורה מתקדמת יותר
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: '💾 שמור בכל מקרה',
+        cancelButtonText: '❌ ביטול',
+        denyButtonText: '📊 עבור למסך נוכחות מלא',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        denyButtonColor: '#f59e0b',
+        customClass: {
+          popup: 'swal-rtl',
+          title: 'swal-title-rtl',
+          htmlContainer: 'swal-html-rtl',
+          confirmButton: 'swal-btn-confirm',
+          cancelButton: 'swal-btn-cancel',
+          denyButton: 'swal-btn-deny'
+        },
+        didOpen: () => {
+          const style = document.createElement('style');
+          style.innerHTML = `
+            .swal-rtl {
+              direction: rtl;
+              text-align: right;
+              border-radius: 20px !important;
+              box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+            }
+            .swal-title-rtl {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-weight: bold;
+            }
+            .swal-html-rtl {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .swal-btn-confirm, .swal-btn-cancel, .swal-btn-deny {
+              border-radius: 12px !important;
+              font-weight: 600 !important;
+              padding: 12px 24px !important;
+              margin: 2px 8px !important;
+              transition: all 0.3s ease !important;
+            }
+              
+            .swal-btn-confirm:hover {
+              transform: translateY(-2px) !important;
+              box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
+            }
+            .swal-btn-deny:hover {
+              transform: translateY(-2px) !important;
+              box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4) !important;
+            }
+            .swal-btn-cancel:hover {
+              transform: translateY(-2px) !important;
+              box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4) !important;
+            }
+          `;
+          document.head.appendChild(style);
+        }
       });
+
+      if (result.isConfirmed) {
+        // the user clicked "save anyway"
+        setSavingAttendance(true);
+      } else if (result.isDenied) {
+        // navigate to full attendance page
+        navigate('/reports/attendance');
+        return;
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'הפעולה בוטלה',
+          severity: 'info'
+        });
+        return;
+      }
+    } else {
+      setSavingAttendance(true);
     }
 
-    setSavingAttendance(true);
+
     
     try {
       const updates = Object.entries(attendanceUpdates);
@@ -391,7 +476,7 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             data: {
               ...existingRecord,
               isPresent,
-              reportedBy: 1
+              reportedBy: currentUser.id
             }
           })).unwrap();
         } else {
@@ -400,7 +485,7 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             attendanceDate: selectedDate,
             isPresent,
             absenceReason: isPresent ? null : 'לא צוין',
-            reportedBy: 1
+            reportedBy: currentUser.id
           })).unwrap();
         }
       }
@@ -474,10 +559,6 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     }
   };
 
-  const navigateToFullAttendance = () => {
-    // Navigate to full attendance screen
-    console.log('Navigate to full attendance model');
-  };
 
   const classesData = getClassData();
   const isLoading = classesStatus === 'loading' || kidsStatus === 'loading' || attendanceStatus === 'loading';
@@ -554,25 +635,7 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               </Stack>
               
               <Stack direction="row" spacing={2}>
-                {/* <FormControlLabel disabled='true'
-                  control={
-                    <Switch
-                      checked={autoRefresh}
-                      onChange={(e) => setAutoRefresh(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="רענון אוטומטי"
-                /> */}
-                
-                {/* <GlowingButton
-                  startIcon={<RefreshIcon />}
-                  onClick={() => dispatch(fetchAttendanceByDate(selectedDate))}
-                  size="large"
-                >
-                  רענן
-                </GlowingButton> */}
-                
+               
                 <GlowingButton
                   startIcon={<ExportIcon />}
                   onClick={handleExportPDF}
@@ -585,7 +648,7 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
-                  onClick={navigateToFullAttendance}
+                  onClick={() => navigate('/reports/attendance')}
                   glowColor="#f59e0b"
                   size="large"
                 >
@@ -953,16 +1016,7 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                               {showClassDetails[classData.classId] ? '🔼 הסתר פרטים' : '🔽 הצג פרטים'}
                             </GlowingButton>
                             
-                            {classData.stats.absent > 0 && (
-                              <GlowingButton
-                                size="small"
-                                startIcon={<InsightsIcon />}
-                                onClick={navigateToFullAttendance}
-                                glowColor="#f59e0b"
-                              >
-                                📋 ניהול נעדרות
-                              </GlowingButton>
-                            )}
+                           
                           </Stack>
 
                           {/* Expanded Details */}
@@ -1221,4 +1275,4 @@ const EnhancedClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   );
 };
 
-export default EnhancedClassroomsSection;
+export default ClassroomsSection;
