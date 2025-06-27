@@ -250,10 +250,9 @@ const navigate = useNavigate();
     }
     return week;
   };
-const handleCreateEvent = () => {
-  console.log('ukbjn')
+const handleCreateEvent = (isEdit=false) => {
   Swal.fire({
-    title: '🗓️ יצירת אירוע חדש',
+    title: isEdit ? '🗓️ עריכת אירוע ' : '🗓️ יצירת אירוע חדש',
     html: 'ליצירה ועריכה של אירועים,<br>עבור ליומן המלא עם כל הכלים המתקדמים!',
     icon: 'info',
     showCancelButton: true,
@@ -923,8 +922,11 @@ const handleCreateEvent = () => {
                 ❌ סגור
               </GlowingButton>
              <GlowingButton
-  onClick={() => 
-    handleCreateEvent()
+  onClick={() => {
+    setEventDetailsDialog(false)
+  handleCreateEvent(true)
+  }
+    
   }
   glowColor="#667eea"
 >
