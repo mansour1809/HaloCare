@@ -323,29 +323,25 @@ const HomePage = () => {
       label: 'ילדים פעילים',
       value: '24',
       icon: <GroupIcon fontSize="large" />,
-      color: 'primary',
-      onClick: () => navigate('/kids/list')
+      color: 'primary'
     },
     {
       label: 'הושלמו השבוע',
       value: '8',
       icon: <CompleteIcon fontSize="large" />,
-      color: 'success',
-      onClick: () => navigate('/reports/attendance')
+      color: 'success'
     },
     {
       label: 'ילדים בתהליך',
       value: '12',
       icon: <ProgressIcon fontSize="large" />,
-      color: 'warning',
-      onClick: () => navigate('/reports/treatments')
+      color: 'warning'
     },
     {
       label: 'אחוזי השלמה',
       value: '85%',
       icon: <TrendingIcon fontSize="large" />,
-      color: 'error',
-      onClick: () => navigate('/reports')
+      color: 'error'
     }
   ];
 

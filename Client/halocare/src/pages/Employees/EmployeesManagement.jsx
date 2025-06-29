@@ -451,7 +451,7 @@ const EmployeesManagement = () => {
                       icon={<GroupIcon />}
                       label={`${stats.total} סה"כ עובדים`}
                       sx={{
-                        background: 'rgba(255,255,255,0.2)',
+                        background: 'rgba(255, 255, 255, 0.34)',
                         backdropFilter: 'blur(10px)',
                         color: 'white',
                         border: '1px solid rgba(255,255,255,0.3)',
@@ -467,10 +467,10 @@ const EmployeesManagement = () => {
                       icon={<CelebrationIcon />}
                       label={`${stats.active} פעילים`}
                       sx={{
-                        background: 'rgba(16, 185, 129, 0.2)',
+                        background: 'rgba(16, 185, 129, 0.46)',
                         backdropFilter: 'blur(10px)',
                         color: 'white',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        border: '1px solid rgba(16, 185, 129, 0.52)',
                         fontWeight: 600,
                         fontSize: '1rem',
                         px: 2,
@@ -483,7 +483,7 @@ const EmployeesManagement = () => {
                       icon={<StarIcon />}
                       label={`${stats.roles} תפקידים`}
                       sx={{
-                        background: 'rgba(255, 112, 67, 0.2)',
+                        background: 'rgba(255, 111, 67, 0.8)',
                         backdropFilter: 'blur(10px)',
                         color: 'white',
                         border: '1px solid rgba(255, 112, 67, 0.3)',

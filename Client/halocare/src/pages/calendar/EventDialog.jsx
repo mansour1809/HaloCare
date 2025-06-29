@@ -23,8 +23,7 @@ import {
   Card,
   CardContent,
   Slide,
-  alpha,
-  useTheme
+  alpha
 } from '@mui/material';
 import {
   Close as CloseIcon,
