@@ -1,16 +1,16 @@
-// components/kids/DynamicFormRenderer.jsx - עיצוב משופר
-import { useState, useEffect } from 'react';
+// components/kids/DynamicFormRenderer.jsx 
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Typography, Paper, Button, LinearProgress,
   CircularProgress, Alert, Snackbar, Container,
-  Stack, useTheme
+   Stack, useTheme
 } from '@mui/material';
 import {
   Save as SaveIcon,
   ArrowBack as BackIcon,
 } from '@mui/icons-material';
-import { styled, alpha } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 
 import { 
   fetchFormQuestions 
@@ -28,174 +28,57 @@ import QuestionRenderer from '../kids/QuestionRenderer';
 import MultipleEntriesComponent from './MultipleEntriesComponent';
 import { useAuth } from '../../components/login/AuthContext';
 
-// מסך מלא מותאם RTL עם רקע מדהים
-const FullScreenContainer = styled(Box)(({ theme }) => ({
-  minHeight: '100vh',
-  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
-  backgroundSize: '400% 400%',
-  animation: 'gradientShift 20s ease infinite',
-  display: 'flex',
-  flexDirection: 'column',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
-    pointerEvents: 'none',
-    zIndex: 1,
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
-  }
-}));
 
-// טופס מעוצב עם עיצוב זכוכית
 const FormPaper = styled(Paper)(({ theme }) => ({
   maxWidth: '900px',
   margin: '0 auto',
   dir: 'rtl',
   padding: theme.spacing(6, 8),
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: 25,
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+  backgroundColor: '#ffffff',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+  border: '1px solid #e0e0e0',
+  borderRadius: 0,
   position: 'relative',
-  zIndex: 2,
   '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '4px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-    borderRadius: '25px 25px 0 0',
-  },
-  '&::after': {
     content: '""',
     position: 'absolute',
     left: theme.spacing(4),
     top: 0,
     bottom: 0,
-    width: '3px',
-    background: 'linear-gradient(180deg, #4cb5c3, transparent)',
-    opacity: 0.4,
-    borderRadius: '2px'
+    width: '2px',
+    backgroundColor: '#ff4444',
+    opacity: 0.3
   }
 }));
 
-// כותרת הטופס עם אפקטים
+// Official Form Header
 const FormHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
-  position: 'relative',
-  paddingBottom: theme.spacing(3),
-  marginBottom: theme.spacing(4),
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '80px',
-    height: '3px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043)',
-    borderRadius: '2px',
-  }
 }));
 
-// אזור השאלות עם אפקטים
+
+// Questions Area
 const QuestionsSection = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(4),
   '& > *:not(:last-child)': {
-    marginBottom: theme.spacing(3)
+    marginBottom: theme.spacing(2)
   },
-  dir: 'rtl',
-  position: 'relative',
+  dir: 'rtl'
 }));
 
-// כותרת קטגוריה מעוצבת
+// Category Header
 const CategoryHeader = styled(Typography)(({ theme }) => ({
-  fontSize: '1.2rem',
+  fontSize: '1.1rem',
   fontWeight: 'bold',
   color: theme.palette.primary.main,
   marginTop: theme.spacing(4),
-  marginBottom: theme.spacing(3),
-  paddingBottom: theme.spacing(2),
-  borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+  marginBottom: theme.spacing(2),
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px solid ${theme.palette.primary.main}`,
   textAlign: 'left',
-  dir: 'rtl',
-  position: 'relative',
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, transparent 100%)`,
-  padding: theme.spacing(2),
-  borderRadius: '12px 12px 0 0',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    right: 0,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: '4px',
-    height: '60%',
-    background: `linear-gradient(180deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-    borderRadius: '2px',
-  }
+  dir: 'rtl'
 }));
 
-// כפתור מונפש מדהים
-const AnimatedButton = styled(Button)(({ theme }) => ({
-  borderRadius: 16,
-  padding: '14px 28px',
-  fontWeight: 600,
-  fontSize: '1.1rem',
-  position: 'relative',
-  overflow: 'hidden',
-  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-  boxShadow: '0 8px 24px rgba(76, 181, 195, 0.4)',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: '0 16px 40px rgba(76, 181, 195, 0.5)',
-    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-    transition: 'all 0.6s ease',
-  },
-  '&:hover::after': {
-    left: '100%',
-  }
-}));
-
-// אלרט מעוצב
-const StyledAlert = styled(Alert)(({ theme }) => ({
-  borderRadius: 16,
-  border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.light, 0.2)} 0%, ${alpha(theme.palette.warning.main, 0.1)} 100%)`,
-  backdropFilter: 'blur(10px)',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '4px',
-    height: '100%',
-    background: theme.palette.warning.main,
-    borderRadius: '16px 0 0 16px',
-  }
-}));
 
 const DynamicFormRenderer = ({ 
   kidId, 
@@ -220,7 +103,8 @@ const DynamicFormRenderer = ({
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [multipleEntriesData, setMultipleEntriesData] = useState({});
 
-  const {currentUser} = useAuth();
+    const {currentUser} = useAuth();
+
 
   useEffect(() => {
      if (kidId && formId) {
@@ -464,250 +348,202 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
   // Loading screen
   if (questionsStatus === 'loading') {
     return (
-      <FullScreenContainer>
-        <Container maxWidth="md" sx={{ py: 4, textAlign: 'center', position: 'relative', zIndex: 2 }}>
-          <CircularProgress size={80} sx={{ color: 'white', mb: 3 }} />
-          <Typography variant="h6" sx={{ mt: 2, color: 'white', fontWeight: 600 }}>
-            טוען את השאלות...
-          </Typography>
-        </Container>
-      </FullScreenContainer>
+      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          טוען את השאלות...
+        </Typography>
+      </Container>
     );
   }
 
   if (!currentFormQuestions.length) {
     return (
-      <FullScreenContainer>
-        <Container maxWidth="md" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-          <Alert 
-            severity="info" 
-            sx={{ 
-              textAlign: 'center',
-              borderRadius: 3,
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(20px)',
-            }}
-          >
-            <Typography variant="h6">אין שאלות בטופס זה</Typography>
-            <Typography>נראה שהטופס עדיין לא הוגדר או שאין בו שאלות פעילות.</Typography>
-          </Alert>
-        </Container>
-      </FullScreenContainer>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Alert severity="info" sx={{ textAlign: 'center' }}>
+          <Typography variant="h6">אין שאלות בטופס זה</Typography>
+          <Typography>נראה שהטופס עדיין לא הוגדר או שאין בו שאלות פעילות.</Typography>
+        </Alert>
+      </Container>
     );
   }
 
   return (
-    <FullScreenContainer>
-      <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-        <FormPaper elevation={24}>
-          {/* Form Title */}
-          <FormHeader>
-            <Typography variant="h4" fontWeight="700" sx={{ 
-              mt: 0.5,
-              background: 'linear-gradient(45deg, #4cb5c3, #ff7043)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 3
-            }}>
-              {formData?.formName || 'טופס מילוי פרטים'}
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <FormPaper elevation={3}>
+        {/* Form Title */}
+        <FormHeader>
+         
+          
+          <Typography variant="h5" fontWeight="600" sx={{ mt: 0.5 }}>
+            {formData?.formName || 'טופס מילוי פרטים'}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 ,mt:2}}>
+          <Typography variant="body2" fontWeight="medium">
+            התקדמות הטופס:
+          </Typography>
+          <Box sx={{ flexGrow: 1, mx: 2 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={progress} 
+              sx={{ height: 8, borderRadius: 4 }}
+            />
+          </Box>
+          <Typography variant="body2" color="primary" fontWeight="bold">
+            {progress}%
+          </Typography>
+        </Box>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            {Object.keys(localAnswers).filter(qNo => localAnswers[qNo]?.answer).length} מתוך {currentFormQuestions.length} שאלות נענו
+          </Typography>
+          
+         
+        </Box>
+
+        
+       {hasChanges && !readOnly && (
+          <Alert 
+            severity="warning" 
+            sx={{mt:1, mb: 3, bgcolor: 'warning.light', color: 'warning.dark' }}
+          >
+            <Typography fontWeight="600">
+              יש שינויים שלא נשמרו - אל תשכח לשמור!
             </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, mt: 2 }}>
-              <Typography variant="body1" fontWeight="600" color="primary.main">
-                התקדמות הטופס:
-              </Typography>
-              <Box sx={{ flexGrow: 1, mx: 2 }}>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={progress} 
-                  sx={{ 
-                    height: 12, 
-                    borderRadius: 6,
-                    background: alpha('#4cb5c3', 0.2),
-                    '& .MuiLinearProgress-bar': {
-                      background: 'linear-gradient(90deg, #4cb5c3, #ff7043)',
-                      borderRadius: 6,
-                    }
-                  }}
-                />
-              </Box>
-              <Typography variant="h6" color="primary" fontWeight="bold">
-                {progress}%
-              </Typography>
+          </Alert>
+        )}
+        </FormHeader>
+
+      
+       
+
+        {/* Form Questions */}
+        <QuestionsSection>
+          {Object.entries(groupedQuestions).map(([category, questions], categoryIndex) => (
+            <Box key={category} dir="rtl" >
+              {/* Category title if there is more than one category */}
+              {Object.keys(groupedQuestions).length > 1 && (
+                <CategoryHeader >
+                  {category}
+                </CategoryHeader>
+              )}
+              
+              {/* Category Questions */}
+              {questions
+                .sort((a, b) => a.questionNo - b.questionNo)
+                .map((question, index) => {
+                  const { answer, other } = getAnswerValue(question.questionNo);
+                  const questionIndex = [...currentFormQuestions]
+                    .sort((a, b) => a.questionNo - b.questionNo)
+                    .findIndex(q => q.questionNo === question.questionNo) + 1;
+                  
+                  return (
+                    <Box key={question.questionNo}>
+                      <QuestionRenderer
+                        key={question.questionNo}
+                        question={question}
+                        value={answer}
+                        otherValue={other}
+                        onChange={(value, otherValue) =>
+                          handleQuestionChange(
+                            question.questionNo,
+                            value,
+                            otherValue
+                          )
+                        }
+                        readOnly={readOnly}
+                        questionIndex={questionIndex}
+                      />
+
+                      {question.requiresMultipleEntries &&
+                        localAnswers[question.questionNo]?.answer === "כן" && (
+                          <Box sx={{ mt: 2, mr: 4 }}>
+                            <MultipleEntriesComponent
+                              question={question}
+                              existingAnswer={{
+                                multipleEntries: JSON.stringify(
+                                  multipleEntriesData[question.questionNo] || []
+                                ),
+                              }}
+                              onDataChange={(data) =>
+                                handleMultipleEntriesChange(
+                                  question.questionNo,
+                                  data
+                                )
+                              }
+                            />
+                          </Box>
+                        )}
+                    </Box>
+                  );
+                })}
             </Box>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {Object.keys(localAnswers).filter(qNo => localAnswers[qNo]?.answer).length} מתוך {currentFormQuestions.length} שאלות נענו
-              </Typography>
-            </Box>
+          ))}
+        </QuestionsSection>
 
-            {hasChanges && !readOnly && (
-              <StyledAlert 
-                severity="warning" 
-                sx={{ mt: 2, position: 'relative' }}
-              >
-                <Typography fontWeight="600">
-                  יש שינויים שלא נשמרו - אל תשכח לשמור!
-                </Typography>
-              </StyledAlert>
-            )}
-          </FormHeader>
-
-          {/* Form Questions */}
-          <QuestionsSection>
-            {Object.entries(groupedQuestions).map(([category, questions], categoryIndex) => (
-              <Box key={category} dir="rtl">
-                {/* Category title if there is more than one category */}
-                {Object.keys(groupedQuestions).length > 1 && (
-                  <CategoryHeader>
-                    {category}
-                  </CategoryHeader>
-                )}
-                
-                {/* Category Questions */}
-                {questions
-                  .sort((a, b) => a.questionNo - b.questionNo)
-                  .map((question, index) => {
-                    const { answer, other } = getAnswerValue(question.questionNo);
-                    const questionIndex = [...currentFormQuestions]
-                      .sort((a, b) => a.questionNo - b.questionNo)
-                      .findIndex(q => q.questionNo === question.questionNo) + 1;
-                    
-                    return (
-                      <Box key={question.questionNo}>
-                        <QuestionRenderer
-                          key={question.questionNo}
-                          question={question}
-                          value={answer}
-                          otherValue={other}
-                          onChange={(value, otherValue) =>
-                            handleQuestionChange(
-                              question.questionNo,
-                              value,
-                              otherValue
-                            )
-                          }
-                          readOnly={readOnly}
-                          questionIndex={questionIndex}
-                        />
-
-                        {question.requiresMultipleEntries &&
-                          localAnswers[question.questionNo]?.answer === "כן" && (
-                            <Box sx={{ mt: 2, mr: 4 }}>
-                              <MultipleEntriesComponent
-                                question={question}
-                                existingAnswer={{
-                                  multipleEntries: JSON.stringify(
-                                    multipleEntriesData[question.questionNo] || []
-                                  ),
-                                }}
-                                onDataChange={(data) =>
-                                  handleMultipleEntriesChange(
-                                    question.questionNo,
-                                    data
-                                  )
-                                }
-                              />
-                            </Box>
-                          )}
-                      </Box>
-                    );
-                  })}
-              </Box>
-            ))}
-          </QuestionsSection>
-
-          {/* Action Buttons */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mt: 5,
-            pt: 4,
-            borderTop: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -1.5,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '60px',
-              height: '3px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              borderRadius: '2px',
-            }
-          }}>
-            {onBack && (
+      
+        {/* Action Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mt: 4,
+          pt: 3,
+          borderTop: `2px solid ${theme.palette.divider}`
+        }}>
+          {onBack && (
+            <Button
+              variant="outlined"
+              startIcon={<BackIcon />}
+              onClick={onBack}
+              size="large"
+            >
+              חזרה
+            </Button>
+          )}
+          
+          <Stack direction="row" spacing={2}>
+      
+            {!readOnly && (
               <Button
-                variant="outlined"
-                startIcon={<BackIcon />}
-                onClick={onBack}
+                variant="contained"
+                startIcon={saveStatus === 'loading' ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                onClick={handleSaveAll}
+                disabled={saveStatus === 'loading' || !hasChanges}
                 size="large"
-                sx={{
-                  borderRadius: 3,
-                  borderWidth: 2,
-                  '&:hover': {
-                    borderWidth: 2,
-                    transform: 'translateY(-2px)',
-                  }
-                }}
+                sx={{ minWidth: 160 }}
               >
-                חזרה
+                {saveStatus === 'loading' ? 'שומר...' : 'שמור הטופס'}
               </Button>
             )}
-            
-            <Stack direction="row" spacing={3}>
-              {!readOnly && (
-                <AnimatedButton
-                  variant="contained"
-                  startIcon={saveStatus === 'loading' ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
-                  onClick={handleSaveAll}
-                  disabled={saveStatus === 'loading' || !hasChanges}
-                  size="large"
-                  sx={{ minWidth: 180, fontSize: '1.1rem' }}
-                >
-                  {saveStatus === 'loading' ? 'שומר...' : 'שמור הטופס'}
-                </AnimatedButton>
-              )}
-            </Stack>
-          </Box>
+          </Stack>
+        </Box>
 
-          {/* Save Errors */}
-          {saveError && (
-            <Alert 
-              severity="error" 
-              sx={{ 
-                mt: 3,
-                borderRadius: 3,
-                border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
-              }}
-            >
-              {saveError}
-            </Alert>
-          )}
-        </FormPaper>
-
-        {/* Notifications */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={4000}
-          onClose={closeNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={closeNotification} 
-            severity={notification.severity}
-            variant="filled"
-            sx={{ borderRadius: 3 }}
-          >
-            {notification.message}
+        {/* Save Errors */}
+        {saveError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {saveError}
           </Alert>
-        </Snackbar>
-      </Container>
-    </FullScreenContainer>
+        )}
+      </FormPaper>
+
+      {/* Notifications */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={closeNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={closeNotification} 
+          severity={notification.severity}
+          variant="filled"
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 
