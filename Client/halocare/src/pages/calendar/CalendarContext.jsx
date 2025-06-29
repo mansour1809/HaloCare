@@ -131,6 +131,7 @@ export const CalendarProvider = ({ children }) => {
   const addEvent = useCallback(async (eventData) => {
 
       const serverEventData = prepareEventData(eventData);
+      console.log(serverEventData)
       const response = await axios.post('/Events', serverEventData);
       dispatch(fetchEvents());
       return response.data;
@@ -272,7 +273,7 @@ export const CalendarProvider = ({ children }) => {
       end: newEvent.end,
       location: newEvent.location || '',
       description: newEvent.description || '',
-      createdBy: newEvent.createdBy || 1,
+      createdBy: newEvent.createdBy || currentUser.id || 1,
       color: selectedType.color || '', 
       eventType: selectedType.eventType, 
       eventTypeId: parseInt(newEvent.eventTypeId), 
@@ -439,17 +440,7 @@ export const CalendarProvider = ({ children }) => {
   );
 };
 
-
-
-
-
-
-
-
-
-
-
-// הוק שימושי לשימוש בקונטקסט
+// Useful hook for using the context
 export const useCalendar = () => {
   const context = useContext(CalendarContext);
 

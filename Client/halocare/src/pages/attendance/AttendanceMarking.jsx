@@ -519,10 +519,10 @@ const AttendanceMarking = () => {
       
       {/* Class tables */}
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
+        <Grid item size={{xs:12 , sm:6}}>
           {renderTable(class1, "כיתה א'", 1)}
         </Grid>
-        <Grid item xs={12} lg={6}>
+        <Grid item size={{xs:12 , sm:6}}>
           {renderTable(class2, "כיתה ב'", 2)}
         </Grid>
       </Grid>

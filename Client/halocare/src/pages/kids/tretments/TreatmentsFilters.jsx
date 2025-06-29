@@ -413,7 +413,6 @@ const TreatmentsFilters = () => {
                       variant="outlined"
                       size="small"
                       startIcon={<SaveIcon />}
-                      onClick={saveFiltersPreset}
                       disabled={activeFiltersCount === 0}
                     >
                       שמור פילטרים

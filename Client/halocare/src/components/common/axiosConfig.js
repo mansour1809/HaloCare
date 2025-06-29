@@ -1,5 +1,6 @@
 // src/services/axiosConfig.js
 import axios from 'axios';
+// import {useNavigate} from 'react-router-dom';
 
 // Set the base URL
 axios.defaults.baseURL = 'https://localhost:7225/api';
@@ -42,6 +43,8 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
+      // const navigate = useNavigate();
+
       // 🔥 Extended check for public pages
       const currentPath = window.location.pathname + window.location.hash;
       const publicPaths = ['/login', '/reset-password', '/parent-form'];
@@ -50,6 +53,7 @@ axios.interceptors.response.use(
       // 🔥 Redirect to login only if it's not a public page
       if (!isPublicPage) {
         window.location.href = '/bgroup3/test2/halocare/#/login';
+        // navigate('/login')
       }
 
       return Promise.reject({ silent: true });

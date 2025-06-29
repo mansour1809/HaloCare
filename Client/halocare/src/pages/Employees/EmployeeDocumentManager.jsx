@@ -524,7 +524,7 @@ const EmployeeDocumentManager = ({
 
             {/* Content card with tabs */}
             <Zoom in timeout={1000}>
-              <ContentCard sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <ContentCard dir='rtl' sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Tabs
                   value={currentTab}
                   onChange={(e, newValue) => setCurrentTab(newValue)}

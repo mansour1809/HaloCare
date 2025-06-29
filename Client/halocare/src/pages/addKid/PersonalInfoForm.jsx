@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Grid, Typography, TextField, MenuItem, FormControl,
+   Typography, TextField, MenuItem, FormControl,
   InputLabel, Select, Button, Box, Avatar, FormHelperText,
   Alert, AlertTitle, InputAdornment, Tooltip, CircularProgress,
   Paper, Chip, RadioGroup, FormControlLabel, Radio,
   Zoom, Card, CardContent, Badge,
   IconButton, Switch, Collapse, useTheme
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
 import {
@@ -623,7 +624,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         <Collapse in={expandedSections.childDetails}>
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}} >
                 <TextField
                   fullWidth
                   id="firstName"
@@ -650,7 +651,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <TextField
                   fullWidth
                   id="lastName"
@@ -675,7 +676,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <TextField
                   fullWidth
                   id="idNumber"
@@ -698,7 +699,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <DatePicker
                   label="תאריך לידה"
                   value={formik.values.birthDate}
@@ -724,7 +725,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <FormControl
                   fullWidth
                   required
@@ -770,7 +771,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   )}
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <FormControl
                   fullWidth
                   error={
@@ -813,7 +814,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{xs:12 , sm:6}}>
                 <TextField
                   fullWidth
                   id="address"

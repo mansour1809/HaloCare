@@ -123,7 +123,7 @@ namespace halocare.Controllers
                 _employeeService.UpdatePassword(employee.EmployeeId, reset.NewPassword);
 
 
-                return Ok(new { success = true, message = "הסיסמה עודכנה בהצלחה" });
+                 return Ok(new { success = true, message = "הסיסמה עודכנה בהצלחה" });
             }
             catch (Exception ex)
             {

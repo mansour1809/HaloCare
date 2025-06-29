@@ -397,7 +397,7 @@ export const EmployeesProvider = ({ children }) => {
       {children}
       
       {/* CSS SweetAlert2 */}
-      <style jsx global>{`
+      <style >{`
         .rtl-popup {
           direction: rtl !important;
           font-family: 'Rubik', 'Heebo', Arial, sans-serif !important;

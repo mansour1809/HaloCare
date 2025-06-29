@@ -130,6 +130,15 @@ namespace halocare.BL.Services
         {
             hashedPassword = HashPassword(hashedPassword);
             return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
+        } 
+        
+        //public bool UpdatePasswordProvidedCurrent(int employeeId, string hashedPassword)
+        //{
+        //    return _employeeRepository.UpdatePassword(employeeId, hashedPassword);
+        //}
+        public bool UpdateEmail(int employeeId, string newEmail)
+        {
+            return _employeeRepository.UpdateEmail(employeeId, newEmail);
         }
 
         private string HashPassword(string password)

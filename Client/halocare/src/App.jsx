@@ -33,7 +33,9 @@ import SystemSettings from './pages/SystemSetting/SystemSettings';
 import KidOnboarding from './pages/addKid/KidOnboarding';
 import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
 import EmployeeProfile from './pages/Employees/EmployeeProfile';
-import PersonalInfoForm from './pages/addKid/PersonalInfoForm';
+import HomePage2 from './pages/HomePage/HomePage2';
+import HomePage3 from './pages/HomePage/HomePage3';
+import HomePage4 from './pages/HomePage/homePage4';
 
 // יצירת ערכת נושא
 const theme = createTheme({
@@ -102,9 +104,7 @@ const AppContent = () => {
     showLayout
   });
   
-  // 🔥 הדפסה לדיבוג
-  console.log('Current hash:', window.location.hash, 'Is public:', isPublicPath, 'Is authenticated:', isAuthenticated);
-  
+
   return (
     <Router>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -271,6 +271,30 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                       <EmployeeProfile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/homepage2"
+                element={
+                  <PrivateRoute>
+                      <HomePage2 />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/homepage3"
+                element={
+                  <PrivateRoute>
+                      <HomePage3 />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/homepage4"
+                element={
+                  <PrivateRoute>
+                      <HomePage4 />
                   </PrivateRoute>
                 }
               />

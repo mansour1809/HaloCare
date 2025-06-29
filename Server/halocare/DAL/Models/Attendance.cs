@@ -8,7 +8,7 @@ namespace halocare.DAL.Models
         public int KidId { get; set; }
         public DateTime AttendanceDate { get; set; }
         public bool IsPresent { get; set; }
-        public string AbsenceReason { get; set; }
+        public string? AbsenceReason { get; set; }
         public int ReportedBy { get; set; }
     }
 }
