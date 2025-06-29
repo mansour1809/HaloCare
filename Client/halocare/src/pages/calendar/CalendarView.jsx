@@ -285,6 +285,7 @@ const LoadingCard = styled(Card)(({ theme }) => ({
   borderRadius: 20,
   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
   position: 'relative',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',

@@ -3,7 +3,7 @@ import {
   Typography, Box, Container, Card, CardContent,
   Fade, Zoom, Avatar, Stack, Chip, useTheme, alpha
 } from "@mui/material";
-import { 
+import {
   HowToReg as AttendanceIcon,
   Assessment as ReportsIcon,
   Analytics as AnalyticsIcon,
@@ -178,7 +178,7 @@ const AttendanceDashboard = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, [dispatch]);
 
@@ -189,20 +189,20 @@ const AttendanceDashboard = () => {
 
   // Tab data
   const tabs = [
-    { 
-      icon: <AttendanceIcon />, 
+    {
+      icon: <AttendanceIcon />,
       label: 'סימון נוכחות',
       color: '#667eea',
       description: 'סמן נוכחות יומית לילדים'
     },
-    { 
-      icon: <ReportsIcon />, 
+    {
+      icon: <ReportsIcon />,
       label: 'דוחות נוכחות',
       color: '#10b981',
       description: 'צפה והפק דוחות נוכחות'
     },
-    { 
-      icon: <AnalyticsIcon />, 
+    {
+      icon: <AnalyticsIcon />,
       label: 'אנליטיקה',
       color: '#f59e0b',
       description: 'ניתוח נתוני נוכחות וטרנדים'
@@ -215,9 +215,9 @@ const AttendanceDashboard = () => {
         <GradientContainer maxWidth="xl" dir="rtl">
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
             <Card sx={{ p: 4, textAlign: 'center' }}>
-              <Avatar sx={{ 
-                width: 80, 
-                height: 80, 
+              <Avatar sx={{
+                width: 80,
+                height: 80,
                 margin: '0 auto 16px',
                 background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
                 animation: 'pulse 2s infinite'
@@ -259,10 +259,10 @@ const AttendanceDashboard = () => {
                 <CalendarIcon sx={{ fontSize: '3rem', color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
                 מערכת ניהול נוכחות
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  color: 'rgba(255,255,255,0.9)', 
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'rgba(255,255,255,0.9)',
                   mt: 1,
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                 }}
@@ -276,21 +276,21 @@ const AttendanceDashboard = () => {
           <Zoom in timeout={1000}>
             <Card sx={{ mb: 4 }}>
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ 
-                  display: 'flex', 
+                <Typography variant="h6" gutterBottom sx={{
+                  display: 'flex',
                   alignItems: 'center',
                   fontWeight: 600,
                   color: 'primary.main'
                 }}>
                   <TrendingUpIcon sx={{ mr: 1 }} />
-                  מה תוכל לעשות 
+                  מה תוכל לעשות
                 </Typography>
-                
+
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mt: 2 }}>
                   {tabs.map((tab, index) => (
-                    <Card 
+                    <Card
                       key={index}
-                      sx={{ 
+                      sx={{
                         flex: 1,
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
@@ -304,8 +304,8 @@ const AttendanceDashboard = () => {
                       }}
                       onClick={() => setTabValue(index)}
                     >
-                      <CardContent sx={{ p: 2, textAlign: 'center' ,height:'20'}}>
-                        <Avatar sx={{ 
+                      <CardContent sx={{ p: 2, textAlign: 'center', height: '20' }}>
+                        <Avatar sx={{
                           background: `linear-gradient(45deg, ${tab.color} 30%, ${alpha(tab.color, 0.8)} 90%)`,
                           width: 48,
                           height: 48,
@@ -320,17 +320,17 @@ const AttendanceDashboard = () => {
                         <Typography variant="body2" color="text.secondary">
                           {tab.description}
                         </Typography>
-                        
+
                         {tabValue === index && (
-                          <Chip 
-                            label="פעיל כעת" 
-                            size="small" 
-                            sx={{ 
+                          <Chip
+                            label="פעיל כעת"
+                            size="small"
+                            sx={{
                               mt: 1,
                               background: tab.color,
                               color: 'white',
                               fontWeight: 600
-                            }} 
+                            }}
                           />
                         )}
                       </CardContent>
@@ -340,7 +340,7 @@ const AttendanceDashboard = () => {
               </CardContent>
             </Card>
           </Zoom>
-          
+
           {/* Tab content */}
           <Fade in timeout={1400}>
             <ContentCard>
@@ -358,15 +358,15 @@ const AttendanceDashboard = () => {
                     <AttendanceReports />
                   </Box>
                 )}
-                
+
                 {/* Tab content for analytics */}
                 {tabValue === 2 && (
                   <Box sx={{ p: 3 }}>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        display: 'flex', 
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{
+                        display: 'flex',
                         alignItems: 'center',
                         fontWeight: 600,
                         color: 'warning.main',
@@ -381,23 +381,6 @@ const AttendanceDashboard = () => {
                 )}
               </CardContent>
             </ContentCard>
-          </Fade>
-
-          {/* Footer information */}
-          <Fade in timeout={1600}>
-            <Card sx={{ 
-              mt: 4, 
-              background: 'rgba(255, 255, 255, 0.9)',
-              '&::before': {
-                background: 'linear-gradient(90deg, #6b7280, #9ca3af, #d1d5db)',
-              }
-            }}>
-              <CardContent sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  💡 טיפ: השתמש במערכת באופן יומיומי לקבלת נתונים מדויקים ותובנות משמעותיות על נוכחות הילדים
-                </Typography>
-              </CardContent>
-            </Card>
           </Fade>
         </GradientContainer>
       </AttendanceProvider>

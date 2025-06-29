@@ -49,7 +49,7 @@ import { fetchEmployees } from '../../Redux/features/employeesSlice';
 import EventsCarousel from './EventsCarousel';
 import Swal from 'sweetalert2';
 
-// 🎨 Amazing animations
+// animations
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
@@ -368,7 +368,7 @@ const handleCreateEvent = (isEdit=false) => {
                     WebkitTextFillColor: 'transparent',
                     mb: 1
                   }}>
-                    יומן הגן ✨
+                    יומן הגן
                   </Typography>
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Chip 

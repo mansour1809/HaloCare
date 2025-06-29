@@ -614,7 +614,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                     WebkitTextFillColor: 'transparent',
                     mb: 1
                   }}>
-                    כיתות הגן ✨
+                    כיתות הגן 
                   </Typography>
                   <Stack direction="row" spacing={2} alignItems="center">
                     <AnimatedChip 
