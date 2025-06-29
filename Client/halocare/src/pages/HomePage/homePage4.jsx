@@ -74,7 +74,7 @@ const HomePage4 = () => {
         </Grid>
 
         {/* עמודה ימנית - יומן */}
-        <Grid item size={{sx:12 , lg:8}}>
+        <Grid item size={{sx:12 , lg:5}}>
           <CalendarSection 
             onViewFullCalendar={handleViewFullCalendar}
             onEventClick={handleEventClick}
@@ -82,14 +82,14 @@ const HomePage4 = () => {
         </Grid>
 
         {/* שורה תחתונה - קליטה וטיפולים */}
-        <Grid item size={{sx:12 , lg:6}}>
+        <Grid item size={{sx:12 , lg:4}}>
           <OnboardingSection 
             onViewFullOnboarding={handleViewFullOnboarding}
             onKidOnboardingClick={handleKidOnboardingClick}
           />
         </Grid>
 
-        <Grid item size={{sx:12 , lg:6}}>
+        <Grid item size={{sx:12 , lg:8}}>
           <TreatmentsSection 
             onViewAllTreatments={handleViewAllTreatments}
           />

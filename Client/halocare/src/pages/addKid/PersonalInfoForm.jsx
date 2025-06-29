@@ -813,99 +813,230 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                     {photoPreview ? "🔄 החלף תמונה" : "📸 העלאת תמונה"}
                   </UploadButton>
 
-                  {/* הצגת שם הקובץ אם נבחר */}
-                  {photoFile && (
-                    <Fade in>
-                      <Typography variant="caption" display="block" sx={{ 
-                        mt: 2, 
-                        textAlign: 'center',
-                        color: 'text.secondary',
-                        background: 'rgba(76, 181, 195, 0.1)',
-                        padding: '8px 16px',
-                        borderRadius: 20,
-                        border: '1px solid rgba(76, 181, 195, 0.2)'
-                      }}>
-                        📁 {photoFile.name} ({Math.round(photoFile.size / 1024)} KB)
-                      </Typography>
-                    </Fade>
-                  )}
-                </ProfilePhotoContainer>
+      {/* Section 3: Secondary Parent Details (Optional) */}
+      <AnimatedSection expanded={expandedSections.secondaryParent}>
+        <SectionHeader onClick={() => toggleSection("secondaryParent")}>
+          <SectionIcon expanded={expandedSections.secondaryParent}>
+            <PersonAddIcon />
+          </SectionIcon>
+          <SectionTitle
+            variant="h6"
+            expanded={expandedSections.secondaryParent}
+          >
+            פרטי הורה משני
+            <Chip
+              label="אופציונלי"
+              size="small"
+              color={expandedSections.secondaryParent ? "info" : "default"}
+              sx={{ ml: 1, fontSize: "0.75rem" }}
+            />
+          </SectionTitle>
+          <Tooltip title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
+            <InfoIcon
+              fontSize="small"
+              sx={{ mx: 1, color: theme.palette.info.main }}
+            />
+          </Tooltip>
+          <Box sx={{ ml: "auto" }}>
+            <IconButton
+              size="small"
+              color={expandedSections.secondaryParent ? "primary" : "default"}
+              sx={{
+                transform: expandedSections.secondaryParent
+                  ? "rotate(-90deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.3s ease",
+              }}
+            >
+              <NextIcon />
+            </IconButton>
+          </Box>
+        </SectionHeader>
 
-                {/* סקציה 1: פרטי הילד */}
-                <AnimatedSection expanded={expandedSections.childDetails}>
-                  <SectionHeader onClick={() => toggleSection("childDetails")}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SectionIcon expanded={expandedSections.childDetails}>
-                        <PersonIcon sx={{ fontSize: 28 }} />
-                      </SectionIcon>
-                      <SectionTitle variant="h6" expanded={expandedSections.childDetails}>
-                        👶 פרטי הילד
-                        <Chip
-                          label="פרטים בסיסיים"
-                          size="small"
-                          color={expandedSections.childDetails ? "primary" : "default"}
-                          sx={{ ml: 2, fontWeight: 600 }}
-                          icon={<StarIcon />}
-                        />
-                      </SectionTitle>
-                    </Box>
-                    <IconButton
-                      size="small"
-                      color={expandedSections.childDetails ? "primary" : "default"}
-                      sx={{
-                        transform: expandedSections.childDetails
-                          ? "rotate(-90deg)"
-                          : "rotate(0deg)",
-                        transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                        background: expandedSections.childDetails 
-                          ? 'rgba(76, 181, 195, 0.1)' 
-                          : 'transparent',
-                        '&:hover': {
-                          background: 'rgba(76, 181, 195, 0.2)',
-                        }
-                      }}
-                    >
-                      <NextIcon />
-                    </IconButton>
-                  </SectionHeader>
+        <Collapse in={expandedSections.secondaryParent}>
+          <CardContent>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="parent2FirstName"
+                  name="parent2FirstName"
+                  label="שם פרטי"
+                  placeholder="שם פרטי ההורה"
+                  value={formik.values.parent2FirstName}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.parent2FirstName &&
+                    Boolean(formik.errors.parent2FirstName)
+                  }
+                  helperText={
+                    formik.touched.parent2FirstName &&
+                    formik.errors.parent2FirstName
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
 
-                  <Collapse in={expandedSections.childDetails}>
-                    <CardContent sx={{ p: 4 }}>
-                      <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            id="firstName"
-                            name="firstName"
-                            label="שם פרטי"
-                            placeholder="שם פרטי של הילד"
-                            value={formik.values.firstName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={
-                              formik.touched.firstName && Boolean(formik.errors.firstName)
-                            }
-                            helperText={
-                              formik.touched.firstName && formik.errors.firstName
-                            }
-                            required
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PersonIcon color="primary" />
-                                </InputAdornment>
-                              ),
-                            }}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                '&:hover .MuiOutlinedInput-notchedOutline': {
-                                  borderColor: '#4cb5c3',
-                                  borderWidth: 2,
-                                },
-                              }
-                            }}
-                          />
-                        </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="parent2LastName"
+                  name="parent2LastName"
+                  label="שם משפחה"
+                  placeholder="שם משפחה ההורה"
+                  value={formik.values.parent2LastName}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.parent2LastName &&
+                    Boolean(formik.errors.parent2LastName)
+                  }
+                  helperText={
+                    formik.touched.parent2LastName &&
+                    formik.errors.parent2LastName
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="parent2Mobile"
+                  name="parent2Mobile"
+                  label="טלפון נייד"
+                  placeholder="05X-XXXXXXX"
+                  value={formik.values.parent2Mobile}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.parent2Mobile &&
+                    Boolean(formik.errors.parent2Mobile)
+                  }
+                  helperText={
+                    formik.touched.parent2Mobile && formik.errors.parent2Mobile
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CallIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="parent2Email"
+                  name="parent2Email"
+                  label="דוא״ל"
+                  type="email"
+                  placeholder="example@mail.com"
+                  value={formik.values.parent2Email}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.parent2Email &&
+                    Boolean(formik.errors.parent2Email)
+                  }
+                  helperText={
+                    formik.touched.parent2Email && formik.errors.parent2Email
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="parent2Address"
+                  name="parent2Address"
+                  label="כתובת (אם שונה מכתובת הילד)"
+                  placeholder="רחוב, מספר בית, שכונה"
+                  value={formik.values.parent2Address}
+                  onChange={formik.handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <HomeIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="parent2CityName-label">עיר הורה</InputLabel>
+                  <Select
+                    labelId="parent2CityName-label"
+                    id="parent2CityName"
+                    name="parent2CityName"
+                    value={formik.values.parent2CityName}
+                    onChange={formik.handleChange}
+                    label="עיר הורה"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <CityIcon color="info" fontSize="small" />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="">
+                      <em>זהה לעיר הילד</em>
+                    </MenuItem>
+                    {citiesStatus === "loading" ? (
+                      <MenuItem value="" disabled>
+                        <CircularProgress size={20} />
+                        טוען ערים...
+                      </MenuItem>
+                    ) : (
+                      cities.map((city) => (
+                        <MenuItem key={city.id || city.name} value={city.name}>
+                          {city.name}
+                        </MenuItem>
+                      ))
+                    )}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Collapse>
+      </AnimatedSection>
+
+      {/* Summary and Completion */}
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Alert
+          severity={isFormFilled ? "info" : "warning"}
+          variant="outlined"
+          sx={{ borderRadius: 2 }}
+          icon={isFormFilled ? <InfoIcon /> : <InfoIcon />}
+        >
+          <AlertTitle>
+            {isFormFilled ? "הטופס מוכן לשמירה" : "יש להשלים את הטופס"}
+          </AlertTitle>
+          {isFormFilled
+            ? "השלמת את מילוי הטופס. לאחר שמירה תועבר לשלב הבא בתהליך קליטת הילד."
+            : "יש למלא את כל שדות החובה (מסומנים ב-*) לפני המשך התהליך."}
+        </Alert>
+      </Box>
 
                         <Grid item xs={12} sm={6}>
                           <TextField
