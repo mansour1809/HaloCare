@@ -343,41 +343,6 @@ const ProgressLogo = ({
                 ))}
               </Grid>
 
-              {/* Gneral statistics*/}
-              {/* <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'grey.200' }}>
-                <Grid container spacing={2} justifyContent="center">
-                  <Grid item>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="success.main" fontWeight="bold">
-                        {onboardingData.completedForms}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        הושלמו
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary.main" fontWeight="bold">
-                        {onboardingData.forms?.filter(f => f.status === 'InProgress').length || 0}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        בתהליך
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="info.main" fontWeight="bold">
-                        {onboardingData.forms?.filter(f => f.status === 'SentToParent').length || 0}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        אצל הורים
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box> */}
             </>
           )}
         </FormsSummary>
