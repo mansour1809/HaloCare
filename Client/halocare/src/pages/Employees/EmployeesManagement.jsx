@@ -396,13 +396,12 @@ const EmployeesManagement = () => {
                 <ModernHeader elevation={0}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h4" sx={{ 
-                      fontWeight: 800,
+                      fontWeight: 700,
                       color: 'white',
                       textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                       display: 'flex',
                       alignItems: 'center'
                     }}>
-                      {/* <GroupIcon sx={{ mr: 2, fontSize: '3rem' }} /> */}
                       👥 ניהול עובדים
                     </Typography>
 

@@ -301,7 +301,7 @@ const KidOnboarding = () => {
                       onClick={handleBackToDashboard}
                       sx={{ minWidth: 120 }}
                     >
-                      חזרה לדשבורד
+                      חזרה לתהליך הקליטה
                     </Button>
                   </Box>
                 </Box>

@@ -537,12 +537,12 @@ const KidsManagement = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Box>
                 <Typography variant="h4" sx={{ 
-                  fontWeight: 'bold', 
+                  fontWeight: '700', 
                   color: 'white', 
                   mb: 1,
                   textShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}>
-                  ניהול ילדים
+                 👦 ניהול ילדים
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   מעקב אחר תהליכי קליטה וניהול פרטי ילדים במערכת
@@ -685,14 +685,14 @@ const KidsManagement = () => {
                     color: 'primary.main'
                   }
                 }}>
-                  <TableCell>ילד</TableCell>
-                  <TableCell>גיל</TableCell>
-                  <TableCell>ת"ז</TableCell>
-                  <TableCell>מגדר</TableCell>
-                  <TableCell>הורה ראשי</TableCell>
-                  <TableCell>סטטוס קליטה</TableCell>
-                  <TableCell>התקדמות מפורטת</TableCell>
-                  <TableCell>פעולות</TableCell>
+                  <TableCell>👦 שם מלא</TableCell>
+                  <TableCell>🎂 גיל</TableCell>
+                  <TableCell>🆔 ת"ז</TableCell>
+                  <TableCell>👤 מגדר</TableCell>
+                  <TableCell>👪 הורה ראשי</TableCell>
+                  <TableCell>🚀 סטטוס קליטה</TableCell>
+                  <TableCell>⏳ התקדמות מפורטת</TableCell>
+                  <TableCell>👁️ צפייה בקליטה</TableCell>
                   <TableCell>⚡ פעולות</TableCell>
                 </TableRow>
               </TableHead>

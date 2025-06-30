@@ -705,16 +705,16 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 }
               }}>
                 <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
-                  <AutoAwesome sx={{ fontSize: 40, color: '#4cb5c3' }} />
+                  {/* <AutoAwesome sx={{ fontSize: 40, color: '#4cb5c3' }} /> */}
                   <Typography variant="h4" sx={{ 
-                    fontWeight: 800,
+                    fontWeight: 700,
                     background: 'linear-gradient(45deg, #4cb5c3, #ff7043)',
                     backgroundClip: 'text',
                     color: 'transparent',
                   }}>
-                    {isEditMode ? '✏️ עריכת פרטי ילד' : '🌟 קליטת ילד חדש'}
+                    {isEditMode ? '✏️ עריכת פרטי ילד' : ' קליטת ילד חדש'}
                   </Typography>
-                  <Celebration sx={{ fontSize: 40, color: '#ff7043' }} />
+                  {/* <Celebration sx={{ fontSize: 40, color: '#ff7043' }} /> */}
                 </Stack>
                 <Typography variant="h6" color="text.secondary">
                   {isEditMode 
@@ -1075,7 +1075,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                               ) : (
                                 cities.map((city) => (
                                   <MenuItem key={city.id || city.name} value={city.cityName}>
-                                    🏘️ {city.cityName}
+                                    {city.cityName}
                                   </MenuItem>
                                 ))
                               )}
@@ -1117,7 +1117,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                             error={formik.touched.hName && Boolean(formik.errors.hName)}
                             required
                           >
-                            <InputLabel id="hName-label">🏥 קופת חולים</InputLabel>
+                            <InputLabel id="hName-label"> קופת חולים</InputLabel>
                             <Select
                               labelId="hName-label"
                               id="hName"
@@ -1134,7 +1134,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                             >
                               {healthInsurances.map((insurance) => (
                                 <MenuItem key={insurance.hName} value={insurance.hName}>
-                                  🏥 {insurance.hName}
+                                  {insurance.hName}
                                 </MenuItem>
                               ))}
                             </Select>
@@ -1148,7 +1148,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         {classes && classes.length > 0 && (
                           <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                              <InputLabel id="classId-label">📚 כיתה</InputLabel>
+                              <InputLabel id="classId-label"> כיתה</InputLabel>
                               <Select
                                 labelId="classId-label"
                                 id="classId"
@@ -1164,7 +1164,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                               >
                                 {classes.map((classItem) => (
                                   <MenuItem key={classItem.classId} value={classItem.classId}>
-                                    📚 {classItem.className}
+                                     {classItem.className}
                                   </MenuItem>
                                 ))}
                               </Select>
@@ -1218,9 +1218,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 <AnimatedSection expanded={expandedSections.primaryParent}>
                   <SectionHeader onClick={() => toggleSection("primaryParent")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SectionIcon expanded={expandedSections.primaryParent}>
-                        <PersonIcon sx={{ fontSize: 28 }} />
-                      </SectionIcon>
                       <SectionTitle variant="h6" expanded={expandedSections.primaryParent}>
                         👨‍👩‍👧‍👦 פרטי הורה ראשי
                         <Chip
@@ -1390,7 +1387,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
 
                         <Grid item xs={12} sm={6}>
                           <FormControl fullWidth>
-                            <InputLabel id="parent1CityName-label">🏙️ עיר הורה</InputLabel>
+                            <InputLabel id="parent1CityName-label">עיר</InputLabel>
                             <Select
                               labelId="parent1CityName-label"
                               id="parent1CityName"
@@ -1415,7 +1412,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                               ) : (
                                 cities.map((city) => (
                                   <MenuItem key={city.id || city.name} value={city.name}>
-                                    🏘️ {city.name}
+                                   {city.name}
                                   </MenuItem>
                                 ))
                               )}
@@ -1431,9 +1428,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 <AnimatedSection expanded={expandedSections.secondaryParent}>
                   <SectionHeader onClick={() => toggleSection("secondaryParent")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SectionIcon expanded={expandedSections.secondaryParent}>
-                        <PersonAddIcon sx={{ fontSize: 28 }} />
-                      </SectionIcon>
                       <SectionTitle
                         variant="h6"
                         expanded={expandedSections.secondaryParent}
@@ -1607,7 +1601,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
 
                         <Grid item xs={12} sm={6}>
                           <FormControl fullWidth>
-                            <InputLabel id="parent2CityName-label">🏙️ עיר הורה</InputLabel>
+                            <InputLabel id="parent2CityName-label"> עיר </InputLabel>
                             <Select
                               labelId="parent2CityName-label"
                               id="parent2CityName"
@@ -1632,7 +1626,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                               ) : (
                                 cities.map((city) => (
                                   <MenuItem key={city.id || city.name} value={city.name}>
-                                    🏘️ {city.name}
+                                   {city.name}
                                   </MenuItem>
                                 ))
                               )}
@@ -1658,7 +1652,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         border: `2px solid ${isFormFilled ? 'rgba(16, 185, 129, 0.3)' : 'rgba(76, 181, 195, 0.3)'}`,
                         boxShadow: `0 4px 15px ${isFormFilled ? 'rgba(16, 185, 129, 0.2)' : 'rgba(76, 181, 195, 0.2)'}`,
                       }}
-                      icon={isFormFilled ? <CelebrationIcon /> : <InfoIcon />}
+                      
                     >
                       <AlertTitle sx={{ 
                         fontWeight: 700,
@@ -1787,7 +1781,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         {isLoading 
                           ? "⏳ שומר..." 
                           : isEditMode 
-                            ? "✏️ עדכן פרטים" 
+                            ? " עדכן פרטים" 
                             : "💾 שמור פרטים והמשך"
                         }
                       </AnimatedButton>

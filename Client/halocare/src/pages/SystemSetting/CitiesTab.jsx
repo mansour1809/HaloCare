@@ -50,7 +50,7 @@ const rtlTheme = createTheme({
   typography: {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     h1: {
-      fontWeight: 800,
+      fontWeight: 700,
       fontSize: '3.5rem',
     },
     h4: {
@@ -359,7 +359,7 @@ const CitiesTab = () => {
                       <StarIcon sx={{ fontSize: '3rem', mr: 2, color: '#fbbf24' }} />
                       <Box textAlign="center">
                         <Typography variant="h4" sx={{ 
-                          fontWeight: 800,
+                          fontWeight: 700,
                           background: 'linear-gradient(45deg, #ffffff, #f0f9ff)',
                           backgroundClip: 'text',
                           textFillColor: 'transparent',
