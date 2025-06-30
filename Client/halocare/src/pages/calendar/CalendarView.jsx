@@ -25,15 +25,41 @@ import {
 import { styled } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 
-
 import { useCalendar } from './CalendarContext';
 
-// Styled container for FullCalendar
+// Styled container for FullCalendar - רוחב מלא מתוקן
 const CalendarContainer = styled(Box)(() => ({
+  width: '100% !important',
+  minWidth: '100% !important',
+  maxWidth: '100% !important',
+  overflow: 'hidden',
   
   '& .fc': {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     background: 'transparent',
+    width: '100% !important',
+    minWidth: '100% !important',
+  },
+
+  // תיקון הטבלה לרוחב מלא
+  '& .fc-view-harness': {
+    width: '100% !important',
+    minWidth: '100% !important',
+  },
+  
+  '& .fc-scrollgrid': {
+    width: '100% !important',
+    tableLayout: 'fixed !important',
+    
+  },
+  
+  '& .fc-scrollgrid-section table': {
+    width: '100% !important',
+  },
+  
+  '& .fc-col-header-cell, & .fc-daygrid-day, & .fc-timegrid-col': {
+    width: 'auto !important',
+    minWidth: '14.28% !important', // 100% / 7 ימים
   },
 
   // Custom styling for all FullCalendar components
@@ -303,8 +329,6 @@ const LoadingCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-
-
 const CalendarView = ({
   calendarRef,
   events,
@@ -392,9 +416,8 @@ const CalendarView = ({
   }
   
   return (
-
     <Fade in timeout={800}>
-      <CalendarContainer>
+      <CalendarContainer sx={{ width: '100%', minWidth: '100%' }}>
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -417,8 +440,10 @@ const CalendarView = ({
           allDaySlot={false}
           slotMinTime="07:00:00"
           slotMaxTime="19:00:00"
-          height="auto"
-          aspectRatio={1.8}
+          height="100vh"
+          aspectRatio={3.0}
+          contentHeight="auto"
+          expandRows={true}
           handleWindowResize={true}
           stickyHeaderDates={true}
           nowIndicator={true}
@@ -442,16 +467,19 @@ const CalendarView = ({
             day: 'יום'
           }}
           
-            // Date format in the title
+          // Date format in the title
           views={{
             timeGridDay: {
-              titleFormat: { day: 'numeric', month: 'long', year: 'numeric' }
+              titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },
+              aspectRatio: 1.8
             },
             timeGridWeek: {
-              titleFormat: { day: 'numeric', month: 'long', year: 'numeric' }
+              titleFormat: { day: 'numeric', month: 'long', year: 'numeric' },
+              aspectRatio: 3.2
             },
             dayGridMonth: {
-              titleFormat: { month: 'long', year: 'numeric' }
+              titleFormat: { month: 'long', year: 'numeric' },
+              aspectRatio: 2.5
             }
           }}
           
@@ -462,7 +490,6 @@ const CalendarView = ({
         />
       </CalendarContainer>
     </Fade>
-
   );
 };
 
