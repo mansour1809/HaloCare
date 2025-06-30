@@ -1,4 +1,4 @@
-// src/pages/kids/PersonalInfoForm.jsx - עיצוב מתקדם מבוסס על Employee components
+// src/pages/kids/PersonalInfoForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -8,7 +8,7 @@ import {
   Paper, Chip, RadioGroup, FormControlLabel, Radio,
   Zoom, Card, CardContent, Badge,
   IconButton, Switch, Collapse, useTheme, Container,
-  Fade, Stack, alpha, Divider
+  Fade, Stack, alpha
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -31,7 +31,6 @@ import {
   Face as FaceIcon,
   NavigateNext as NextIcon,
   School as SchoolIcon,
-  AutoAwesome as AutoAwesomeIcon,
   Star as StarIcon,
   Celebration as CelebrationIcon,
   Celebration,
@@ -51,7 +50,6 @@ import { createKidWithParents, updateKidWithParents, fetchKids } from '../../Red
 import { uploadDocument, deleteDocument, fetchDocumentsByKidId } from '../../Redux/features/documentsSlice';
 import { baseURL } from "../../components/common/axiosConfig";
 
-// יצירת theme מתקדם עם תמיכה ב-RTL כמו ב-Employee components
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -123,7 +121,6 @@ const rtlTheme = createTheme({
   }
 });
 
-// קונטיינר מסך מלא עם רקע מתקדם
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -144,7 +141,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס עם אפקטים מתקדמים
+// Styled Card
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 24,
   background: 'rgba(255, 255, 255, 0.95)',
@@ -165,7 +162,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// סקציה מונפשת עם אפקטים
+// Animated Section
 const AnimatedSection = styled(Card)(({ theme, expanded }) => ({
   marginBottom: theme.spacing(3),
   borderRadius: 20,
@@ -527,12 +524,12 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     }
   }, [data, isEditMode]);
 
-  // טיפול בהעלאת תמונה
+  // Change picture
   const handlePhotoChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // בדיקת סוג קובץ
+    
     if (!file.type.startsWith('image/')) {
       Swal.fire({
         icon: 'error',
@@ -543,7 +540,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       return;
     }
 
-    // בדיקת גודל קובץ
     if (file.size > 5 * 1024 * 1024) {
       Swal.fire({
         icon: 'error',
@@ -581,7 +577,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         }
       }
 
-      // הכנת נתוני העלאה
+      // profile Data
       const profileData = {
         document: {
           KidId: kidId.toString(),
@@ -591,7 +587,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         file: photoFile
       };
 
-      // העלאת התמונה
+      // upload picture
       const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
 
     } catch (error) {
@@ -608,7 +604,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     }
   };
 
-  // יישום Formik
+  // Formik
   const formik = useFormik({
     initialValues: getInitialValues(),
     validationSchema: validationSchema,
@@ -810,7 +806,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                     variant="contained"
                     component="label"
                     htmlFor="kid-photo-upload"
-                    startIcon={uploadingPhoto ? <CircularProgress size={20} color="inherit" /> : <UploadIcon />}
                     disabled={uploadingPhoto}
                   >
                     {photoPreview ? "🔄 החלף תמונה" : "📸 העלאת תמונה"}
@@ -838,9 +833,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 <AnimatedSection expanded={expandedSections.childDetails}>
                   <SectionHeader onClick={() => toggleSection("childDetails")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <SectionIcon expanded={expandedSections.childDetails}>
-                        <PersonIcon sx={{ fontSize: 28 }} />
-                      </SectionIcon>
                       <SectionTitle variant="h6" expanded={expandedSections.childDetails}>
                         👶 פרטי הילד
                         <Chip
@@ -1060,7 +1052,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                             }
                             required
                           >
-                            <InputLabel id="cityName-label">🏙️ עיר</InputLabel>
+                            <InputLabel id="cityName-label"> עיר</InputLabel>
                             <Select
                               labelId="cityName-label"
                               id="cityName"

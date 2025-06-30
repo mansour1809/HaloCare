@@ -1,4 +1,4 @@
-// src/pages/LoginPage.jsx - גרסה מתוקנת
+// src/pages/LoginPage.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { 
   TextField, 
@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import { useAuth } from './AuthContext';
 
-// קומפוננטת אלמנט רוחף
+// Floating Element
 const FloatingElement = ({ children, delay = 0, duration = 4, top, left, zIndex = 1 }) => {
   return (
     <Box
@@ -47,7 +47,7 @@ const FloatingElement = ({ children, delay = 0, duration = 4, top, left, zIndex 
   );
 };
 
-// קומפוננטת טקסט קשת בענן
+// Rainbow Text
 const RainbowText = ({ children, variant = "h4", sx = {}, ...props }) => (
   <Typography
     variant={variant}
@@ -117,10 +117,8 @@ const LoginPage = () => {
   ];
 
   useEffect(() => {
-    // נקה localStorage
     localStorage.clear();
     
-    // טיפול בפרמטרי URL
     const hash = window.location.hash; 
     const queryString = hash.includes('?') ? hash.split('?')[1] : '';
     const params = new URLSearchParams(queryString);
@@ -131,7 +129,6 @@ const LoginPage = () => {
       passwordRef.current?.focus();
     }
 
-    // מעקב עכבר
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -190,7 +187,7 @@ const LoginPage = () => {
         }
       }}
     >
-      {/* רקע עם אלמנטים רחפים */}
+      {/* background*/}
       <Box
         sx={{
           position: 'absolute',
@@ -202,7 +199,7 @@ const LoginPage = () => {
           zIndex: 1
         }}
       >
-        {/* עננים רחפים */}
+        {/* clouds */}
         {clouds.map((cloud, index) => (
           <FloatingElement
             key={`cloud-${index}`}
@@ -223,7 +220,7 @@ const LoginPage = () => {
           </FloatingElement>
         ))}
 
-        {/* פריטי בית ספר רחפים */}
+        {/* floating items */}
         {floatingItems.map((item, index) => (
           <FloatingElement
             key={`item-${index}`}
@@ -244,7 +241,7 @@ const LoginPage = () => {
           </FloatingElement>
         ))}
 
-        {/* עוקב עכבר אינטראקטיבי */}
+        {/* interactiv mouse */}
         <Box
           sx={{
             position: 'absolute',
@@ -260,7 +257,7 @@ const LoginPage = () => {
         />
       </Box>
 
-      {/* תוכן ראשי */}
+      {/* Main content */}
       <Box
         sx={{
           display: "flex",
@@ -272,7 +269,7 @@ const LoginPage = () => {
           position: 'relative'
         }}
       >
-        {/* אזור הלוגו עם אנימציות */}
+        {/* Logo*/}
         <Box
           sx={{
             textAlign: "center",
@@ -330,7 +327,7 @@ const LoginPage = () => {
           </Box>
         </Box>
 
-        {/* טופס התחברות קסום */}
+        {/* Connection form */}
         <Paper
           elevation={0}
           sx={{
@@ -365,10 +362,10 @@ const LoginPage = () => {
             }
           }}
         >
-          {/* כותרת ברוכים הבאים */}
+          {/* Main headline*/}
           <Box sx={{ mb: 4, position: 'relative' }}>
             <RainbowText variant="h4" gutterBottom>
-              🌟 ברוכים הבאים 🌟
+               ברוכים הבאים 
             </RainbowText>
             <Typography
               variant="h6"
@@ -384,11 +381,11 @@ const LoginPage = () => {
                 }
               }}
             >
-              🎒 למערכת גן הילדים שלנו 🎒
+              למערכת גן הילדים שלנו 
             </Typography>
           </Box>
 
-          {/* הודעת שגיאה */}
+          {/* error */}
           {error && (
             <Alert 
               severity="error" 
@@ -407,10 +404,10 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          {/* שדה אימייל קסום */}
+          {/* Email */}
           <TextField
             fullWidth
-            label="✉️ אימייל"
+            label="אימייל"
             variant="outlined"
             margin="normal"
             value={email}
@@ -454,10 +451,10 @@ const LoginPage = () => {
             }}
           />
 
-          {/* שדה סיסמה קסום */}
+          {/* Password */}
           <TextField
             fullWidth
-            label="🔐 סיסמה"
+            label="סיסמה"
             variant="outlined"
             margin="normal"
             type={showPassword ? "text" : "password"}
@@ -521,7 +518,7 @@ const LoginPage = () => {
             }}
           />
 
-          {/* קישור שכחת סיסמה */}
+          {/* forgot my password link */}
           <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 3, mt: 1 }}>
             <Typography
               variant="body2"
@@ -543,7 +540,7 @@ const LoginPage = () => {
             </Typography>
           </Box>
 
-          {/* כפתור התחברות קסום */}
+          {/* connection button */}
           <Button
             fullWidth
             variant="contained"
@@ -607,7 +604,7 @@ const LoginPage = () => {
         </Paper>
       </Box>
 
-      {/* Snackbar הצלחה */}
+      {/* Snackbar */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}
@@ -630,7 +627,7 @@ const LoginPage = () => {
         </Alert>
       </Snackbar>
 
-      {/* דיאלוג איפוס סיסמה */}
+      {/* set new password dialog */}
       <Dialog 
         open={showForgotPassword} 
         onClose={() => setShowForgotPassword(false)} 
