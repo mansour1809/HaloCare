@@ -392,7 +392,6 @@ const CitiesTab = () => {
                 zIndex: 2
               }}>
                 <Stack direction="row" alignItems="center" spacing={3}>
-                  <AutoAwesomeIcon sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
                   <TextField
                     placeholder="🔍 חיפוש עיר..."
                     value={searchTerm}
@@ -402,7 +401,6 @@ const CitiesTab = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#4cb5c3' }} />
                         </InputAdornment>
                       ),
                       sx: {
@@ -427,7 +425,7 @@ const CitiesTab = () => {
                     startIcon={<AddIcon />}
                     sx={{ minWidth: 160, py: 1.5 }}
                   >
-                    🌟 הוסף עיר
+                   הוסף עיר
                   </AnimatedButton>
                 </Stack>
               </Paper>
@@ -658,7 +656,7 @@ const CitiesTab = () => {
                   disabled={actionStatus === 'loading'}
                   startIcon={actionStatus === 'loading' ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
                 >
-                  🌟 הוסף עיר
+                 הוסף עיר
                 </AnimatedButton>
               </DialogActions>
             </Dialog>
