@@ -242,8 +242,7 @@ const Calendar = () => {
                 gap: 2,
               }}
             >
-              <CalendarIcon sx={{ fontSize: '3rem', color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
-              לוח שנה 
+               לוח שנה 
               {hasActiveFilters && (
                 <Chip 
                   label="מסונן" 
@@ -272,10 +271,8 @@ const Calendar = () => {
                 {/* Statistics */}
                 <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EventIcon sx={{ color: 'primary.main', fontSize: '2rem' }} />
                     <StatsChip 
-                      label={`${displayEvents.length} אירועים`}
-                      icon={<AutoAwesomeIcon />}
+                      label={`✨ ${displayEvents.length} אירועים`}
                     />
                   </Box>
                   

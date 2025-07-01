@@ -394,7 +394,6 @@ const HealthInsuranceTab = () => {
                 zIndex: 2
               }}>
                 <Stack direction="row" alignItems="center" spacing={3}>
-                  <AutoAwesomeIcon sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
                   <TextField
                     placeholder="🔍 חיפוש קופת חולים..."
                     value={searchTerm}
@@ -404,7 +403,6 @@ const HealthInsuranceTab = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#4cb5c3' }} />
                         </InputAdornment>
                       ),
                       sx: {
@@ -429,7 +427,7 @@ const HealthInsuranceTab = () => {
                     startIcon={<AddIcon />}
                     sx={{ minWidth: 160, py: 1.5 }}
                   >
-                    🌟 הוסף קופת חולים
+                     הוסף קופת חולים
                   </AnimatedButton>
                 </Stack>
               </Paper>
@@ -485,7 +483,6 @@ const HealthInsuranceTab = () => {
                             />
                           ) : (
                             <Box display="flex" alignItems="center" gap={2}>
-                              <MedicalIcon sx={{ color: '#4cb5c3', fontSize: '1.5rem' }} />
                               <Typography
                                 variant="body1"
                                 onDoubleClick={() => handleEditStart(insurance)}
@@ -663,7 +660,7 @@ const HealthInsuranceTab = () => {
                   disabled={actionStatus === 'loading'}
                   startIcon={actionStatus === 'loading' ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
                 >
-                  🌟 הוסף קופת חולים
+                   הוסף קופת חולים
                 </AnimatedButton>
               </DialogActions>
             </Dialog>

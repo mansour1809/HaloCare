@@ -406,7 +406,6 @@ const ClassesTab = () => {
                 zIndex: 2
               }}>
                 <Stack direction="row" alignItems="center" spacing={3}>
-                  <AutoAwesomeIcon sx={{ color: '#4cb5c3', fontSize: '2rem' }} />
                   <TextField
                     placeholder="🔍 חיפוש כיתה..."
                     value={searchTerm}
@@ -416,7 +415,6 @@ const ClassesTab = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#4cb5c3' }} />
                         </InputAdornment>
                       ),
                       sx: {
@@ -441,7 +439,7 @@ const ClassesTab = () => {
                     startIcon={<AddIcon />}
                     sx={{ minWidth: 160, py: 1.5 }}
                   >
-                    🌟 הוסף כיתה
+                     הוסף כיתה
                   </AnimatedButton>
                 </Stack>
               </Paper>
@@ -717,7 +715,7 @@ const ClassesTab = () => {
                   disabled={actionStatus === 'loading'}
                   startIcon={actionStatus === 'loading' ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
                 >
-                  🌟 הוסף כיתה
+                   הוסף כיתה
                 </AnimatedButton>
               </DialogActions>
             </Dialog>

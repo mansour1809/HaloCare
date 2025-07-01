@@ -1183,7 +1183,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         variant="outlined"
                         onClick={() => isEditMode ? onClose() : navigate("/employees/list")}
                         disabled={submitting || uploadingFiles}
-                        startIcon={isEditMode ? <CloseIcon /> : <ArrowBackIcon />}
                         sx={{ 
                           borderRadius: 3,
                           px: 4,
@@ -1195,7 +1194,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           }
                         }}
                       >
-                        {isEditMode ? 'סגור' : 'חזרה לרשימה'}
+                        {isEditMode ? 'סגור' : '→ חזרה לרשימה'}
                       </Button>
                       
                       <Button

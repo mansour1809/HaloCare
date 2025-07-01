@@ -346,7 +346,6 @@ const EventsList = () => {
                 gap: 2,
               }}
             >
-              <CalendarIcon sx={{ fontSize: '3rem', color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
               לוח פגישות
             </Typography>
           </MainHeader>
@@ -428,8 +427,7 @@ const EventsList = () => {
                 <Grid item xs={12} md={4}>
                   <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
                     <StatsChip
-                      label={`${localFilteredEvents.length} אירועים`}
-                      icon={<ScheduleIcon />}
+                      label={`✨ ${localFilteredEvents.length} אירועים`}
                     />
 
                     <Button
@@ -452,7 +450,6 @@ const EventsList = () => {
                       variant="contained"
                       color="primary"
                       onClick={createNewEvent}
-                      startIcon={<CelebrationIcon />}
                       sx={{
                         borderRadius: 4,
                         fontWeight: 600,
@@ -464,7 +461,7 @@ const EventsList = () => {
                         }
                       }}
                     >
-                      אירוע חדש
+                    ➕  אירוע חדש
                     </Button>
                   </Stack>
                 </Grid>
@@ -634,10 +631,9 @@ const EventsList = () => {
                       </Stack>
 
                       <Chip
-                        label={`${groupedEvents[date].length} אירועים`}
+                        label={`✨ ${groupedEvents[date].length} אירועים`}
                         color="warning"
                         variant="outlined"
-                        icon={<AutoAwesomeIcon />}
                       />
                     </Stack>
                   </CardContent>
