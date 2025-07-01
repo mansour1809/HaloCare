@@ -1715,7 +1715,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                             }
                           });
                         }}
-                        startIcon={<DeleteIcon />}
+                        
                         disabled={isLoading}
                         sx={{ 
                           borderRadius: 3, 
@@ -1742,15 +1742,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         variant="contained"
                         color="primary"
                         disabled={isLoading}
-                        startIcon={
-                          isLoading ? (
-                            <CircularProgress size={24} color="inherit" />
-                          ) : isEditMode ? (
-                            <EditIcon />
-                          ) : (
-                            <SaveIcon />
-                          )
-                        }
                         sx={{
                           borderRadius: 3,
                           px: 5,
@@ -1781,7 +1772,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         {isLoading 
                           ? "⏳ שומר..." 
                           : isEditMode 
-                            ? " עדכן פרטים" 
+                            ? "✏️ עדכן פרטים" 
                             : "💾 שמור פרטים והמשך"
                         }
                       </AnimatedButton>

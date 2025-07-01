@@ -211,7 +211,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const {employees} =useEmployees();
   const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
-  const submitButtonText = isEditMode ? "שמור שינויים" : "שמירת עובד חדש";
+  const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
   //use employees context
   const { 
     addEmployee, 
@@ -739,9 +739,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
-                          <PersonIcon sx={{ fontSize: 32, color: 'primary.main', mr: 2 }} />
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            פרטים אישיים
+                          👥 פרטים אישיים
                           </Typography>
                         </SectionHeader>
 
@@ -749,7 +748,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
-                              label="שם פרטי"
+                              label="👨‍💼 שם פרטי"
                               name="firstName"
                               value={formData.firstName}
                               onChange={handleChange}
@@ -760,7 +759,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <PersonIcon color="primary" />
                                   </InputAdornment>
                                 )
                               }}
@@ -770,7 +768,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
-                              label="שם משפחה"
+                              label="👨‍💼 שם משפחה"
                               name="lastName"
                               value={formData.lastName}
                               onChange={handleChange}
@@ -781,7 +779,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <PersonIcon color="primary" />
                                   </InputAdornment>
                                 )
                               }}
@@ -790,7 +787,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
 
                           <Grid item size={{xs:12 , md:6}}>
                             <DatePicker
-                              label="תאריך לידה"
+                              label="📅 תאריך לידה"
                               value={formData.birthDate}
                               onChange={(date) => handleDateChange("birthDate", date)}
                               slotProps={{
@@ -802,7 +799,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                   InputProps: {
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <PhotoCameraIcon color="secondary" />
                                       </InputAdornment>
                                     )
                                   }
@@ -814,7 +810,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
-                              label="טלפון נייד"
+                              label="📱 טלפון נייד"
                               name="mobilePhone"
                               type="tel"
                               value={formData.mobilePhone}
@@ -825,7 +821,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <PhoneIcon color="success" />
                                   </InputAdornment>
                                 )
                               }}
@@ -839,7 +834,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               variant="outlined"
                               error={hasFieldError("cityName")}
                             >
-                              <InputLabel>עיר</InputLabel>
+                              <InputLabel> 🏙️ עיר</InputLabel>
                               <Select
                                 name="cityName"
                                 value={formData.cityName}
@@ -847,7 +842,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 label="עיר"
                                 startAdornment={
                                   <InputAdornment position="start">
-                                    <CityIcon color="info" />
                                   </InputAdornment>
                                 }
                               >
@@ -878,9 +872,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
-                          <WorkIcon sx={{ fontSize: 32, color: 'secondary.main', mr: 2 }} />
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main' }}>
-                            פרטי העסקה
+                          💼 פרטי העסקה
                           </Typography>
                         </SectionHeader>
 
@@ -892,7 +885,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               required
                               error={hasFieldError("roleName")}
                             >
-                              <InputLabel>תפקיד</InputLabel>
+                              <InputLabel>🎯 תפקיד</InputLabel>
                               <Select
                                 name="roleName"
                                 value={formData.roleName}
@@ -900,7 +893,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 label="תפקיד"
                                 startAdornment={
                                   <InputAdornment position="start">
-                                    <BadgeIcon color="warning" />
                                   </InputAdornment>
                                 }
                               >
@@ -925,7 +917,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
-                              label="מספר רישיון"
+                              label="📄 מספר רישיון"
                               name="licenseNum"
                               value={formData.licenseNum}
                               onChange={handleChange}
@@ -935,7 +927,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <BadgeIcon color="secondary" />
                                   </InputAdornment>
                                 )
                               }}
@@ -944,7 +935,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
 
                           <Grid item size={{xs:12 , md:6}}>
                             <DatePicker
-                              label="תאריך תחילת עבודה"
+                              label="📅 תאריך תחילת עבודה"
                               value={formData.startDate}
                               onChange={(date) => handleDateChange("startDate", date)}
                               slotProps={{
@@ -954,7 +945,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                   InputProps: {
                                     startAdornment: (
                                       <InputAdornment position="start">
-                                        <WorkIcon color="success" />
                                       </InputAdornment>
                                     )
                                   }
@@ -965,7 +955,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
 
                           <Grid item size={{xs:12 , md:6}}>
                             <FormControl required fullWidth variant="outlined">
-                              <InputLabel>שיוך לכיתה</InputLabel>
+                              <InputLabel>🏫 שיוך לכיתה</InputLabel>
                               <Select
                                 name="classId"
                                 value={formData.classId}
@@ -973,7 +963,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 label="שיוך לכיתה"
                                 startAdornment={
                                   <InputAdornment position="start">
-                                    <WorkIcon color="info" />
                                   </InputAdornment>
                                 }
                               >
@@ -1035,7 +1024,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             >
                               {documents.length > 0
                                 ? `${documents.length} מסמכים נבחרו`
-                                : "העלאת מסמכים נוספים"}
+                                : " העלאת מסמכים נוספים"}
                               <input
                                 type="file"
                                 hidden
@@ -1068,9 +1057,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                         <CardContent sx={{ p: 3 }}>
                           <SectionHeader>
-                            <SecurityIcon sx={{ fontSize: 32, color: 'error.main', mr: 2 }} />
                             <Typography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
-                              פרטי כניסה למערכת
+                            🛡️ פרטי כניסה למערכת
                             </Typography>
                           </SectionHeader>
 
@@ -1078,7 +1066,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             <Grid item size={{xs:12}}>
                               <TextField
                                 fullWidth
-                                label="דוא״ל"
+                                label="📧 דוא״ל"
                                 name="email"
                                 type="email"
                                 required
@@ -1090,7 +1078,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <EmailIcon color="primary" />
                                     </InputAdornment>
                                   )
                                 }}
@@ -1100,7 +1087,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             <Grid item size={{xs:12}}>
                               <TextField
                                 fullWidth
-                                label="סיסמה ראשונית"
+                                label="🔐 סיסמה ראשונית"
                                 name="password"
                                 type={showPassword ? "text" : "password"}
                                 value={formData.password}
@@ -1112,7 +1099,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      <PasswordIcon color="secondary" />
                                     </InputAdornment>
                                   ),
                                   endAdornment: (
@@ -1142,10 +1128,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               <Button
                                 onClick={handleGeneratePassword}
                                 variant="outlined"
-                                startIcon={<AutoAwesomeIcon />}
                                 sx={{ mt: 2, borderRadius: 3 }}
                               >
-                                ייצר סיסמה אקראית
+                               ✨ ייצר סיסמה אקראית
                               </Button>
                             </Grid>
 
@@ -1218,7 +1203,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         variant="contained"
                         color="primary"
                         disabled={submitting || uploadingFiles}
-                        startIcon={isEditMode ? <EditIcon /> : <SaveIcon />}
                         sx={{
                           px: 4,
                           py: 1.5,
