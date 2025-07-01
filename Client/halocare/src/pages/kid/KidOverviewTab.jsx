@@ -47,7 +47,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import SimpleFlowerProfile from './SimpleFlowerProfile';
 import { fetchCriticalMedicalInfo } from '../../Redux/features/answersSlice';
 
-// קומפוננטה לכרטיס התראה קריטית
+// Critical Info Card
 const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -172,7 +172,7 @@ const KidOverviewTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
   const { kidId } = useParams();
   
-  // מצב מקומי לטעינת מידע קריטי
+  // Local state for loading critical data
   const [criticalInfo, setCriticalInfo] = useState({
     medications: [],
     allergies: [],
@@ -181,7 +181,7 @@ const KidOverviewTab = ({ selectedKid }) => {
   const [loadingCritical, setLoadingCritical] = useState(false);
   const [criticalError, setCriticalError] = useState(null);
 
-  // שליפת מידע קריטי בטעינת הקומפוננטה
+  // Fetch critical data on component load
   useEffect(() => {
     if (kidId) {
       fetchCriticalInfo();
@@ -195,7 +195,7 @@ const KidOverviewTab = ({ selectedKid }) => {
     try {
       const result = await dispatch(fetchCriticalMedicalInfo(kidId)).unwrap();
       
-      // עיבוד התוצאות לפי סוג
+      // Process results by type
       const medications = [];
       const allergies = [];
       const seizures = [];
@@ -229,7 +229,7 @@ const KidOverviewTab = ({ selectedKid }) => {
     }
   };
 
-  // פונקציות עזר
+  //Helper functions
   const formatDate = (dateString) => {
     if (!dateString) return '–';
     try {
@@ -259,12 +259,12 @@ const KidOverviewTab = ({ selectedKid }) => {
     }
   };
 
-  // בדיקה אם יש מידע קריטי
+  // Check if critical data exists
   const hasCriticalInfo = criticalInfo.medications.length > 0 || 
                          criticalInfo.allergies.length > 0 || 
                          criticalInfo.seizures.length > 0;
 
-  // פרטים אישיים בסיסיים
+  // personal Info
   const personalInfo = [
     {
       icon: <PersonIcon />,
@@ -301,7 +301,7 @@ const KidOverviewTab = ({ selectedKid }) => {
     // }
   ];
 
-  // פרטי הורים
+  //parents Info
   const parentsInfo = [
     {
       label: 'הורה ראשי',
@@ -315,7 +315,7 @@ const KidOverviewTab = ({ selectedKid }) => {
 
   return (
     <Box dir="rtl" sx={{ p: 3, bgcolor: 'background.default' }}>
-      {/* מידע קריטי למטפל - בראש הדף */}
+      {/* Critical information for the caregiver - at the top of the page */}
       {(loadingCritical || hasCriticalInfo || criticalError) && (
         <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '2px solid #ff9800' }}>
           <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, color: 'error.main' }}>
@@ -377,7 +377,7 @@ const KidOverviewTab = ({ selectedKid }) => {
       )}
 
       <Grid container spacing={3}>
-        {/* עמודה שמאל - פרח הטיפולים */}
+        {/* Left column - Treatment Flower */}
         <Grid item xs={12} lg={8}>
           <Paper sx={{ 
             p: 3, 
@@ -394,7 +394,7 @@ const KidOverviewTab = ({ selectedKid }) => {
               לחץ על כל עלה כדי לעבור לטיפולים באותו תחום
             </Typography>
             
-            {/* הפרח הקיים */}
+            {/* Existing flower */}
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'center',
@@ -406,23 +406,14 @@ const KidOverviewTab = ({ selectedKid }) => {
             
             <Divider sx={{ mt: 8 }} />
             
-            {/* <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AssignmentIcon />}
-                onClick={() => navigate(`/kids/${kidId}/treatments`)}
-              >
-                ניהול טיפולים מלא
-              </Button>
-            </Box> */}
+            
           </Paper>
         </Grid>
 
-        {/* עמודה ימין - מידע בסיסי */}
+        {/* Right column - Basic Information */}
         <Grid item xs={12} lg={4}>
           <Stack spacing={2}>
-            {/* פרטים אישיים */}
+            {/* Personal Details */}
             <Paper sx={{ p: 2, borderRadius: 2 }}>
               <Typography variant="h6" fontWeight="bold" color="primary.main" mb={2}>
                 👤 פרטים אישיים
@@ -452,51 +443,9 @@ const KidOverviewTab = ({ selectedKid }) => {
               </Stack>
             </Paper>
 
-            {/* סטטוס ילד */}
-            {/* <Paper sx={{ p: 2, borderRadius: 2 }}>
-              <Typography variant="h6" fontWeight="bold" color="primary.main" mb={2}>
-                📊 סטטוס נוכחי
-              </Typography>
-              
-              <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                <Chip 
-                  label={selectedKid.isActive ? '✅ פעיל' : '❌ לא פעיל'}
-                  color={selectedKid.isActive ? 'success' : 'error'}
-                  sx={{ fontWeight: 600 }}
-                />
-                {selectedKid.className && (
-                  <Chip 
-                    label={`כיתה: ${selectedKid.className}`}
-                    variant="outlined"
-                    size="small"
-                  />
-                )}
-              </Stack>
-              
-              {selectedKid.enrollmentDate && (
-                <Box>
-                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    תאריך קליטה
-                  </Typography>
-                  <Typography variant="body1" fontWeight={500}>
-                    {formatDate(selectedKid.enrollmentDate)}
-                  </Typography>
-                </Box>
-              )}
-              
-              {selectedKid.notes && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    הערות
-                  </Typography>
-                  <Typography variant="body1" fontWeight={500}>
-                    {selectedKid.notes}
-                  </Typography>
-                </Box>
-              )}
-            </Paper> */}
+           
 
-            {/* פרטי הורים */}
+            {/* Parents Details */}
             <Paper sx={{ p: 2, borderRadius: 2 }}>
               <Typography variant="h6" fontWeight="bold" color="primary.main" mb={2}>
                 👨‍👩‍👧‍👦 פרטי הורים

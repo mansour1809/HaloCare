@@ -87,7 +87,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // Data Refresh
+  // handleRefresh
   const handleRefresh = async () => {
     if (!kidId || isNewKid) return;
     
@@ -232,7 +232,7 @@ const KidOnboarding = () => {
           </Alert>
         )}
 
-        {/* LOgo with progress */}
+        {/* Logo with progress */}
         {!isNewKid && currentOnboarding && (
           <ProgressLogo 
             onboardingData={currentOnboarding}

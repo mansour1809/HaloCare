@@ -1,4 +1,4 @@
-// src/pages/kids/QuestionRenderer.jsx - בסטייל טופס נייר קלאסי
+// src/pages/kids/QuestionRenderer.jsx - classic paper style question renderer
 import React, { useState } from 'react';
 import {
   TextField, FormControl, FormLabel, RadioGroup, FormControlLabel,
@@ -14,7 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
 import DigitalSignature from '../addKid/DigitalSignature';
 
-// 🎨 עיצוב טופס נייר קלאסי
+// classic paper style question renderer
 const QuestionRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -50,7 +50,7 @@ const RequiredMark = styled('span')(({ theme }) => ({
   marginLeft: theme.spacing(0.5)
 }));
 
-// 🎨 שדה תשובה בסטייל נייר
+// Answer Field
 const AnswerField = styled(Box)(({ theme }) => ({
   minWidth: '300px',
   '& .MuiTextField-root': {
@@ -71,7 +71,7 @@ const AnswerField = styled(Box)(({ theme }) => ({
   }
 }));
 
-// 🎨 אפשרויות בסגנון נייר
+// Options Container
 const OptionsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
@@ -130,7 +130,7 @@ const QuestionRenderer = ({
     }
   };
 
-  // 🎨 רנדור שדות טקסט פשוטים
+  // render Simple Field
   const renderSimpleField = () => {
     const isEmail = question.questionType === 'email';
     const isPhone = question.questionType === 'phone';
@@ -163,7 +163,7 @@ const QuestionRenderer = ({
     );
   };
 
-  // 🎨 רנדור תאריך
+  // render Date Field
   const renderDateField = () => (
     <AnswerField>
       <DatePicker
@@ -182,7 +182,7 @@ const QuestionRenderer = ({
     </AnswerField>
   );
 
-  // 🎨 רנדור כן/לא בסגנון נייר
+  //  render Yes No Field
   const renderYesNoField = () => (
     <OptionsContainer>
       <OptionItem
@@ -213,7 +213,7 @@ const QuestionRenderer = ({
     </OptionsContainer>
   );
 
-  // 🎨 רנדור רדיו בסגנון נייר
+  // render Radio Field
   const renderRadioField = () => (
     <Box>
       <OptionsContainer>
@@ -251,7 +251,7 @@ const QuestionRenderer = ({
     </Box>
   );
 
-  // 🎨 רנדור צ'קבוקס בסגנון נייר
+  // render Check box Field
   const renderCheckboxField = () => {
     const selectedValues = value ? value.split(',').map(v => v.trim()) : [];
     
@@ -317,7 +317,7 @@ const QuestionRenderer = ({
     );
   };
 
-  // 🎨 רנדור דרופ-דאון
+  //  render Select Field
   const renderSelectField = () => (
     <AnswerField>
       <FormControl size="small" sx={{ minWidth: 200 }} error={!!error}>
@@ -345,7 +345,7 @@ const QuestionRenderer = ({
     </AnswerField>
   );
 
-  // 🎨 בחירת רנדור לפי סוג השאלה
+  //  render Question Input
   const renderQuestionInput = () => {
     switch (question.questionType) {
       case 'text':
@@ -404,7 +404,7 @@ const QuestionRenderer = ({
 
       {renderQuestionInput()}
 
-      {/* שדה "אחר" */}
+      {/* "Other" field */}
       {question.hasOther && (showOther || (value === 'אחר' || value?.includes?.('אחר'))) && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2 }}>
           <Typography variant="body2">פרט:</Typography>

@@ -27,7 +27,7 @@ import {
 
 const KidReportsTab = ({ selectedKid }) => {
   
-  // תכונות שיהיו זמינות בעתיד
+  //future Features
   const futureFeatures = [
     {
       icon: <ProgressIcon />,
@@ -84,7 +84,7 @@ const KidReportsTab = ({ selectedKid }) => {
 
   return (
     <Box dir="rtl" sx={{ p: 3, bgcolor: 'background.default' }}>
-      {/* כותרת ראשית */}
+      {/* Main Title */}
       <Paper sx={{ 
         p: 4, 
         mb: 4, 
@@ -125,7 +125,7 @@ const KidReportsTab = ({ selectedKid }) => {
         />
       </Paper>
 
-      {/* תכונות עתידיות */}
+      {/* Future Features */}
       <Typography variant="h5" fontWeight="bold" color="text.primary" mb={3}>
         🚀 תכונות שיתווספו בעתיד
       </Typography>
@@ -176,7 +176,7 @@ const KidReportsTab = ({ selectedKid }) => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* תיאור מפורט של התכונות העתידיות */}
+      {/* Detailed description of future features */}
       <Paper sx={{ p: 3, borderRadius: 2 }}>
         <Typography variant="h6" fontWeight="bold" color="primary.main" mb={3}>
           💡 מה יכלול מודל הדוחות התקופתיים?
@@ -247,7 +247,7 @@ const KidReportsTab = ({ selectedKid }) => {
         </Grid>
       </Paper>
 
-      {/* הודעת עדכון */}
+      {/* Update message */}
       <Paper sx={{ 
         p: 3, 
         mt: 4, 

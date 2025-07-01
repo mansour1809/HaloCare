@@ -30,7 +30,7 @@ const DigitalSignature = ({
     }
   }, [value, dialogOpen]);
 
-  // Loading signature from base64
+  // loadSignature
   const loadSignature = (base64Data) => {
     if (!base64Data || !canvasRef.current) return;
     
@@ -47,7 +47,7 @@ const DigitalSignature = ({
     img.src = base64Data;
   };
 
-  // Function to calculate the correct position of the mouse
+  // getMousePos
   const getMousePos = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
@@ -89,7 +89,7 @@ const DigitalSignature = ({
     ctx.stroke();
   };
 
-  // Touch support (tablet/mobile)
+  // handleTouchStart
   const handleTouchStart = (e) => {
     e.preventDefault();
     const touch = e.touches[0];
@@ -131,7 +131,7 @@ const DigitalSignature = ({
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
-  // Initialization when the dialog opens
+  
   useEffect(() => {
     if (dialogOpen && canvasRef.current) {
       initCanvas();
@@ -155,7 +155,7 @@ const DigitalSignature = ({
     setHasSignature(false);
   };
 
-  // Save the signature
+  // saveSignature
   const saveSignature = () => {
     if (!hasSignature) return;
     
@@ -217,7 +217,7 @@ const DigitalSignature = ({
               </Typography>
             </Box>
           ) : (
-            // No signature
+           
             <Typography variant="body2" color="text.secondary">
               לא נחתם
             </Typography>
@@ -264,7 +264,7 @@ const DigitalSignature = ({
         const ctx = canvas.getContext('2d');
         const img = new Image();
         img.onload = () => {
-          // Clear previous content and draw the image
+          // ClearRect and drawImage
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         };

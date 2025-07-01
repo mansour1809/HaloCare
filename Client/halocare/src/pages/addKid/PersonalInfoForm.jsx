@@ -193,7 +193,7 @@ const AnimatedSection = styled(Card)(({ theme, expanded }) => ({
   },
 }));
 
-// כותרת סקציה מעוצבת
+// SectionHeader
 const SectionHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.04) 0%, rgba(255, 112, 67, 0.04) 100%)',
@@ -208,7 +208,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   },
 }));
 
-// אייקון סקציה מונפש
+// SectionIcon
 const SectionIcon = styled(Box)(({ theme, expanded }) => ({
   marginLeft: theme.spacing(2),
   color: expanded ? theme.palette.primary.main : theme.palette.primary.main,
@@ -225,7 +225,7 @@ const SectionIcon = styled(Box)(({ theme, expanded }) => ({
   boxShadow: expanded ? '0 4px 15px rgba(76, 181, 195, 0.3)' : 'none',
 }));
 
-// כותרת סקציה
+// SectionTitle
 const SectionTitle = styled(Typography)(({ theme, expanded }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -235,7 +235,7 @@ const SectionTitle = styled(Typography)(({ theme, expanded }) => ({
   transition: 'all 0.3s ease',
 }));
 
-// כפתור מונפש מתקדם
+// AnimatedButton
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '14px 28px',
@@ -266,7 +266,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// כפתור העלאה מיוחד
+// UploadButton
 const UploadButton = styled(Button)(({ theme }) => ({
   marginTop: theme.spacing(2),
   borderRadius: 20,
@@ -283,7 +283,7 @@ const UploadButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// קונטיינר כפתורי פעולה
+// ActionButtonsContainer
 const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'space-between',
@@ -295,7 +295,7 @@ const ActionButtonsContainer = styled(Box)(({ theme }) => ({
   borderRadius: '0 0 24px 24px',
 }));
 
-// Avatar מעוצב עם אפקטים
+// Styled Avatar
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 180,
   height: 180,
@@ -311,7 +311,7 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   }
 }));
 
-// קונטיינר תמונת פרופיל
+// ProfilePhotoContainer
 const ProfilePhotoContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -334,7 +334,7 @@ const ProfilePhotoContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// הגדרת validation schema
+// validation schema
 const validationSchema = yup.object({
   firstName: yup.string().required('שם פרטי הוא שדה חובה'),
   lastName: yup.string().required('שם משפחה הוא שדה חובה'),
@@ -378,7 +378,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const [photoPreview, setPhotoPreview] = useState(data?.photoPath || null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // מצבי הרחבת סקציות
+  // expandedSections
   const [expandedSections, setExpandedSections] = useState({
     childDetails: true,
     primaryParent: false,
@@ -398,11 +398,11 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   const { healthInsurances, status: healthInsurancesStatus } = useSelector(state => state.healthInsurances);
   const isLoading = kidStatus === 'loading';
 
-  // פונקציה להגדרת ערכים התחלתיים
+  // Function to set initial values
   const getInitialValues = () => {
     if (data && isEditMode) {
       return {
-        // פרטי הילד
+        // kid info
         id: data.id || 0,
         idNumber: data.id || 0,
         firstName: data.firstName || '',
@@ -417,7 +417,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         pathToFolder: data.pathToFolder || '',
         isActive: data.isActive !== undefined ? data.isActive : true,
 
-        // פרטי הורה ראשי
+        // Primary parent details 
         parent1Id: data.parentId1 || 0,
         parent1FirstName: data.parent1FirstName || '',
         parent1LastName: data.parent1LastName || '',
@@ -426,7 +426,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         parent1Address: data.parent1Address || data.address || '',
         parent1CityName: data.parent1CityName || data.cityName || '',
 
-        // פרטי הורה משני
+        //  Secondary parent details
         parent2Id: data.parentId2 || 0,
         parent2FirstName: data.parent2FirstName || '',
         parent2LastName: data.parent2LastName || '',
@@ -439,7 +439,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       };
     }
 
-    // ערכים ריקים לילד חדש
+    // Empty values for a new child
     return {
       id: 0,
       idNumber: '',
@@ -472,20 +472,20 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     };
   };
 
-  // טעינת נתוני רפרנס + נתוני הורים במצב עריכה
+  // Loading reference data + parent data in edit mode
   useEffect(() => {
     dispatch(fetchCities());
     dispatch(fetchClasses());
     dispatch(fetchHealthInsurances());
     dispatch(fetchKids());
 
-    // טעינת נתוני הורים במצב עריכה
+    // Loading parent data in edit mode
     if (isEditMode && data) {
       loadParentsData();
     }
   }, [dispatch, data, isEditMode]);
 
-  // טעינת נתוני הורים
+  // Loading parent data
   const loadParentsData = async () => {
     try {
       if (data.parentId1) {
@@ -552,7 +552,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
 
     setPhotoFile(file);
 
-    // יצירת תצוגה מקדימה
+    // Generate preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPhotoPreview(e.target.result);
@@ -560,14 +560,14 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
     reader.readAsDataURL(file);
   };
 
-  // פונקציה להעלאת תמונת פרופיל
+  // Function to upload profile picture
   const uploadProfilePhoto = async (kidId) => {
     if (!photoFile) return null;
 
     try {
       setUploadingPhoto(true);
 
-      // מחיקת תמונת פרופיל קיימת אם קיימת
+      // Delete existing profile picture if it exists
       if (isEditMode) {
         const existingDocs = await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
         const existingProfilePic = existingDocs.find(doc => doc.docType === 'profile');
@@ -660,7 +660,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           });
         }
 
-        // עדכון הרכיב הורה
+        // Update parent component
         onUpdate(result.kid);
 
       } catch (error) {
@@ -685,7 +685,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
           <form dir="rtl" onSubmit={formik.handleSubmit}>
             
             <StyledCard>
-              {/* כותרת הטופס עם אפקטים */}
+             { /* Form title with effects */}
               <Box sx={{
                 p: 4,
                 background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
@@ -724,7 +724,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 </Typography>
               </Box>
 
-              {/* הודעת שגיאה אם קיימת */}
+             {/* Error message if exists */}
               {kidError && (
                 <Zoom in={true}>
                   <Alert
@@ -747,7 +747,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
               )}
 
               <Box sx={{ p: 4 }}>
-                {/* תמונת פרופיל */}
+               { /* Profile picture */}
                 <ProfilePhotoContainer>
                   <Badge
                     overlap="circular"
@@ -811,7 +811,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                     {photoPreview ? "🔄 החלף תמונה" : "📸 העלאת תמונה"}
                   </UploadButton>
 
-                  {/* הצגת שם הקובץ אם נבחר */}
+                  {/* Show file name if selected */}
                   {photoFile && (
                     <Fade in>
                       <Typography variant="caption" display="block" sx={{ 
@@ -829,7 +829,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   )}
                 </ProfilePhotoContainer>
 
-                {/* סקציה 1: פרטי הילד */}
+                {/* Section 1: Child Details */}
                 <AnimatedSection expanded={expandedSections.childDetails}>
                   <SectionHeader onClick={() => toggleSection("childDetails")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1144,7 +1144,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           </FormControl>
                         </Grid>
 
-                        {/* שדה לבחירת כיתה אם יש מידע על כיתות */}
+                      {  /* Class selection field if class data exists */}
                         {classes && classes.length > 0 && (
                           <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
@@ -1172,7 +1172,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           </Grid>
                         )}
 
-                        {/* מתג סטטוס פעיל */}
+                       { /* Active status toggle */}
                         <Grid item xs={12}>
                           <Box sx={{ 
                             p: 2, 
@@ -1214,7 +1214,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   </Collapse>
                 </AnimatedSection>
 
-                {/* סקציה 2: פרטי הורה ראשי */}
+                {/* Section 2: Primary Parent Details */}
                 <AnimatedSection expanded={expandedSections.primaryParent}>
                   <SectionHeader onClick={() => toggleSection("primaryParent")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1424,7 +1424,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   </Collapse>
                 </AnimatedSection>
 
-                {/* סקציה 3: פרטי הורה משני (אופציונלי) */}
+                {/* Section 3: Secondary Parent Details (Optional) */}
                 <AnimatedSection expanded={expandedSections.secondaryParent}>
                   <SectionHeader onClick={() => toggleSection("secondaryParent")}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1638,7 +1638,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   </Collapse>
                 </AnimatedSection>
 
-                {/* סיכום והשלמה */}
+                {/* Summary and Completion */}
                 <Fade in timeout={1000}>
                   <Box sx={{ mt: 4, mb: 3 }}>
                     <Alert
@@ -1672,7 +1672,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   </Box>
                 </Fade>
 
-                {/* כפתורי פעולה בתחתית הטופס */}
+                {/* Action buttons at the bottom of the form */}
                 <Paper
                   elevation={8}
                   sx={{

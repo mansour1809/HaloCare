@@ -73,30 +73,30 @@ const SimpleFlowerProfile = ({ kid }) => {
   const [hoveredPetal, setHoveredPetal] = useState(null);
   const [clickedPetal, setClickedPetal] = useState(null);
   
-  // שליפת סוגי טיפולים מהרדקס
+  //  Fetch treatment types from Redux
   const treatmentTypes = useSelector(state => state.treatmentTypes.treatmentTypes);
 
-  // טיפול בלחיצה על עלה
+  // handle Petal Click
   const handlePetalClick = (treatmentType) => {
     setClickedPetal(treatmentType.treatmentTypeId);
     console.log(kid)
-    // אפקט ריפל
+    // Ripple effect
     setTimeout(() => {
       navigate(`/kids/${kid.id}/treatments/${treatmentType.treatmentTypeId}`);
     }, 200);
     
-    // איפוס האפקט
+    //  Reset the effect
     setTimeout(() => {
       setClickedPetal(null);
     }, 300);
   };
 
-  // חישוב זוויות העלים באופן דינמי
+  // calculate Petal Angle
   const calculatePetalAngle = (index, total) => {
     return (360 / total) * index;
   };
 
-  // פונקציה לקבלת צבע בהיר יותר להובר
+  // Function to get a lighter color for hover
   const lightenColor = (color, percent = 20) => {
     if (!color || !color.startsWith('#')) return color;
     
@@ -108,7 +108,7 @@ const SimpleFlowerProfile = ({ kid }) => {
     return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
   };
 
-  // פונקציה לקבלת צבע כהה יותר ללחיצה
+  // Function to get a darker color for click (active state)
   const darkenColor = (color, percent = 15) => {
     if (!color || !color.startsWith('#')) return color;
     
@@ -132,7 +132,7 @@ const SimpleFlowerProfile = ({ kid }) => {
 
   return (
     <FlowerContainer>
-      {/* העלים */}
+      {/* The leaves */}
       {treatmentTypes.map((treatmentType, index) => {
         const angle = calculatePetalAngle(index, treatmentTypes.length);
         const isHovered = hoveredPetal === treatmentType.treatmentTypeId;
@@ -156,7 +156,7 @@ const SimpleFlowerProfile = ({ kid }) => {
               onMouseLeave={() => setHoveredPetal(null)}
               onClick={() => handlePetalClick(treatmentType)}
               sx={{
-                // הוספת אפקטים נוספים עם הצבעים
+                // Adding additional effects with colors
                 boxShadow: isClicked
                   ? `0 0 20px ${shadowColor}90, 0 0 40px ${shadowColor}50, inset 0 0 10px rgba(0,0,0,0.2)`
                   : isHovered 
@@ -189,32 +189,13 @@ const SimpleFlowerProfile = ({ kid }) => {
                 {treatmentType.treatmentTypeName}
               </PetalLabel>
               
-              {/* <ActionButton
-                angle={angle}
-                sx={{
-                  opacity: isHovered ? 1 : 0,
-                  backgroundColor: lightenColor(baseColor, 60),
-                  transform: `rotate(${-angle}deg) translateY(15px) ${isHovered ? 'scale(1.05)' : 'scale(1)'}`,
-                  '&:hover': {
-                    backgroundColor: 'white',
-                    color: baseColor,
-                    border: `1px solid ${baseColor}`,
-                    transform: `rotate(${-angle}deg) translateY(15px) scale(1.1)`,
-                  }
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePetalClick(treatmentType);
-                }}
-              >
-                צפה
-              </ActionButton> */}
+      
             </Petal>
           </Tooltip>
         );
       })}
 
-      {/* המרכז - תמונת הילד */}
+      {/* Center - child's photo */}
       <CenterCircle
         src={kid?.photoPath ? 
           `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}` : 
@@ -223,7 +204,7 @@ const SimpleFlowerProfile = ({ kid }) => {
         sx={{
           bgcolor: kid?.photoPath ? 'transparent' : 'primary.main',
           fontSize: kid?.photoPath ? 0 : '2rem',
-          // אפקטי hover למרכז
+          // Center hover effects
           transition: 'all 0.3s ease',
           '&:hover': {
             transform: 'scale(1.05)',
@@ -241,7 +222,7 @@ const SimpleFlowerProfile = ({ kid }) => {
         )}
       </CenterCircle>
 
-      {/* מידע נוסף במרכז */}
+      {/* Additional information in the center */}
       <Box sx={{
         position: 'absolute',
         bottom: -40,

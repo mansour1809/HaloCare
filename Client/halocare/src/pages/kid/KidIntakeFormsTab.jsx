@@ -112,11 +112,11 @@ const CategoryHeader = ({ icon, title, description, color, dataCount, formName }
 );
 
 const QuestionCard = ({ question, answer }) => {
-  // פונקציה לעיבוד תשובה (טיפול ב-JSON אם קיים)
+  // Function to process response (handle JSON if present)
   const formatAnswer = (answer) => {
     if (!answer) return 'לא נענה';
     
-    // בדיקה אם זה JSON
+    // Check if response is JSON
     try {
       const parsed = JSON.parse(answer);
       if (Array.isArray(parsed)) {
@@ -131,7 +131,7 @@ const QuestionCard = ({ question, answer }) => {
         ));
       }
     } catch (e) {
-      // לא JSON, נחזיר כמו שזה
+      //Not JSON – return as is
     }
 
     if(answer && answer.startsWith('data:image/')) {
@@ -212,23 +212,23 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { questionsByForm } = useSelector(state => state.questions);
 
-  // טעינת נתונים
+  // Loading data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // טעינת טפסים אם לא קיימים
+        //  Load forms if not existing
         if (!forms.length) {
           await dispatch(fetchForms()).unwrap();
         }
         
-        // טעינת תשובות ושאלות לכל הטפסים
+        // Loading answers and questions for all forms
         if (kidId && forms.length > 0) {
           const formPromises = forms.map(async (form) => {
-            // טעינת תשובות
+            // Loading answers
             await dispatch(fetchFormAnswers({ kidId, formId: form.formId }));
             
-            // טעינת שאלות אם לא טענו עדיין
+            //  Loading questions if not loaded yet
             if (!questionsByForm[form.formId]) {
               await dispatch(fetchQuestionsByFormId(form.formId));
             }
@@ -246,7 +246,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     loadData();
   }, [dispatch, kidId, forms.length, questionsByForm]);
 
-  // פונקציה לייצוא המידע
+  //Function to export data
   const exportToFile = (format = 'txt') => {
     const organizedData = organizeDataByFormsAndCategories();
     let content = '';
@@ -278,7 +278,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
         content += '\n' + '='.repeat(50) + '\n\n';
       });
       
-      // יצירת קובץ טקסט להורדה
+      //  Create text file for download
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -291,7 +291,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     }
   };
 
-  // פונקציה להדפסה
+  // Function for printing
   const printData = () => {
     const organizedData = organizeDataByFormsAndCategories();
     
@@ -389,16 +389,16 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     
     htmlContent += '</body></html>';
     
-    // פתיחת חלון הדפסה
+    // Open print dialog
     const printWindow = window.open('', '_blank');
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     printWindow.print();
   };
 
-  // פונקציה ליצירת PDF (באמצעות ממשק הדפסה)
+  // Function to create PDF (using print interface)
   const exportToPdf = () => {
-    // משתמש באותה פונקציה כמו הדפסה אבל עם הוראה ל-PDF
+    // Uses the same function as printing but with instruction to generate PDF
     const organizedData = organizeDataByFormsAndCategories();
     
     let htmlContent = `
@@ -498,18 +498,18 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     
     htmlContent += '</body></html>';
     
-    // פתיחת חלון חדש עם הוראות PDF
+    // Open new window with PDF instructions
     const pdfWindow = window.open('', '_blank');
     pdfWindow.document.write(htmlContent);
     pdfWindow.document.close();
     
-    // הצגת הוראות למשתמש
+    //  Display instructions to the user
     setTimeout(() => {
       alert('💡 להורדת PDF: לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה');
     }, 500);
   };
 
-  // פונקציה לטיפול בפתיחת אקורדיון
+  // Function to handle accordion toggle
   const handleAccordionChange = (categoryKey) => (event, isExpanded) => {
     setExpandedCategory(isExpanded ? categoryKey : null);
   };
@@ -526,12 +526,12 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return allAnswers;
   };
 
-  // קבלת שאלות עם תשובות לפי טופס
+  //  Retrieve questions with answers by form
   const getQuestionsWithAnswers = (formId) => {
     const formKey = `${kidId}_${formId}`;
     const answers = answersByKidAndForm[formKey] || [];
     
-    // יצירת מפה של תשובות לפי מספר שאלה
+    // Create a map of answers by question number
     const answersMap = {};
     answers.forEach(answer => {
       answersMap[answer.questionNo] = answer;
@@ -540,20 +540,20 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return { answersMap };
   };
 
-  // קיבוץ נתונים לפי טפסים וקטגוריות
+  // Group data by forms and categories
   const organizeDataByFormsAndCategories = () => {
     const formGroups = {};
     
     forms.forEach(form => {
-      // דילוג על טופס פרטים אישיים (1002)
+      //  Skip personal details form (1002)
       if (form.formId === 1002) return;
       
       const { answersMap } = getQuestionsWithAnswers(form.formId);
       const formQuestions = questionsByForm[form.formId] || [];
       
-      // אם יש תשובות לטופס זה
+      //  If there are answers for this form
       if (Object.keys(answersMap).length > 0) {
-        // קיבוץ לפי קטגוריות בתוך הטופס
+        //  Grouping by categories within the form
         const categories = {};
         
         formQuestions.forEach(question => {
@@ -575,7 +575,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
           }
         });
         
-        // רק אם יש קטגוריות עם תשובות
+        //  Only if there are categories with answers
         if (Object.keys(categories).length > 0) {
           formGroups[form.formId] = {
             formName: form.formName,
@@ -590,7 +590,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return formGroups;
   };
 
-  // קבלת אייקון לפי שם טופס
+  //get Form Icon
   const getFormIcon = (formName) => {
     if (formName.includes('רקע התפתחותי')) return <DevelopmentIcon />;
     if (formName.includes('בריאות')) return <MedicalIcon />;
@@ -600,7 +600,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return <AssignmentIcon />;
   };
 
-  // קבלת צבע לפי שם טופס
+  // get Form Color 
   const getFormColor = (formName) => {
     if (formName.includes('רקע התפתחותי')) return 'info';
     if (formName.includes('בריאות')) return 'error';
@@ -610,7 +610,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return 'primary';
   };
 
-  // סינון לפי חיפוש
+  // filter By Search 
   const filterBySearch = (data) => {
     if (!searchTerm) return data;
     
@@ -625,12 +625,12 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
         const category = form.categories[categoryKey];
         const matchingQuestions = category.questions.filter(({ question, answer }) => {
           return (
-            // חיפוש בטקסט השאלה
+            // Search in question text
             question.questionText?.toLowerCase().includes(searchLower) ||
-            // חיפוש בתוכן התשובה
+            //  Search in answer content
             answer.answer?.toLowerCase().includes(searchLower) ||
             answer.other?.toLowerCase().includes(searchLower) ||
-            // חיפוש בקטגוריה
+            //  Search in category
             category.categoryName?.toLowerCase().includes(searchLower)
           );
         });
@@ -693,7 +693,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
 
   return (
     <Box dir="rtl" sx={{ p: 3 }}>
-      {/* כותרת וחיפוש */}
+      {/* Title and Search */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
         <Typography variant="h5" fontWeight="bold" color="primary.main" gutterBottom>
@@ -782,10 +782,10 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
         </Box>
       </Paper>
 
-      {/* טפסים */}
+      {/* Forms */}
       <Stack spacing={2}>
         {Object.keys(organizedData).length === 0 && searchTerm ? (
-          // הודעה כשאין תוצאות חיפוש
+          // Message when no search results found
           <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
             <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom color="text.secondary">
@@ -803,7 +803,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
             </Button>
           </Paper>
         ) : (
-          // תוצאות רגילות
+          // Regular results
           Object.entries(organizedData).map(([formId, formData]) => {
             const form = forms.find(f => f.formId == formId);
             if (!form) return null;
@@ -829,7 +829,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                 </AccordionSummary>
                 
                 <AccordionDetails>
-                  {/* קטגוריות בתוך הטופס */}
+                  {/* Categories within the form */}
                   <Stack spacing={3}>
                     {Object.entries(formData.categories).map(([categoryKey, categoryData]) => (
                       <Box key={categoryKey}>
@@ -856,7 +856,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                           ))}
                         </Stack>
                         
-                        {/* מפריד בין קטגוריות */}
+                        {/* Separator between categories */}
                         {Object.keys(formData.categories).length > 1 && 
                          categoryKey !== Object.keys(formData.categories).slice(-1)[0] && (
                           <Divider sx={{ mt: 3, mb: 1 }} />

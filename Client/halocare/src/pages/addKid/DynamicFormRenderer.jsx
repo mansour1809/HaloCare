@@ -51,13 +51,13 @@ const FormPaper = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// Official Form Header
+// FormHeader
 const FormHeader = styled(Box)(({ theme }) => ({
   textAlign: 'center',
 }));
 
 
-// Questions Area
+// QuestionsSection
 const QuestionsSection = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(4),
   '& > *:not(:last-child)': {
@@ -66,7 +66,7 @@ const QuestionsSection = styled(Box)(({ theme }) => ({
   dir: 'rtl'
 }));
 
-// Category Header
+// CategoryHeader
 const CategoryHeader = styled(Typography)(({ theme }) => ({
   fontSize: '1.1rem',
   fontWeight: 'bold',
@@ -166,7 +166,7 @@ const DynamicFormRenderer = ({
     }
   };
 
-  // New function to handle complex data
+  // handleMultipleEntriesChange
 const handleMultipleEntriesChange = (questionNo, entriesData) => {
   setMultipleEntriesData(prev => ({
     ...prev,
@@ -294,7 +294,7 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
     }
   };
 
-  // Progress Calculation
+  // calculateProgress
   const calculateProgress = () => {
     if (!currentFormQuestions.length) return 0;
     

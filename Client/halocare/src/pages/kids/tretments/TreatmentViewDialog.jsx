@@ -66,7 +66,7 @@ const TreatmentViewDialog = () => {
     highlight: true
   });
 
-  // עדכון נתוני הטופס בעת פתיחת הדיאלוג
+  //  Update form data when opening the dialog
   useEffect(() => {
     if (currentTreatment && isViewDialogOpen) {
       setFormData({
@@ -95,7 +95,7 @@ const TreatmentViewDialog = () => {
       [name]: value
     }));
     
-    // ניקוי שגיאות
+    //  Clear errors
     if (formError) {
       setFormError('');
     }
@@ -206,21 +206,21 @@ const TreatmentViewDialog = () => {
       format: 'a4'
     });
     
-    // הגדרת כיוון RTL
+    // Set RTL direction
     doc.setR2L(true);
     
-    // כותרת הדוח
+    // Report title
     doc.setFontSize(18);
     doc.text('סיכום טיפול', 105, 20, { align: 'center' });
     
-    // פרטי הטיפול
+    // Treatment details
     doc.setFontSize(12);
     doc.text(`סוג טיפול: ${getTreatmentName(currentTreatment.treatmentTypeId)}`, 180, 40, { align: 'right' });
     doc.text(`תאריך: ${formatDate(currentTreatment.treatmentDate)}`, 180, 50, { align: 'right' });
     doc.text(`מטפל: ${getEmployeeName(currentTreatment.employeeId)}`, 180, 60, { align: 'right' });
     doc.text(`רמת שיתוף פעולה: ${currentTreatment.cooperationLevel}/5`, 180, 70, { align: 'right' });
     
-    // תיאור הטיפול
+    //  Treatment description
     doc.setFontSize(14);
     doc.text('תיאור הטיפול:', 180, 90, { align: 'right' });
     
@@ -228,7 +228,7 @@ const TreatmentViewDialog = () => {
     doc.setFontSize(12);
     doc.text(splitDescription, 180, 100, { align: 'right' });
     
-    // היילייט
+    // Highlight
     if (currentTreatment.highlight) {
       const yPos = 100 + (splitDescription.length * 7);
       doc.setFontSize(14);
@@ -239,7 +239,7 @@ const TreatmentViewDialog = () => {
       doc.text(splitHighlight, 180, yPos + 10, { align: 'right' });
     }
     
-    // שמירת הקובץ
+    // file save
     doc.save(`סיכום_טיפול_${getTreatmentName(currentTreatment.treatmentTypeId)}_${formatDate(currentTreatment.treatmentDate)}.pdf`);
   };
 
@@ -266,7 +266,7 @@ const TreatmentViewDialog = () => {
         }
       }}
     >
-      {/* כותרת משופרת */}
+      {/* Enhanced Title */}
       <DialogTitle sx={{ 
         background: editMode 
           ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)'
@@ -648,7 +648,7 @@ const TreatmentViewDialog = () => {
       
       <DialogActions sx={{ justifyContent: 'space-between', p: 3 }}>
         {editMode ? (
-          // כפתורים במצב עריכה
+          // buttons in edit mode
           <>
             <Button
               variant="outlined"
@@ -682,7 +682,7 @@ const TreatmentViewDialog = () => {
             </Button>
           </>
         ) : (
-          // כפתורים במצב צפייה
+          // buttons in view mode
           <>
             <Button
               variant="outlined"

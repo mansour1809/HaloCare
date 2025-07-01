@@ -31,7 +31,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-// Import קומפוננטות הטאבים
+// Import components for each tab
 import KidOverviewTab from './KidOverviewTab';
 import KidIntakeFormsTab from './KidIntakeFormsTab';
 import KidDocumentsTab from './KidDocumentsTab';
@@ -109,25 +109,25 @@ const KidProfileTabs = ({ selectedKid }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // State לטאב הנוכחי
+  // State for the current tab
   const [currentTab, setCurrentTab] = useState(0);
   
-  // שליפת נתונים מהרדקס
+  //  Fetching data from Redux
   const { forms } = useSelector(state => state.forms);
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { documents } = useSelector(state => state.documents);
 
-  // פונקציות עזר
+  // handle Refresh
   const handleRefresh = () => {
-    // רענון כל הנתונים הרלוונטיים
+    //  Refresh all relevant data
     if (kidId) {
-      // כאן תוכל להוסיף רענון של כל הנתונים הרלוונטיים
-      window.location.reload(); // פתרון זמני - ניתן לשפר
+      
+      window.location.reload(); // Temporary solution – can be improved
     }
   };
 
   const handlePrint = () => {
-    // הדפסת סיכום הילד
+    //  Print child summary
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html dir="rtl">
@@ -163,7 +163,7 @@ const KidProfileTabs = ({ selectedKid }) => {
     printWindow.print();
   };
 
-  // פונקציה לחישוב מספר טפסים שהושלמו
+  // Function to calculate number of completed forms
   const getCompletedFormsCount = () => {
     if (!forms || !kidId) return 0;
     
@@ -174,13 +174,13 @@ const KidProfileTabs = ({ selectedKid }) => {
     }).length;
   };
 
-  // פונקציה לחישוב מספר מסמכים
+  //Function to calculate number of documents
   const getDocumentsCount = () => {
     if (!documents || !kidId) return 0;
     return documents.filter(doc => doc.kidId === parseInt(kidId)).length;
   };
 
-  // הגדרת הטאבים
+  //  Tabs configuration
   const tabs = [
     {
       id: 'overview',
@@ -274,7 +274,7 @@ const KidProfileTabs = ({ selectedKid }) => {
 
   return (
     <Box dir="rtl">
-      {/* כותרת עליונה עם פרטי הילד וכפתורי גישה מהירה */}
+      {/* Top header with child details and quick access buttons */}
       <Paper sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -319,7 +319,7 @@ const KidProfileTabs = ({ selectedKid }) => {
             </Box>
           </Box>
           
-          {/* כפתורי גישה מהירה */}
+          {/* Quick access buttons */}
           <Stack direction="row" spacing={1}>
             <Tooltip title="יומן כללי">
               <QuickActionButton
@@ -371,7 +371,7 @@ const KidProfileTabs = ({ selectedKid }) => {
           תיק דיגיטלי מלא של {selectedKid.firstName} - טיפולים, טפסים, מסמכים ודוחות
         </Typography>
 
-        {/* הטאבים עצמם */}
+        {/* The tabs themselves */}
         <Box sx={{ mt: 3 }}>
           <StyledTabs
             value={currentTab}
@@ -397,7 +397,7 @@ const KidProfileTabs = ({ selectedKid }) => {
         </Box>
       </Paper>
 
-      {/* תוכן הטאבים */}
+      {/* Tab content */}
       <Paper sx={{ 
         borderRadius: 3,
         minHeight: '500px',

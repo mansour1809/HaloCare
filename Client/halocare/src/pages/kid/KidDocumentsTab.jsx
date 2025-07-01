@@ -2,7 +2,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 
-// ייבוא הקומפוננטה הקיימת
+// Import existing component
 import KidDocumentManager from '../addKid/KidDocumentManager';
 
 const KidDocumentsTab = ({ selectedKid }) => {

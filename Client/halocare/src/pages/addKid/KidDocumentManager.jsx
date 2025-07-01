@@ -83,7 +83,7 @@ const KidDocumentManager = ({
     }, 500);
   };
 
-    // Statistics
+    // getDocumentStats
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
     

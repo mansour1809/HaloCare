@@ -1,4 +1,4 @@
-// src/pages/kids/KidProfilePage.jsx - עדכון לטאבים
+// src/pages/kids/KidProfilePage.jsx - update for tabs
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,20 +30,20 @@ const KidProfilePage = () => {
   const { selectedKid, status, error } = useSelector(state => state.kids);
   const { treatmentTypes, status: treatmentTypesStatus } = useSelector(state => state.treatmentTypes);
 
-  // טעינת נתונים בתחילת הטעינה
+  //  Load data on initial load
   useEffect(() => {
     if (kidId) {
-      // טעינת פרטי הילד
+      // fetch Kid By Id
       dispatch(fetchKidById(kidId));
       
-      // טעינת סוגי טיפולים לפרח
+      // Loading treatment Types Status 
       if (treatmentTypesStatus === 'idle') {
         dispatch(fetchTreatmentTypes());
       }
     }
   }, [kidId, dispatch, treatmentTypesStatus]);
 
-  // מצב טעינה
+  // loading state
   if (status === 'loading') {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -64,7 +64,7 @@ const KidProfilePage = () => {
     );
   }
 
-  // טיפול בשגיאות
+  // Error handling
   if (status === 'failed' || error) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -87,7 +87,7 @@ const KidProfilePage = () => {
     );
   }
 
-  // אם הילד לא נמצא
+  //  If the child is not found
   if (status === 'succeeded' && !selectedKid) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -158,7 +158,7 @@ const KidProfilePage = () => {
           </Typography>
         </Breadcrumbs>
 
-        {/* תוכן הדף - הטאבים */}
+        {/* Page content - the tabs */}
         {selectedKid && (
           <KidProfileTabs selectedKid={selectedKid} />
         )}
