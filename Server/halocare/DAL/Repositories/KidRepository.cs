@@ -33,7 +33,9 @@ namespace halocare.DAL.Repositories
                     PhotoPath = row["photoPath"].ToString(),
                     ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
                     ParentId1 = row["ParentId1"] != DBNull.Value ? Convert.ToInt32(row["ParentId1"]) : null,
-                    ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null
+                    ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null,
+                    EmergencyPhone = row["EmergencyPhone"] != DBNull.Value ? row["EmergencyPhone"].ToString() : null,
+                    EmergencyContactName = row["EmergencyContactName"] != DBNull.Value ? row["EmergencyContactName"].ToString() : null
                 };
 
                 kids.Add(kid);
@@ -71,7 +73,9 @@ namespace halocare.DAL.Repositories
                 PhotoPath = row["photoPath"].ToString(),
                 ClassId = row["ClassId"] != DBNull.Value ? Convert.ToInt32(row["ClassId"]) : null,
                 ParentId1 = row["ParentId1"] != DBNull.Value ? Convert.ToInt32(row["ParentId1"]) : null,
-                ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null
+                ParentId2 = row["ParentId2"] != DBNull.Value ? Convert.ToInt32(row["ParentId2"]) : null,
+                EmergencyPhone = row["EmergencyPhone"] != DBNull.Value ? row["EmergencyPhone"].ToString() : null,
+                EmergencyContactName = row["EmergencyContactName"] != DBNull.Value ? row["EmergencyContactName"].ToString() : null
             };
 
             return kid;
@@ -94,7 +98,9 @@ namespace halocare.DAL.Repositories
                 { "@PhotoPath", kid.PhotoPath ?? (object)DBNull.Value },
                 { "@ClassId", kid.ClassId },
                 { "@ParentId1", kid.ParentId1 ?? (object)DBNull.Value },
-                { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value }
+                { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value },
+                { "@EmergencyPhone", kid.ParentId2 ?? (object)DBNull.Value },
+                { "@EmergencyContactName", kid.ParentId2 ?? (object)DBNull.Value }
             };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddKid", parameters));
@@ -117,7 +123,9 @@ namespace halocare.DAL.Repositories
                 { "@Photo", kid.PhotoPath ?? (object)DBNull.Value },
                 { "@ClassId", kid.ClassId },
                 { "@ParentId1", kid.ParentId1 },
-                { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value }
+                { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value },
+                { "@EmergencyPhone", kid.ParentId2 ?? (object)DBNull.Value },
+                { "@EmergencyContactName", kid.ParentId2 ?? (object)DBNull.Value },
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateKid", parameters);

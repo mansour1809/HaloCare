@@ -381,6 +381,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   // expandedSections
   const [expandedSections, setExpandedSections] = useState({
     childDetails: true,
+    emergencyContact: false,
     primaryParent: false,
     secondaryParent: false,
   });
@@ -401,6 +402,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
   // Function to set initial values
   const getInitialValues = () => {
     if (data && isEditMode) {
+      console.log(data)
       return {
         // kid info
         id: data.id || 0,
@@ -416,6 +418,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         classId: data.classId || '',
         pathToFolder: data.pathToFolder || '',
         isActive: data.isActive !== undefined ? data.isActive : true,
+        emergencyPhone: data.emergencyPhone || '',
+        emergencyContactName: data.emergencyContactName || '',
 
         // Primary parent details 
         parent1Id: data.parentId1 || 0,
@@ -454,6 +458,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       classId: '',
       pathToFolder: '',
       isActive: true,
+      emergencyPhone: '',
+      emergencyName: '',
       parent1Id: 0,
       parent1FirstName: '',
       parent1LastName: '',
@@ -468,7 +474,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
       parent2Email: '',
       parent2Address: '',
       parent2CityName: '',
-      homePhone: '',
+      homePhone:''
     };
   };
 
@@ -1214,6 +1220,109 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   </Collapse>
                 </AnimatedSection>
 
+{/* Section 2: emergency contact Details */}
+                <AnimatedSection expanded={expandedSections.emergencyContact}>
+                  <SectionHeader onClick={() => toggleSection("emergencyContact")}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <SectionTitle variant="h6" expanded={expandedSections.emergencyContact}>
+                        👨‍👩‍👧‍👦 פרטי איש קשר חירום
+                        <Chip
+                          label="חובה"
+                          size="small"
+                          color={expandedSections.emergencyContact ? "secondary" : "default"}
+                          sx={{ ml: 2, fontWeight: 600 }}
+                          icon={<StarIcon />}
+                        />
+                      </SectionTitle>
+                    </Box>
+                    <IconButton
+                      size="small"
+                      color={expandedSections.emergencyContact ? "primary" : "default"}
+                      sx={{
+                        transform: expandedSections.emergencyContact
+                          ? "rotate(-90deg)"
+                          : "rotate(0deg)",
+                        transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        background: expandedSections.emergencyContact
+                          ? 'rgba(255, 112, 67, 0.1)'
+                          : 'transparent',
+                        '&:hover': {
+                          background: 'rgba(255, 112, 67, 0.2)',
+                        }
+                      }}
+                    >
+                      <NextIcon />
+                    </IconButton>
+                  </SectionHeader>
+{console.log(formik.values)}
+                  <Collapse in={expandedSections.emergencyContact}>
+                    <CardContent sx={{ p: 4 }}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            id="emergencyContactName"
+                            name="emergencyContactName"
+                            label="שם מלא"
+                            placeholder="שם מלא חירום"
+                            value={formik.values.emergencyContactName}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={
+                              formik.touched.emergencyContactName &&
+                              Boolean(formik.errors.emergencyContactName)
+                            }
+                            helperText={
+                              formik.touched.emergencyContactName &&
+                              formik.errors.emergencyContactName
+                            }
+                            required
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PersonIcon color="secondary" />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        </Grid>
+
+                        
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            id="emergencyPhone"
+                            name="emergencyPhone"
+                            label="טלפון נייד"
+                            placeholder="05X-XXXXXXX"
+                            value={formik.values.emergencyPhone}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            error={
+                              formik.touched.emergencyPhone &&
+                              Boolean(formik.errors.emergencyPhone)
+                            }
+                            helperText={
+                              formik.touched.emergencyPhone && formik.errors.emergencyPhone
+                            }
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <CallIcon color="secondary" />
+                                </InputAdornment>
+                              ),
+                            }}
+                            required
+                          />
+                        </Grid>
+
+                       
+                                          
+                      </Grid>
+                    </CardContent>
+                  </Collapse>
+                </AnimatedSection>
+
                 {/* Section 2: Primary Parent Details */}
                 <AnimatedSection expanded={expandedSections.primaryParent}>
                   <SectionHeader onClick={() => toggleSection("primaryParent")}>
@@ -1401,9 +1510,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                                 </InputAdornment>
                               }
                             >
-                              <MenuItem value="">
-                                <em>🏠 זהה לעיר הילד</em>
-                              </MenuItem>
+
                               {citiesStatus === "loading" ? (
                                 <MenuItem value="" disabled>
                                   <CircularProgress size={20} />
@@ -1411,8 +1518,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                                 </MenuItem>
                               ) : (
                                 cities.map((city) => (
-                                  <MenuItem key={city.id || city.name} value={city.name}>
-                                   {city.name}
+                                  <MenuItem key={city.cityId || city.cityName} value={city.cityName}>
+                                   {city.cityName}
                                   </MenuItem>
                                 ))
                               )}
@@ -1615,9 +1722,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                                 </InputAdornment>
                               }
                             >
-                              <MenuItem value="">
-                                <em>🏠 זהה לעיר הילד</em>
-                              </MenuItem>
+
                               {citiesStatus === "loading" ? (
                                 <MenuItem value="" disabled>
                                   <CircularProgress size={20} />
@@ -1625,8 +1730,8 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                                 </MenuItem>
                               ) : (
                                 cities.map((city) => (
-                                  <MenuItem key={city.id || city.name} value={city.name}>
-                                   {city.name}
+                                  <MenuItem key={city.cityId || city.cityName} value={city.cityName}>
+                                   {city.cityName}
                                   </MenuItem>
                                 ))
                               )}

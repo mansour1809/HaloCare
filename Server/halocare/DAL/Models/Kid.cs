@@ -18,5 +18,8 @@ namespace halocare.DAL.Models
         public int? ClassId { get; set; }
         public int? ParentId1 { get; set; }
         public int? ParentId2 { get; set; }
+        public string? EmergencyPhone { get; set; }
+        public string? EmergencyContactName { get; set; }
+
     }
 }

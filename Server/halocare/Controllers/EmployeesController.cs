@@ -11,7 +11,7 @@ using System.Text;
 
 namespace halocare.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 

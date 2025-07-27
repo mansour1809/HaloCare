@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 import { createParent, updateParent } from './parentSlice';
 import { initializeKidOnboarding } from './onboardingSlice';
+import { Emergency } from '@mui/icons-material';
 
 
 export const fetchKids = createAsyncThunk(
@@ -101,7 +102,9 @@ export const createKidWithParents = createAsyncThunk(
         hName: formData.hName,
         pathToFolder: formData.pathToFolder,
         classId: formData.classId,
-        photoPath: formData.photoPath || null
+        photoPath: formData.photoPath || null,
+        emergencyPhone: formData.emergencyPhone || null,
+        emergencyContactName: formData.emergencyContactName || null,
       };
 
       const kidResponse = await axios.post('/Kids', kidData);
@@ -180,7 +183,9 @@ export const updateKidWithParents = createAsyncThunk(
         hName: formData.hName,
         pathToFolder: formData.pathToFolder,
         classId: formData.classId,
-        photo: formData.photo || null
+        photo: formData.photo || null,
+        emergencyPhone: formData.emergencyPhone || null,
+        emergencyContactName: formData.emergencyContactName || null,
       };
 
       // עדכון הילד

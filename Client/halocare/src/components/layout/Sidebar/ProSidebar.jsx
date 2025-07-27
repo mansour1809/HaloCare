@@ -310,18 +310,6 @@ const ProSidebar = () => {
               </MenuItem>
             </StyledSubMenu>
 
-             <MenuItem onClick={() => navigate('/homepage2')} >
-              homepage2
-            </MenuItem>
- <MenuItem onClick={() => navigate('/homepage3')} >
-              homepage3
-            </MenuItem>
- <MenuItem onClick={() => navigate('/homepage4')} >
-              homepage4
-            </MenuItem>
-             <MenuItem onClick={() => navigate('/homepage5')} >
-              homepage5
-            </MenuItem>
 
 
           </Menu>

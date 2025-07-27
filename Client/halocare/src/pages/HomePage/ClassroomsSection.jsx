@@ -60,7 +60,6 @@ import {useAuth} from '../../components/login/AuthContext'
 import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { fetchAttendanceByDate, addAttendanceRecord, updateAttendanceRecord } from '../../Redux/features/attendanceSlice';
-import { exportAttendanceToPDF } from '../../utils/attendanceExport';
 import { baseURL } from '../../components/common/axiosConfig';
 import Swal from 'sweetalert2';
 
@@ -530,35 +529,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     setKidDetailsDialog({ open: true, kid });
   };
 
-  const handleExportPDF = async () => {
-    setExporting(true);
-    try {
-      const classesData = getClassData();
-      const totalStats = {
-        present: classesData.reduce((sum, cls) => sum + cls.stats.present, 0),
-        absent: classesData.reduce((sum, cls) => sum + cls.stats.absent, 0),
-        unknown: classesData.reduce((sum, cls) => sum + cls.stats.unknown, 0),
-        total: classesData.reduce((sum, cls) => sum + cls.stats.total, 0)
-      };
-      
-      const fileName = exportAttendanceToPDF(classesData, selectedDate, totalStats);
-      
-      setSnackbar({
-        open: true,
-        message: `הדוח נוצר בהצלחה: ${fileName} 📄`,
-        severity: 'success'
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'שגיאה ביצירת הדוח',
-        severity: 'error'
-      });
-    } finally {
-      setExporting(false);
-    }
-  };
-
+ 
 
   const classesData = getClassData();
   const isLoading = classesStatus === 'loading' || kidsStatus === 'loading' || attendanceStatus === 'loading';
@@ -635,17 +606,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               </Stack>
               
               <Stack direction="row" spacing={2}>
-               
-                <GlowingButton
-                  startIcon={<ExportIcon />}
-                  onClick={handleExportPDF}
-                  disabled={exporting}
-                  glowColor="#10b981"
-                  size="large"
-                >
-                  {exporting ? 'מייצא...' : 'ייצא PDF'}
-                </GlowingButton>
-                
+    
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
                   onClick={() => navigate('/reports/attendance')}
@@ -837,7 +798,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
           <CardContent sx={{ p: 4 }}>
             {classesData.length > 0 ? (
               <Grid container spacing={4}>
-                {classesData.map((classData, index) => (
+                {classesData.filter(classData => classData.classId != '1002' || classData.className != 'ללא שיוך')
+                .map((classData, index) => (
                   <Grid item size={{sx:12 ,lg:6}}  key={classData.classId}>
                     <Zoom in timeout={1000 + index * 200}>
                       <ClassCard 
@@ -942,8 +904,11 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                 <Grid item key={kid.id}>
                                   <Zoom in timeout={1200 + kidIndex * 100}>
                                     <Tooltip 
+                                    PopperProps={{
+                disablePortal: true
+              }}
                                       title={
-                                        <Box sx={{ p: 1 }}>
+                                        <Box  sx={{ p: 1 }}>
                                           <Typography variant="body2" fontWeight="bold">
                                             {kid.firstName} {kid.lastName}
                                           </Typography>
@@ -1108,6 +1073,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
 
       {/* Magical Kid Details Dialog */}
       <Dialog 
+      dir="rtl"
         open={kidDetailsDialog.open} 
         onClose={() => setKidDetailsDialog({ open: false, kid: null })}
         maxWidth="sm"
@@ -1163,7 +1129,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               }}
             >
               <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#667eea' }}>
-                📞 פרטי קשר להורים
+                📞 פרטי קשר חירום
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <PhoneIcon color="primary" />
@@ -1243,10 +1209,10 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             ❌ סגור
           </GlowingButton>
           <GlowingButton
-            startIcon={<PersonIcon />}
             onClick={() => {
               onKidClick(kidDetailsDialog.kid.id);
               setKidDetailsDialog({ open: false, kid: null });
+              navigate(`/kids/${kidDetailsDialog.kid.id}`);
             }}
             glowColor="#667eea"
           >
