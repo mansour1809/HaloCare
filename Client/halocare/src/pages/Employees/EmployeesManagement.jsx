@@ -741,7 +741,6 @@ const EmployeesManagement = () => {
                             </TableCell>
                             
                             <TableCell>
-                              <Tooltip title="פרופיל עובד">
                                 <IconButton
                                   sx={{
                                     width: 45,
@@ -758,9 +757,12 @@ const EmployeesManagement = () => {
                                   }}
                                   onClick={() => navigate(`/employees/profile/${employee.employeeId}`)}
                                 >
+                                                                <Tooltip title="פרופיל עובד">
+
                                   <PersonIcon sx={{ fontSize: 20 }} />
-                                </IconButton>
                               </Tooltip>
+                                                              </IconButton>
+
                             </TableCell>
                           </TableRow>
                         ))}

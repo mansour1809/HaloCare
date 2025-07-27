@@ -270,35 +270,46 @@ const EventDialog = () => {
       <StyledDialogTitle eventColor={currentEventColor}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar sx={{
-              background: 'rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
-            }}>
+            <Avatar
+              sx={{
+                background: "rgba(255,255,255,0.2)",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+              }}
+            >
               {selectedEvent ? <EventIcon /> : <CelebrationIcon />}
             </Avatar>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                {selectedEvent ? 'עריכת אירוע' : 'יצירת אירוע חדש'}
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                }}
+              >
+                {selectedEvent ? "עריכת אירוע" : "יצירת אירוע חדש"}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                {selectedEvent ? 'עדכן את פרטי האירוע' : 'הוסף אירוע חדש לטווח'}
+                {selectedEvent ? "עדכן את פרטי האירוע" : "הוסף אירוע חדש לטווח"}
               </Typography>
             </Box>
           </Stack>
 
-          <Tooltip title="סגור" arrow>
+          <Tooltip title="סגור" arrow
+          PopperProps={{
+                disablePortal: true
+              }}>
             <IconButton
               onClick={() => setOpenDialog(false)}
               sx={{
-                color: 'white',
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1) rotate(90deg)'
+                color: "white",
+                background: "rgba(255,255,255,0.1)",
+                backdropFilter: "blur(10px)",
+                "&:hover": {
+                  background: "rgba(255,255,255,0.2)",
+                  transform: "scale(1.1) rotate(90deg)",
                 },
-                transition: 'all 0.3s ease'
+                transition: "all 0.3s ease",
               }}
             >
               <CloseIcon />
@@ -310,11 +321,11 @@ const EventDialog = () => {
       <DialogContent sx={{ p: 4, mt: 2 }}>
         <Grid container spacing={3}>
           {/* Title and Event Type */}
-          <Grid item size={{xs:12,md:7}}>
+          <Grid item size={{ xs: 12, md: 7 }}>
             <StyledTextField
               label="כותרת האירוע"
               name="title"
-              value={newEvent.title || ''}
+              value={newEvent.title || ""}
               onChange={handleEventChange}
               fullWidth
               required
@@ -323,46 +334,56 @@ const EventDialog = () => {
               helperText={validationErrors.title ? "נדרשת כותרת לאירוע" : ""}
               InputProps={{
                 startAdornment: (
-                  <TitleIcon sx={{ color: 'primary.main', mr: 1 }} />
-                )
+                  <TitleIcon sx={{ color: "primary.main", mr: 1 }} />
+                ),
               }}
               placeholder="הכנס כותרת מעניינת לאירוע"
             />
           </Grid>
 
-          <Grid item size={{xs:12,md:5}}>
-            <StyledFormControl fullWidth required variant="outlined" error={validationErrors.eventTypeId}>
+          <Grid item size={{ xs: 12, md: 5 }}>
+            <StyledFormControl
+              fullWidth
+              required
+              variant="outlined"
+              error={validationErrors.eventTypeId}
+            >
               <InputLabel>סוג אירוע</InputLabel>
               <Select
                 name="eventTypeId"
-                value={newEvent.eventTypeId || ''}
+                value={newEvent.eventTypeId || ""}
                 onChange={handleEventChange}
                 label="סוג אירוע"
-                startAdornment={<CategoryIcon sx={{ color: 'secondary.main', mr: 1 }} />}
+                startAdornment={
+                  <CategoryIcon sx={{ color: "secondary.main", mr: 1 }} />
+                }
                 MenuProps={{
                   PaperProps: {
                     sx: {
                       borderRadius: 3,
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
                       mt: 1,
                       maxHeight: 300,
                     },
                   },
                 }}
               >
-                {eventTypes.map(type => (
+                {eventTypes.map((type) => (
                   <MenuItem
                     key={type.eventTypeId}
                     value={type.eventTypeId}
                     sx={{
-                      borderRight: `6px solid ${type.color || '#1976d2'}`,
-                      borderRadius: '8px !important',
-                      margin: '4px 8px',
-                      '&:hover': {
-                        background: `${alpha(type.color || '#1976d2', 0.1)} !important`,
-                        transform: 'translateX(-4px)',
+                      borderRight: `6px solid ${type.color || "#1976d2"}`,
+                      borderRadius: "8px !important",
+                      margin: "4px 8px",
+                      "&:hover": {
+                        background: `${alpha(
+                          type.color || "#1976d2",
+                          0.1
+                        )} !important`,
+                        transform: "translateX(-4px)",
                       },
-                      transition: 'all 0.3s ease'
+                      transition: "all 0.3s ease",
                     }}
                   >
                     <Stack direction="row" spacing={1} alignItems="center">
@@ -370,9 +391,12 @@ const EventDialog = () => {
                         sx={{
                           width: 16,
                           height: 16,
-                          borderRadius: '50%',
-                          background: type.color || '#1976d2',
-                          boxShadow: `0 2px 8px ${alpha(type.color || '#1976d2', 0.4)}`,
+                          borderRadius: "50%",
+                          background: type.color || "#1976d2",
+                          boxShadow: `0 2px 8px ${alpha(
+                            type.color || "#1976d2",
+                            0.4
+                          )}`,
                         }}
                       />
                       <Typography fontWeight={500}>{type.eventType}</Typography>
@@ -387,62 +411,74 @@ const EventDialog = () => {
           </Grid>
 
           {/* Date and time */}
-          <Grid item size={{xs:12,md:6}}>
+          <Grid item size={{ xs: 12, md: 6 }}>
             <StyledTextField
               label="תאריך ושעת התחלה"
               name="start"
               type="datetime-local"
-              value={newEvent.start || ''}
+              value={newEvent.start || ""}
               onChange={handleEventChange}
               fullWidth
               required
               variant="outlined"
               error={validationErrors.start}
-              helperText={validationErrors.start ? "יש להזין תאריך ושעת התחלה" : ""}
+              helperText={
+                validationErrors.start ? "יש להזין תאריך ושעת התחלה" : ""
+              }
               InputLabelProps={{ shrink: true }}
               InputProps={{
-                startAdornment: <AccessTimeIcon sx={{ color: 'success.main', mr: 1 }} />
+                startAdornment: (
+                  <AccessTimeIcon sx={{ color: "success.main", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
 
-          <Grid item size={{xs:12,md:6}}>
+          <Grid item size={{ xs: 12, md: 6 }}>
             <StyledTextField
               label="תאריך ושעת סיום"
               name="end"
               type="datetime-local"
-              value={newEvent.end || ''}
+              value={newEvent.end || ""}
               onChange={handleEventChange}
               fullWidth
               required
               variant="outlined"
               error={validationErrors.end}
-              helperText={validationErrors.end ? "שעת הסיום חייבת להיות מאוחרת משעת ההתחלה" : ""}
+              helperText={
+                validationErrors.end
+                  ? "שעת הסיום חייבת להיות מאוחרת משעת ההתחלה"
+                  : ""
+              }
               InputLabelProps={{ shrink: true }}
               InputProps={{
-                startAdornment: <AccessTimeIcon sx={{ color: 'warning.main', mr: 1 }} />
+                startAdornment: (
+                  <AccessTimeIcon sx={{ color: "warning.main", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
 
           {/* Location */}
-          <Grid item size={{xs:12}}>
+          <Grid item size={{ xs: 12 }}>
             <StyledTextField
               label="מיקום האירוע"
               name="location"
-              value={newEvent.location || ''}
+              value={newEvent.location || ""}
               onChange={handleEventChange}
               fullWidth
               variant="outlined"
               InputProps={{
-                startAdornment: <LocationOnIcon sx={{ color: 'info.main', mr: 1 }} />
+                startAdornment: (
+                  <LocationOnIcon sx={{ color: "info.main", mr: 1 }} />
+                ),
               }}
               placeholder="היכן יתקיים האירוע?"
             />
           </Grid>
 
           {/* Participants */}
-          <Grid item size={{xs:12,md:6}}>
+          <Grid item size={{ xs: 12, md: 6 }}>
             <StyledFormControl fullWidth variant="outlined">
               <InputLabel>ילדים משתתפים</InputLabel>
               <Select
@@ -452,21 +488,28 @@ const EventDialog = () => {
                 onChange={handleParticipantsChange}
                 label="ילדים משתתפים"
                 renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {console.log(selected)}
                     {selected.map((value) => {
-                      const kid = kids.find(k => (k.id === value && k.isActive));
+                      const kid = kids.find(
+                        (k) => k.id === value && k.isActive
+                      );
                       return (
                         <ParticipantChip
                           key={value}
-                          label={kid ? `${kid.firstName} ${kid.lastName}` : value}
+                          label={
+                            kid ? `${kid.firstName} ${kid.lastName}` : value
+                          }
                           size="small"
                           avatar={
-                            <Avatar sx={{
-                              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                              width: 20,
-                              height: 20
-                            }}>
+                            <Avatar
+                              sx={{
+                                background:
+                                  "linear-gradient(45deg, #667eea 30%, #764ba2 90%)",
+                                width: 20,
+                                height: 20,
+                              }}
+                            >
                               <ChildCareIcon sx={{ fontSize: 12 }} />
                             </Avatar>
                           }
@@ -481,28 +524,34 @@ const EventDialog = () => {
                     sx: {
                       borderRadius: 3,
                       maxHeight: 250,
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
                     },
                   },
                 }}
-                startAdornment={<ChildCareIcon sx={{ color: 'primary.main', mr: 1 }} />}
+                startAdornment={
+                  <ChildCareIcon sx={{ color: "primary.main", mr: 1 }} />
+                }
               >
-                {kids.filter(kid => kid.isActive).map(kid => (
-                  <MenuItem key={kid.id} value={kid.id}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                        👶
-                      </Avatar>
-                      <Typography>{`${kid.firstName} ${kid.lastName}`}</Typography>
-                    </Stack>
-                  </MenuItem>
-                ))}
+                {kids
+                  .filter((kid) => kid.isActive)
+                  .map((kid) => (
+                    <MenuItem key={kid.id} value={kid.id}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Avatar
+                          sx={{ width: 24, height: 24, fontSize: "0.75rem" }}
+                        >
+                          👶
+                        </Avatar>
+                        <Typography>{`${kid.firstName} ${kid.lastName}`}</Typography>
+                      </Stack>
+                    </MenuItem>
+                  ))}
               </Select>
             </StyledFormControl>
           </Grid>
 
           {/* Staff */}
-          <Grid item size={{xs:12,md:6}}>
+          <Grid item size={{ xs: 12, md: 6 }}>
             <StyledFormControl fullWidth variant="outlined">
               <InputLabel>צוות משתתף</InputLabel>
               <Select
@@ -512,22 +561,31 @@ const EventDialog = () => {
                 onChange={handleParticipantsChange}
                 label="צוות משתתף"
                 renderValue={(selected) => (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                     {selected.map((value) => {
-                      const employee = employees.find(emp => emp.employeeId === value);
+                      const employee = employees.find(
+                        (emp) => emp.employeeId === value
+                      );
                       return (
                         <ParticipantChip
                           key={value}
-                          label={employee ? `${employee.firstName} ${employee.lastName}` : value}
+                          label={
+                            employee
+                              ? `${employee.firstName} ${employee.lastName}`
+                              : value
+                          }
                           size="small"
                           avatar={
-                            <Avatar sx={{
-                              background: 'linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)',
-                              width: 20,
-                              height: 20,
-                              fontSize: '0.6rem'
-                            }}>
-                              {employee ? employee.firstName.charAt(0) : '?'}
+                            <Avatar
+                              sx={{
+                                background:
+                                  "linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)",
+                                width: 20,
+                                height: 20,
+                                fontSize: "0.6rem",
+                              }}
+                            >
+                              {employee ? employee.firstName.charAt(0) : "?"}
                             </Avatar>
                           }
                           color="secondary"
@@ -541,36 +599,43 @@ const EventDialog = () => {
                     sx: {
                       borderRadius: 3,
                       maxHeight: 250,
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
                     },
                   },
                 }}
-                startAdornment={<PersonIcon sx={{ color: 'secondary.main', mr: 1 }} />}
+                startAdornment={
+                  <PersonIcon sx={{ color: "secondary.main", mr: 1 }} />
+                }
               >
-                {employees.filter(emp => emp.isActive).map(emp => (
-                  <MenuItem key={emp.employeeId} value={emp.employeeId}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Avatar sx={{
-                        width: 24,
-                        height: 24,
-                        fontSize: '0.6rem',
-                        background: 'linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)'
-                      }}>
-                        {emp.firstName.charAt(0)}
-                      </Avatar>
-                      <Typography>{`${emp.firstName} ${emp.lastName}`}</Typography>
-                    </Stack>
-                  </MenuItem>
-                ))}
+                {employees
+                  .filter((emp) => emp.isActive)
+                  .map((emp) => (
+                    <MenuItem key={emp.employeeId} value={emp.employeeId}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Avatar
+                          sx={{
+                            width: 24,
+                            height: 24,
+                            fontSize: "0.6rem",
+                            background:
+                              "linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)",
+                          }}
+                        >
+                          {emp.firstName.charAt(0)}
+                        </Avatar>
+                        <Typography>{`${emp.firstName} ${emp.lastName}`}</Typography>
+                      </Stack>
+                    </MenuItem>
+                  ))}
               </Select>
             </StyledFormControl>
           </Grid>
 
-          <Grid item size={{xs:12}}>
+          <Grid item size={{ xs: 12 }}>
             <StyledTextField
               label="תיאור מפורט"
               name="description"
-              value={newEvent.description || ''}
+              value={newEvent.description || ""}
               onChange={handleEventChange}
               fullWidth
               multiline
@@ -578,8 +643,8 @@ const EventDialog = () => {
               variant="outlined"
               InputProps={{
                 startAdornment: (
-                  <DescriptionIcon sx={{ color: 'info.main', mr: 1, mt: 1 }} />
-                )
+                  <DescriptionIcon sx={{ color: "info.main", mr: 1, mt: 1 }} />
+                ),
               }}
               placeholder="פרטים נוספים על האירוע (אופציונלי)"
             />
@@ -589,7 +654,13 @@ const EventDialog = () => {
 
       <Divider />
 
-      <DialogActions sx={{ p: 3, justifyContent: 'space-between', background: alpha('#f8f9fa', 0.5) }}>
+      <DialogActions
+        sx={{
+          p: 3,
+          justifyContent: "space-between",
+          background: alpha("#f8f9fa", 0.5),
+        }}
+      >
         <Box>
           {selectedEvent && (
             <GlowButton
@@ -598,13 +669,14 @@ const EventDialog = () => {
               startIcon={<DeleteIcon />}
               glowColor="#ef4444"
               sx={{
-                color: '#ef4444',
-                borderColor: '#ef4444',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #ef4444 30%, #dc2626 90%)',
-                  color: 'white',
-                  borderColor: 'transparent',
-                }
+                color: "#ef4444",
+                borderColor: "#ef4444",
+                "&:hover": {
+                  background:
+                    "linear-gradient(45deg, #ef4444 30%, #dc2626 90%)",
+                  color: "white",
+                  borderColor: "transparent",
+                },
               }}
             >
               מחק אירוע
@@ -613,12 +685,25 @@ const EventDialog = () => {
         </Box>
 
         {/* Information about the event creator */}
-        <Card sx={{ background: alpha('#f8f9fa', 0.8), borderRadius: 2 }}>
-          <CardContent sx={{ p: '8px 16px !important' }}>
-            <Tooltip title="יוצר האירוע" arrow>
+        <Card sx={{ background: alpha("#f8f9fa", 0.8), borderRadius: 2 }}>
+          <CardContent sx={{ p: "8px 16px !important" }}>
+            <Tooltip
+              title="יוצר האירוע"
+              arrow
+              PopperProps={{
+                disablePortal: true
+              }}
+            >
               <Stack direction="row" spacing={1} alignItems="center">
-                <AccountCircleIcon fontSize="small" sx={{ color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                <AccountCircleIcon
+                  fontSize="small"
+                  sx={{ color: "text.secondary" }}
+                />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={500}
+                >
                   {getCreatorName()}
                 </Typography>
               </Stack>
@@ -633,7 +718,7 @@ const EventDialog = () => {
             variant="outlined"
             startIcon={<CancelIcon />}
             glowColor="#6b7280"
-            sx={{ color: 'text.secondary', borderColor: 'text.secondary' }}
+            sx={{ color: "text.secondary", borderColor: "text.secondary" }}
           >
             ביטול
           </GlowButton>
@@ -644,12 +729,15 @@ const EventDialog = () => {
             startIcon={selectedEvent ? <SaveIcon /> : <AutoAwesomeIcon />}
             glowColor={currentEventColor}
             sx={{
-              background: `linear-gradient(45deg, ${currentEventColor} 30%, ${alpha(currentEventColor, 0.8)} 90%)`,
+              background: `linear-gradient(45deg, ${currentEventColor} 30%, ${alpha(
+                currentEventColor,
+                0.8
+              )} 90%)`,
               minWidth: 140,
-              fontWeight: 700
+              fontWeight: 700,
             }}
           >
-            {selectedEvent ? 'עדכן אירוע' : 'צור אירוע'}
+            {selectedEvent ? "עדכן אירוע" : "צור אירוע"}
           </GlowButton>
         </Stack>
       </DialogActions>
