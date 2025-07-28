@@ -288,7 +288,7 @@ const OnboardingStatusChip = ({ onboardingData }) => {
   const config = getStatusConfig(overallStatus);
   
   return (
-    <Tooltip title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
+    <Tooltip PopperProps={{ disablePortal: true }} title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
       <Chip 
         label={config.label} 
         color={config.color} 
@@ -550,7 +550,7 @@ const KidsManagement = () => {
               </Box>
               
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Tooltip title="רענון נתונים">
+                <Tooltip PopperProps={{ disablePortal: true }} title="רענון נתונים">
                   <IconButton 
                     onClick={handleRefresh} 
                     disabled={loading}
@@ -625,7 +625,7 @@ const KidsManagement = () => {
 
           {/* Statistics */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12, sm:3}}>
               <StatCard color="primary">
                 <Typography variant="h3" color="primary.main" fontWeight="bold">
                   {stats.total}
@@ -635,7 +635,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12, sm:3}}>
               <StatCard color="success">
                 <Typography variant="h3" color="success.main" fontWeight="bold">
                   {stats.completed}
@@ -645,7 +645,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12, sm:3}}>
               <StatCard color="secondary">
                 <Typography variant="h3" color="secondary.main" fontWeight="bold">
                   {stats.inProgress}
@@ -655,7 +655,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12, sm:3}}>
               <StatCard color="info">
                 <Typography variant="h3" color="info.main" fontWeight="bold">
                   {stats.notStarted}
@@ -789,7 +789,7 @@ const KidsManagement = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Tooltip title="פרופיל ילד">
+                          <Tooltip PopperProps={{ disablePortal: true }} title="פרופיל ילד">
                             <IconButton
                               sx={{
                                 width: 45,

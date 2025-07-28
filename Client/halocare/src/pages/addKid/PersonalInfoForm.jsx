@@ -759,7 +759,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                     overlap="circular"
                     anchorOrigin={{ vertical: "top", horizontal: "right" }}
                     badgeContent={
-                      <Tooltip title="העלאת תמונה">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="העלאת תמונה">
                         <label htmlFor="kid-photo-upload">
                           <IconButton
                             aria-label="העלאת תמונה"
@@ -873,7 +873,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   <Collapse in={expandedSections.childDetails}>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="firstName"
@@ -908,7 +908,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="lastName"
@@ -933,7 +933,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="idNumber"
@@ -956,7 +956,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <DatePicker
                             label="תאריך לידה"
                             value={formik.values.birthDate}
@@ -982,7 +982,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <FormControl
                             fullWidth
                             required
@@ -1050,7 +1050,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           </FormControl>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <FormControl
                             fullWidth
                             error={
@@ -1092,7 +1092,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           </FormControl>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="address"
@@ -1117,7 +1117,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <FormControl
                             fullWidth
                             error={formik.touched.hName && Boolean(formik.errors.hName)}
@@ -1152,7 +1152,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
 
                       {  /* Class selection field if class data exists */}
                         {classes && classes.length > 0 && (
-                          <Grid item xs={12} sm={6}>
+                          <Grid item size={{xs:12, sm:6}}>
                             <FormControl fullWidth>
                               <InputLabel id="classId-label"> כיתה</InputLabel>
                               <Select
@@ -1179,7 +1179,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         )}
 
                        { /* Active status toggle */}
-                        <Grid item xs={12}>
+                        <Grid item size={{xs:12}}>
                           <Box sx={{ 
                             p: 2, 
                             background: 'rgba(76, 181, 195, 0.05)', 
@@ -1258,7 +1258,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   <Collapse in={expandedSections.emergencyContact}>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="emergencyContactName"
@@ -1288,7 +1288,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                         </Grid>
 
                         
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="emergencyPhone"
@@ -1361,7 +1361,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   <Collapse in={expandedSections.primaryParent}>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent1FirstName"
@@ -1390,7 +1390,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent1LastName"
@@ -1419,7 +1419,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent1Mobile"
@@ -1447,7 +1447,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent1Email"
@@ -1475,7 +1475,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent1Address"
@@ -1494,7 +1494,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <FormControl fullWidth>
                             <InputLabel id="parent1CityName-label">עיר</InputLabel>
                             <Select
@@ -1550,7 +1550,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                       </SectionTitle>
                     </Box>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Tooltip title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
                         <InfoIcon
                           fontSize="small"
                           sx={{ color: theme.palette.info.main }}
@@ -1580,7 +1580,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                   <Collapse in={expandedSections.secondaryParent}>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent2FirstName"
@@ -1607,7 +1607,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent2LastName"
@@ -1634,7 +1634,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent2Mobile"
@@ -1660,7 +1660,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent2Email"
@@ -1687,7 +1687,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <TextField
                             fullWidth
                             id="parent2Address"
@@ -1706,7 +1706,7 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                           />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item size={{xs:12, sm:6}}>
                           <FormControl fullWidth>
                             <InputLabel id="parent2CityName-label"> עיר </InputLabel>
                             <Select

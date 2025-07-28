@@ -89,7 +89,7 @@ const TreatmentsSection = ({ onViewAllTreatments }) => {
       <CardContent sx={{ p: 3 }}>
         {/* סטטיסטיקות עליונות */}
         <Grid container spacing={2} mb={3}>
-          <Grid item xs={6}>
+          <Grid item size={{xs:6}}>
             <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" fontWeight="bold" color="success.main">
                 {completed}
@@ -97,7 +97,7 @@ const TreatmentsSection = ({ onViewAllTreatments }) => {
               <Typography variant="caption">סיכומים נוספו</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item size={{xs:6}}>
             <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" fontWeight="bold" color="error.main">
                 {missing}

@@ -421,7 +421,7 @@ const SharedCalendarWidget = ({
             border: '1px solid rgba(76, 181, 195, 0.2)'
           }}>
             <Grid container spacing={2} sx={{ textAlign: 'center' }}>
-              <Grid item xs={4}>
+              <Grid item size={{xs:4}}>
                 <Typography variant="h6" fontWeight={700} color="primary.main">
                   {events.filter(e => isToday(e.startTime)).length}
                 </Typography>
@@ -429,7 +429,7 @@ const SharedCalendarWidget = ({
                   היום
                 </Typography>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item size={{xs:4}}>
                 <Typography variant="h6" fontWeight={700} color="warning.main">
                   {events.filter(e => isTomorrow(e.startTime)).length}
                 </Typography>
@@ -437,7 +437,7 @@ const SharedCalendarWidget = ({
                   מחר
                 </Typography>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item size={{xs:4}}>
                 <Typography variant="h6" fontWeight={700} color="success.main">
                   {getUpcomingEventsCount()}
                 </Typography>

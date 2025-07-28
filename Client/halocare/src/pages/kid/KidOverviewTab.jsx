@@ -119,11 +119,11 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                 
                 {title === 'רגישויות ואלרגיות' && (
                   <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={3}>
+                    <Grid item size={{xs:3}}>
                       <Typography variant="subtitle2" color="text.secondary">חומר</Typography>
                       <Typography fontWeight="bold">{item.allergen}</Typography>
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item size={{xs:3}}>
                       <Typography variant="subtitle2" color="text.secondary">חומרה</Typography>
                       <Chip 
                         label={item.severity} 
@@ -131,7 +131,7 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                         size="small"
                       />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item size={{xs:6}}>
                       <Typography variant="subtitle2" color="text.secondary">תגובה</Typography>
                       <Typography>{item.reaction}</Typography>
                     </Grid>
@@ -378,7 +378,7 @@ const KidOverviewTab = ({ selectedKid }) => {
 
       <Grid container spacing={3}>
         {/* Left column - Treatment Flower */}
-        <Grid item xs={12} lg={8}>
+        <Grid item size={{xs:12, lg:8}}>
           <Paper sx={{ 
             p: 3, 
             borderRadius: 2,
@@ -411,7 +411,7 @@ const KidOverviewTab = ({ selectedKid }) => {
         </Grid>
 
         {/* Right column - Basic Information */}
-        <Grid item xs={12} lg={4}>
+        <Grid item size={{xs:12, lg:4}}>
           <Stack spacing={2}>
             {/* Personal Details */}
             <Paper sx={{ p: 2, borderRadius: 2 }}>

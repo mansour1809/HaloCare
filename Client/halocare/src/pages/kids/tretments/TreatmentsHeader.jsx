@@ -188,7 +188,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
             
             <Grid container spacing={3}>
               {/* Total treatments */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{xs:12,sm:6,md:3}}>
                 <Paper sx={{ 
                   p: 2, 
                   textAlign: 'center',
@@ -224,7 +224,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
 
               {/* Average cooperation */}
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid item size={{xs:12,sm:6,md:4}}>
                 <Paper sx={{ 
                   p: 2, 
                   textAlign: 'center',
@@ -263,7 +263,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
 
               {/* Different therapists */}
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid item size={{xs:12,sm:6,md:4}}>
                 <Paper sx={{ 
                   p: 2, 
                   textAlign: 'center',
@@ -306,7 +306,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                   {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
-                    <Tooltip key={type} title={`${count} טיפולים מסוג ${type}`}>
+                    <Tooltip PopperProps={{ disablePortal: true }} key={type} title={`${count} טיפולים מסוג ${type}`}>
                       <Chip
                         label={`${type}: ${count}`}
                         variant="outlined"

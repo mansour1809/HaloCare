@@ -143,7 +143,7 @@ const SimpleFlowerProfile = ({ kid }) => {
         const shadowColor = isHovered ? lightenColor(baseColor, 10) : baseColor;
         
         return (
-          <Tooltip 
+          <Tooltip PopperProps={{ disablePortal: true }}
             key={treatmentType.treatmentTypeId}
             title={`לחץ לצפייה בטיפולי ${treatmentType.treatmentTypeName}`}
             placement="top"

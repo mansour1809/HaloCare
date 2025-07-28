@@ -232,7 +232,7 @@ const FilesList = ({
               </Box>
               
               <Box sx={{ display: 'flex', gap: 0.5 }}>
-                <Tooltip title="הורד">
+                <Tooltip PopperProps={{ disablePortal: true }} title="הורד">
                   <IconButton
                     size="small"
                     onClick={() => handleDownload(doc.docId, doc.docName)}
@@ -240,7 +240,7 @@ const FilesList = ({
                     <DownloadIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="מחק">
+                <Tooltip PopperProps={{ disablePortal: true }} title="מחק">
                   <IconButton
                     size="small"
                     onClick={() => handleDelete(doc.docId)}
@@ -340,7 +340,7 @@ const FilesList = ({
                 </TableCell>
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                    <Tooltip title="הורד קובץ">
+                    <Tooltip PopperProps={{ disablePortal: true }} title="הורד קובץ">
                       <IconButton
                         size="small"
                         onClick={() => handleDownload(doc.docId, doc.docName)}
@@ -349,7 +349,7 @@ const FilesList = ({
                         <DownloadIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="מחק קובץ">
+                    <Tooltip PopperProps={{ disablePortal: true }} title="מחק קובץ">
                       <IconButton
                         size="small"
                         onClick={() => handleDelete(doc.docId)}

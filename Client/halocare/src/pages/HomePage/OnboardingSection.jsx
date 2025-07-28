@@ -80,7 +80,7 @@ const OnboardingSection = ({ onViewFullOnboarding, onKidOnboardingClick }) => {
       <CardContent sx={{ p: 3 }}>
         {/* סטטיסטיקות עליונות */}
         <Grid container spacing={2} mb={3}>
-          <Grid item xs={4}>
+          <Grid item size={{xs:4}}>
             <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" fontWeight="bold" color="success.main">
                 {stats.completed}
@@ -88,7 +88,7 @@ const OnboardingSection = ({ onViewFullOnboarding, onKidOnboardingClick }) => {
               <Typography variant="caption">הושלמו</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item size={{xs:4}}>
             <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" fontWeight="bold" color="warning.main">
                 {stats.inProgress}
@@ -96,7 +96,7 @@ const OnboardingSection = ({ onViewFullOnboarding, onKidOnboardingClick }) => {
               <Typography variant="caption">בתהליך</Typography>
             </Paper>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item size={{xs:4}}>
             <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h5" fontWeight="bold" color="error.main">
                 {stats.needsAttention}

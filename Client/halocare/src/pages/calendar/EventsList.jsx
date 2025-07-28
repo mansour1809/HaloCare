@@ -357,7 +357,7 @@ const EventsList = () => {
             <CardContent sx={{ p: 3 }}>
               <Grid container spacing={3} alignItems="center">
                 {/* Search */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <SearchField
                     placeholder="חיפוש באירועים..."
                     variant="outlined"
@@ -376,9 +376,9 @@ const EventsList = () => {
                 </Grid>
 
                 {/* Monthly Navigation */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                    <Tooltip title="חודש קודם" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש קודם" arrow>
                       <NavButton onClick={goToPreviousMonth} size="small">
                         <ChevronRightIcon />
                       </NavButton>
@@ -397,13 +397,13 @@ const EventsList = () => {
                       {currentMonth.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
                     </Typography>
 
-                    <Tooltip title="חודש הבא" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש הבא" arrow>
                       <NavButton onClick={goToNextMonth} size="small">
                         <ChevronLeftIcon />
                       </NavButton>
                     </Tooltip>
 
-                    <Tooltip title="חזור להיום" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חזור להיום" arrow>
                       <IconButton
                         onClick={goToCurrentMonth}
                         sx={{
@@ -424,7 +424,7 @@ const EventsList = () => {
                 </Grid>
 
                 {/* Buttons and Statistics */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
                     <StatsChip
                       label={`✨ ${localFilteredEvents.length} אירועים`}
@@ -471,7 +471,7 @@ const EventsList = () => {
                 <Divider sx={{ my: 3 }} />
 
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item size={{xs:12,sm:6 ,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>סוג אירוע</InputLabel>
                       <Select
@@ -489,7 +489,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item size={{xs:12,sm:6 ,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>ילד</InputLabel>
                       <Select
@@ -509,7 +509,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item size={{xs:12,sm:6 ,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>מטפל</InputLabel>
                       <Select
@@ -529,7 +529,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item size={{xs:12,sm:6 ,md:3}}>
                     <Button
                       variant="outlined"
                       onClick={resetFilters}
@@ -646,7 +646,7 @@ const EventsList = () => {
                     const backgroundColor = event.backgroundColor || '#667eea';
 
                     return (
-                      <Grid item xs={12} sm={6} lg={4} key={event.id}>
+                      <Grid item size={{xs:12,sm:6,lg:4}} key={event.id}>
                         <Zoom in timeout={300 + (eventIndex * 100)}>
                           <EventCard
                             borderColor={backgroundColor}
@@ -748,7 +748,7 @@ const EventsList = () => {
                             </CardContent>
 
                             <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
-                              <Tooltip title="פרטים נוספים" arrow>
+                              <Tooltip PopperProps={{ disablePortal: true }} title="פרטים נוספים" arrow>
                                 <IconButton
                                   size="small"
                                   sx={{
