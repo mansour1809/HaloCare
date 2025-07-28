@@ -190,7 +190,10 @@ const Navbar = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             
             {/* User menu */}
-            <Tooltip title="תפריט משתמש" arrow>
+            <Tooltip title="תפריט משתמש" arrow   PopperProps={{
+    disablePortal: true
+  }}
+>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
                 <Avatar 
