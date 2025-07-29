@@ -364,7 +364,7 @@ const validationSchema = yup.object({
   parent2Email: yup.string().nullable().email('כתובת דוא״ל לא תקינה'),
 });
 
-const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
+const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const [photoFile, setPhotoFile] = useState(null);
@@ -660,8 +660,10 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
         }
 
         // Update parent component
-        onUpdate(result.kid);
-
+       if (onUpdate && typeof onUpdate === 'function') {
+  onUpdate(result.kid);
+}
+navigate('/kids'); // Redirect to kids page after saving
       } catch (error) {
         console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
         Swal.fire({
@@ -1236,7 +1238,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                       <NextIcon />
                     </IconButton>
                   </SectionHeader>
-{console.log(formik.values)}
                   <Collapse in={expandedSections.emergencyContact}>
                     <CardContent sx={{ p: 4 }}>
                       <Grid container spacing={3}>
