@@ -88,7 +88,7 @@ const HomePageHeader = ({ onRefresh }) => {
             </Box>
           </Stack>
           
-          <Tooltip title="רענון נתונים">
+          <Tooltip PopperProps={{ disablePortal: true }} title="רענון נתונים">
             <IconButton 
               onClick={onRefresh}
               color="primary"

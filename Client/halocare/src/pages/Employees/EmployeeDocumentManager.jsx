@@ -489,7 +489,7 @@ const EmployeeDocumentManager = ({
                       </AnimatedButton>
                     )}
 
-                    <Tooltip title="רענון מסמכים">
+                    <Tooltip PopperProps={{ disablePortal: true }} title="רענון מסמכים">
                       <IconButton
                         onClick={handleRefresh}
                         disabled={refreshing}

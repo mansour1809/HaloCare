@@ -190,10 +190,7 @@ const Navbar = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             
             {/* User menu */}
-            <Tooltip title="תפריט משתמש" arrow   PopperProps={{
-    disablePortal: true
-  }}
->
+            <Tooltip PopperProps={{ disablePortal: true }} title="תפריט משתמש" arrow>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
                 <Avatar 
@@ -249,7 +246,7 @@ const Navbar = () => {
             
             {/* Action buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip title="הודעות" arrow>
+              <Tooltip PopperProps={{ disablePortal: true }} title="הודעות" arrow>
                 <ActionButton size="medium">
                   <Badge badgeContent={3} color="error">
                     <ChatIcon />
@@ -257,7 +254,7 @@ const Navbar = () => {
                 </ActionButton>
               </Tooltip>
               
-              <Tooltip title="התראות" arrow>
+              <Tooltip PopperProps={{ disablePortal: true }} title="התראות" arrow>
                 <ActionButton size="medium" onClick={handleOpenNotificationsMenu}>
                   <Badge badgeContent={notifications.length} color="error">
                     <NotificationsIcon />

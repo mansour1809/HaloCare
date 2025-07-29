@@ -344,7 +344,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             
             {/* Graphs */}
             <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
+              <Grid item size={{xs:12, md:6}}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     פילוח נוכחות
@@ -380,7 +380,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   </Box>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item size={{xs:12, md:6}}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     מגמת נוכחות יומית
@@ -425,7 +425,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={6} sm={3}>
+              <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#667eea">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
                     <Avatar sx={{ 
@@ -446,7 +446,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   </CardContent>
                 </StatCard>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#10b981">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
                     <Avatar sx={{ 
@@ -467,7 +467,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   </CardContent>
                 </StatCard>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#ef4444">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
                     <Avatar sx={{ 
@@ -488,7 +488,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   </CardContent>
                 </StatCard>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#f59e0b">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
                     <Avatar sx={{ 
@@ -518,7 +518,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   ניתוח מתקדם
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{xs:12, md:6}}>
                     <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
                       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
                         <Avatar sx={{ 
@@ -562,7 +562,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                       </Stack>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{xs:12, md:6}}>
                     <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
                       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
                         <Avatar sx={{ 
@@ -674,11 +674,11 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           </TableCell>
                           <TableCell align="center">
                             {record.isPresent ? (
-                              <Tooltip title="נוכח" arrow>
+                              <Tooltip PopperProps={{ disablePortal: true }} title="נוכח" arrow>
                                 <CheckCircleIcon color="success" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             ) : (
-                              <Tooltip title="נעדר" arrow>
+                              <Tooltip PopperProps={{ disablePortal: true }} title="נעדר" arrow>
                                 <CancelIcon color="error" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             )}
@@ -881,7 +881,7 @@ const AttendanceReports = () => {
                 </Stack>
                 
                 <Grid container spacing={3} alignItems="center">
-                  <Grid item size={{sx:12 , sm:6 , md:3}} >
+                  <Grid item size={{xs:12, sm:6, md:3}}>
                     <FormControl fullWidth variant="outlined">
                       <InputLabel>בחר ילד</InputLabel>
                       <StyledSelect 
@@ -920,7 +920,7 @@ const AttendanceReports = () => {
                     </FormControl>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item size={{xs:12, sm:6, md:3}}>
                     <FormControl fullWidth variant="outlined">
                       <InputLabel>טווח זמן</InputLabel>
                       <StyledSelect 
@@ -942,7 +942,7 @@ const AttendanceReports = () => {
                   
                   {rangeType === "custom" && (
                     <>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12, sm:6, md:3}}>
                         <DatePicker
                           label="מתאריך"
                           value={startDate}
@@ -966,7 +966,7 @@ const AttendanceReports = () => {
                           }}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12, sm:6, md:3}}>
                         <DatePicker
                           label="עד תאריך"
                           value={endDate}
@@ -993,7 +993,7 @@ const AttendanceReports = () => {
                     </>
                   )}
                   
-                  <Grid item xs={12}>
+                  <Grid item size={{xs:12}}>
                     <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
                       <GlowButton 
                         variant="outlined"

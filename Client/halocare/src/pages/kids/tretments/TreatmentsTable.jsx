@@ -79,7 +79,7 @@ const CooperationRating = ({ level }) => {
   }
   
   return (
-    <Tooltip title={`רמת שיתוף פעולה: ${level}/5`}>
+    <Tooltip PopperProps={{ disablePortal: true }} title={`רמת שיתוף פעולה: ${level}/5`}>
       <Stack direction="row" spacing={0.5} alignItems="center">
         {stars}
         <Typography variant="caption" sx={{ ml: 1, fontWeight: 600 }}>
@@ -293,7 +293,7 @@ const TreatmentsTable = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                      <Tooltip title="צפייה בפרטי הטיפול">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="צפייה בפרטי הטיפול">
                         <ActionButton
                           actiontype="view"
                           size="small"
@@ -305,7 +305,7 @@ const TreatmentsTable = () => {
                           <VisibilityIcon sx={{ fontSize: 18 }} />
                         </ActionButton>
                       </Tooltip>
-                      <Tooltip title="הורדת סיכום טיפול">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="הורדת סיכום טיפול">
                         <ActionButton
                           actiontype="download"
                           size="small"

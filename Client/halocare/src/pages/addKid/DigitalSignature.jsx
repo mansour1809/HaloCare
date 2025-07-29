@@ -225,7 +225,7 @@ const DigitalSignature = ({
           
           <Box sx={{ display: 'flex', gap: 1 }}>
             {value && (
-              <Tooltip title="צפייה בחתימה">
+              <Tooltip PopperProps={{ disablePortal: true }} title="צפייה בחתימה">
                 <IconButton 
                   size="small" 
                   onClick={() => setDialogOpen(true)}
@@ -237,7 +237,7 @@ const DigitalSignature = ({
             )}
             
             {!readOnly && (
-              <Tooltip title={value ? "עריכת חתימה" : "חתימה"}>
+              <Tooltip PopperProps={{ disablePortal: true }} title={value ? "עריכת חתימה" : "חתימה"}>
                 <IconButton 
                   size="small" 
                   onClick={() => setDialogOpen(true)}

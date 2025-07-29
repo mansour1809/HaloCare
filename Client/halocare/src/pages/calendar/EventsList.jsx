@@ -357,7 +357,7 @@ const EventsList = () => {
             <CardContent sx={{ p: 3 }}>
               <Grid container spacing={3} alignItems="center">
                 {/* Search */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <SearchField
                     placeholder="חיפוש באירועים..."
                     variant="outlined"
@@ -376,9 +376,9 @@ const EventsList = () => {
                 </Grid>
 
                 {/* Monthly Navigation */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                    <Tooltip title="חודש קודם" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש קודם" arrow>
                       <NavButton onClick={goToPreviousMonth} size="small">
                         <ChevronRightIcon />
                       </NavButton>
@@ -397,13 +397,13 @@ const EventsList = () => {
                       {currentMonth.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
                     </Typography>
 
-                    <Tooltip title="חודש הבא" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש הבא" arrow>
                       <NavButton onClick={goToNextMonth} size="small">
                         <ChevronLeftIcon />
                       </NavButton>
                     </Tooltip>
 
-                    <Tooltip title="חזור להיום" arrow>
+                    <Tooltip PopperProps={{ disablePortal: true }} title="חזור להיום" arrow>
                       <IconButton
                         onClick={goToCurrentMonth}
                         sx={{
@@ -424,7 +424,7 @@ const EventsList = () => {
                 </Grid>
 
                 {/* Buttons and Statistics */}
-                <Grid item xs={12} md={4}>
+                <Grid item size={{xs:12, md:4}}>
                   <Stack direction="row" spacing={2} justifyContent="flex-end" alignItems="center">
                     <StatsChip
                       label={`✨ ${localFilteredEvents.length} אירועים`}
@@ -748,7 +748,7 @@ const EventsList = () => {
                             </CardContent>
 
                             <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
-                              <Tooltip title="פרטים נוספים" arrow>
+                              <Tooltip PopperProps={{ disablePortal: true }} title="פרטים נוספים" arrow>
                                 <IconButton
                                   size="small"
                                   sx={{

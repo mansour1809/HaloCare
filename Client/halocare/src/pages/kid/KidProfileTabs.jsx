@@ -321,7 +321,7 @@ const KidProfileTabs = ({ selectedKid }) => {
           
           {/* Quick access buttons */}
           <Stack direction="row" spacing={1}>
-            <Tooltip title="יומן כללי">
+            <Tooltip PopperProps={{ disablePortal: true }} title="יומן כללי">
               <QuickActionButton
                 startIcon={<CalendarIcon />}
                 onClick={() => navigate('/calendar/schedule')}
@@ -330,7 +330,7 @@ const KidProfileTabs = ({ selectedKid }) => {
               </QuickActionButton>
             </Tooltip>
             
-            <Tooltip title="נוכחות היום">
+            <Tooltip PopperProps={{ disablePortal: true }} title="נוכחות היום">
               <QuickActionButton
                 startIcon={<AttendanceIcon />}
                 onClick={() => navigate('/reports/attendance')}
@@ -339,7 +339,7 @@ const KidProfileTabs = ({ selectedKid }) => {
               </QuickActionButton>
             </Tooltip>
             
-            <Tooltip title="רענן נתונים">
+            <Tooltip PopperProps={{ disablePortal: true }} title="רענן נתונים">
               <IconButton
                 onClick={handleRefresh}
                 sx={{ 
@@ -352,7 +352,7 @@ const KidProfileTabs = ({ selectedKid }) => {
               </IconButton>
             </Tooltip>
             
-            <Tooltip title="הדפס סיכום">
+            <Tooltip PopperProps={{ disablePortal: true }} title="הדפס סיכום">
               <IconButton
                 onClick={handlePrint}
                 sx={{ 

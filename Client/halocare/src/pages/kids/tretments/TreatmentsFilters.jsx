@@ -144,7 +144,7 @@ const TreatmentsFilters = () => {
       {/* Top search bar */}
       <Paper sx={{ p: 2, mb: 2, borderRadius: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={8}>
+          <Grid item size={{xs:12, md:8}}>
             <TextField
               variant="outlined"
               placeholder="חיפוש בתיאור, הערות, שם מטפל..."
@@ -172,7 +172,7 @@ const TreatmentsFilters = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item size={{xs:12, md:4}}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Badge badgeContent={activeFiltersCount} color="primary">
                 <Button 
@@ -186,7 +186,7 @@ const TreatmentsFilters = () => {
               </Badge>
               
               {activeFiltersCount > 0 && (
-                <Tooltip title="נקה את כל הפילטרים">
+                <Tooltip PopperProps={{ disablePortal: true }} title="נקה את כל הפילטרים">
                   <Button 
                     variant="outlined" 
                     color="error" 
@@ -286,13 +286,13 @@ const TreatmentsFilters = () => {
           
           <Grid container spacing={3}>
             {/* Date Range */}
-            <Grid item xs={12}>
+            <Grid itemsize={{xs:12}}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CalendarTodayIcon fontSize="small" color="primary" />
                 טווח תאריכים
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid item size={{xs:12, sm:6}}>
                   <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
                     <DatePicker
                       label="מתאריך"
@@ -306,7 +306,7 @@ const TreatmentsFilters = () => {
                     />
                   </LocalizationProvider>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item size={{xs:12, sm:6}}>
                   <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
                     <DatePicker
                       label="עד תאריך"
@@ -324,12 +324,12 @@ const TreatmentsFilters = () => {
               </Grid>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Divider />
             </Grid>
 
             {/* Employee selection */}
-            <Grid item xs={12} sm={6}>
+            <Grid item size={{xs:12, sm:6}}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <PersonIcon fontSize="small" color="primary" />
                 מטפל
@@ -351,12 +351,12 @@ const TreatmentsFilters = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid item size={{xs:12, sm:6}}>
               {/* Empty space or additional content in the future */}
             </Grid>
 
             {/* Cooperation Level */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Typography variant="subtitle2" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <StarIcon fontSize="small" color="primary" />
                 רמת שיתוף פעולה
@@ -396,19 +396,19 @@ const TreatmentsFilters = () => {
               </Box>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Divider />
             </Grid>
 
            {/* Action Buttons */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
                   נמצאו {filteredTreatments.length} טיפולים
                 </Typography>
                 
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Tooltip title="שמור הגדרות פילטרים">
+                  <Tooltip PopperProps={{ disablePortal: true }} title="שמור הגדרות פילטרים">
                     <Button
                       variant="outlined"
                       size="small"

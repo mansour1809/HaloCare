@@ -353,7 +353,7 @@ const FileUploader = ({
             
             <Grid container spacing={2}>
               {previews.map((preview, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
+                <Grid item size={{xs:12, sm:6, md:4 }} key={index}>
                   <Card variant="outlined" sx={{ position: 'relative' }}>
                     <CardContent sx={{ p: 2, textAlign: 'center' }}>
                       {/* Icon/Image */}

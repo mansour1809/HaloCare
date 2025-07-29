@@ -135,7 +135,7 @@ const OnboardingDashboard = ({
     <Box dir="rtl">
       {/* General Statistics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{xs:12, sm:3}}>
           <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
@@ -147,7 +147,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{xs:12, sm:3}}>
           <Card sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
@@ -159,7 +159,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{xs:12, sm:3}}>
           <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
@@ -171,7 +171,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{xs:12, sm:3}}>
           <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white', borderRadius: 20, width: '90px' }}>
             <CardContent>
               <Typography variant="h3" fontWeight="bold">
@@ -229,7 +229,7 @@ const OnboardingDashboard = ({
             : 0;
 
           return (
-            <Grid item xs={12} md={6} lg={4} key={form.formId}>
+            <Grid item size={{xs:12, md:6, lg:4}} key={form.formId}>
               <Card 
                 sx={{ 
                   height: '100%',
@@ -339,7 +339,7 @@ const OnboardingDashboard = ({
                   <Box>
                     {/* Send to Parent */}
                     {canSendToParent(form) && form.formId != '1002' && (
-                      <Tooltip title="שלח טופס להורה">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="שלח טופס להורה">
                         <IconButton
                           onClick={() => handleSendToParent(form)}
                           color="info"

@@ -261,7 +261,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
           
           <Grid container spacing={3}>
             {/* Select Therapist */}
-            <Grid item xs={12} sm={6}>
+            <Grid item size={{xs:12, sm:6}}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <PersonIcon color="primary" />
@@ -302,7 +302,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
             
             {/* Treatment Date */}
-            <Grid item xs={12} sm={6}>
+            <Grid item size={{xs:12, sm:6}}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <EventIcon color="primary" />
@@ -333,7 +333,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
             
            {/* Cooperation Level */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <StarIcon color="primary" />
@@ -370,7 +370,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
             
             {/* Treatment Description */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <DescriptionIcon color="primary" />
@@ -401,7 +401,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
             
             {/* Highlights */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <HighlightIcon color="warning" />

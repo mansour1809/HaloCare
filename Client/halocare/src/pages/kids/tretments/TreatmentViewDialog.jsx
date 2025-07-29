@@ -347,7 +347,7 @@ const TreatmentViewDialog = () => {
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               {/* Treatment Details */}
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Card sx={{ border: '1px solid', borderColor: 'primary.light', borderRadius: 2 }}>
                   <CardContent>
                     <Typography variant="h6" color="primary.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -356,7 +356,7 @@ const TreatmentViewDialog = () => {
                     </Typography>
                     
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={4}>
+                      <Grid item size={{xs:12,sm:4}}>
                         <TextField
                           label="סוג טיפול"
                           value={getTreatmentName(currentTreatment.treatmentTypeId)}
@@ -366,7 +366,7 @@ const TreatmentViewDialog = () => {
                         />
                       </Grid>
                       
-                      <Grid item xs={12} sm={4}>
+                      <Grid item size={{xs:12,sm:4}}>
                         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
                           <DatePicker
                             label="תאריך טיפול"
@@ -384,7 +384,7 @@ const TreatmentViewDialog = () => {
                         </LocalizationProvider>
                       </Grid>
                       
-                      <Grid item xs={12} sm={4}>
+                      <Grid item size={{xs:12,sm:4}}>
                         <TextField
                           label="מטפל"
                           value={getEmployeeName(currentTreatment.employeeId)}
@@ -399,7 +399,7 @@ const TreatmentViewDialog = () => {
               </Grid>
               
               {/* Cooperation Level */}
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>
                   <CardContent>
                     <Typography variant="h6" color="warning.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -431,7 +431,7 @@ const TreatmentViewDialog = () => {
               </Grid>
               
               {/* Treatment Description */}
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Card sx={{ border: '1px solid', borderColor: 'info.light', borderRadius: 2 }}>
                   <CardContent>
                     <Typography variant="h6" color="info.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -460,7 +460,7 @@ const TreatmentViewDialog = () => {
               </Grid>
               
               {/* Highlight Points */}
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Card sx={{ border: '1px solid', borderColor: 'secondary.light', borderRadius: 2 }}>
                   <CardContent>
                     <Typography variant="h6" color="secondary.main" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -492,7 +492,7 @@ const TreatmentViewDialog = () => {
             /* view mode */
           <Grid container spacing={3}>
             {/* Treatment Details */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box 
                   sx={{ 
@@ -515,7 +515,7 @@ const TreatmentViewDialog = () => {
                 <Collapse in={expandedSections.details}>
                   <CardContent>
                     <Grid container spacing={3}>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12,sm:6,md:3}}>
                         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.light', color: 'white' }}>
                           <Typography variant="body2">סוג טיפול</Typography>
                           <Typography variant="h6" fontWeight="bold">
@@ -524,7 +524,7 @@ const TreatmentViewDialog = () => {
                         </Paper>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12,sm:6,md:3}}>
                         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'info.light', color: 'white' }}>
                           <Typography variant="body2">תאריך</Typography>
                           <Typography variant="h6" fontWeight="bold">
@@ -533,7 +533,7 @@ const TreatmentViewDialog = () => {
                         </Paper>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12,sm:6,md:3}}>
                         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'secondary.light', color: 'white' }}>
                           <Typography variant="body2">מטפל</Typography>
                           <Typography variant="h6" fontWeight="bold">
@@ -542,7 +542,7 @@ const TreatmentViewDialog = () => {
                         </Paper>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item size={{xs:12,sm:6,md:3}}>
                         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'warning.light', color: 'white' }}>
                           <Typography variant="body2">שיתוף פעולה</Typography>
                           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
@@ -565,7 +565,7 @@ const TreatmentViewDialog = () => {
             </Grid>
             
             {/* Treatment Description */}
-            <Grid item xs={12}>
+            <Grid item size={{xs:12}}>
               <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <Box 
                   sx={{ 
@@ -603,7 +603,7 @@ const TreatmentViewDialog = () => {
             
             {/* Highlight Points */}
             {currentTreatment.highlight && (
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <Card sx={{ border: '1px solid', borderColor: 'warning.light', borderRadius: 2 }}>
                   <Box 
                     sx={{ 

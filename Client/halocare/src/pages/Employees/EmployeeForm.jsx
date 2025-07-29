@@ -1103,7 +1103,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                   ),
                                   endAdornment: (
                                     <InputAdornment position="end">
-                                      <Tooltip title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
+                                      <Tooltip PopperProps={{ disablePortal: true }} title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
                                         <IconButton
                                           onClick={() => setShowPassword(!showPassword)}
                                           edge="end"
@@ -1111,7 +1111,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                           {showPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip title="העתק סיסמה">
+                                      <Tooltip PopperProps={{ disablePortal: true }}title="העתק סיסמה">
                                         <IconButton
                                           disabled={!formData.password}
                                           edge="end"

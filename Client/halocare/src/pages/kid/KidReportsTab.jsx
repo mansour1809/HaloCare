@@ -132,7 +132,7 @@ const KidReportsTab = ({ selectedKid }) => {
       
       <Grid container spacing={3}>
         {futureFeatures.map((feature, index) => (
-          <Grid item xs={12} md={6} lg={4} key={index}>
+          <Grid item size={{xs:12,md:6,lg:4}} key={index}>
             <Card sx={{ 
               height: '100%',
               transition: 'all 0.3s ease',
@@ -183,7 +183,7 @@ const KidReportsTab = ({ selectedKid }) => {
         </Typography>
         
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12, md:6}}>
             <Stack spacing={2}>
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
@@ -214,7 +214,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Stack>
           </Grid>
           
-          <Grid item xs={12} md={6}>
+          <Grid item size={{xs:12, md:6}}>
             <Stack spacing={2}>
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>

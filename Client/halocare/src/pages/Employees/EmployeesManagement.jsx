@@ -423,7 +423,7 @@ const EmployeesManagement = () => {
                         ➕ הוספת עובד חדש
                       </AnimatedButton>
                       
-                      <Tooltip title="רענון נתונים">
+                      <Tooltip PopperProps={{ disablePortal: true }} title="רענון נתונים">
                         <IconButton 
                           onClick={refreshEmployees}
                           sx={{
@@ -757,7 +757,7 @@ const EmployeesManagement = () => {
                                   }}
                                   onClick={() => navigate(`/employees/profile/${employee.employeeId}`)}
                                 >
-                                                                <Tooltip title="פרופיל עובד">
+                                                                <Tooltip PopperProps={{ disablePortal: true }} title="פרופיל עובד">
 
                                   <PersonIcon sx={{ fontSize: 20 }} />
                               </Tooltip>

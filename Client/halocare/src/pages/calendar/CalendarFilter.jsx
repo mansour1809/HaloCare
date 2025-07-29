@@ -198,7 +198,7 @@ const CalendarFilter = () => {
           
           <Grid container spacing={3}>
             {/* Filter by kid */}
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר ילד</InputLabel>
                 <Select
@@ -256,7 +256,7 @@ const CalendarFilter = () => {
             </Grid>
             
            {/* Filter by employee */}
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר איש צוות</InputLabel>
                 <Select
@@ -326,7 +326,7 @@ const CalendarFilter = () => {
             </Grid>
             
            {/* Filter by event type */}
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <StyledFormControl fullWidth variant="outlined" size="medium">
                 <InputLabel>בחר סוג אירוע</InputLabel>
                 <Select

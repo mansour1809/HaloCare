@@ -303,7 +303,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey={timeRange === 'week' ? 'day' : 'date'} axisLine={false} />
             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} />
-            <Tooltip 
+            <Tooltip PopperProps={{ disablePortal: true }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -373,7 +373,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               fontWeight={600}
               label={{ value: 'אחוז נוכחות', angle: -90, position: 'insideLeft' }} 
             />
-            <Tooltip 
+            <Tooltip PopperProps={{ disablePortal: true }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -410,7 +410,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip 
+            <Tooltip PopperProps={{ disablePortal: true }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -444,7 +444,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               fontSize={12}
               fontWeight={600}
             />
-            <Tooltip 
+            <Tooltip PopperProps={{ disablePortal: true }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -571,7 +571,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
       {insights && (
         <Fade in timeout={1200}>
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <InsightCard borderColor="#667eea">
                 <CardContent sx={{ p: 3, textAlign: 'center' }}>
                   <Avatar sx={{ 
@@ -596,7 +596,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               </InsightCard>
             </Grid>
             
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <InsightCard borderColor="#10b981">
                 <CardContent sx={{ p: 3, textAlign: 'center' }}>
                   <Avatar sx={{ 
@@ -621,7 +621,7 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               </InsightCard>
             </Grid>
             
-            <Grid item xs={12} sm={4}>
+            <Grid item size={{xs:12, sm:4}}>
               <InsightCard borderColor="#ef4444">
                 <CardContent sx={{ p: 3, textAlign: 'center' }}>
                   <Avatar sx={{ 
