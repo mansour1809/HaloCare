@@ -471,7 +471,7 @@ const EventsList = () => {
                 <Divider sx={{ my: 3 }} />
 
                 <Grid container spacing={3}>
-                  <Grid item size={{xs:12,sm:6 ,md:3}}>
+                  <Grid item size={{xs:12,sm:6,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>סוג אירוע</InputLabel>
                       <Select
@@ -489,7 +489,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item size={{xs:12,sm:6 ,md:3}}>
+                  <Grid item size={{xs:12,sm:6,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>ילד</InputLabel>
                       <Select
@@ -509,7 +509,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item size={{xs:12,sm:6 ,md:3}}>
+                  <Grid item size={{xs:12,sm:6,md:3}}>
                     <FormControl fullWidth size="medium">
                       <InputLabel>מטפל</InputLabel>
                       <Select
@@ -529,7 +529,7 @@ const EventsList = () => {
                     </FormControl>
                   </Grid>
 
-                  <Grid item size={{xs:12,sm:6 ,md:3}}>
+                  <Grid item size={{xs:12,sm:6,md:3}}>
                     <Button
                       variant="outlined"
                       onClick={resetFilters}
@@ -646,7 +646,7 @@ const EventsList = () => {
                     const backgroundColor = event.backgroundColor || '#667eea';
 
                     return (
-                      <Grid item size={{xs:12,sm:6,lg:4}} key={event.id}>
+                      <Grid item size={{xs:12,sm:6,lg:4}}  key={event.id}>
                         <Zoom in timeout={300 + (eventIndex * 100)}>
                           <EventCard
                             borderColor={backgroundColor}
