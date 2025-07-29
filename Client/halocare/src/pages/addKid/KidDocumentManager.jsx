@@ -240,7 +240,6 @@ const KidDocumentManager = ({
         {/* Title - PRESERVED functionality, updated styling */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FolderIcon sx={{ mr: 1, color: '#4cb5c3' }} />
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#2a8a95' }}>
               מסמכים
               {kidName && (
