@@ -80,9 +80,7 @@ const rtlTheme = createTheme({
       light: '#34d399',
       dark: '#047857',
     },
-    background: {
-      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    }
+
   },
   components: {
     MuiButton: {
@@ -116,7 +114,7 @@ const rtlTheme = createTheme({
 
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  // background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   position: 'relative',
   '&::before': {
     content: '""',
@@ -663,7 +661,6 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
        if (onUpdate && typeof onUpdate === 'function') {
   onUpdate(result.kid);
 }
-navigate('/kids'); // Redirect to kids page after saving
       } catch (error) {
         console.error('שגיאה בשמירת נתוני הילד וההורים:', error);
         Swal.fire({

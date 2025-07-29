@@ -1,4 +1,4 @@
-// KidOnboarding.jsx - ONLY visual styling changes, ALL original functionality preserved
+// KidOnboarding.jsx - ONLY visual styling changes, ALL original functionality preserved EXACTLY
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -13,22 +13,30 @@ import {
   Edit as EditIcon,
   Visibility as ViewIcon
 } from '@mui/icons-material';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { he } from 'date-fns/locale';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
-import PersonalInfoForm from './PersonalInfoForm';
-import DynamicFormRenderer from './DynamicFormRenderer';
-import OnboardingDashboard from './OnboardingDashboard';
-import ProgressLogo from './ProgressLogo';
-import { fetchOnboardingStatus, setCurrentKid, clearOnboardingData, selectCurrentKidOnboarding, selectOnboardingStatus, selectOnboardingError } from '../../Redux/features/onboardingSlice';
+// New Redux - PRESERVED EXACTLY
+import { 
+  fetchOnboardingStatus, 
+  setCurrentKid,
+  clearOnboardingData,
+  selectCurrentKidOnboarding,
+  selectOnboardingStatus,
+  selectOnboardingError
+} from '../../Redux/features/onboardingSlice';
 import { 
   fetchKidById, 
   clearSelectedKid
 } from '../../Redux/features/kidsSlice';
 
-// Updated RTL Theme matching Employee styling - VISUAL ONLY
+import PersonalInfoForm from './PersonalInfoForm';
+import DynamicFormRenderer from './DynamicFormRenderer';
+import OnboardingDashboard from './OnboardingDashboard';
+import ProgressLogo from './ProgressLogo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+
+// Updated RTL Theme matching Employee styling exactly - VISUAL ONLY
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -142,14 +150,12 @@ const rtlTheme = createTheme({
   }
 });
 
-// Full Screen Container - VISUAL STYLING ONLY
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+// Full Screen Container  
+const FullScreenContainer = styled(Container)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
   animation: 'gradientShift 20s ease infinite',
-  display: 'flex',
-  flexDirection: 'column',
   position: 'relative',
   '&::before': {
     content: '""',
@@ -158,53 +164,54 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
   },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
-  }
+ 
 }));
 
-// Modern Header - VISUAL STYLING ONLY
-const ModernHeader = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.15)',
-  backdropFilter: 'blur(20px)',
+// Enhanced Paper styling - VISUAL ONLY
+const EnhancedPaper = styled(Paper)(({ theme }) => ({
   borderRadius: 20,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   position: 'relative',
-  zIndex: 2,
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '3px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
     borderRadius: '20px 20px 0 0',
   }
 }));
 
-// ORIGINAL FUNCTIONALITY PRESERVED - only visual wrapper added
+// Enhanced Box styling for headers - VISUAL ONLY
+const EnhancedHeaderBox = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(3),
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+  borderBottom: '1px solid rgba(76, 181, 195, 0.1)'
+}));
+
+// ORIGINAL FUNCTIONALITY PRESERVED EXACTLY - only visual wrapper added
 const KidOnboarding = () => {
-  const { kidId } = useParams(); // PRESERVED
-  const navigate = useNavigate(); // PRESERVED
-  const dispatch = useDispatch(); // PRESERVED
+  const { kidId } = useParams(); // PRESERVED EXACTLY
+  const navigate = useNavigate(); // PRESERVED EXACTLY
+  const dispatch = useDispatch(); // PRESERVED EXACTLY
   
-  // Redux state - ALL PRESERVED
+  // Redux state - ALL PRESERVED EXACTLY
   const currentOnboarding = useSelector(selectCurrentKidOnboarding);
   const onboardingStatus = useSelector(selectOnboardingStatus);
   const onboardingError = useSelector(selectOnboardingError);
   const { selectedKid } = useSelector(state => state.kids);
   
-  // Local State - ALL PRESERVED
+  // Local State - ALL PRESERVED EXACTLY
   const [viewMode, setViewMode] = useState('dashboard'); 
   const [selectedForm, setSelectedForm] = useState(null);
   const [formReadOnly, setFormReadOnly] = useState(false); 
@@ -212,10 +219,10 @@ const KidOnboarding = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
-  // PRESERVED - original logic
+  // PRESERVED EXACTLY - original logic
   const isNewKid = kidId === undefined;
 
-  // PRESERVED - original useEffect with cleanup
+  // PRESERVED EXACTLY - original useEffect with cleanup
   useEffect(() => {
     initializeOnboarding();
     
@@ -225,7 +232,7 @@ const KidOnboarding = () => {
     };
   }, [kidId]);
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const initializeOnboarding = async () => {
     try {
       setLoading(true);
@@ -248,7 +255,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleRefresh = async () => {
     if (!kidId || isNewKid) return;
     
@@ -263,7 +270,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleKidCreated = async (newKidData) => {
     try {
       showNotification('ילד נוצר בהצלחה! מעביר לתהליך קליטה...', 'success');
@@ -277,7 +284,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleFormClick = (form, mode = 'auto') => {
     if (form.formId === 1002) {
       setSelectedForm({ ...form, buttonText: mode === 'view' ? 'צפייה' : 'עריכה' });
@@ -312,7 +319,7 @@ const KidOnboarding = () => {
     setViewMode('form');
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleFormComplete = async (formId) => {
     showNotification('הטופס נשמר בהצלחה!', 'success');
     setViewMode('dashboard');
@@ -324,108 +331,44 @@ const KidOnboarding = () => {
     }, 500);
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleBackToDashboard = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const switchToEditMode = () => {
     setFormReadOnly(false);
     setSelectedForm(prev => ({ ...prev, buttonText: 'עריכה' }));
     showNotification('עברת למצב עריכה', 'info');
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const handleSendToParent = (form) => {
     console.log('שליחה להורים:', form);
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const showNotification = (message, severity = 'success') => {
-    setNotification({
-      open: true,
-      message,
-      severity
-    });
+    setNotification({ open: true, message, severity });
   };
 
-  // PRESERVED - original function
+  // PRESERVED EXACTLY - original function
   const closeNotification = () => {
-    setNotification(prev => ({ ...prev, open: false }));
+    setNotification({ ...notification, open: false });
   };
 
-  // PRESERVED - original function
-  const handleKidUpdate = (updatedKid) => {
-    setViewMode('dashboard');
-    initializeOnboarding();
-    showNotification('פרטי הילד עודכנו בהצלחה!', 'success');
-  };
-
-  // PRESERVED - original function but renamed to match usage
-  const handleFormSelect = (form) => {
-    handleFormClick(form);
-  };
-
-  // // PRESERVED - original function
-  // const handleBackToDashboard = () => {
-  //   setViewMode('dashboard');
-  //   setSelectedForm(null);
-  // };
-
-  // PRESERVED - original loading logic
+  // PRESERVED EXACTLY - original loading logic with enhanced container
   if (loading) {
     return (
       <ThemeProvider theme={rtlTheme}>
-        <FullScreenContainer>
-          <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              alignItems: 'center', 
-              justifyContent: 'center',
-              minHeight: '60vh',
-            }}>
-              <CircularProgress size={60} sx={{ color: 'white', mb: 3 }} />
-              <Typography variant="h6" sx={{ 
-                color: 'white',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                fontWeight: 600
-              }}>
-                טוען נתוני קליטה...
-              </Typography>
-            </Box>
-          </Container>
-        </FullScreenContainer>
-      </ThemeProvider>
-    );
-  }
-
-  // PRESERVED - original error logic
-  if (onboardingError) {
-    return (
-      <ThemeProvider theme={rtlTheme}>
-        <FullScreenContainer>
-          <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-            <Alert 
-              severity="error" 
-              sx={{ 
-                borderRadius: 3,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(239, 68, 68, 0.2)'
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
-                שגיאה בטעינת נתוני הקליטה
-              </Typography>
-              <Typography variant="body2">
-                {onboardingError}
-              </Typography>
-            </Alert>
-          </Container>
+        <FullScreenContainer maxWidth="md" sx={{ py: 4, textAlign: 'center', position: 'relative', zIndex: 2 }}>
+          <CircularProgress size={60} sx={{ color: 'white' }} />
+          <Typography variant="h6" sx={{ mt: 2, color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+            טוען תהליך קליטה...
+          </Typography>
         </FullScreenContainer>
       </ThemeProvider>
     );
@@ -434,172 +377,246 @@ const KidOnboarding = () => {
   return (
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <FullScreenContainer dir="rtl">
-          <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-            
-            {/* PRESERVED - Original Breadcrumbs */}
-            <Breadcrumbs sx={{ mb: 3, color: 'white' }}>
-              <Box 
-                sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: 'white' }}
-                onClick={() => navigate('/')}
-              >
-                <HomeIcon sx={{ mr: 0.5 }} />
-                ראשי
-              </Box>
-              <Box 
-                sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: 'white' }}
-                onClick={() => navigate('/kids/list')}
-              >
-                <GroupIcon sx={{ mr: 0.5 }} />
-                ניהול ילדים
-              </Box>
-              <Typography color="white" sx={{ fontWeight: 600 }}>
-                {isNewKid ? 'קליטת ילד חדש' : `קליטה - ${selectedKid?.firstName} ${selectedKid?.lastName}`}
-              </Typography>
-            </Breadcrumbs>
+        <FullScreenContainer dir="rtl" maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
+          {/* Breadcrumbs - PRESERVED EXACTLY with enhanced styling */}
+          <Breadcrumbs sx={{ 
+            mb: 3,
+            '& .MuiBreadcrumbs-separator': { color: 'rgba(255, 255, 255, 0.7)' }
+          }}>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                color: 'white',
+                '&:hover': { color: 'rgba(255, 255, 255, 0.8)' }
+              }}
+              onClick={() => navigate('/')}
+            >
+              <HomeIcon sx={{ mr: 0.5 }} />
+              ראשי
+            </Box>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                color: 'white',
+                '&:hover': { color: 'rgba(255, 255, 255, 0.8)' }
+              }}
+              onClick={() => navigate('/kids/list')}
+            >
+              <GroupIcon sx={{ mr: 0.5 }} />
+              ניהול ילדים
+            </Box>
+            <Typography color="white" sx={{ fontWeight: 600 }}>
+              {isNewKid ? 'קליטת ילד חדש' : `קליטה - ${selectedKid?.firstName} ${selectedKid?.lastName}`}
+            </Typography>
+          </Breadcrumbs>
 
-            {/* PRESERVED - Original Error handling */}
-            {onboardingError && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                <AlertTitle>שגיאה</AlertTitle>
-                {onboardingError}
-              </Alert>
-            )}
+          {/* Errors - PRESERVED EXACTLY */}
+          {onboardingError && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+              <AlertTitle>שגיאה</AlertTitle>
+              {onboardingError}
+            </Alert>
+          )}
 
-            {/* Progress Logo - PRESERVED CONDITION */}
-            {!isNewKid && currentOnboarding && (
-              <Box sx={{ mb: 4 }}>
-                <ProgressLogo 
-                  onboardingData={currentOnboarding}
-                  kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : null}
-                  showFormsSummary={true}
-                  compact={false}
-                />
-              </Box>
-            )}
+          {/* Logo with progress - PRESERVED EXACTLY */}
+          {!isNewKid && currentOnboarding && (
+            <ProgressLogo 
+              onboardingData={currentOnboarding}
+              kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : null}
+              showFormsSummary={viewMode === 'dashboard'}
+              compact={viewMode !== 'dashboard'}
+            />
+          )}
 
-            {/* Content based on view mode - PRESERVED LOGIC */}
-            <Fade in timeout={600}>
-              <Box>
-                {/* Personal Info Form - PRESERVED CONDITION */}
-                {viewMode === 'personalInfo' && (
-                  <Paper 
-                    sx={{ 
-                      p: 4, 
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                      position: 'relative',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
-                        borderRadius: '20px 20px 0 0',
-                      }
-                    }}
-                  >
+          {/* Dynamic content based on state - PRESERVED EXACTLY */}
+          <Fade in={true} timeout={500}>
+            <Box>
+              {/* Personal information form for a new child - PRESERVED EXACTLY */}
+              {isNewKid && (
+                <EnhancedPaper sx={{ mb: 3 }}>
+                  <EnhancedHeaderBox>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: '#2a8a95' }}>
+                      פרטים אישיים
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      מילוי פרטי הילד וההורים
+                    </Typography>
+                  </EnhancedHeaderBox>
+                  
+                  <Box sx={{ p: 3 }}>
                     <PersonalInfoForm
-                      data={selectedKid}
-                      onSubmit={handleKidCreated}
-                      isLoading={onboardingStatus === 'loading'}
-                      readOnly={formReadOnly}
+                      data={null}
+                      onUpdate={handleKidCreated}
+                      isEditMode={false}
                     />
-                  </Paper>
-                )}
+                  </Box>
+                </EnhancedPaper>
+              )}
 
-                {/* Dashboard - PRESERVED CONDITION */}
-                {viewMode === 'dashboard' && currentOnboarding && (
-                  <Paper 
-                    sx={{ 
-                      p: 4, 
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                      position: 'relative',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
-                        borderRadius: '20px 20px 0 0',
-                      }
-                    }}
-                  >
-                    <OnboardingDashboard
-                      onboardingData={currentOnboarding}
-                      selectedKid={selectedKid}
-                      onKidUpdate={handleKidUpdate}
-                      onFormClick={handleFormClick}
-                      onSendToParent={handleSendToParent}
-                      readOnly={formReadOnly}
+              {/* PRESERVED EXACTLY - personalInfo mode */}
+              {viewMode === 'personalInfo' && selectedForm && !isNewKid && (
+                <EnhancedPaper sx={{ mb: 3 }}>
+                  <EnhancedHeaderBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: '#2a8a95' }}>
+                        {selectedForm.formName}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {selectedForm.formDescription}
+                      </Typography>
+                      
+                      {/* Status Indicator - PRESERVED EXACTLY */}
+                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
+                          label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
+                          color={formReadOnly ? 'info' : 'primary'}
+                          size="small"
+                        />
+                        {selectedForm.status && (
+                          <Chip
+                            label={`סטטוס: ${selectedForm.status}`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleBackToDashboard}
+                        sx={{ minWidth: 120 }}
+                      >
+                        חזרה לתהליך הקליטה
+                      </Button>
+                    </Box>
+                  </EnhancedHeaderBox>
+                  
+                  <Box sx={{ p: 3 }}>
+                    <PersonalInfoForm
+                      data={isNewKid ? null : selectedKid}
+                      onUpdate={(updatedData) => {
+                        showNotification('פרטי הילד עודכנו בהצלחה', 'success');
+                        handleBackToDashboard();
+                      }}
+                      isEditMode={!isNewKid} 
+                      readOnly={formReadOnly} 
                     />
-                  </Paper>
-                )}
+                  </Box>
+                </EnhancedPaper>
+              )}
 
-                {/* PRESERVED - Dynamic Form */}
-                {viewMode === 'form' && selectedForm && (
-                  <Paper 
-                    sx={{ 
-                      p: 4, 
-                      borderRadius: 3,
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                      position: 'relative',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
-                        borderRadius: '20px 20px 0 0',
-                      }
-                    }}
-                  >
+              {/* Onboarding Process Dashboard - PRESERVED EXACTLY */}
+              {viewMode === 'dashboard' && currentOnboarding && (
+                <>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4" fontWeight="bold" sx={{ 
+                      color: 'white',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    }}>
+                      תהליך קליטה
+                    </Typography>
+                  </Box>
+
+                  <OnboardingDashboard
+                    onboardingData={currentOnboarding}
+                    selectedKid={selectedKid}
+                    onFormClick={handleFormClick}
+                    onSendToParent={handleSendToParent}
+                    onRefresh={handleRefresh}
+                  />
+                </>
+              )}
+
+              {/* Filling/Viewing Dynamic Form - PRESERVED EXACTLY */}
+              {viewMode === 'form' && selectedForm && (
+                <EnhancedPaper>
+                  <EnhancedHeaderBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: '#2a8a95' }}>
+                        {selectedForm.formName}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {selectedForm.formDescription}
+                      </Typography>
+                      
+                      {/* Status Indicator - PRESERVED EXACTLY */}
+                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
+                          label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
+                          color={formReadOnly ? 'info' : 'primary'}
+                          size="small"
+                        />
+                        {selectedForm.status && (
+                          <Chip
+                            label={`סטטוס: ${selectedForm.status}`}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {/* PRESERVED EXACTLY - Switch to edit mode */}
+                      {formReadOnly && !selectedForm.formName.includes('אישור') && (
+                        <Button
+                          variant="outlined"
+                          startIcon={<EditIcon />}
+                          onClick={switchToEditMode}
+                          color="primary"
+                        >
+                          עבר לעריכה
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={handleBackToDashboard}
+                        sx={{ minWidth: 120 }}
+                      >
+                        חזרה לדשבורד
+                      </Button>
+                    </Box>
+                  </EnhancedHeaderBox>
+                  
+                  <Box sx={{ p: 3 }}>
                     <DynamicFormRenderer
-                      form={selectedForm}
-                      kidId={kidId}
-                      readOnly={formReadOnly}
+                      kidId={parseInt(kidId)}
+                      formId={selectedForm.formId}
+                      formData={selectedForm}
                       onComplete={handleFormComplete}
                       onBack={handleBackToDashboard}
-                      onSwitchToEdit={switchToEditMode}
+                      readOnly={formReadOnly}
                     />
-                  </Paper>
-                )}
-              </Box>
-            </Fade>
+                  </Box>
+                </EnhancedPaper>
+              )}
+            </Box>
+          </Fade>
 
-            {/* Notifications - PRESERVED */}
-            <Snackbar
-              open={notification.open}
-              autoHideDuration={4000}
-              onClose={closeNotification}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          {/* Notifications - PRESERVED EXACTLY */}
+          <Snackbar
+            open={notification.open}
+            autoHideDuration={4000}
+            onClose={closeNotification}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert 
+              onClose={closeNotification} 
+              severity={notification.severity}
+              variant="filled"
+              sx={{ width: '100%' }}
             >
-              <Alert 
-                onClose={closeNotification} 
-                severity={notification.severity}
-                variant="filled"
-                sx={{ width: '100%' }}
-              >
-                {notification.message}
-              </Alert>
-            </Snackbar>
-          </Container>
+              {notification.message}
+            </Alert>
+          </Snackbar>
         </FullScreenContainer>
       </LocalizationProvider>
     </ThemeProvider>

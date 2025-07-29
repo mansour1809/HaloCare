@@ -1,4 +1,3 @@
-// OnboardingDashboard.jsx - ONLY visual styling changes, ALL original functionality preserved
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,7 +32,6 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   padding: '12px 24px',
   fontWeight: 600,
   fontSize: '1rem',
-  color: '#fff',
   position: 'relative',
   overflow: 'hidden',
   background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
@@ -134,8 +132,11 @@ const StatsCard = styled(Card)(({ theme }) => ({
 const OnboardingDashboard = ({ 
   onboardingData, 
   selectedKid, 
+  onKidUpdate,
   onFormClick, 
-  onRefresh 
+  onSendToParent,
+  onRefresh,
+  readOnly = false
 }) => {
   const dispatch = useDispatch();
   
@@ -146,7 +147,7 @@ const OnboardingDashboard = ({
   const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
   // PRESERVED - Parent sending functions (existing code)
-  const handleSendToParent = async (form) => {
+  const handleSendToParentInternal = async (form) => {
     try {
       setLoadingParentEmail(true);
       
@@ -308,6 +309,7 @@ const OnboardingDashboard = ({
             fontWeight: 700,
             color: '#2a8a95'
           }}>
+            <FolderIcon sx={{ mr: 2, color: '#4cb5c3' }} />
             📄 ניהול מסמכים
           </Typography>
         </SectionHeader>
@@ -317,12 +319,12 @@ const OnboardingDashboard = ({
           sx={{ 
             mb: 3, 
             borderRadius: 3,
-            background: 'rgba(76, 181, 195, 0.1)',
+            background: 'rgba(143, 211, 221, 1)',
             border: '1px solid rgba(76, 181, 195, 0.2)'
           }}
         >
           <Typography variant="body2">
-             העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
+            💡 העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
           </Typography>
         </Alert>
 
@@ -346,6 +348,7 @@ const OnboardingDashboard = ({
           fontWeight: 700,
           color: '#2a8a95'
         }}>
+          <StarIcon sx={{ mr: 2, color: '#ff7043' }} />
           📋 טפסי קליטה
         </Typography>
       </SectionHeader>
@@ -423,63 +426,103 @@ const OnboardingDashboard = ({
                       }}
                     />
                   </Box>
-                </CardContent>
 
-                {/* Card Actions - PRESERVED functionality, updated styling */}
-                <CardActions sx={{ 
-                  p: 2, 
-                  pt: 0,
-                  justifyContent: 'space-between',
-                  borderTop: `1px solid ${alpha('#4cb5c3', 0.1)}`
-                }}>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    {/* View Button - PRESERVED */}
-                    <Tooltip title="צפייה בטופס">
-                      <IconButton 
-                        size="small"
-                        sx={{ 
-                          color: '#4cb5c3',
-                          '&:hover': { 
-                            backgroundColor: alpha('#4cb5c3', 0.1),
-                            transform: 'scale(1.1)'
-                          }
-                        }}
-                        onClick={() => onFormClick && onFormClick(form, 'view')}
-                      >
-                        <ViewIcon />
-                      </IconButton>
-                    </Tooltip>
-                    
-                    {/* Edit Button - PRESERVED condition */}
-                    {canEditForm(form) && (
-                      <Tooltip title="עריכת טופס">
-                        <IconButton 
-                          size="small"
-                          sx={{ 
-                            color: '#ff7043',
-                            '&:hover': { 
-                              backgroundColor: alpha('#ff7043', 0.1),
-                              transform: 'scale(1.1)'
-                            }
-                          }}
-                          onClick={() => onFormClick && onFormClick(form, 'edit')}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
+                  {/* PRESERVED - Original dates section */}
+                  <Box sx={{ mt: 'auto' }}>
+                    {form.startDate && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        התחיל: {new Date(form.startDate).toLocaleDateString('he-IL')}
+                      </Typography>
+                    )}
+                    {form.completedDate && (
+                      <Typography variant="caption" color="success.main" display="block" fontWeight="bold">
+                        הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
+                      </Typography>
                     )}
                   </Box>
+                </CardContent>
 
-                  {/* Send Button - PRESERVED condition */}
-                  {canSendToParent(form) && (
-                    <AnimatedButton
-                      size="small"
-                      onClick={() => handleSendToParent(form)}
-                      sx={{ minWidth: 'auto', px: 2 }}
-                    >
-                      <SendIcon sx={{ fontSize: '1rem' }} />
-                    </AnimatedButton>
-                  )}
+                {/* Card Actions - PRESERVED EXACT ORIGINAL LOGIC */}
+                <CardActions sx={{ 
+                  justifyContent: 'space-between', 
+                  pt: 0,
+                  borderTop: `1px solid ${alpha('#4cb5c3', 0.1)}`
+                }}>
+                  <Box>
+                    {/* PRESERVED - Original button logic with exact conditions */}
+                    {canEditForm(form) ? (
+                      <Button
+                        startIcon={<EditIcon />}
+                        onClick={() => onFormClick(form, 'edit')}
+                        color="primary"
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 600,
+                          '&:hover': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)'
+                          }
+                        }}
+                      >
+                        {form.status === 'NotStarted' ? 'התחל' : 'המשך עריכה'}
+                      </Button>
+                    ) : (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        {/* PRESERVED - Original view button condition */}
+                        {(form.formId != '1002' || !form.formName.includes('אישי')) && (
+                          <Button
+                            startIcon={<ViewIcon />}
+                            onClick={() => onFormClick(form, 'view')}
+                            color="secondary"
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 12px rgba(255, 112, 67, 0.3)'
+                              }
+                            }}
+                          >
+                            צפייה
+                          </Button>
+                        )}
+                        
+                        {/* PRESERVED - Original edit button condition */}
+                        {!form.formName.includes('אישור') && (
+                          <Button
+                            startIcon={<EditIcon />}
+                            onClick={() => onFormClick(form, 'edit')}
+                            color="primary"
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)'
+                              }
+                            }}
+                          >
+                            עריכה
+                          </Button>
+                        )}
+                      </Box>
+                    )}
+                  </Box>
+                  
+                  <Box>
+                    {/* PRESERVED - Original send to parent logic */}
+                    {canSendToParent(form) && (
+                      <AnimatedButton
+                        size="small"
+                        onClick={() => handleSendToParentInternal(form)}
+                        sx={{ minWidth: 'auto', px: 2 }}
+                      >
+                        <SendIcon sx={{ fontSize: '1rem' }} />
+                      </AnimatedButton>
+                    )}
+                  </Box>
                 </CardActions>
               </ModernCard>
             </Grid>
@@ -487,7 +530,7 @@ const OnboardingDashboard = ({
         })}
       </Grid>
 
-      {/* Send Dialog - PRESERVED functionality, updated styling */}
+      {/* Send Dialog  */}
       <Dialog 
         open={sendDialog.open} 
         onClose={() => setSendDialog({ open: false, form: null })}

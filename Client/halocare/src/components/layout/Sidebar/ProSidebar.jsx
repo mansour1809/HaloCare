@@ -32,7 +32,7 @@ const sidebarTheme = createTheme({
 });
 
 // Sidebar width
-const DRAWER_WIDTH = 240;
+const DRAWER_WIDTH = 260;
 
 // Styled logout button
 const LogoutButton = styled(Button)(({ theme }) => ({
