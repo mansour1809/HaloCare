@@ -34,7 +34,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   fontSize: '1rem',
   position: 'relative',
   overflow: 'hidden',
-  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  background: 'linear-gradient(45deg, #95bbc0ff 30%, #2a8a95 90%)',
   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
@@ -59,6 +59,8 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 
 // Modern Card matching Employee design - VISUAL ONLY
 const ModernCard = styled(Card)(({ theme }) => ({
+  display: 'flex',             
+  flexDirection: 'column',    
   height: '100%',
   borderRadius: 20,
   boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
@@ -361,9 +363,11 @@ const OnboardingDashboard = ({
             : 0;
 
           return (
-            <Grid item xs={12} md={6} lg={4} key={form.formId}>
+            <Grid item size={{xs:12 , md:6 , lg:4 }} key={form.formId}>
               <ModernCard>
-                <CardContent sx={{ flex: 1, p: 3 }}>
+<CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 3 }}>
+    <Box sx={{ flex: 1 }}>
+
                   {/* Title and Status - PRESERVED */}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Typography variant="h6" component="h3" sx={{ 
@@ -440,6 +444,7 @@ const OnboardingDashboard = ({
                       </Typography>
                     )}
                   </Box>
+                  </Box>
                 </CardContent>
 
                 {/* Card Actions - PRESERVED EXACT ORIGINAL LOGIC */}
@@ -514,6 +519,8 @@ const OnboardingDashboard = ({
                   <Box>
                     {/* PRESERVED - Original send to parent logic */}
                     {canSendToParent(form) && (
+                        <Tooltip PopperProps={{ disablePortal: true }} title="שלח להורה" arrow >
+
                       <AnimatedButton
                         size="small"
                         onClick={() => handleSendToParentInternal(form)}
@@ -521,6 +528,7 @@ const OnboardingDashboard = ({
                       >
                         <SendIcon sx={{ fontSize: '1rem' }} />
                       </AnimatedButton>
+                    </Tooltip>
                     )}
                   </Box>
                 </CardActions>
