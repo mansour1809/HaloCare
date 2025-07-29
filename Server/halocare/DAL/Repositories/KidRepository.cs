@@ -99,8 +99,8 @@ namespace halocare.DAL.Repositories
                 { "@ClassId", kid.ClassId },
                 { "@ParentId1", kid.ParentId1 ?? (object)DBNull.Value },
                 { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value },
-                { "@EmergencyPhone", kid.ParentId2 ?? (object)DBNull.Value },
-                { "@EmergencyContactName", kid.ParentId2 ?? (object)DBNull.Value }
+                { "@EmergencyPhone", kid.EmergencyPhone ?? (object)DBNull.Value },
+                { "@EmergencyContactName", kid.EmergencyContactName ?? (object)DBNull.Value }
             };
 
             return Convert.ToInt32(ExecuteScalar("SP_AddKid", parameters));
@@ -124,8 +124,8 @@ namespace halocare.DAL.Repositories
                 { "@ClassId", kid.ClassId },
                 { "@ParentId1", kid.ParentId1 },
                 { "@ParentId2", kid.ParentId2 ?? (object)DBNull.Value },
-                { "@EmergencyPhone", kid.ParentId2 ?? (object)DBNull.Value },
-                { "@EmergencyContactName", kid.ParentId2 ?? (object)DBNull.Value },
+                { "@EmergencyPhone", kid.EmergencyPhone ?? (object)DBNull.Value },
+                { "@EmergencyContactName", kid.EmergencyContactName ?? (object)DBNull.Value },
             };
 
             int rowsAffected = ExecuteNonQuery("SP_UpdateKid", parameters);
