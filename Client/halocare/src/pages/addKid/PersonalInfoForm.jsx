@@ -14,16 +14,12 @@ import Grid from '@mui/material/Grid';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import {
-  Edit as EditIcon,
-  Save as SaveIcon,
-  DeleteOutline as DeleteIcon,
   CloudUpload as UploadIcon,
   Info as InfoIcon,
   ContactPhone as CallIcon,
   Email as EmailIcon,
   Home as HomeIcon,
   Person as PersonIcon,
-  PersonAdd as PersonAddIcon,
   Cake as CakeIcon,
   LocationCity as CityIcon,
   LocalHospital as HospitalIcon,
@@ -32,9 +28,6 @@ import {
   NavigateNext as NextIcon,
   School as SchoolIcon,
   Star as StarIcon,
-  Celebration as CelebrationIcon,
-  Celebration,
-  AutoAwesome
 } from '@mui/icons-material';
 import MaleIcon from '@mui/icons-material/Male';
 import FemaleIcon from '@mui/icons-material/Female'
@@ -698,17 +691,6 @@ const PersonalInfoForm = ({ data, onUpdate, isEditMode = false }) => {
                 borderRadius: '24px 24px 0 0',
                 textAlign: 'center',
                 position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '60px',
-                  height: '4px',
-                  background: 'linear-gradient(90deg, #4cb5c3, #ff7043)',
-                  borderRadius: '0 0 10px 10px',
-                }
               }}>
                 <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 2 }}>
                   {/* <AutoAwesome sx={{ fontSize: 40, color: '#4cb5c3' }} /> */}

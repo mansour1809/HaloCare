@@ -1,11 +1,10 @@
-//KidDocumentManager.jsx:
+// KidDocumentManager.jsx - Updated with Employee styling
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Paper, Typography, Tabs, Tab, Button, Alert, Fade, 
   CircularProgress, Chip, Dialog, DialogTitle, DialogContent,
-  DialogActions, IconButton,
-  Collapse
+  DialogActions, IconButton, Collapse, Card, CardContent
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -13,7 +12,10 @@ import {
   Description as DocumentIcon,
   Refresh as RefreshIcon,
   ExpandMore as ExpandIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Star as StarIcon
 } from '@mui/icons-material';
+import { styled, alpha } from '@mui/material/styles';
 
 import FileUploader from '../../components/common/FileUploader';
 import FilesList from '../../components/common/FilesList';
@@ -23,6 +25,94 @@ import {
   fetchDocumentsByKidId, 
   clearDocuments 
 } from '../../Redux/features/documentsSlice';
+
+// Modern Container matching Employee design
+const ModernContainer = styled(Card)(({ theme }) => ({
+  borderRadius: 20,
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  backdropFilter: 'blur(20px)',
+  background: 'rgba(255, 255, 255, 0.95)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  overflow: 'visible',
+  position: 'relative',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+    borderRadius: '20px 20px 0 0',
+  }
+}));
+
+// Animated Button matching Employee design
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 16,
+  padding: '12px 24px',
+  fontWeight: 600,
+  fontSize: '1rem',
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+// Stats Card matching Employee design
+const StatsCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: 16,
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
+  border: '1px solid rgba(76, 181, 195, 0.2)',
+  textAlign: 'center',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.2)',
+    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.15) 0%, rgba(255, 112, 67, 0.15) 100%)',
+  }
+}));
+
+// Tab styling matching Employee design
+const StyledTabs = styled(Tabs)(({ theme }) => ({
+  borderBottom: `1px solid ${alpha('#4cb5c3', 0.2)}`,
+  '& .MuiTab-root': {
+    fontWeight: 600,
+    fontSize: '1rem',
+    borderRadius: '12px 12px 0 0',
+    transition: 'all 0.3s ease',
+    '&.Mui-selected': {
+      background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(42, 138, 149, 0.1) 100%)',
+      color: '#2a8a95',
+    }
+  },
+  '& .MuiTabs-indicator': {
+    height: 3,
+    borderRadius: '3px 3px 0 0',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043)',
+  }
+}));
 
 const KidDocumentManager = ({ 
   kidId, 
@@ -59,7 +149,7 @@ const KidDocumentManager = ({
     try {
       await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
     } catch (error) {
-      console.error('שגיאה בטעינת מסמכים:', error);
+      console.error('Error loading documents:', error);
     }
   };
 
@@ -70,7 +160,7 @@ const KidDocumentManager = ({
   };
 
   const handleUploadSuccess = (uploadedFiles) => {
-    console.log('קבצים הועלו בהצלחה:', uploadedFiles);
+    console.log('Files uploaded successfully:', uploadedFiles);
     setUploadDialog(false);
     setTimeout(() => {
       loadDocuments();
@@ -83,286 +173,265 @@ const KidDocumentManager = ({
     }, 500);
   };
 
-    // getDocumentStats
+  // Calculate statistics
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
     
     return {
       total: documents.length,
-      profilePics: documents.filter(doc => doc.docType === 'profile').length,
+      profilePics: documents.filter(doc => doc.docType === 'picture' || doc.docType === 'profile').length,
       regularDocs: documents.filter(doc => doc.docType === 'document').length
     };
   };
 
   const stats = getDocumentStats();
 
-    // Compact mode for dashboard
-  if (compact) {
+  // Filter documents by type
+  const getDocumentsByType = (type) => {
+    if (!documents) return [];
+    return documents.filter(doc => {
+      if (type === 'pictures') return doc.docType === 'picture' || doc.docType === 'profile';
+      if (type === 'documents') return doc.docType === 'document';
+      return true;
+    });
+  };
+
+  if (documentsError) {
     return (
-      <Paper 
-      dir="rtl"
-        elevation={2} 
-        sx={{ 
-          p: 2, 
-          borderRadius: 3,
-          maxHeight: maxHeight || 400,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {/* Title */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <FolderIcon color="primary" sx={{ mr: 1 }} />
-            <Typography variant="h6">
-              מסמכים
-              {kidName && (
-                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                  • {kidName}
-                </Typography>
-              )}
+      <ModernContainer>
+        <CardContent>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              borderRadius: 3,
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)'
+            }}
+          >
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>
+              ❌ שגיאה בטעינת מסמכים
             </Typography>
-          </Box>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {showStats && (
-              <Chip
-                label={`${stats.total} מסמכים`}
-                size="small"
-                color={stats.total > 0 ? 'primary' : 'default'}
-              />
-            )}
-            
-            <IconButton 
-              size="small" 
-              onClick={() => setExpanded(!expanded)}
-              sx={{ 
-                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease'
-              }}
-            >
-              <ExpandIcon />
-            </IconButton>
-          </Box>
-        </Box>
-
-        <Collapse in={expanded}>
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            {/* Action Buttons */}
-            {showUpload && (
-              <Box sx={{ mb: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<UploadIcon />}
-                  onClick={() => setUploadDialog(true)}
-                  size="small"
-                  fullWidth
-                >
-                  העלאת מסמכים
-                </Button>
-              </Box>
-            )}
-
-            {/* Document List */}
-            <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 250 }}>
-              {documentsStatus === 'loading' ? (
-                <Box sx={{ textAlign: 'center', py: 3 }}>
-                  <CircularProgress size={30} />
-                </Box>
-              ) : documentsError ? (
-                <Alert severity="error" size="small">
-                  {documentsError}
-                </Alert>
-              ) : (
-                <FilesList
-                  entityId={kidId}
-                  entityType="kid"
-                  showFileType={false}
-                  onDelete={handleDeleteSuccess}
-                  compact={true}
-                />
-              )}
-            </Box>
-          </Box>
-        </Collapse>
-
-        {/* Upload Dialog */}
-        <Dialog 
-          open={uploadDialog} 
-          onClose={() => setUploadDialog(false)}
-          maxWidth="md"
-          fullWidth
-          dir="rtl"
-        >
-          <DialogTitle>העלאת מסמכים - {kidName}</DialogTitle>
-          <DialogContent>
-            <FileUploader
-              entityId={kidId}
-              entityType="kid"
-              docType="document"
-              onSuccess={handleUploadSuccess}
-              allowMultiple={true}
-              title="בחר מסמכים להעלאה"
-              dragAndDrop={true}
-              maxFiles={10}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setUploadDialog(false)}>
-              סגור
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Paper>
+            <Typography variant="body2">
+              {documentsError}
+            </Typography>
+          </Alert>
+        </CardContent>
+      </ModernContainer>
     );
   }
 
-    // Full mode (for kid profile)
-
   return (
-    <Box dir='rtl' sx={{ maxHeight: maxHeight, overflow: 'hidden', display: 'flex', flexDirection: 'column' , ml:2 ,mr:2 }}>
-      {/* Title with statistics */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" gutterBottom>
-            מסמכים ילד
-            {kidName && (
-              <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 1 }}>
-                • {kidName}
-              </Typography>
-            )}
-          </Typography>
-          
+    <ModernContainer sx={{ maxHeight }}>
+      <CardContent sx={{ p: 0 }}>
+        {/* Header */}
+        <Box sx={{ 
+          p: 3, 
+          background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+          borderBottom: `1px solid ${alpha('#4cb5c3', 0.1)}`
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ 
+              fontWeight: 700, 
+              color: '#2a8a95',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <FolderIcon sx={{ mr: 2, color: '#4cb5c3' }} />
+              📄 מסמכי {kidName || 'הילד'}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton
+                onClick={handleRefresh}
+                disabled={refreshing}
+                sx={{ 
+                  color: '#4cb5c3',
+                  '&:hover': { 
+                    backgroundColor: alpha('#4cb5c3', 0.1),
+                    transform: 'rotate(180deg)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+              
+              {showUpload && (
+                <AnimatedButton
+                  size="small"
+                  startIcon={<UploadIcon />}
+                  onClick={() => setUploadDialog(true)}
+                  sx={{ px: 2 }}
+                >
+                  העלה מסמך
+                </AnimatedButton>
+              )}
+            </Box>
+          </Box>
+
+          {/* Statistics */}
           {showStats && (
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-              <Chip
-                icon={<DocumentIcon />}
-                label={`${stats.total} סה"כ מסמכים`}
-                color="primary"
-                size="small"
-              />
-              {stats.profilePics > 0 && (
-                <Chip
-                  label={`${stats.profilePics} תמונות פרופיל`}
-                  color="secondary"
-                  size="small"
-                />
-              )}
-              {stats.regularDocs > 0 && (
-                <Chip
-                  label={`${stats.regularDocs} מסמכים רגילים`}
-                  color="info"
-                  size="small"
-                />
-              )}
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <StatsCard elevation={0}>
+                <Typography variant="h6" sx={{ color: '#4cb5c3', fontWeight: 700 }}>
+                  {stats.total}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  סה"כ מסמכים
+                </Typography>
+              </StatsCard>
+              
+              <StatsCard elevation={0}>
+                <Typography variant="h6" sx={{ color: '#ff7043', fontWeight: 700 }}>
+                  {stats.profilePics}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  תמונות
+                </Typography>
+              </StatsCard>
+              
+              <StatsCard elevation={0}>
+                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 700 }}>
+                  {stats.regularDocs}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  מסמכים
+                </Typography>
+              </StatsCard>
             </Box>
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {showUpload && (
-            <Button
-              variant="contained"
-              startIcon={<UploadIcon />}
-              onClick={() => setUploadDialog(true)}
+        {/* Loading state */}
+        {documentsStatus === 'loading' && (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            p: 4,
+            flexDirection: 'column',
+            gap: 2
+          }}>
+            <CircularProgress sx={{ color: '#4cb5c3' }} />
+            <Typography variant="body2" color="text.secondary">
+              טוען מסמכים...
+            </Typography>
+          </Box>
+        )}
+
+        {/* Content */}
+        {documentsStatus !== 'loading' && (
+          <>
+            {/* Tabs */}
+            <StyledTabs
+              value={currentTab}
+              onChange={(e, newValue) => setCurrentTab(newValue)}
+              variant="fullWidth"
             >
-              העלאת מסמכים
-            </Button>
-          )}
-          
-          <IconButton 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            color="primary"
-          >
-            {refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-          </IconButton>
-        </Box>
-      </Box>
+              <Tab 
+                label={`כל המסמכים (${stats.total})`}
+                icon={<DocumentIcon />}
+                iconPosition="start"
+              />
+              <Tab 
+                label={`תמונות (${stats.profilePics})`}
+                icon={<StarIcon />}
+                iconPosition="start"
+              />
+              <Tab 
+                label={`מסמכים (${stats.regularDocs})`}
+                icon={<FolderIcon />}
+                iconPosition="start"
+              />
+            </StyledTabs>
 
-      {/* Tabs */}
-      <Paper sx={{ borderRadius: 2, overflow: 'hidden', flex: 2, display: 'flex', flexDirection: 'column' }}>
-        <Tabs 
-          value={currentTab} 
-          onChange={(e, newValue) => setCurrentTab(newValue)}
-          variant="fullWidth"
-          sx={{ borderBottom: 2, borderColor: 'divider' }}
-        >
-          <Tab label="כל המסמכים" />
-          <Tab label="תמונות פרופיל" />
-          <Tab label="מסמכים רגילים" />
-        </Tabs>
+            {/* Tab Content */}
+            <Box sx={{ p: 3 }}>
+              {currentTab === 0 && (
+                <FilesList
+                  documents={documents || []}
+                  onDeleteSuccess={handleDeleteSuccess}
+                  entityType="kid"
+                  compact={compact}
+                />
+              )}
+              
+              {currentTab === 1 && (
+                <FilesList
+                  documents={getDocumentsByType('pictures')}
+                  onDeleteSuccess={handleDeleteSuccess}
+                  entityType="kid"
+                  compact={compact}
+                />
+              )}
+              
+              {currentTab === 2 && (
+                <FilesList
+                  documents={getDocumentsByType('documents')}
+                  onDeleteSuccess={handleDeleteSuccess}
+                  entityType="kid"
+                  compact={compact}
+                />
+              )}
 
-        {/* Tab content */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-          {documentsStatus === 'loading' ? (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <CircularProgress size={50} />
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                טוען מסמכים...
-              </Typography>
+              {/* Empty state */}
+              {documents && documents.length === 0 && (
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  py: 6,
+                  color: 'text.secondary'
+                }}>
+                  <FolderIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    אין מסמכים
+                  </Typography>
+                  <Typography variant="body2">
+                    לא נמצאו מסמכים עבור ילד זה
+                  </Typography>
+                </Box>
+              )}
             </Box>
-          ) : documentsError ? (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              <Typography variant="h6">שגיאה בטעינת מסמכים</Typography>
-              {documentsError}
-            </Alert>
-          ) : (
-            <Fade in={true}>
-              <Box>
-                {currentTab === 0 && (
-                  <FilesList
-                    entityId={kidId}
-                    entityType="kid"
-                    showFileType={true}
-                    onDelete={handleDeleteSuccess}
-                  />
-                )}
-                
-                {currentTab === 1 && (
-                  <FilesList
-                    entityId={kidId}
-                    entityType="kid"
-                    showFileType={true}
-                    onDelete={handleDeleteSuccess}
-                    filterByType="profile"
-                  />
-                )}
-                
-                {currentTab === 2 && (
-                  <FilesList
-                    entityId={kidId}
-                    entityType="kid"
-                    showFileType={true}
-                    onDelete={handleDeleteSuccess}
-                    filterByType="document"
-                  />
-                )}
-              </Box>
-            </Fade>
-          )}
-        </Box>
-      </Paper>
+          </>
+        )}
+      </CardContent>
 
       {/* Upload Dialog */}
       <Dialog 
         open={uploadDialog} 
         onClose={() => setUploadDialog(false)}
-        maxWidth="lg"
+        maxWidth="md" 
         fullWidth
-        dir="rtl"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+          }
+        }}
       >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <UploadIcon sx={{ mr: 1 }} />
-            העלאת מסמכים - {kidName}
-          </Box>
+        <DialogTitle sx={{ 
+          background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+          color: 'white',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <AutoAwesomeIcon sx={{ mr: 2 }} />
+          העלאת מסמכים חדשים
         </DialogTitle>
-        <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
+        
+        <DialogContent sx={{ p: 3 }}>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 3,
+              background: 'rgba(76, 181, 195, 0.1)',
+              border: '1px solid rgba(76, 181, 195, 0.2)'
+            }}
+          >
             <Typography variant="body2">
-              ניתן להעלות עד 5 קבצים בבת אחת. קבצים נתמכים: תמונות, PDF, מסמכים ועוד.
+              💡 קבצים נתמכים: תמונות, PDF, מסמכים ועוד.
             </Typography>
           </Alert>
           
@@ -378,13 +447,20 @@ const KidDocumentManager = ({
             showPreview={true}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setUploadDialog(false)} size="large">
+        <DialogActions sx={{ p: 2, backgroundColor: 'rgba(0,0,0,0.02)' }}>
+          <Button
+            onClick={() => setUploadDialog(false)}
+            size="large"
+            sx={{
+              borderRadius: 2,
+              px: 3
+            }}
+          >
             סגור
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </ModernContainer>
   );
 };
 

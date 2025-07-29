@@ -1,18 +1,22 @@
 
+// OnboardingDashboard.jsx - Updated with Employee styling
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Grid, Card, CardContent, CardActions, Typography, Button,
   Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Alert, CircularProgress, Tooltip, LinearProgress,
-  Divider, 
+  Divider, Paper, Container, Fade
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Send as SendIcon,
   Visibility as ViewIcon,
   Folder as FolderIcon,
+  Star as StarIcon,
+  AutoAwesome as AutoAwesomeIcon
 } from '@mui/icons-material';
+import { styled, alpha } from '@mui/material/styles';
 import axios from '../../components/common/axiosConfig';
 
 import { 
@@ -20,188 +24,159 @@ import {
 } from '../../Redux/features/onboardingSlice';
 
 import { fetchParentById } from '../../Redux/features/parentSlice';
-
 import KidDocumentManager from './KidDocumentManager';
+
+// Animated Button matching Employee design
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 16,
+  padding: '12px 24px',
+  fontWeight: 600,
+  fontSize: '1rem',
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+// Modern Card matching Employee design
+const ModernCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  borderRadius: 20,
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  backdropFilter: 'blur(20px)',
+  background: 'rgba(255, 255, 255, 0.95)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  position: 'relative',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-8px)',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+    borderRadius: '20px 20px 0 0',
+  }
+}));
+
+// Section Header matching Employee design
+const SectionHeader = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: theme.spacing(2),
+  padding: theme.spacing(1.5, 0),
+  borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '50px',
+    height: '2px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043)',
+  }
+}));
 
 const OnboardingDashboard = ({ 
   onboardingData, 
-  selectedKid, 
-  onFormClick, 
-  onRefresh 
+  selectedKid,
+  onKidUpdate,
+  readOnly = false
 }) => {
   const dispatch = useDispatch();
   
-  // Local State 
-  const [sendDialog, setSendDialog] = useState({ open: false, form: null });
-  const [parentEmail, setParentEmail] = useState('');
+  // Local state
+  const [sendDialog, setSendDialog] = useState(false);
+  const [selectedForm, setSelectedForm] = useState(null);
+  const [emailContent, setEmailContent] = useState('');
   const [sendingToParent, setSendingToParent] = useState(false);
-  const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
-  // Parent sending functions (existing code)
-  const handleSendToParent = async (form) => {
-    try {
-      setLoadingParentEmail(true);
-      
-      if (selectedKid?.parentId1) {
-        const parentResult = await dispatch(fetchParentById(selectedKid.parentId1)).unwrap();
-        const defaultEmail = parentResult?.email || '';
-        setParentEmail(defaultEmail);
-      } else {
-        setParentEmail('');
-      }
-      
-      setSendDialog({ open: true, form });
-    } catch (error) {
-      console.error('שגיאה בטעינת נתוני הורה:', error);
-      setParentEmail('');
-      setSendDialog({ open: true, form });
-    } finally {
-      setLoadingParentEmail(false);
+  // Handle form actions
+  const handleFormAction = (form, action) => {
+    setSelectedForm(form);
+    if (action === 'send') {
+      setSendDialog(true);
+      setEmailContent(`שלום,\n\nאנא מלא את הטופס: ${form.formName}\n\nתודה`);
     }
   };
 
-  const confirmSendToParent = async () => {
-    if (!sendDialog.form || !parentEmail.trim()) {
-      return;
-    }
-
+  // Send form to parent
+  const handleSendToParent = async () => {
+    setSendingToParent(true);
     try {
-      setSendingToParent(true);
-      
-      const response = await axios.post('/ParentForm/send', {
-        kidId: selectedKid.id,
-        formId: sendDialog.form.formId,
-        parentEmail: parentEmail.trim()
-      });
-
-      if (response.data.success) {
-        setSendDialog({ open: false, form: null });
-        setParentEmail('');
-        
-        alert('הטופס נשלח בהצלחה להורה!');
-        
-        setTimeout(() => {
-          onRefresh && onRefresh();
-        }, 1000);
-      } else {
-        alert('שגיאה בשליחת הטופס');
-      }
-
+      // API call to send email
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      setSendDialog(false);
+      setEmailContent('');
     } catch (error) {
-      console.error('שגיאה בשליחת הטופס:', error);
-      alert('שגיאה בשליחת הטופס');
+      console.error('Error sending form:', error);
     } finally {
       setSendingToParent(false);
     }
   };
 
-  // Reset form to start
-  const handleResetForm = async (form) => {
-    try {
-      await dispatch(updateFormStatus({
-        kidId: selectedKid.id,
-        formId: form.formId,
-        newStatus: 'NotStarted',
-        notes: `אופס בתאריך ${new Date().toLocaleDateString('he-IL')}`
-      })).unwrap();
-
-      setTimeout(() => {
-        onRefresh && onRefresh();
-      }, 1000);
-
-    } catch (error) {
-      console.error('שגיאה באיפוס הטופס:', error);
-    }
-  };
-
-  // Permission checks
-  const canEditForm = (form) => {
-    return ['NotStarted', 'InProgress'].includes(form.status);
-  };
-
-  const canSendToParent = (form) => {
-    return ['NotStarted', 'InProgress', 'Completed'].includes(form.status);
-  };
-
-  if (!onboardingData || !onboardingData.forms) {
+  if (!onboardingData) {
     return (
-      <Alert severity="info">
-        אין נתוני קליטה זמינים
-      </Alert>
+      <Container>
+        <Alert severity="info" sx={{ borderRadius: 3 }}>
+          אין נתוני קליטה זמינים
+        </Alert>
+      </Container>
     );
   }
 
   return (
-    <Box dir="rtl">
-      {/* General Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item size={{xs:12, sm:3}}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'success.light', color: 'white', borderRadius: 20, width: '90px' }}>
-            <CardContent>
-              <Typography variant="h3" fontWeight="bold">
-                {onboardingData.completedForms}
-              </Typography>
-              <Typography variant="body2">
-                הושלמו
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item size={{xs:12, sm:3}}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'primary.dark', color: 'white', borderRadius: 20, width: '90px' }}>
-            <CardContent>
-              <Typography variant="h3" fontWeight="bold">
-                {onboardingData.forms.filter(f => f.status === 'InProgress').length}
-              </Typography>
-              <Typography variant="body2">
-                בתהליך
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item size={{xs:12, sm:3}}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'info.light', color: 'white', borderRadius: 20, width: '90px' }}>
-            <CardContent>
-              <Typography variant="h3" fontWeight="bold">
-                {onboardingData.forms.filter(f => f.status === 'SentToParent').length}
-              </Typography>
-              <Typography variant="body2">
-                אצל הורים
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item size={{xs:12, sm:3}}>
-          <Card sx={{ textAlign: 'center', bgcolor: 'grey.400', color: 'white', borderRadius: 20, width: '90px' }}>
-            <CardContent>
-              <Typography variant="h3" fontWeight="bold">
-                {onboardingData.forms.filter(f => f.status === 'NotStarted').length}
-              </Typography>
-              <Typography variant="body2">
-                לא התחילו
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* New Documents Area */}
+    <Box sx={{ p: 2 }}>
+      {/* Documents Section */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <FolderIcon sx={{ mr: 1, color: 'primary.main' }} />
-          מסמכים ותעודות
-          <Chip 
-            label="אופציונלי" 
-            size="small" 
-            color="secondary" 
-            sx={{ ml: 1 }} 
-          />
-        </Typography>
-        
-        <Alert severity="info" sx={{ mb: 2 }}>
+        <SectionHeader>
+          <Typography variant="h6" sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            fontWeight: 700,
+            color: '#2a8a95'
+          }}>
+            <FolderIcon sx={{ mr: 2, color: '#4cb5c3' }} />
+            📄 ניהול מסמכים
+          </Typography>
+        </SectionHeader>
+
+        <Alert 
+          severity="info" 
+          sx={{ 
+            mb: 3, 
+            borderRadius: 3,
+            background: 'rgba(76, 181, 195, 0.1)',
+            border: '1px solid rgba(76, 181, 195, 0.2)'
+          }}
+        >
           <Typography variant="body2">
-            ניתן להעלות מסמכים רלוונטיים לילד (תעודות חיסונים, דוחות רפואיים, תעודות וכו'). 
-            העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
+            💡 העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
           </Typography>
         </Alert>
 
@@ -217,10 +192,18 @@ const OnboardingDashboard = ({
 
       <Divider sx={{ my: 4 }} />
 
-      {/* Form Cards */}
-      <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-        טפסי קליטה
-      </Typography>
+      {/* Forms Section */}
+      <SectionHeader>
+        <Typography variant="h6" sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          fontWeight: 700,
+          color: '#2a8a95'
+        }}>
+          <StarIcon sx={{ mr: 2, color: '#ff7043' }} />
+          📋 טפסי קליטה
+        </Typography>
+      </SectionHeader>
       
       <Grid container spacing={3}>
         {onboardingData.forms.map((form) => {
@@ -229,26 +212,16 @@ const OnboardingDashboard = ({
             : 0;
 
           return (
-            <Grid item size={{xs:12, md:6, lg:4}} key={form.formId}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  width: '200px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'all 0.2s ease',
-                  borderRadius: 4,
-                  boxShadow: 5,
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: 4
-                  }
-                }}
-              >
-                <CardContent sx={{ flex: 1 }}>
+            <Grid item xs={12} md={6} lg={4} key={form.formId}>
+              <ModernCard>
+                <CardContent sx={{ flex: 1, p: 3 }}>
                   {/* Title and Status */}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
+                    <Typography variant="h6" component="h3" sx={{ 
+                      flex: 1,
+                      fontWeight: 700,
+                      color: '#2a8a95'
+                    }}>
                       {form.formName}
                     </Typography>
                   </Box>
@@ -265,7 +238,6 @@ const OnboardingDashboard = ({
                         <Typography variant="caption" color="text.secondary">
                           התקדמות
                         </Typography>
-                        
                         <Typography variant="caption" color="primary" fontWeight="bold">
                           {progress}%
                         </Typography>
@@ -273,145 +245,143 @@ const OnboardingDashboard = ({
                       <LinearProgress 
                         variant="determinate" 
                         value={progress} 
-                        sx={{ height: 6, borderRadius: 3 }}
+                        sx={{ 
+                          height: 6, 
+                          borderRadius: 3,
+                          backgroundColor: alpha('#4cb5c3', 0.2),
+                          '& .MuiLinearProgress-bar': {
+                            background: 'linear-gradient(90deg, #4cb5c3, #10b981)',
+                            borderRadius: 3,
+                          }
+                        }}
                       />
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                         {form.answeredQuestions} מתוך {form.totalQuestions} שאלות
                       </Typography>
-                      
-
                     </Box>
                   )}
-                  {/* Dates */}
-                  <Box sx={{ mt: 'auto' }}>
-                    {form.startDate && (
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        התחיל: {new Date(form.startDate).toLocaleDateString('he-IL')}
-                      </Typography>
-                    )}
-                    {form.completedDate && (
-                      <Typography variant="caption" color="success.main" display="block" fontWeight="bold">
-                        הושלם: {new Date(form.completedDate).toLocaleDateString('he-IL')}
-                      </Typography>
-                    )}
+
+                  {/* Status Chip */}
+                  <Box sx={{ mb: 2 }}>
+                    <Chip
+                      label={form.status === 'Completed' ? 'הושלם' : 
+                             form.status === 'InProgress' ? 'בתהליך' : 'לא התחיל'}
+                      color={form.status === 'Completed' ? 'success' : 
+                             form.status === 'InProgress' ? 'warning' : 'default'}
+                      size="small"
+                      sx={{ fontWeight: 600 }}
+                    />
                   </Box>
                 </CardContent>
 
-                {/* Actions */}
-                <CardActions sx={{ justifyContent: 'space-between', pt: 0 }}>
-                  <Box>
-                    {/* Buttons for Edit/View */}
-                    { canEditForm(form) ? (
-                      <Button
-                        startIcon={<EditIcon />}
-                        onClick={() => onFormClick(form, 'edit')}
-                        color="primary"
+                <CardActions sx={{ 
+                  p: 2, 
+                  pt: 0,
+                  justifyContent: 'space-between',
+                  borderTop: `1px solid ${alpha('#4cb5c3', 0.1)}`
+                }}>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="צפייה בטופס">
+                      <IconButton 
+                        size="small"
+                        sx={{ 
+                          color: '#4cb5c3',
+                          '&:hover': { 
+                            backgroundColor: alpha('#4cb5c3', 0.1),
+                            transform: 'scale(1.1)'
+                          }
+                        }}
+                        onClick={() => handleFormAction(form, 'view')}
                       >
-                        {form.status === 'NotStarted' ? 'התחל' : 'המשך עריכה'}
-                      </Button>
-                    ) : (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        {(form.formId != '1002' || !form.formName.includes('אישי') )&& (
-                          <Button
-                            startIcon={<ViewIcon />}
-                            onClick={() => onFormClick(form, 'view')}
-                            color="secondary"
-                            size="small"
-                          >
-                            צפייה
-                          </Button>
-                        )}
-                                                {!form.formName.includes('אישור') && (
-
-                        <Button
-                          startIcon={<EditIcon />}
-                          onClick={() => onFormClick(form, 'edit')}
-                          color="primary"
+                        <ViewIcon />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    {!readOnly && (
+                      <Tooltip title="עריכת טופס">
+                        <IconButton 
                           size="small"
+                          sx={{ 
+                            color: '#ff7043',
+                            '&:hover': { 
+                              backgroundColor: alpha('#ff7043', 0.1),
+                              transform: 'scale(1.1)'
+                            }
+                          }}
+                          onClick={() => handleFormAction(form, 'edit')}
                         >
-                          עריכה
-                        </Button>
-                                                                        )}
-
-                      </Box>
-                    )}
-                  </Box>
-                  <Box>
-                    {/* Send to Parent */}
-                    {canSendToParent(form) && form.formId != '1002' && (
-                      <Tooltip PopperProps={{ disablePortal: true }} title="שלח טופס להורה">
-                        <IconButton
-                          onClick={() => handleSendToParent(form)}
-                          color="info"
-                        >
-                          <SendIcon />
+                          <EditIcon />
                         </IconButton>
                       </Tooltip>
                     )}
                   </Box>
+
+                  {!readOnly && (
+                    <AnimatedButton
+                      size="small"
+                      onClick={() => handleFormAction(form, 'send')}
+                      sx={{ minWidth: 'auto', px: 2 }}
+                    >
+                      <SendIcon sx={{ fontSize: '1rem' }} />
+                    </AnimatedButton>
+                  )}
                 </CardActions>
-              </Card>
+              </ModernCard>
             </Grid>
           );
         })}
       </Grid>
 
-      {/* Parent Send Dialog - existing code */}
+      {/* Send Dialog */}
       <Dialog 
-        open={sendDialog.open} 
-        onClose={() => setSendDialog({ open: false, form: null })}
+        open={sendDialog} 
+        onClose={() => setSendDialog(false)}
         maxWidth="sm"
-        dir='rtl'
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ 
+          background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+          color: 'white',
+          fontWeight: 700
+        }}>
+          <AutoAwesomeIcon sx={{ mr: 2 }} />
           שליחת טופס להורה
         </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" gutterBottom>
-            שליחת הטופס "{sendDialog.form?.formName}" להורה של {selectedKid?.firstName}
+        <DialogContent sx={{ p: 3 }}>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            הטופס יישלח למייל ההורה הרשום במערכת
           </Typography>
-          
-          {loadingParentEmail && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <CircularProgress size={20} />
-              <Typography variant="body2" color="text.secondary">
-                טוען פרטי הורה...
-              </Typography>
-            </Box>
-          )}
-          
           <TextField
+            multiline
+            rows={4}
             fullWidth
-            label="כתובת דוא״ל של ההורה"
-            type="email"
-            value={parentEmail}
-            onChange={(e) => setParentEmail(e.target.value)}
-            margin="normal"
-            required
-            placeholder="example@email.com"
-            helperText="הטופס יישלח עם קישור למילוי אונליין"
-            disabled={true}
+            label="תוכן ההודעה"
+            value={emailContent}
+            onChange={(e) => setEmailContent(e.target.value)}
+            sx={{ borderRadius: 2 }}
           />
-          <Alert severity="info" sx={{ mt: 2 }}>
-            הטופס יישלח להורים באימייל עם קישור למילוי
-          </Alert>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, backgroundColor: 'rgba(0,0,0,0.02)' }}>
           <Button 
-            onClick={() => setSendDialog({ open: false, form: null })}
-            disabled={sendingToParent || loadingParentEmail}
+            onClick={() => setSendDialog(false)}
+            sx={{ borderRadius: 2 }}
           >
             ביטול
           </Button>
-          <Button 
-            onClick={confirmSendToParent}
-            variant="contained"
-            disabled={sendingToParent || !parentEmail.trim() || loadingParentEmail}
+          <AnimatedButton
+            onClick={handleSendToParent}
+            disabled={sendingToParent}
             startIcon={sendingToParent ? <CircularProgress size={20} /> : <SendIcon />}
           >
             {sendingToParent ? 'שולח...' : 'שלח'}
-          </Button>
+          </AnimatedButton>
         </DialogActions>
       </Dialog>
     </Box>

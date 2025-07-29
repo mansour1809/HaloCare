@@ -245,6 +245,13 @@ const ProSidebar = () => {
               >
                 הוספת ילד
               </MenuItem>
+              <MenuItem
+                icon={<AutoStoriesIcon />}
+                onClick={() => navigate('/reports/attendance')}
+                style={getActiveStyle('/reports/attendance')}
+              >
+                נוכחות
+              </MenuItem>
             </StyledSubMenu>
 
             <CategoryLabel emoji="👥">צוות</CategoryLabel>
@@ -290,28 +297,6 @@ const ProSidebar = () => {
             <MenuItem onClick={() => navigate('/settings')} style={getActiveStyle('/settings')}>
               הגדרות
             </MenuItem>
-
-            <CategoryLabel emoji="📋">ניהול דוחות</CategoryLabel>
-
-            <StyledSubMenu label="ניהול דוחות" icon={<AssessmentIcon />}>
-              <MenuItem
-                icon={<AutoStoriesIcon />}
-                onClick={() => navigate('/reports/attendance')}
-                style={getActiveStyle('/reports/attendance')}
-              >
-                נוכחות
-              </MenuItem>
-              <MenuItem
-                icon={<EditNoteIcon />}
-                onClick={() => navigate('/reports/treatments')}
-                style={getActiveStyle('/reports/treatments')}
-              >
-                טיפולים
-              </MenuItem>
-            </StyledSubMenu>
-
-
-
           </Menu>
 
           {/* Automatic spacing */}

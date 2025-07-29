@@ -336,7 +336,7 @@ namespace halocare.Controllers
             }
         }
 
-        
+         
         public class UpdateCityRequest
         {
             public string NewCityName { get; set; }

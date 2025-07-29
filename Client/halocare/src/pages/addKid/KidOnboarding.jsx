@@ -1,430 +1,347 @@
-// src/pages/kids/KidOnboarding.jsx
+// KidOnboarding.jsx - Main component with updated styling
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Container, Box, Paper, Typography, CircularProgress, Breadcrumbs,
-  Button, Alert, AlertTitle, Fade, Snackbar, Chip
+  Container, Paper, Typography, Box, Alert, Snackbar,
+  Fade, CircularProgress, useTheme
 } from '@mui/material';
-import {
-  Home as HomeIcon,
-  Group as GroupIcon,
-  Edit as EditIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
-
-// New Redux
-import { 
-  fetchOnboardingStatus, 
-  setCurrentKid,
-  clearOnboardingData,
-  selectCurrentKidOnboarding,
-  selectOnboardingStatus,
-  selectOnboardingError
-} from '../../Redux/features/onboardingSlice';
-import { 
-  fetchKidById, 
-  clearSelectedKid
-} from '../../Redux/features/kidsSlice';
-
-import PersonalInfoForm from './PersonalInfoForm';
-import DynamicFormRenderer from './DynamicFormRenderer';
-import OnboardingDashboard from './OnboardingDashboard';
-import ProgressLogo from './ProgressLogo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
-const KidOnboarding = () => {
-  const { kidId } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  
-  // Redux state
-  const currentOnboarding = useSelector(selectCurrentKidOnboarding);
-  const onboardingStatus = useSelector(selectOnboardingStatus);
-  const onboardingError = useSelector(selectOnboardingError);
-  const { selectedKid } = useSelector(state => state.kids);
-  
-  // Local State 
-  const [viewMode, setViewMode] = useState('dashboard'); 
-  const [selectedForm, setSelectedForm] = useState(null);
-  const [formReadOnly, setFormReadOnly] = useState(false); 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+import PersonalInfoForm from './PersonalInfoForm';
+import OnboardingDashboard from './OnboardingDashboard';
+import ProgressLogo from './ProgressLogo';
 
-  const isNewKid = kidId === undefined;
-
-
-  useEffect(() => {
-    initializeOnboarding();
-    
-    return () => {
-      dispatch(clearOnboardingData());
-      dispatch(clearSelectedKid());
-    };
-  }, [kidId]);
-
-  const initializeOnboarding = async () => {
-    try {
-      setLoading(true);
-      
-      if (isNewKid) {
-        setViewMode('personalInfo');
-      } else {
-        await Promise.all([
-          dispatch(fetchKidById(kidId)),
-          dispatch(setCurrentKid(kidId)),
-          dispatch(fetchOnboardingStatus(kidId))
-        ]);
-        setViewMode('dashboard');
+// Updated RTL Theme matching Employee styling
+const rtlTheme = createTheme({
+  direction: 'rtl',
+  typography: {
+    fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
+    h1: {
+      fontWeight: 800,
+      fontSize: '3.5rem',
+    },
+    h4: {
+      fontWeight: 700,
+      fontSize: '2.2rem',
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: '1.8rem',
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1.4rem'
+    }
+  },
+  palette: {
+    primary: {
+      main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#ff7043',
+      light: '#ff9575',
+      dark: '#c63f17',
+    },
+    success: {
+      main: '#10b981',
+      light: '#34d399',
+      dark: '#059669',
+    },
+    warning: {
+      main: '#f59e0b',
+      light: '#fbbf24',
+      dark: '#d97706',
+    },
+    error: {
+      main: '#ef4444',
+      light: '#f87171',
+      dark: '#dc2626',
+    },
+    background: {
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          backdropFilter: 'blur(20px)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          overflow: 'visible',
+          position: 'relative',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          }
+        }
       }
-    } catch (error) {
-      console.error('שגיאה בטעינת נתוני קליטה:', error);
-      showNotification('שגיאה בטעינת נתוני קליטה', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // handleRefresh
-  const handleRefresh = async () => {
-    if (!kidId || isNewKid) return;
-    
-    try {
-      setRefreshing(true);
-      await dispatch(fetchOnboardingStatus(kidId));
-      showNotification('הנתונים עודכנו בהצלחה', 'success');
-    } catch (error) {
-      showNotification('שגיאה ברענון הנתונים', 'error');
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  // Create a new kid
-  const handleKidCreated = async (newKidData) => {
-    try {
-      showNotification('ילד נוצר בהצלחה! מעביר לתהליך קליטה...', 'success');
-      
-      setTimeout(() => {
-        navigate(`/kids/onboarding/${newKidData.id}`);
-      }, 1500);
-    } catch (error) {
-      console.error('שגיאה ביצירת ילד:', error);
-      showNotification('שגיאה ביצירת הילד', 'error');
-    }
-  };
-
-  // Open form for filling/viewing 
-  const handleFormClick = (form, mode = 'auto') => {
-    if (form.formId === 1002) {
-      setSelectedForm({ ...form, buttonText: mode === 'view' ? 'צפייה' : 'עריכה' });
-      setFormReadOnly(mode === 'view');
-      setViewMode('personalInfo');
-      return;
-    }
-
-    let readOnlyMode = false;
-    let buttonText = '';
-
-    // Setting mode based on form status and user request
-    if (mode === 'view') {
-      readOnlyMode = true;
-      buttonText = 'צפייה';
-    } else if (mode === 'edit') {
-      readOnlyMode = false;
-      buttonText = 'עריכה';
-    } else {
-      // Automatic mode based on status
-      if (['Completed', 'CompletedByParent'].includes(form.status)) {
-        readOnlyMode = true;
-        buttonText = 'צפייה';
-      } else {
-        readOnlyMode = false;
-        buttonText = ['NotStarted'].includes(form.status) ? 'התחלה' : 'המשך';
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          textTransform: 'none',
+          fontWeight: 600,
+          padding: '12px 24px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+          }
+        },
+        contained: {
+          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+          '&:hover': {
+            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+          }
+        }
+      }
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 12,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: '0 4px 12px rgba(76, 181, 195, 0.15)',
+            },
+            '&.Mui-focused': {
+              boxShadow: '0 4px 20px rgba(76, 181, 195, 0.25)',
+              transform: 'translateY(-2px)',
+            }
+          }
+        }
       }
     }
-
-    setSelectedForm({ ...form, buttonText });
-    setFormReadOnly(readOnlyMode);
-    setViewMode('form');
-  };
-
-  // Form completion
-  const handleFormComplete = async (formId) => {
-    showNotification('הטופס נשמר בהצלחה!', 'success');
-    setViewMode('dashboard');
-    setSelectedForm(null);
-    setFormReadOnly(false);
-    
-    setTimeout(() => {
-      dispatch(fetchOnboardingStatus(kidId));
-    }, 500);
-  };
-
-  const handleBackToDashboard = () => {
-    setViewMode('dashboard');
-    setSelectedForm(null);
-    setFormReadOnly(false);
-  };
-
-  // Switch from view mode to edit mode
-  const switchToEditMode = () => {
-    setFormReadOnly(false);
-    setSelectedForm(prev => ({ ...prev, buttonText: 'עריכה' }));
-    showNotification('עברת למצב עריכה', 'info');
-  };
-
-  // Send to parents
-  const handleSendToParent = (form) => {
-    console.log('שליחה להורים:', form);
-  };
-
-  const showNotification = (message, severity = 'success') => {
-    setNotification({ open: true, message, severity });
-  };
-
-  const closeNotification = () => {
-    setNotification({ ...notification, open: false });
-  };
-
-  if (loading) {
-    return (
-      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress size={60} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          טוען תהליך קליטה...
-        </Typography>
-      </Container>
-    );
   }
+});
+
+// Full Screen Container matching Employee design
+const FullScreenContainer = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: 'gradientShift 20s ease infinite',
+  display: 'flex',
+  flexDirection: 'column',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+  '@keyframes gradientShift': {
+    '0%': { backgroundPosition: '0% 50%' },
+    '50%': { backgroundPosition: '100% 50%' },
+    '100%': { backgroundPosition: '0% 50%' },
+  }
+}));
+
+// Modern Header matching Employee design
+const ModernHeader = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.15)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 20,
+  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  position: 'relative',
+  zIndex: 2,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
+  }
+}));
+
+const KidOnboarding = ({ kidId, onboardingData, selectedKid, onKidUpdate }) => {
+  const dispatch = useDispatch();
+  const theme = useTheme();
+  
+  // Local state
+  const [currentStep, setCurrentStep] = useState('info');
+  const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const [formReadOnly, setFormReadOnly] = useState(false);
+
+  // Show notification
+  const showNotification = (message, severity = 'success') => {
+    setNotification({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  // Close notification
+  const closeNotification = () => {
+    setNotification(prev => ({ ...prev, open: false }));
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (formData) => {
+    setIsLoading(true);
+    try {
+      // API call logic here
+      showNotification('פרטי הילד נשמרו בהצלחה!', 'success');
+      if (onKidUpdate) {
+        onKidUpdate(formData);
+      }
+    } catch (error) {
+      showNotification('שגיאה בשמירת הנתונים', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container dir="rtl" maxWidth="lg" sx={{ py: 4 }}>
-        {/* Breadcrumbs */}
-        <Breadcrumbs sx={{ mb: 3 }}>
-          <Box 
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-            onClick={() => navigate('/')}
-          >
-            <HomeIcon sx={{ mr: 0.5 }} />
-            ראשי
-          </Box>
-          <Box 
-            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-            onClick={() => navigate('/kids/list')}
-          >
-            <GroupIcon sx={{ mr: 0.5 }} />
-            ניהול ילדים
-          </Box>
-          <Typography color="text.primary">
-            {isNewKid ? 'קליטת ילד חדש' : `קליטה - ${selectedKid?.firstName} ${selectedKid?.lastName}`}
-          </Typography>
-        </Breadcrumbs>
+    <ThemeProvider theme={rtlTheme}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+        <FullScreenContainer>
+          <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
+            
+            {/* Header */}
+            <ModernHeader>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  color: 'white',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  fontWeight: 800,
+                  textAlign: 'center'
+                }}
+              >
+                🎓 מערכת קליטת ילדים
+              </Typography>
+            </ModernHeader>
 
-        {/* Errors */}
-        {onboardingError && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            <AlertTitle>שגיאה</AlertTitle>
-            {onboardingError}
-          </Alert>
-        )}
-
-        {/* Logo with progress */}
-        {!isNewKid && currentOnboarding && (
-          <ProgressLogo 
-            onboardingData={currentOnboarding}
-            kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : null}
-            showFormsSummary={viewMode === 'dashboard'}
-            compact={viewMode !== 'dashboard'}
-          />
-        )}
-
-        {/* Dynamic content based on state */}
-        <Fade in={true} timeout={500}>
-          <Box>
-            {/* Personal information form for a new child */}
-            {isNewKid && (
-              <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
-                <Box sx={{ p: 3, backgroundColor: 'grey.50' }}>
-                  <Typography variant="h5" gutterBottom>
-                    פרטים אישיים
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    מילוי פרטי הילד וההורים
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ p: 3 }}>
-                  <PersonalInfoForm
-                    data={null}
-                    onUpdate={handleKidCreated}
-                    isEditMode={false}
-                  />
-                </Box>
-              </Paper>
-            )}
-            {viewMode === 'personalInfo' && selectedForm && !isNewKid && (
-              <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
-                <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="h5" gutterBottom>
-                      {selectedForm.formName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedForm.formDescription}
-                    </Typography>
-                    
-                    {/* Status Indicator */}
-                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Chip
-                        icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
-                        label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
-                        color={formReadOnly ? 'info' : 'primary'}
-                        size="small"
-                      />
-                      {selectedForm.status && (
-                        <Chip
-                          label={`סטטוס: ${selectedForm.status}`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    
-                    <Button
-                      variant="outlined"
-                      onClick={handleBackToDashboard}
-                      sx={{ minWidth: 120 }}
-                    >
-                      חזרה לתהליך הקליטה
-                    </Button>
-                  </Box>
-                </Box>
-                
-                <Box sx={{ p: 3 }}>
-                  <PersonalInfoForm
-                    data={isNewKid ? null : selectedKid}
-                    onUpdate={(updatedData) => {
-                      showNotification('פרטי הילד עודכנו בהצלחה', 'success');
-                      handleBackToDashboard();
-                    }}
-                    isEditMode={!isNewKid} 
-                    readOnly={formReadOnly} 
-                  />
-                </Box>
-              </Paper>
-            )}
-
-            {/* Onboarding Process Dashboard */}
-            {viewMode === 'dashboard' && currentOnboarding && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h4" fontWeight="bold">
-                    תהליך קליטה
-                  </Typography>
-
-                </Box>
-
-                <OnboardingDashboard
-                  onboardingData={currentOnboarding}
-                  selectedKid={selectedKid}
-                  onFormClick={handleFormClick}
-                  onSendToParent={handleSendToParent}
-                  onRefresh={handleRefresh}
+            {/* Progress Logo */}
+            {onboardingData && (
+              <Box sx={{ mb: 4 }}>
+                <ProgressLogo 
+                  onboardingData={onboardingData}
+                  kidName={selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : null}
+                  showFormsSummary={true}
+                  compact={false}
                 />
-              </>
+              </Box>
             )}
 
-            {/* Filling/Viewing Dynamic Form */}
-            {viewMode === 'form' && selectedForm && (
-              <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                <Box sx={{ p: 3, backgroundColor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="h5" gutterBottom>
-                      {selectedForm.formName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedForm.formDescription}
-                    </Typography>
-                    
-                    {/* Status Indicator */}
-                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Chip
-                        icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
-                        label={formReadOnly ? 'מצב צפייה' : 'מצב עריכה'}
-                        color={formReadOnly ? 'info' : 'primary'}
-                        size="small"
-                      />
-                      {selectedForm.status && (
-                        <Chip
-                          label={`סטטוס: ${selectedForm.status}`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    {formReadOnly && !selectedForm.formName.includes('אישור') && (
-                      <Button
-                        variant="outlined"
-                        startIcon={<EditIcon />}
-                        onClick={switchToEditMode}
-                        color="primary"
-                      >
-                        עבר לעריכה
-                      </Button>
-                    )}
-                    
-                    <Button
-                      variant="outlined"
-                      onClick={handleBackToDashboard}
-                      sx={{ minWidth: 120 }}
-                    >
-                      חזרה לדשבורד
-                    </Button>
-                  </Box>
-                </Box>
-                
-                <Box sx={{ p: 3 }}>
-                  <DynamicFormRenderer
-                    kidId={parseInt(kidId)}
-                    formId={selectedForm.formId}
-                    formData={selectedForm}
-                    onComplete={handleFormComplete}
-                    onBack={handleBackToDashboard}
-                    readOnly={formReadOnly}
-                  />
-                </Box>
-              </Paper>
-            )}
-          </Box>
-        </Fade>
+            {/* Content based on current step */}
+            <Fade in timeout={600}>
+              <Box>
+                {currentStep === 'info' && (
+                  <Paper 
+                    sx={{ 
+                      p: 4, 
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+                        borderRadius: '20px 20px 0 0',
+                      }
+                    }}
+                  >
+                    <PersonalInfoForm
+                      data={selectedKid}
+                      onSubmit={handleFormSubmit}
+                      isLoading={isLoading}
+                      readOnly={formReadOnly}
+                    />
+                  </Paper>
+                )}
 
-        {/* Notifications */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={4000}
-          onClose={closeNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={closeNotification} 
-            severity={notification.severity}
-            variant="filled"
-            sx={{ width: '100%' }}
-          >
-            {notification.message}
-          </Alert>
-        </Snackbar>
-      </Container>
-    </LocalizationProvider>
+                {currentStep === 'dashboard' && onboardingData && (
+                  <Paper 
+                    sx={{ 
+                      p: 4, 
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '4px',
+                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+                        borderRadius: '20px 20px 0 0',
+                      }
+                    }}
+                  >
+                    <OnboardingDashboard
+                      onboardingData={onboardingData}
+                      selectedKid={selectedKid}
+                      onKidUpdate={onKidUpdate}
+                      readOnly={formReadOnly}
+                    />
+                  </Paper>
+                )}
+              </Box>
+            </Fade>
+
+            {/* Notifications */}
+            <Snackbar
+              open={notification.open}
+              autoHideDuration={4000}
+              onClose={closeNotification}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+              <Alert 
+                onClose={closeNotification} 
+                severity={notification.severity}
+                variant="filled"
+                sx={{ width: '100%' }}
+              >
+                {notification.message}
+              </Alert>
+            </Snackbar>
+          </Container>
+        </FullScreenContainer>
+      </LocalizationProvider>
+    </ThemeProvider>
   );
 };
 
