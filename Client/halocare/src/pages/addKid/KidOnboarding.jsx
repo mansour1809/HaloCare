@@ -581,7 +581,7 @@ const KidOnboarding = () => {
                         onClick={handleBackToDashboard}
                         sx={{ minWidth: 120 }}
                       >
-                        חזרה לדשבורד
+                        חזרה
                       </Button>
                     </Box>
                   </EnhancedHeaderBox>

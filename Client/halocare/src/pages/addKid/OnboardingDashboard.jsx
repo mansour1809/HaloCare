@@ -34,7 +34,8 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   fontSize: '1rem',
   position: 'relative',
   overflow: 'hidden',
-  background: 'linear-gradient(45deg, #95bbc0ff 30%, #2a8a95 90%)',
+  color: '#fff',
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
@@ -55,7 +56,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   '&:hover::after': {
     left: '100%',
   }
-}));
+ }));
 
 // Modern Card matching Employee design - VISUAL ONLY
 const ModernCard = styled(Card)(({ theme }) => ({
@@ -63,6 +64,7 @@ const ModernCard = styled(Card)(({ theme }) => ({
   flexDirection: 'column',    
   height: '100%',
   borderRadius: 20,
+  
   boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   backdropFilter: 'blur(20px)',
   background: 'rgba(255, 255, 255, 0.95)',
@@ -309,9 +311,8 @@ const OnboardingDashboard = ({
             display: 'flex', 
             alignItems: 'center',
             fontWeight: 700,
-            color: '#2a8a95'
+            color: '#fff'
           }}>
-            <FolderIcon sx={{ mr: 2, color: '#4cb5c3' }} />
             📄 ניהול מסמכים
           </Typography>
         </SectionHeader>
@@ -326,7 +327,7 @@ const OnboardingDashboard = ({
           }}
         >
           <Typography variant="body2">
-            💡 העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
+            העלאת מסמכים היא אופציונלית ולא חוסמת את תהליך הקליטה.
           </Typography>
         </Alert>
 
@@ -348,9 +349,8 @@ const OnboardingDashboard = ({
           display: 'flex', 
           alignItems: 'center',
           fontWeight: 700,
-          color: '#2a8a95'
+          color: '#fff'
         }}>
-          <StarIcon sx={{ mr: 2, color: '#ff7043' }} />
           📋 טפסי קליטה
         </Typography>
       </SectionHeader>

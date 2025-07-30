@@ -699,7 +699,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                     backgroundClip: 'text',
                     color: 'transparent',
                   }}>
-                    {isEditMode ? '✏️ עריכת פרטי ילד' : ' קליטת ילד חדש'}
+                    {isEditMode ? ' עריכת פרטים אישיים' : ' קליטת ילד חדש'}
                   </Typography>
                   {/* <Celebration sx={{ fontSize: 40, color: '#ff7043' }} /> */}
                 </Stack>
