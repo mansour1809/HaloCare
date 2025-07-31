@@ -271,8 +271,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                   </AnimatedAvatar>
                   
                   סיכומי טיפולים
-                  
+                  {console.log(treatmentType)}
                   {treatmentType && (
+                    console.log(treatmentType),
+                    console.log(getTreatmentName(treatmentType)),
                     <GlowingChip 
                       label={getTreatmentName(treatmentType)}
                       sx={{ 
@@ -361,7 +363,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                       fontWeight: 800,
                       textShadow: '0 2px 4px rgba(76, 181, 195, 0.2)'
                     }}>
-                      {stats.totalTreatments}
+                      {stats.total}
                     </Typography>
                     <Typography variant="body1" sx={{ 
                       color: 'text.secondary',
@@ -406,7 +408,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                       fontWeight: 800,
                       textShadow: '0 2px 4px rgba(255, 112, 67, 0.2)'
                     }}>
-                      {/* {stats.averageCooperation?.toFixed(1) || '0.0'} */}
+                      {stats.averageCooperation || '0.0'}
                     </Typography>
                     <Typography variant="body1" sx={{ 
                       color: 'text.secondary',

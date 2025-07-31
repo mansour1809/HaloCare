@@ -746,7 +746,6 @@ const handleCreateEvent = (isEdit=false) => {
                     
                     <Box sx={{ mt: 3 }}>
                       <GlowingButton
-                        startIcon={<AddIcon />}
                         onClick={() => console.log('Create new event for date:', selectedDate)}
                         glowColor="#10b981"
                       >

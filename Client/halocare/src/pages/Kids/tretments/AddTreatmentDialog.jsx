@@ -250,7 +250,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     treatmentTypeId: treatmentType || '',
     description: '',
     cooperationLevel: 3,
-    status: 'active',
+    // status: 'active',
     highlight: ''
   });
   
@@ -265,7 +265,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
         treatmentTypeId: treatmentType || '',
         description: '',
         cooperationLevel: 3,
-        status: 'active',
+        // status: 'active',
         highlight: ''
       });
       setFormErrors({});
@@ -360,6 +360,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
 
     try {
+    console.log(formData)
       await addTreatment(formData);
       
       Swal.fire({

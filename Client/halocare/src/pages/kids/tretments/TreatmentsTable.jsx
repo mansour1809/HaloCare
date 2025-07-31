@@ -286,7 +286,9 @@ const TreatmentsTable = () => {
         <StyledTableContainer>
           <Table stickyHeader>
             <TableHead>
-              <TableRow>
+              {/* <TableRow> */}
+                <StyledTableRow 
+                     >
                 <TableCell align="center">
                   <TableSortLabel
                     active={orderBy === 'treatmentDate'}
@@ -366,15 +368,18 @@ const TreatmentsTable = () => {
                     פעולות
                   </Box>
                 </TableCell>
-              </TableRow>
+                                    </StyledTableRow>
+
+              {/* </TableRow> */}
             </TableHead>
             <TableBody>
               {paginatedTreatments.length > 0 ? (
                 paginatedTreatments.map((treatment, index) => (
                   <Zoom in timeout={300 + index * 100} key={treatment.treatmentId}>
-                    <StyledTableRow 
+                     <StyledTableRow 
                       onClick={() => openViewDialog(treatment)}
-                    >
+                     >
+{/* <TableRow> */}
                       <TableCell align="center">
                         <Box>
                           <Typography 
@@ -461,7 +466,10 @@ const TreatmentsTable = () => {
                         </Box>
                       </TableCell>
                     </StyledTableRow>
-                  </Zoom>
+                  {/* </TableRow> */}
+
+                                    </Zoom>
+
                 ))
               ) : (
                 <StyledTableRow>

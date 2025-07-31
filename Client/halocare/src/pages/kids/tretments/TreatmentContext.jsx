@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
+import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
 import { fetchEmployees } from '../../../Redux/features/employeesSlice';
 const TreatmentContext = createContext();
 
@@ -45,6 +46,11 @@ export const TreatmentProvider = ({ children }) => {
 
   // Update filtered treatments 
   useEffect(() => {
+
+    if(treatmentTypes.length === 0) {
+      dispatch(fetchTreatmentTypes());
+    }
+
     if (!treatments || treatments.length === 0) {
       setFilteredTreatments([]);
       return;
@@ -169,20 +175,19 @@ export const TreatmentProvider = ({ children }) => {
   };
 
   // Add new treatment
-  const addTreatment = async (kidId, treatmentData) => {
+  const addTreatment = async ( treatmentData) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`/treatments`, {
-        ...treatmentData,
-        kidId
-      });
-      
+      console.log(treatmentData);
+      const response = await axios.post(`/Treatments`, 
+        treatmentData
+      );
       setLoading(false);
       closeAddDialog();
       
       // Refresh the list after adding
-      dispatch(fetchTreatmentsByKid({ kidId, treatmentType: treatmentData.treatmentTypeId }));
+      dispatch(fetchTreatmentsByKid({ kidId: treatmentData.kidId, treatmentType: treatmentData.treatmentTypeId }));
       
       return response.data;
     } catch (err) {
@@ -250,8 +255,9 @@ export const TreatmentProvider = ({ children }) => {
   };
 
   const getTreatmentName = (typeId) => {
-  
+  console.log(typeId)
     const treatmentType = treatmentTypes.find(t => t.treatmentTypeId == typeId);
+    console.log(treatmentTypes)
     return treatmentType?.treatmentTypeName || 'לא ידוע';
   };
 
