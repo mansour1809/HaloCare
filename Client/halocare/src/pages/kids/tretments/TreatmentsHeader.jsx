@@ -1,4 +1,3 @@
-// src/components/treatments/TreatmentsHeader.jsx 
 import { 
   Box, 
   Typography, 
@@ -11,7 +10,12 @@ import {
   Avatar,
   Stack,
   Divider,
-  Tooltip
+  Tooltip,
+  styled,
+  alpha,
+  Fade,
+  Zoom,
+  Container
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -24,6 +28,127 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTreatmentContext } from './TreatmentContext';
 import PropTypes from 'prop-types';
+
+// Enhanced Styled Components with modern design
+const ModernHeader = styled(Paper)(({ theme }) => ({
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 25%, rgba(255, 112, 67, 0.95) 50%, rgba(16, 185, 129, 0.95) 75%, rgba(76, 181, 195, 0.95) 100%)',
+  backgroundSize: '400% 400%',
+  animation: 'gradientShift 20s ease infinite',
+  color: 'white',
+  borderRadius: '20px',
+  overflow: 'hidden',
+  position: 'relative',
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha('#ffffff', 0.2)}`,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%)',
+    pointerEvents: 'none',
+  },
+  '@keyframes gradientShift': {
+    '0%': { backgroundPosition: '0% 50%' },
+    '50%': { backgroundPosition: '100% 50%' },
+    '100%': { backgroundPosition: '0% 50%' },
+  }
+}));
+
+const StatsCard = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha('#ffffff', 0.2)}`,
+  borderRadius: '16px',
+  padding: theme.spacing(3),
+  textAlign: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: '0 20px 60px rgba(76, 181, 195, 0.25)',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+  }
+}));
+
+const AnimatedButton = styled(Button)(({ theme }) => ({
+  borderRadius: 16,
+  padding: '12px 32px',
+  fontWeight: 700,
+  fontSize: '1.1rem',
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px) scale(1.05)',
+    boxShadow: '0 15px 40px rgba(76, 181, 195, 0.5)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+const AnimatedAvatar = styled(Avatar)(({ theme }) => ({
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  '&:hover': {
+    transform: 'scale(1.1) rotate(5deg)',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-4px',
+    left: '-4px',
+    right: '-4px',
+    bottom: '-4px',
+    background: 'linear-gradient(45deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '50%',
+    zIndex: -1,
+    animation: 'avatarBorderRotate 3s linear infinite',
+  },
+  '@keyframes avatarBorderRotate': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' },
+  }
+}));
+
+const GlowingChip = styled(Chip)(({ theme }) => ({
+  fontWeight: 700,
+  fontSize: '1rem',
+  padding: '8px 16px',
+  height: 'auto',
+  borderRadius: '12px',
+  boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
+  }
+}));
 
 const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
   const navigate = useNavigate();
@@ -60,277 +185,359 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     return trend > 0 ? `+${trend}%` : `${trend}%`;
   };
 
-  const trend = getTrend();
-
   return (
-    <Box sx={{ mb: 3 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 3 }}>
-        <Link
-          underline="hover"
-          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-          color="inherit"
-          onClick={() => navigate('/')}
-        >
-          <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-          ראשי
-        </Link>
-        <Link
-          underline="hover"
-          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-          color="inherit"
-          onClick={() => navigate('/kids/list')}
-        >
-          <PersonIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-          רשימת ילדים
-        </Link>
-        <Link
-          underline="hover"
-          sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-          color="inherit"
-          onClick={() => navigate(`/kids/${kidId}`)}
-        >
-          {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
-        </Link>
-        <Typography color="text.primary" sx={{ fontWeight: 'medium' }}>
-          {getTreatmentName(treatmentType) ? `טיפולי ${getTreatmentName(treatmentType)}` : 'כל הטיפולים'}
-        </Typography>
-      </Breadcrumbs>
-      
-      {/* Main Header */}
-      <Paper sx={{ p: 3, mb: 3, borderRadius: 2, background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-          <Box>
-            <Typography variant="h4" component="h1" sx={{ 
-              fontWeight: 'bold', 
-              color: 'primary.main',
-              mb: 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}>
-              <Avatar sx={{ 
-                bgcolor: 'primary.main', 
-                width: 48, 
-                height: 48,
-                fontSize: '1.5rem'
-              }}>
-                📋
-              </Avatar>
-              
-              סיכומי טיפולים
-              
-              {treatmentType && (
-                <Chip 
-                  label={getTreatmentName(treatmentType)}
-                  sx={{ 
-                    backgroundColor: getColorForTreatmentType(treatmentType),
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: '0.9rem'
-                  }}
-                />
-              )}
-            </Typography>
-            
-            {selectedKid && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Avatar sx={{ 
-                  width: 32, 
-                  height: 32, 
-                  bgcolor: 'secondary.main',
-                  fontSize: '0.9rem'
-                }}>
-                  {selectedKid.firstName?.charAt(0)}{selectedKid.lastName?.charAt(0)}
-                </Avatar>
-                <Typography variant="h6" color="text.secondary">
-                  {selectedKid.firstName} {selectedKid.lastName}
-                </Typography>
-                <Chip 
-                  label={selectedKid.isActive ? 'פעיל' : 'לא פעיל'}
-                  color={selectedKid.isActive ? 'success' : 'default'}
-                  size="small"
-                />
-              </Box>
-            )}
-            
-            <Typography variant="body1" color="text.secondary">
-              מעקב ותיעוד התקדמות הילד בטיפולים שונים
-            </Typography>
-          </Box>
-          
-          <Button 
-            variant="contained" 
-            size="large"
-            startIcon={<AddIcon />} 
-            onClick={openAddDialog}
-            sx={{ 
+    <Box dir="rtl" sx={{ mb: 4 }}>
+      {/* Enhanced Breadcrumbs */}
+      <Fade in timeout={600}>
+        <Breadcrumbs 
+          separator="›" 
+          sx={{ 
+            mb: 3,
+            '& .MuiBreadcrumbs-separator': {
+              color: '#4cb5c3',
               fontWeight: 'bold',
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
-              '&:hover': { 
-                boxShadow: '0 6px 16px rgba(76, 181, 195, 0.4)',
-                transform: 'translateY(-2px)'
-              },
-              transition: 'all 0.2s ease-in-out'
+              fontSize: '1.2rem'
+            }
+          }}
+        >
+          <Link 
+            color="inherit" 
+            href="/dashboard" 
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/dashboard');
+            }}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              color: '#fff',
+              textDecoration: 'none !important',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                color: '#fff',
+                transform: 'scale(1.02)'
+              }
             }}
           >
-            טיפול חדש
-          </Button>
-        </Box>
-
-        {/* Quick stats */}
-        {stats.total > 0 && (
-          <>
-            <Divider sx={{ my: 3 }} />
-            
-            <Grid container spacing={3}>
-              {/* Total treatments */}
-              <Grid item size={{xs:12,sm:6,md:3}}>
-                <Paper sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  background: 'linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%)'
+            <HomeIcon fontSize="small" />
+            דף הבית
+          </Link>
+          <Link 
+            color="inherit" 
+            href={`/kids/${kidId}`}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate(`/kids/${kidId}`);
+            }}
+            sx={{ 
+              textDecoration: 'none !important',
+              transition: 'all 0.2s ease',
+              color: '#fff',
+              '&:hover': {
+                color: '#fff',
+                transform: 'scale(1.02)'
+              }
+            }}
+          >
+            {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
+          </Link>
+        </Breadcrumbs>
+      </Fade>
+      
+      {/* Modern Header */}
+      <Fade in timeout={800}>
+        <ModernHeader elevation={0} sx={{ p: 4, mb: 4 }}>
+          <Container maxWidth="xl">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+              <Box>
+                <Typography variant="h3" component="h1" sx={{ 
+                  fontWeight: 600, 
+                  color: 'white',
+                  mb: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  textShadow: '0 4px 8px rgba(0,0,0,0.3)'
                 }}>
-                  <Avatar sx={{ 
-                    bgcolor: 'primary.main', 
-                    mx: 'auto', 
-                    mb: 1,
-                    width: 40,
-                    height: 40
+                  <AnimatedAvatar sx={{ 
+                    bgcolor: 'rgba(255,255,255,0.2)', 
+                    width: 64, 
+                    height: 64,
+                    fontSize: '2rem',
+                    backdropFilter: 'blur(10px)'
                   }}>
-                    <AssessmentIcon />
-                  </Avatar>
-                  <Typography variant="h4" color="primary.main" fontWeight="bold">
-                    {stats.total}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    סיכומי טיפולים
-                  </Typography>
-                  {trend && (
-                    <Chip 
-                      label={`${trend} החודש`}
-                      size="small"
-                      color={trend.startsWith('+') ? 'success' : 'default'}
-                      sx={{ mt: 1 }}
+                    📋
+                  </AnimatedAvatar>
+                  
+                  סיכומי טיפולים
+                  
+                  {treatmentType && (
+                    <GlowingChip 
+                      label={getTreatmentName(treatmentType)}
+                      sx={{ 
+                        backgroundColor: getColorForTreatmentType(treatmentType),
+                        color: '#fff',
+                      }}
                     />
                   )}
-                </Paper>
+                </Typography>
+                
+                {selectedKid && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Typography variant="h5" sx={{ 
+                      color: 'white',
+                      fontWeight: 600,
+                      textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    }}>
+                      {selectedKid.firstName} {selectedKid.lastName}
+                    </Typography>
+                    <GlowingChip 
+                      label={selectedKid.isActive ? 'פעיל' : 'לא פעיל'}
+                      color={selectedKid.isActive ? 'success' : 'error'}
+                      sx={{
+                        color: 'white',
+                        fontWeight: 700,
+                        backgroundColor: selectedKid.isActive ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                    />
+                  </Box>
+                )}
+                
+                {getTrend() && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUpIcon sx={{ color: 'rgba(255,255,255,0.9)' }} />
+                    <Typography variant="body1" sx={{ 
+                      color: 'rgba(255,255,255,0.9)',
+                      fontWeight: 600,
+                      textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    }}>
+                      מגמה החודש: {getTrend()}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+              
+              <Zoom in timeout={1000}>
+                <AnimatedButton
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openAddDialog}
+                  sx={{ 
+                    color: 'white',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  הוסף טיפול חדש
+                </AnimatedButton>
+              </Zoom>
+            </Box>
+          </Container>
+        </ModernHeader>
+      </Fade>
+
+      {/* Enhanced Statistics Cards */}
+      {stats && (
+        <Fade in timeout={1200}>
+          <Container maxWidth="xl">
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* Total treatments */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Zoom in timeout={300}>
+                  <StatsCard>
+                    <AnimatedAvatar sx={{ 
+                      bgcolor: '#4cb5c3', 
+                      mx: 'auto', 
+                      mb: 2,
+                      width: 56,
+                      height: 56,
+                      fontSize: '1.5rem'
+                    }}>
+                      📊
+                    </AnimatedAvatar>
+                    <Typography variant="h3" sx={{ 
+                      color: '#4cb5c3', 
+                      fontWeight: 800,
+                      textShadow: '0 2px 4px rgba(76, 181, 195, 0.2)'
+                    }}>
+                      {stats.totalTreatments}
+                    </Typography>
+                    <Typography variant="body1" sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      mt: 1
+                    }}>
+                      סה"כ טיפולים
+                    </Typography>
+                  </StatsCard>
+                </Zoom>
               </Grid>
 
               {/* Average cooperation */}
-              <Grid item size={{xs:12,sm:6,md:4}}>
-                <Paper sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  background: 'linear-gradient(135deg, #fff3e0 0%, #ffffff 100%)'
-                }}>
-                  <Avatar sx={{ 
-                    bgcolor: '#ff9800', 
-                    mx: 'auto', 
-                    mb: 1,
-                    width: 40,
-                    height: 40
-                  }}>
-                    <StarIcon />
-                  </Avatar>
-                  <Typography variant="h4" color="#ff9800" fontWeight="bold">
-                    {stats.averageCooperation}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    ממוצע שיתוף פעולה
-                  </Typography>
-                  <Stack direction="row" justifyContent="center" spacing={0.5} mt={1}>
-                    {[1,2,3,4,5].map(num => (
-                      <StarIcon 
-                        key={num}
-                        fontSize="small" 
-                        sx={{ 
-                          color: num <= Math.round(stats.averageCooperation) ? '#ffc107' : '#e0e0e0' 
-                        }} 
-                      />
-                    ))}
-                  </Stack>
-                </Paper>
+              <Grid item xs={12} sm={6} md={3}>
+                <Zoom in timeout={400}>
+                  <StatsCard>
+                    <AnimatedAvatar sx={{ 
+                      bgcolor: '#ff7043', 
+                      mx: 'auto', 
+                      mb: 2,
+                      width: 56,
+                      height: 56,
+                      fontSize: '1.5rem'
+                    }}>
+                      🤝
+                    </AnimatedAvatar>
+                    <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <StarIcon 
+                          key={star}
+                          fontSize="small"
+                          sx={{ 
+                            color: star <= (stats.averageCooperation || 0) ? '#ffc107' : '#e0e0e0',
+                            transition: 'all 0.2s ease',
+                            '&:hover': { transform: 'scale(1.2)' }
+                          }} 
+                        />
+                      ))}
+                    </Stack>
+                    <Typography variant="h4" sx={{ 
+                      color: '#ff7043', 
+                      fontWeight: 800,
+                      textShadow: '0 2px 4px rgba(255, 112, 67, 0.2)'
+                    }}>
+                      {/* {stats.averageCooperation?.toFixed(1) || '0.0'} */}
+                    </Typography>
+                    <Typography variant="body1" sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 600
+                    }}>
+                      ממוצע שיתוף פעולה
+                    </Typography>
+                  </StatsCard>
+                </Zoom>
               </Grid>
 
               {/* Different therapists */}
-              <Grid item size={{xs:12,sm:6,md:4}}>
-                <Paper sx={{ 
-                  p: 2, 
-                  textAlign: 'center',
-                  borderRadius: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  background: 'linear-gradient(135deg, #f3e5f5 0%, #ffffff 100%)'
-                }}>
-                  <Avatar sx={{ 
-                    bgcolor: '#9c27b0', 
-                    mx: 'auto', 
-                    mb: 1,
-                    width: 40,
-                    height: 40
-                  }}>
-                    <PersonIcon />
-                  </Avatar>
-                  <Typography variant="h4" color="#9c27b0" fontWeight="bold">
-                    {filteredTreatments.reduce((acc, t) => {
-                      const employeeName = getEmployeeName(t.employeeId);
-                      if (employeeName && employeeName !== 'לא ידוע' && !acc.includes(employeeName)) {
-                        acc.push(employeeName);
-                      }
-                      return acc;
-                    }, []).length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    מטפלים שונים
-                  </Typography>
-                </Paper>
+              <Grid item xs={12} sm={6} md={3}>
+                <Zoom in timeout={500}>
+                  <StatsCard>
+                    <AnimatedAvatar sx={{ 
+                      bgcolor: '#10b981', 
+                      mx: 'auto', 
+                      mb: 2,
+                      width: 56,
+                      height: 56,
+                      fontSize: '1.5rem'
+                    }}>
+                      👨‍⚕️
+                    </AnimatedAvatar>
+                    <Typography variant="h3" sx={{ 
+                      color: '#10b981', 
+                      fontWeight: 800,
+                      textShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+                    }}>
+                      {filteredTreatments.reduce((acc, t) => {
+                        const employeeName = getEmployeeName(t.employeeId);
+                        if (employeeName && employeeName !== 'לא ידוע' && !acc.includes(employeeName)) {
+                          acc.push(employeeName);
+                        }
+                        return acc;
+                      }, []).length}
+                    </Typography>
+                    <Typography variant="body1" sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      mt: 1
+                    }}>
+                      מטפלים שונים
+                    </Typography>
+                  </StatsCard>
+                </Zoom>
+              </Grid>
+
+              {/* Recent treatments */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Zoom in timeout={600}>
+                  <StatsCard>
+                    <AnimatedAvatar sx={{ 
+                      bgcolor: '#9c27b0', 
+                      mx: 'auto', 
+                      mb: 2,
+                      width: 56,
+                      height: 56,
+                      fontSize: '1.5rem'
+                    }}>
+                      📅
+                    </AnimatedAvatar>
+                    <Typography variant="h3" sx={{ 
+                      color: '#9c27b0', 
+                      fontWeight: 800,
+                      textShadow: '0 2px 4px rgba(156, 39, 176, 0.2)'
+                    }}>
+                      {filteredTreatments.filter(t => {
+                        const treatmentDate = new Date(t.treatmentDate);
+                        const thirtyDaysAgo = new Date();
+                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                        return treatmentDate >= thirtyDaysAgo;
+                      }).length}
+                    </Typography>
+                    <Typography variant="body1" sx={{ 
+                      color: 'text.secondary',
+                      fontWeight: 600,
+                      mt: 1
+                    }}>
+                      ב-30 יום אחרונים
+                    </Typography>
+                  </StatsCard>
+                </Zoom>
               </Grid>
             </Grid>
 
             {/* Distribution by treatment types */}
             {Object.keys(stats.treatmentTypeDistribution || {}).length > 1 && (
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="subtitle1" fontWeight="bold" color="text.primary" mb={2}>
-                  <TrendingUpIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  התפלגות לפי סוגי טיפול:
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
-                    <Tooltip PopperProps={{ disablePortal: true }} key={type} title={`${count} טיפולים מסוג ${type}`}>
-                      <Chip
-                        label={`${type}: ${count}`}
-                        variant="outlined"
-                        sx={{ 
-                          fontWeight: 600,
-                          '&:hover': {
-                            transform: 'scale(1.05)',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                          },
-                          transition: 'all 0.2s ease-in-out'
-                        }}
-                      />
-                    </Tooltip>
-                  ))}
-                </Stack>
-              </Box>
+              <Fade in timeout={1400}>
+                <StatsCard sx={{ p: 3, textAlign: 'right' }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 700, 
+                    color: 'text.primary', 
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <TrendingUpIcon sx={{ color: '#4cb5c3' }} />
+                    התפלגות לפי סוגי טיפול:
+                  </Typography>
+                  <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap justifyContent="center">
+                    {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
+                      <Tooltip key={type} title={`${count} טיפולים מסוג ${type}`}>
+                        <GlowingChip
+                          label={`${type}: ${count}`}
+                          variant="outlined"
+                          sx={{ 
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            borderColor: '#4cb5c3',
+                            color: '#4cb5c3',
+                            '&:hover': {
+                              backgroundColor: alpha('#4cb5c3', 0.1),
+                              transform: 'scale(1.05)',
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    ))}
+                  </Stack>
+                </StatsCard>
+              </Fade>
             )}
-          </>
-        )}
-      </Paper>
+          </Container>
+        </Fade>
+      )}
     </Box>
   );
 };
-
 
 TreatmentsHeader.propTypes = {
   kidId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
