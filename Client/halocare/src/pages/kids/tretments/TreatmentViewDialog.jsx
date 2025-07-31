@@ -292,6 +292,7 @@ const TreatmentViewDialog = () => {
       setFormError('נא הזן תיאור טיפול');
       return;
     }
+      console.log(formData)
 
     try {
       await updateTreatment(formData);

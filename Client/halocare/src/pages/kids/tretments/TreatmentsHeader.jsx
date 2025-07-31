@@ -24,6 +24,7 @@ import {
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
   Star as StarIcon,
+  Group as GroupIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTreatmentContext } from './TreatmentContext';
@@ -193,19 +194,15 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           separator="›" 
           sx={{ 
             mb: 3,
-            '& .MuiBreadcrumbs-separator': {
-              color: '#4cb5c3',
-              fontWeight: 'bold',
-              fontSize: '1.2rem'
-            }
+            '& .MuiBreadcrumbs-separator': { color: 'rgba(255, 255, 255, 0.7)' }
           }}
         >
           <Link 
             color="inherit" 
-            href="/dashboard" 
+            href="/" 
             onClick={(e) => {
               e.preventDefault();
-              navigate('/dashboard');
+              navigate('/');
             }}
             sx={{ 
               display: 'flex', 
@@ -223,6 +220,27 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
             <HomeIcon fontSize="small" />
             דף הבית
           </Link>
+
+           <Link
+           color="inherit" 
+            href="/kids/list" 
+                     sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              color: '#fff',
+              textDecoration: 'none !important',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                color: '#fff',
+                transform: 'scale(1.02)'
+              }
+            }}
+                      onClick={() => navigate('/kids/list')}
+                    >
+                      <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+                      רשימת ילדים
+                    </Link>
           <Link 
             color="inherit" 
             href={`/kids/${kidId}`}
@@ -242,6 +260,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           >
             {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
           </Link>
+          <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
+            <AssessmentIcon sx={{ mr: 0.5, fontSize: 'small' }} />
+              סיכומי טיפולים
+            </Typography>
         </Breadcrumbs>
       </Fade>
       

@@ -198,12 +198,12 @@ export const TreatmentProvider = ({ children }) => {
   };
 
   // Update existing treatment
-  const updateTreatment = async (treatmentId, treatmentData) => {
+  const updateTreatment = async (treatmentData) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await axios.put(`/treatments/${treatmentId}`, treatmentData);
+      const response = await axios.put(`/treatments/${treatmentData.treatmentId}`, treatmentData);
       
       setLoading(false);
       closeViewDialog();
