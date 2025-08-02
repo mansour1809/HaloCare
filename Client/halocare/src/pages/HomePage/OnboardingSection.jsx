@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -9,20 +10,15 @@ import {
   Button,
   Avatar,
   Stack,
-  Divider,
-  Tooltip,
   Chip,
   LinearProgress,
   Alert,
   Fade,
   Zoom,
   IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  Paper
+
+  Paper,
+  Tooltip
 } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
 import {
@@ -32,10 +28,7 @@ import {
   Schedule as ScheduleIcon,
   Send as SendIcon,
   Warning as WarningIcon,
-  Refresh as RefreshIcon,
-  MoreVert as MoreVertIcon,
-  Launch as LaunchIcon,
-  AutoAwesome as AwesomeIcon,
+
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Visibility as VisibilityIcon,
@@ -43,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { fetchOnboardingStatus, selectOnboardingData } from '../../Redux/features/onboardingSlice';
 import { fetchKids } from '../../Redux/features/kidsSlice';
+import { baseURL } from '../../components/common/axiosConfig';
 
 // 🎨 Same animations as classrooms
 const shimmer = keyframes`
@@ -67,7 +61,7 @@ const pulse = keyframes`
 `;
 
 // Same styled components as classrooms
-const MainCard = styled(Card)(({ theme }) => ({
+const MainCard = styled(Card)(( ) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: '24px',
@@ -87,7 +81,7 @@ const MainCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const StatsCard = styled(Card)(({ theme, color = '#667eea' }) => ({
+const StatsCard = styled(Card)(({  color = '#667eea' }) => ({
   background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
   borderRadius: '20px',
   border: `2px solid ${color}20`,
@@ -111,7 +105,7 @@ const StatsCard = styled(Card)(({ theme, color = '#667eea' }) => ({
   }
 }));
 
-const GlowingButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
+const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
   borderRadius: '16px',
   textTransform: 'none',
   fontWeight: 600,
@@ -141,7 +135,7 @@ const GlowingButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
   }
 }));
 
-const AnimatedChip = styled(Chip)(({ theme }) => ({
+const AnimatedChip = styled(Chip)(() => ({
   borderRadius: '12px',
   fontWeight: 600,
   transition: 'all 0.3s ease',
@@ -151,20 +145,10 @@ const AnimatedChip = styled(Chip)(({ theme }) => ({
   }
 }));
 
-const KidCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
-  borderRadius: '16px',
-  border: '1px solid rgba(255,255,255,0.3)',
-  backdropFilter: 'blur(10px)',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-  }
-}));
 
-const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
+const OnboardingSection = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   // Redux state
   const onboardingData = useSelector(selectOnboardingData);
@@ -172,9 +156,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
   
   // Local state
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [showExpanded, setShowExpanded] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedKid, setSelectedKid] = useState(null);
 
   // Load data on mount
@@ -208,28 +190,22 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
       setLoading(false);
     }
   };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadOnboardingData();
-    setRefreshing(false);
+const getStatusText = (status) => {
+    switch (status) {
+      case 'Completed': return 'הושלם';
+      case 'InProgress': return 'בתהליך';
+      case 'SentToParent': return 'אצל הורים';
+      case 'NotStarted': return 'לא התחיל';
+      default: return 'לא ידוע';
+    }
   };
 
-  const handleKidMenuClick = (event, kid) => {
-    setSelectedKid(kid);
-    setMenuAnchor(event.currentTarget);
-  };
 
-  const handleMenuClose = () => {
-    setMenuAnchor(null);
-    setSelectedKid(null);
-  };
 
   // Process data for display
   const processOnboardingData = () => {
     const activeKids = kids.filter(kid => kid.isActive === true);
-    console.log(kids)
-    console.log(onboardingData)
+    
     // Get kids with onboarding data
     const kidsWithOnboarding = activeKids
       .map(kid => ({
@@ -261,7 +237,6 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
 
     return {
       kidsWithOnboarding,
-      topKids: kidsWithOnboarding.slice(0, 4), // Show top 4 initially
       stats: {
         totalForms,
         completedForms,
@@ -271,6 +246,34 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
         totalKids: kidsWithOnboarding.length
       }
     };
+  };
+
+  const getCurrentForm = (forms) => {
+    if (!forms?.length) return null;
+    
+    // חפש טופס בתהליך
+    const inProgress = forms.find(f => f.status === 'InProgress');
+    if (inProgress) return inProgress;
+    
+    // חפש טופס שנשלח להורים  
+    const sentToParent = forms.find(f => f.status === 'SentToParent');
+    if (sentToParent) return sentToParent;
+    
+    // חפש טופס שלא התחיל
+    const notStarted = forms.find(f => f.status === 'NotStarted');
+    if (notStarted) return notStarted;
+    
+    // אחרת קח את האחרון שעודכן
+    return forms.reduce((latest, current) => {
+      const latestDate = new Date(latest.lastUpdated || latest.startDate || 0);
+      const currentDate = new Date(current.lastUpdated || current.startDate || 0);
+      return currentDate > latestDate ? current : latest;
+    });
+  };
+
+  const calculateProgress = (onboarding) => {
+    if (!onboarding?.totalForms || onboarding.totalForms === 0) return 0;
+    return Math.round((onboarding.completedForms / onboarding.totalForms) * 100);
   };
 
   const getStatusColor = (status) => {
@@ -293,18 +296,11 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'Completed': return 'הושלם';
-      case 'InProgress': return 'בתהליך';
-      case 'SentToParent': return 'אצל הורים';
-      case 'NotStarted': return 'לא התחיל';
-      default: return 'לא ידוע';
-    }
-  };
-
-  const { kidsWithOnboarding, topKids, stats } = processOnboardingData();
+  const { kidsWithOnboarding, stats } = processOnboardingData();
   const isLoading = loading || kidsStatus === 'loading';
+  
+  // Show only top kids initially
+  const displayKids = showExpanded ? kidsWithOnboarding : kidsWithOnboarding.slice(0, 5);
 
   if (isLoading) {
     return (
@@ -387,22 +383,17 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
             </Box>
           </Stack>
           
-          <IconButton 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            sx={{ 
-              background: 'rgba(102, 126, 234, 0.1)',
-              '&:hover': { background: 'rgba(102, 126, 234, 0.2)' }
-            }}
-          >
-            <RefreshIcon sx={{ 
-              animation: refreshing ? 'spin 1s linear infinite' : 'none',
-              '@keyframes spin': {
-                '0%': { transform: 'rotate(0deg)' },
-                '100%': { transform: 'rotate(360deg)' }
-              }
-            }} />
-          </IconButton>
+          
+           <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <GlowingButton
+                startIcon={<PersonAddIcon />}
+                onClick={() => navigate('kids/onboarding/new')}
+                glowColor="#10b981"
+              >
+                הוסף ילד חדש
+              </GlowingButton>
+            </Box>
+
         </Stack>
 
         {/* Stats Overview */}
@@ -432,7 +423,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
               </Zoom>
             </Grid>
             
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1000}>
                 <StatsCard color="#f59e0b">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
@@ -456,7 +447,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
               </Zoom>
             </Grid>
             
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1200}>
                 <StatsCard color="#3b82f6">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
@@ -479,7 +470,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
               </Zoom>
             </Grid>
             
-            <Grid item xs={12} sm={3}>
+            <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1400}>
                 <StatsCard color="#667eea">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
@@ -505,126 +496,210 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
         )}
       </Box>
 
-      {/* Kids List */}
+      {/* Kids List - Table Format */}
       <CardContent sx={{ p: 4 }}>
         {kidsWithOnboarding.length > 0 ? (
           <>
-            {/* Top Kids Grid */}
-            <Grid container spacing={3} mb={3}>
-              {(showExpanded ? kidsWithOnboarding : topKids).map((kid, index) => (
-                <Grid item xs={12} sm={6} md={showExpanded ? 4 : 6} key={kid.id}>
-                  <Zoom in timeout={600 + index * 100}>
-                    <KidCard>
-                      <CardContent sx={{ p: 3 }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+            <Paper elevation={1} sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+              {/* Table Header */}
+              <Box sx={{ 
+                p: 2, 
+                background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
+                borderBottom: '1px solid rgba(0,0,0,0.08)'
+              }}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item size={{xs:3}}>
+                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                      ילד
+                    </Typography>
+                  </Grid>
+                  <Grid item size={{xs:2}}>
+                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                      התקדמות
+                    </Typography>
+                  </Grid>
+                  <Grid item size={{xs:3}}>
+                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                      מצב נוכחי
+                    </Typography>
+                  </Grid>
+                  <Grid item size={{xs:2}}>
+                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                      טפסים
+                    </Typography>
+                  </Grid>
+                  <Grid item size={{xs:2}}>
+                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                      פעולות
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Kids Rows */}
+              {displayKids.map((kid, index) => (
+                <Fade in timeout={300 + index * 50} key={kid.id}>
+                  <Box sx={{ 
+                    borderBottom: index < displayKids.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                    '&:hover': {
+                      backgroundColor: 'rgba(102,126,234,0.05)',
+                      transform: 'translateX(-4px)',
+                    },
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer'
+                  }}>
+                    <Box sx={{ p: 2 }}>
+                      <Grid container spacing={2} alignItems="center">
+                        {/* Kid Info */}
+                        <Grid item size={{xs:3}}>
                           <Stack direction="row" spacing={2} alignItems="center">
                             <Avatar
-                              // src={
-                              //   kid.photoPath
-                              //     ? `${process.env.REACT_APP_API_URL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}`
-                              //     : ''
-                              // }
+                              src={
+                                kid.photoPath
+                                  ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}`
+                                  : ''
+                              }
                               sx={{ 
-                                width: 50, 
-                                height: 50,
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                                width: 40, 
+                                height: 40,
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                               }}
                             >
                               {!kid.photoPath && `${kid.firstName?.charAt(0) || ''}${kid.lastName?.charAt(0) || ''}`}
                             </Avatar>
                             <Box>
-                              <Typography variant="h6" fontWeight="bold">
+                              <Typography variant="body2" fontWeight={600}>
                                 {kid.firstName} {kid.lastName}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {kid.onboarding?.completedForms || 0}/{kid.onboarding?.totalForms || 0} טפסים
+                              <Typography variant="caption" color="text.secondary">
+                                {kid.classId == '1002' ? 'לא משובץ' : 'כיתה ' + kid.classId}
                               </Typography>
                             </Box>
                           </Stack>
-                          
-                          <IconButton 
-                            size="small"
-                            onClick={(e) => handleKidMenuClick(e, kid)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </Stack>
+                        </Grid>
 
                         {/* Progress */}
-                        <Box mb={2}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                            <Typography variant="body2" color="text.secondary">
-                              התקדמות
-                            </Typography>
-                            <Typography variant="body2" color="primary.main" fontWeight="bold">
-                              {Math.round(kid.onboarding?.overallProgress || 0)}%
-                            </Typography>
-                          </Stack>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={kid.onboarding?.overallProgress || 0}
-                            sx={{ 
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: 'primary.main20',
-                              '& .MuiLinearProgress-bar': {
-                                borderRadius: 4,
-                                background: 'linear-gradient(90deg, #667eea, #764ba2)',
-                              }
-                            }}
-                          />
-                        </Box>
-
-                        {/* Latest Form Status */}
-                        {kid.onboarding?.forms?.length > 0 && (
+                        <Grid item size={{xs:2}}>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                              טופס אחרון:
-                            </Typography>
-                            <Chip
-                              icon={getStatusIcon(kid.onboarding.forms[0].status)}
-                              label={`${kid.onboarding.forms[0].formName} - ${getStatusText(kid.onboarding.forms[0].status)}`}
-                              size="small"
+                            <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
+                              <Typography variant="body2" fontWeight={600} color="primary.main">
+                                {calculateProgress(kid.onboarding)}%
+                              </Typography>
+                            </Stack>
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={calculateProgress(kid.onboarding)}
                               sx={{ 
-                                bgcolor: `${getStatusColor(kid.onboarding.forms[0].status)}15`,
-                                color: getStatusColor(kid.onboarding.forms[0].status),
-                                border: `1px solid ${getStatusColor(kid.onboarding.forms[0].status)}30`,
-                                maxWidth: '100%'
+                                height: 6,
+                                borderRadius: 3,
+                                backgroundColor: 'primary.main20',
+                                '& .MuiLinearProgress-bar': {
+                                  borderRadius: 3,
+                                  background: 'linear-gradient(90deg, #667eea, #764ba2)',
+                                }
                               }}
                             />
                           </Box>
-                        )}
-                      </CardContent>
-                    </KidCard>
-                  </Zoom>
-                </Grid>
+                        </Grid>
+
+                        {/* Current Form Status */}
+                        <Grid item size={{xs:3}}>
+                          {(() => {
+                            const currentForm = getCurrentForm(kid.onboarding?.forms);
+                            return currentForm ? (
+                              <Chip
+                                icon={getStatusIcon(currentForm.status)}
+                                label={getStatusText(currentForm.status)}
+                                size="small"
+                                sx={{ 
+                                  bgcolor: `${getStatusColor(currentForm.status)}15`,
+                                  color: getStatusColor(currentForm.status),
+                                  border: `1px solid ${getStatusColor(currentForm.status)}30`
+                                }}
+                              />
+                            ) : (
+                              <Typography variant="caption" color="text.secondary">
+                                אין נתונים
+                              </Typography>
+                            );
+                          })()}
+                        </Grid>
+
+                        {/* Forms Count */}
+                        <Grid item size={{xs:2}}>
+                          <Typography variant="body2" fontWeight={600}>
+                            {kid.onboarding?.completedForms || 0}/{kid.onboarding?.totalForms || 0}
+                          </Typography>
+                        </Grid>
+
+                        {/* Actions */}
+                        {/* Actions - 2 Direct Buttons */}
+<Grid item xs={2}>
+  <Stack direction="row" spacing={1}>
+    <Tooltip title="דף קליטה" PopperProps={{ disablePortal: true }}>
+      {console.log(selectedKid)}
+      <IconButton 
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedKid(kid);
+          navigate(`/kids/onboarding/${selectedKid.id}`);
+
+        }}
+        sx={{ 
+          background: 'rgba(102, 126, 234, 0.1)',
+          '&:hover': { 
+            background: 'rgba(102, 126, 234, 0.2)',
+            transform: 'scale(1.1)'
+          }
+        }}
+      >
+        <AssignmentIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+    
+    <Tooltip title="פרופיל ילד" PopperProps={{ disablePortal: true }}>
+      <IconButton 
+        size="small"
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedKid(kid);
+                    navigate(`/kids/${selectedKid?.id}`);
+
+        }}
+        sx={{ 
+          background: 'rgba(16, 185, 129, 0.1)',
+          '&:hover': { 
+            background: 'rgba(16, 185, 129, 0.2)',
+            transform: 'scale(1.1)'
+          }
+        }}
+      >
+        <VisibilityIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  </Stack>
+</Grid>
+                      </Grid>
+                    </Box>
+                  </Box>
+                </Fade>
               ))}
-            </Grid>
+            </Paper>
 
             {/* Expand/Collapse Button */}
-            {kidsWithOnboarding.length > 4 && (
-              <Box sx={{ textAlign: 'center', mb: 3 }}>
+            {kidsWithOnboarding.length > 5 && (
+              <Box sx={{ textAlign: 'center', mt: 3 }}>
                 <GlowingButton
                   onClick={() => setShowExpanded(!showExpanded)}
                   startIcon={showExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                   glowColor="#667eea"
                 >
-                  {showExpanded ? 'הצג פחות' : `הצג עוד ${kidsWithOnboarding.length - 4} ילדים`}
+                  {showExpanded ? 'הצג פחות' : `הצג עוד ${kidsWithOnboarding.length - 5} ילדים`}
                 </GlowingButton>
               </Box>
             )}
 
-            {/* Navigate to Full Screen */}
-            <Box sx={{ textAlign: 'center' }}>
-              <GlowingButton
-                startIcon={<LaunchIcon />}
-                onClick={() => onNavigateToOnboarding()}
-                glowColor="#f59e0b"
-              >
-                מסך קליטה מלא
-              </GlowingButton>
-            </Box>
           </>
         ) : (
           <Alert severity="info" sx={{ borderRadius: '20px' }}>
@@ -633,7 +708,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
         )}
       </CardContent>
 
-      {/* Kid Actions Menu */}
+      {/* Kid Actions Menu
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
@@ -643,7 +718,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
         }}
       >
         <MenuItem onClick={() => {
-          onNavigateToOnboarding(selectedKid?.id);
+          navigate(`/kids/onboarding/${selectedKid?.id}`);
           handleMenuClose();
         }}>
           <ListItemIcon>
@@ -652,7 +727,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
           <ListItemText primary="דף קליטה" />
         </MenuItem>
         <MenuItem onClick={() => {
-          onKidClick(selectedKid?.id);
+          navigate(`/kids/${selectedKid?.id}`);
           handleMenuClose();
         }}>
           <ListItemIcon>
@@ -660,7 +735,7 @@ const OnboardingSection = ({ onKidClick, onNavigateToOnboarding }) => {
           </ListItemIcon>
           <ListItemText primary="פרופיל ילד" />
         </MenuItem>
-      </Menu>
+      </Menu> */}
     </MainCard>
   );
 };
