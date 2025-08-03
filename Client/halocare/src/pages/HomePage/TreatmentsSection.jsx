@@ -494,7 +494,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
                   onClick={handleNavigateToFull}
-                  glowColor="#ff9800"
+                  glowColor="#fff"
                 >
                   מסך טיפולים מלא
                 </GlowingButton>
@@ -799,7 +799,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                   <GlowingButton
                     startIcon={<AssignmentIcon />}
                     onClick={handleNavigateToFull}
-                    glowColor="#4caf50"
+                    glowColor="#fff"
                   >
                     📋 תכנן טיפולים חדשים
                   </GlowingButton>
