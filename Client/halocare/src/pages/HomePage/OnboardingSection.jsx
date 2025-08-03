@@ -644,7 +644,6 @@ const getStatusText = (status) => {
           e.stopPropagation();
           setSelectedKid(kid);
           navigate(`/kids/onboarding/${selectedKid.id}`);
-
         }}
         sx={{ 
           background: 'rgba(102, 126, 234, 0.1)',
@@ -664,8 +663,7 @@ const getStatusText = (status) => {
         onClick={(e) => {
           e.stopPropagation();
           setSelectedKid(kid);
-                    navigate(`/kids/${selectedKid?.id}`);
-
+          navigate(`/kids/${selectedKid?.id}`);
         }}
         sx={{ 
           background: 'rgba(16, 185, 129, 0.1)',
