@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// טעינת רשימת סוגי האירועים
+// Load the list of event types
 export const fetchEventTypes = createAsyncThunk(
   'eventTypes/fetchEventTypes',
   async (_, { rejectWithValue }) => {
@@ -14,7 +14,7 @@ export const fetchEventTypes = createAsyncThunk(
   }
 );
 
-// הוספת סוג אירוע חדש
+// Add a new event type
 export const addEventType = createAsyncThunk(
   'eventTypes/addEventType',
   async (eventTypeData, { rejectWithValue }) => {
@@ -27,7 +27,7 @@ export const addEventType = createAsyncThunk(
   }
 );
 
-// עדכון סוג אירוע
+// Update event type
 export const updateEventType = createAsyncThunk(
   'eventTypes/updateEventType',
   async (eventTypeData, { rejectWithValue }) => {

@@ -1,34 +1,33 @@
 // src/utils/TreatmentValidations.js
 const TreatmentValidations = (fieldName, value, extraParams = {}) => {
-    // ביטויים רגולריים לבדיקות אם יהיו צורך
-    // const hebrewLettersRegex = /^[\u0590-\u05FF\s,.!?()-]+$/;
+// Regular expressions for testing if necessary    // const hebrewLettersRegex = /^[\u0590-\u05FF\s,.!?()-]+$/;
     
-    // בדיקה אם הערך ריק
+   // Check if the value is empty
     if (value === null || value === undefined || value === '') {
-      // אם שדה חובה וריק, החזר שגיאה
+      // If field is required and empty, return an error
       if (extraParams.required) {
         return `שדה ${fieldName} הוא שדה חובה`;
       }
-      // אחרת, אם ריק ולא חובה, תקין
+     // Otherwise, if empty and not required, OK
       return '';
     }
     const selectedDate = new Date(value);
     const today = new Date();
-    // בדיקות לפי סוג השדה
+// Tests by field type
     switch (fieldName) {
       case "treatmentType":
         return value ? "" : "יש לבחור סוג טיפול";
         
       case "treatmentDate":
-        // בדיקת תקינות התאריך
+        // Checking the validity of the date
         
         
-        // התאריך לא יכול להיות בעתיד
+        // The date cannot be in the future
         if (selectedDate > today) {
           return "תאריך הטיפול לא יכול להיות בעתיד";
         }
         
-        // אם יש הגבלה על תאריך מינימלי (נניח לא יותר מחצי שנה לאחור)
+// If there is a minimum date restriction (say no more than six months back)
         if (extraParams.minDate) {
           const minDate = new Date(extraParams.minDate);
           if (selectedDate < minDate) {
@@ -50,7 +49,7 @@ const TreatmentValidations = (fieldName, value, extraParams = {}) => {
         return "";
         
       case "highlight":
-        // אם לא חובה, והערך ריק, אז תקין
+        // If not required, and the value is empty, then OK
         if (!extraParams.required && (!value || value.trim() === '')) {
           return '';
         }

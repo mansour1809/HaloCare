@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// שליפת שאלות לפי טופס
+// Retrieve questions by form
 export const fetchQuestionsByFormId = createAsyncThunk(
   'questions/fetchQuestionsByFormId',
   async (formId, { rejectWithValue }) => {
@@ -15,7 +15,7 @@ export const fetchQuestionsByFormId = createAsyncThunk(
   }
 );
 
-// הוספת שאלה חדשה
+// Add a new question
 export const addQuestion = createAsyncThunk(
   'questions/addQuestion',
   async (questionData, { rejectWithValue }) => {
@@ -28,7 +28,7 @@ export const addQuestion = createAsyncThunk(
   }
 );
 
-// עדכון שאלה
+// Update question
 export const updateQuestion = createAsyncThunk(
   'questions/updateQuestion',
   async ({ formId, questionNo, questionData }, { rejectWithValue }) => {
@@ -41,7 +41,7 @@ export const updateQuestion = createAsyncThunk(
   }
 );
 
-// מחיקת שאלה
+// Delete question
 export const deleteQuestion = createAsyncThunk(
   'questions/deleteQuestion',
   async ({ formId, questionNo }, { rejectWithValue }) => {
@@ -58,7 +58,7 @@ const questionsSlice = createSlice({
   name: 'questions',
   initialState: {
     questionsByForm: {}, // { formId: [questions] }
-    currentFormQuestions: [], // השאלות של הטופס הנוכחי
+    currentFormQuestions: [], // The questions of the current form
     status: 'idle',
     error: null,
     currentFormId: null

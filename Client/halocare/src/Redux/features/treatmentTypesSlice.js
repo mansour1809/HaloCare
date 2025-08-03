@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// טעינת רשימת סוגי הטיפולים
+// Load the list of treatment types
 export const fetchTreatmentTypes = createAsyncThunk(
   'treatmentTypes/fetchTreatmentTypes',
   async (_, { rejectWithValue }) => {
@@ -14,7 +14,7 @@ export const fetchTreatmentTypes = createAsyncThunk(
   }
 );
 
-// הוספת סוג טיפול חדש
+// Add a new treatment type
 export const addTreatmentType = createAsyncThunk(
   'treatmentTypes/addTreatmentType',
   async (treatmentTypeData, { rejectWithValue }) => {
@@ -27,7 +27,7 @@ export const addTreatmentType = createAsyncThunk(
   }
 );
 
-// עדכון סוג טיפול
+// Update treatment type
 export const updateTreatmentType = createAsyncThunk(
   'treatmentTypes/updateTreatmentType',
   async (treatmentTypeData, { rejectWithValue }) => {

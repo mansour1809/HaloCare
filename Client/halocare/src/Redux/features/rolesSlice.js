@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// פעולה אסינכרונית לטעינת רשימת התפקידים
+// Asynchronous operation to load the list of roles
 export const fetchRoles = createAsyncThunk(
   'roles/fetchRoles',
   async (_, { rejectWithValue }) => {

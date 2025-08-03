@@ -26,19 +26,19 @@ export const fetchFormQuestions = createAsyncThunk(
   }
 );
 
-// 🔥 שליחת טופס להורה - מעודכן עם עדכון סטטוס קליטה
+// Sending form to parent - updated with admission status update
 export const sendFormToParent = createAsyncThunk(
   'forms/sendFormToParent',
   async ({ kidId, formId, parentEmail }, { dispatch, rejectWithValue }) => {
     try {
-      // 1. שליחת הטופס 
+      // 1. Submitting the form
       const response = await axios.post('/Forms/send-to-parent', {
         kidId,
         formId,
         parentEmail
       });
 
-      // 2. עדכון סטטוס בתהליך קליטה
+     // 2. Update status in the absorption process
       await dispatch(updateFormStatus({
         kidId,
         formId,
@@ -46,7 +46,7 @@ export const sendFormToParent = createAsyncThunk(
         notes: `נשלח להורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
       }));
 
-      // 3. רענון סטטוס קליטה
+      // 3. Refresh reception status
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
       }, 100);
@@ -58,12 +58,12 @@ export const sendFormToParent = createAsyncThunk(
   }
 );
 
-// 🔥 סימון טופס כהושלם על ידי הורה
+// Mark a form as completed by a parent
 export const markFormCompletedByParent = createAsyncThunk(
   'forms/markFormCompletedByParent',
   async ({ kidId, formId, notes }, { dispatch, rejectWithValue }) => {
     try {
-      // עדכון סטטוס לטופס שהושלם על ידי הורה
+      // Update status for form completed by parent
       await dispatch(updateFormStatus({
         kidId,
         formId,
@@ -71,7 +71,7 @@ export const markFormCompletedByParent = createAsyncThunk(
         notes: notes || `הושלם על ידי הורה בתאריך ${new Date().toLocaleDateString('he-IL')}`
       }));
 
-      // רענון סטטוס קליטה
+      // Refresh reception status
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
       }, 100);
@@ -117,7 +117,7 @@ const formsSlice = createSlice({
     status: 'idle',
     error: null,
     
-    // 🔥 מצבי שליחה להורים
+    // Send to parents statuses
     sendingToParent: false,
     sentForms: {}, // { kidId_formId: { sentDate, status } }
   },
@@ -135,7 +135,7 @@ const formsSlice = createSlice({
       state.error = null;
     },
     
-    // 🔥 מעקב אחרי טפסים שנשלחו
+    // Tracking submitted forms
     markFormAsSent: (state, action) => {
       const { kidId, formId } = action.payload;
       const key = `${kidId}_${formId}`;
@@ -173,7 +173,7 @@ const formsSlice = createSlice({
         state.error = action.payload || 'שגיאה בטעינת שאלות הטופס';
       })
       
-      // 🔥 Send form to parent
+      //  Send form to parent
       .addCase(sendFormToParent.pending, (state) => {
         state.sendingToParent = true;
         state.error = null;
@@ -182,7 +182,7 @@ const formsSlice = createSlice({
         state.sendingToParent = false;
         const { kidId, formId } = action.payload;
         
-        // סימון הטופס כנשלח
+        // Mark the form as submitted
         const key = `${kidId}_${formId}`;
         state.sentForms[key] = {
           sentDate: new Date().toISOString(),
@@ -196,7 +196,7 @@ const formsSlice = createSlice({
         state.error = action.payload || 'שגיאה בשליחת הטופס להורה';
       })
       
-      // 🔥 Mark form completed by parent
+      //  Mark form completed by parent
       .addCase(markFormCompletedByParent.fulfilled, (state, action) => {
         const { kidId, formId } = action.payload;
         const key = `${kidId}_${formId}`;

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// פונקציית עזר להמרת אירוע לפורמט קלנדר
+// Helper function to convert an event to calendar format
 const formatEventForCalendar = (event) => {
   return {
     id: event.eventId,
@@ -23,7 +23,7 @@ const formatEventForCalendar = (event) => {
   };
 };
 
-// פעולה אסינכרונית לטעינת האירועים
+// Asynchronous operation to load events
 export const fetchEvents = createAsyncThunk(
   'events/fetchEvents',
   async (_, { rejectWithValue }) => {

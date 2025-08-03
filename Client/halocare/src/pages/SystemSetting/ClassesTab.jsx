@@ -45,7 +45,7 @@ import Swal from 'sweetalert2';
 
 import { fetchClasses, addClass, updateClass, clearError, resetActionStatus } from '../../Redux/features/classesSlice';
 
-// יצירת theme מדהים עם תמיכה ב-RTL
+// Create a theme with RTL support
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -105,7 +105,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// קונטיינר מסך מלא מעוצב
+// Fullscreen container designed
 const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -122,7 +122,7 @@ const FullScreenContainer = styled(Box)(() => ({
   }
 }));
 
-// כרטיס הכותרת הראשית המעוצב
+// The formatted main title card
 const HeroCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
   backdropFilter: 'blur(20px)',
@@ -145,7 +145,7 @@ const HeroCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// טבלה מעוצבת עם אפקטים
+// Table formatted with effects
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -166,7 +166,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-// כפתור מונפש מדהים
+// Animated button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -197,7 +197,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// Fab מעוצב
+// Designed Fab
 const StyledFab = styled(Fab)(({ theme }) => ({
   background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
   boxShadow: '0 8px 30px rgba(76, 181, 195, 0.4)',
@@ -364,8 +364,7 @@ const ClassesTab = () => {
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Container maxWidth="xl" sx={{ py: 4 }}>
             
-            {/* כרטיס הכותרת הראשית */}
-            <Zoom in timeout={800}>
+{/* Main title card */}            <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
                   <Box display="flex" alignItems="center" justifyContent="center">
@@ -392,8 +391,7 @@ const ClassesTab = () => {
               </HeroCard>
             </Zoom>
 
-            {/* בר חיפוש וכפתור הוספה מעוצב */}
-            <Fade in timeout={1000}>
+{/* Search bar and add button designed */}            <Fade in timeout={1000}>
               <Paper sx={{ 
                 p: 3, 
                 mb: 4, 
@@ -407,7 +405,7 @@ const ClassesTab = () => {
               }}>
                 <Stack direction="row" alignItems="center" spacing={3}>
                   <TextField
-                    placeholder="🔍 חיפוש כיתה..."
+                    placeholder=" חיפוש כיתה..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     variant="outlined"
@@ -445,15 +443,14 @@ const ClassesTab = () => {
               </Paper>
             </Fade>
 
-            {/* טבלת כיתות מעוצבת */}
-            <Fade in timeout={1200}>
+{/* Formatted class table */}            <Fade in timeout={1200}>
               <StyledTableContainer component={Paper}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>🎓 שם הכיתה</TableCell>
-                      <TableCell>👨‍🏫 מזהה מורה</TableCell>
-                      <TableCell align="center">⚡ פעולות</TableCell>
+                      <TableCell> שם הכיתה</TableCell>
+                      <TableCell> מזהה מורה</TableCell>
+                      <TableCell align="center"> פעולות</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -615,8 +612,7 @@ const ClassesTab = () => {
 
 
 
-            {/* דיאלוג הוספת כיתה מעוצב */}
-            <Dialog 
+{/* Designated Add Class Dialog */}            <Dialog 
               open={openDialog} 
               onClose={handleDialogClose}
               maxWidth="sm"
@@ -670,7 +666,7 @@ const ClassesTab = () => {
                 />
                 <TextField
                   margin="dense"
-                  label="👨‍🏫 מזהה מורה"
+                  label=" מזהה מורה"
                   fullWidth
                   variant="outlined"
                   type="number"

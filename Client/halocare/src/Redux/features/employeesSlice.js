@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// פעולה אסינכרונית לטעינת רשימת העובדים
+// Asynchronous operation to load the employee list
 export const fetchEmployees = createAsyncThunk(
   'employees/fetchEmployees',
   async (_, { rejectWithValue }) => {
@@ -15,7 +15,7 @@ export const fetchEmployees = createAsyncThunk(
   }
 );
 
-// פעולה אסינכרונית לטעינת עובד ספציפי לפי ID
+// Asynchronous operation to load a specific employee by ID
 export const fetchEmployeeById = createAsyncThunk(
   'employees/fetchEmployeeById',
   async (employeeId, { rejectWithValue }) => {
@@ -32,9 +32,9 @@ const employeesSlice = createSlice({
   name: 'employees',
   initialState: {
     employees: [],
-    selectedEmployee: null, // עובד נבחר ספציפי
+    selectedEmployee: null, // Specific selected employee
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-    employeeStatus: 'idle', // עבור טעינת עובד ספציפי
+    employeeStatus: 'idle', // For loading a specific worker
     error: null
   },
   reducers: {
@@ -45,7 +45,7 @@ const employeesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // טעינת כל העובדים
+     // Loading all workers
       .addCase(fetchEmployees.pending, (state) => {
         state.status = 'loading';
       })
@@ -58,7 +58,7 @@ const employeesSlice = createSlice({
         state.error = action.payload;
       })
       
-      // טעינת עובד ספציפי
+      // Load a specific worker
       .addCase(fetchEmployeeById.pending, (state) => {
         state.employeeStatus = 'loading';
       })
@@ -66,7 +66,7 @@ const employeesSlice = createSlice({
         state.employeeStatus = 'succeeded';
         state.selectedEmployee = action.payload;
         
-        // גם מעדכנים ברשימה הכללית אם העובד קיים שם
+// Also update the general list if the employee exists there
         const existingIndex = state.employees.findIndex(emp => emp.employeeId === action.payload.employeeId);
         if (existingIndex !== -1) {
           state.employees[existingIndex] = action.payload;

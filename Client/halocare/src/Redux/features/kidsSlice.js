@@ -170,7 +170,7 @@ export const updateKidWithParents = createAsyncThunk(
 
       // 3. Update the kid with parent references
       const kidData = {
-        id: formData.id, // יש ID קיים במצב עדכון
+        id: formData.id, // There is an existing ID in update mode
         firstName: formData.firstName,
         lastName: formData.lastName,
         birthDate: formData.birthDate,
@@ -188,7 +188,7 @@ export const updateKidWithParents = createAsyncThunk(
         emergencyContactName: formData.emergencyContactName || null,
       };
 
-      // עדכון הילד
+// Update the child
       const response = await axios.put(`/Kids/${kidData.id}`, kidData);
 
       return {
