@@ -158,6 +158,7 @@ const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
   borderRadius: '16px',
   textTransform: 'none',
   fontWeight: 600,
+  color: 'white',
   padding: '12px 24px',
   position: 'relative',
   overflow: 'hidden',
@@ -513,7 +514,6 @@ const handleCreateEvent = (isEdit=false) => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon color="primary" />
                         </InputAdornment>
                       )
                     }}
@@ -743,15 +743,6 @@ const handleCreateEvent = (isEdit=false) => {
                         לא נמצאו אירועים במערכת
                       </Typography>
                     )}
-                    
-                    <Box sx={{ mt: 3 }}>
-                      <GlowingButton
-                        onClick={() => console.log('Create new event for date:', selectedDate)}
-                        glowColor="#10b981"
-                      >
-                        ➕ צור אירוע חדש
-                      </GlowingButton>
-                    </Box>
                   </Paper>
                 )}
               </Box>

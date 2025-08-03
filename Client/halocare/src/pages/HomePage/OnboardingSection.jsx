@@ -109,6 +109,7 @@ const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
   borderRadius: '16px',
   textTransform: 'none',
   fontWeight: 600,
+  color: 'white',
   padding: '12px 24px',
   position: 'relative',
   overflow: 'hidden',
@@ -364,7 +365,7 @@ const getStatusText = (status) => {
                 WebkitTextFillColor: 'transparent',
                 mb: 1
               }}>
-                טפסי קליטה ✨
+                טפסי קליטה
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <AnimatedChip 

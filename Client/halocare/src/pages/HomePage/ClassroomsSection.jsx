@@ -221,6 +221,7 @@ const GlowingButton = styled(Button)(({ glowColor = 'black' }) => ({
   padding: '12px 24px',
   position: 'relative',
   overflow: 'hidden',
+  color: 'white',
   background: `linear-gradient(135deg, ${glowColor} 0%, ${glowColor}dd 100%)`,
   boxShadow: `0 8px 25px ${glowColor}40`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -725,7 +726,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon color="primary" />
                     </InputAdornment>
                   )
                 }}
