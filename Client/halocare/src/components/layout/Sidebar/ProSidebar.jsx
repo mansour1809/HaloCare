@@ -275,22 +275,22 @@ const ProSidebar = () => {
 
             <CategoryLabel emoji="📅">יומן</CategoryLabel>
 
-            <StyledSubMenu label="ניהול לוח זמנים">
+            {/* <StyledSubMenu label="ניהול לוח זמנים"> */}
               <MenuItem
-                icon={<EventIcon />}
+                // icon={<EventIcon />}
                 onClick={() => navigate('/calendar/schedule')}
                 style={getActiveStyle('/calendar/schedule')}
               >
                 לוח שנה
               </MenuItem>
-              <MenuItem
+              {/* <MenuItem
                 icon={<MeetingRoomIcon />}
                 onClick={() => navigate('/calendar/meetings')}
                 style={getActiveStyle('/calendar/meetings')}
               >
                 פגישות
-              </MenuItem>
-            </StyledSubMenu>
+              </MenuItem> */}
+            {/* </StyledSubMenu> */}
 
             <CategoryLabel emoji="⚙️">מערכת</CategoryLabel>
 
