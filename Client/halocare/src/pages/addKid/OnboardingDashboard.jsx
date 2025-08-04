@@ -25,6 +25,7 @@ import {
 
 import { fetchParentById } from '../../Redux/features/parentSlice';
 import KidDocumentManager from './KidDocumentManager';
+import Swal from 'sweetalert2';
 
 // Animated Button matching Employee design - VISUAL ONLY
 const AnimatedButton = styled(Button)(({ theme }) => ({
@@ -192,7 +193,13 @@ const OnboardingDashboard = ({
         setSendDialog({ open: false, form: null });
         setParentEmail('');
         
-        alert('הטופס נשלח בהצלחה להורה!');
+        Swal.fire({
+          icon: 'success',
+          title: 'הטופס נשלח בהצלחה!',
+          text: 'הטופס נשלח להורה בהצלחה.',
+          confirmButtonText: 'סגור',
+          confirmButtonColor: '#4cb5c3'
+        })
         
         setTimeout(() => {
           onRefresh && onRefresh();
@@ -518,7 +525,7 @@ const OnboardingDashboard = ({
                   
                   <Box>
                     {/* PRESERVED - Original send to parent logic */}
-                    {canSendToParent(form) && (
+                    {canSendToParent(form) && form.formId != '1002' && (
                         <Tooltip PopperProps={{ disablePortal: true }} title="שלח להורה" arrow >
 
                       <AnimatedButton

@@ -13,8 +13,7 @@ namespace halocare.BL.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
-
+        private readonly string _baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
         public GeminiService(IConfiguration configuration)
         {
             _httpClient = new HttpClient();
