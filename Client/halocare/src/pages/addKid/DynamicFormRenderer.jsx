@@ -102,6 +102,7 @@ const DynamicFormRenderer = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [multipleEntriesData, setMultipleEntriesData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
     const {currentUser} = useAuth();
 
@@ -190,6 +191,7 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
 
   const handleSaveAll = async () => {
     if (readOnly) return;
+  setIsSaving(true);
 
     try {
       const answersToSave = currentFormQuestions.map(question => {
@@ -238,6 +240,8 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
     }
     finally {
       setLocalAnswers({});
+          setIsSaving(false); // end loading
+
     }
   };
 
@@ -504,17 +508,18 @@ const handleMultipleEntriesChange = (questionNo, entriesData) => {
           )}
           
           <Stack direction="row" spacing={2}>
-      
+
             {!readOnly && (
+              
               <Button
                 variant="contained"
-                startIcon={saveStatus === 'loading' ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                startIcon={isSaving  ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                 onClick={handleSaveAll}
-                disabled={saveStatus === 'loading' || !hasChanges}
+                disabled={isSaving || !hasChanges}
                 size="large"
                 sx={{ minWidth: 160 }}
               >
-                {saveStatus === 'loading' ? 'שומר...' : 'שמור הטופס'}
+                {isSaving ? 'שומר...' : 'שמור הטופס'}
               </Button>
             )}
           </Stack>

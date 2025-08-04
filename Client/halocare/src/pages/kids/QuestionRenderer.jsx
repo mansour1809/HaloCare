@@ -230,7 +230,7 @@ const QuestionRenderer = ({
             label={option}
           />
         ))}
-        {question.hasOther && (
+        {/* {question.hasOther && (
           <OptionItem
             control={
               <Radio
@@ -241,7 +241,7 @@ const QuestionRenderer = ({
             }
             label="אחר"
           />
-        )}
+        )} */}
       </OptionsContainer>
       {error && (
         <FormHelperText error sx={{ mt: 1 }}>
@@ -289,7 +289,7 @@ const QuestionRenderer = ({
               label={option}
             />
           ))}
-          {question.hasOther && (
+          {/* {question.hasOther && (
             <OptionItem
               control={
                 <Checkbox
@@ -300,7 +300,7 @@ const QuestionRenderer = ({
               }
               label="אחר"
             />
-          )}
+          )} */}
         </OptionsContainer>
         
         {question.howManyValues && (

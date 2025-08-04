@@ -455,7 +455,7 @@ const OnboardingDashboard = ({
                 }}>
                   <Box>
                     {/* PRESERVED - Original button logic with exact conditions */}
-                    {canEditForm(form) ? (
+                    {(canEditForm(form) && !form.formName.includes('אישור'))  ? (
                       <Button
                         startIcon={<EditIcon />}
                         onClick={() => onFormClick(form, 'edit')}
