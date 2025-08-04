@@ -10,17 +10,17 @@ const Validations = (name, value, extraParams = {}) => {
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  // בדיקה אם הערך ריק
+  // Check if the value is empty
   if (value === null || value === undefined || value === '') {
-    // אם שדה חובה וריק, החזר שגיאה
+   // If field is required and empty, return an error
     if (extraParams.required) {
       return `שדה ${name} הוא שדה חובה`;
     }
-    // אחרת, אם ריק ולא חובה, תקין
+    // Otherwise, if empty and not required, OK
     return '';
   }
   
-  // בדיקות לפי סוג השדה
+  // Tests by field type
   switch (name) {
     case "firstName":
     case "lastName":
@@ -31,7 +31,7 @@ const Validations = (name, value, extraParams = {}) => {
         return "כתובת אימייל אינה תקינה";
       }
       
-      // בדיקה אם האימייל כבר קיים
+      // Check if the email already exists
       if (extraParams.existingEmails && extraParams.existingEmails.includes(value)) {
         return "כתובת אימייל זו כבר קיימת במערכת";
       }
@@ -58,7 +58,7 @@ const Validations = (name, value, extraParams = {}) => {
       if (!value) return "";
       
 
-      // אם עוד לא הגיע החודש של יום ההולדת, או אם הוא באותו חודש אבל עוד לא הגיע היום, מחסירים שנה
+// If the month of the birthday has not yet arrived, or if it is in the same month but the day has not yet arrived, subtract a year
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         if (age - 1 < 18) {
           return "העובד חייב להיות מעל גיל 18";

@@ -47,7 +47,7 @@ import Swal from 'sweetalert2';
 
 import { fetchEventTypes, addEventType, updateEventType, clearError, resetActionStatus } from '../../Redux/features/eventTypesSlice';
 
-// יצירת theme מדהים עם תמיכה ב-RTL
+// Create a theme with RTL support
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -107,7 +107,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// קונטיינר מסך מלא מעוצב
+// Fullscreen container designed
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -124,7 +124,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס הכותרת הראשית המעוצב
+// The formatted main title card
 const HeroCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
   backdropFilter: 'blur(20px)',
@@ -147,7 +147,7 @@ const HeroCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// טבלה מעוצבת עם אפקטים
+// Table formatted with effects
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -168,7 +168,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-// כפתור מונפש מדהים
+// Animated button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -199,7 +199,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// Fab מעוצב
+// Designed Fab
 const StyledFab = styled(Fab)(({ theme }) => ({
   background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
   boxShadow: '0 8px 30px rgba(76, 181, 195, 0.4)',
@@ -394,8 +394,7 @@ const EventTypesTab = () => {
               </HeroCard>
             </Zoom>
 
-            {/* בר חיפוש וכפתור הוספה מעוצב */}
-            <Fade in timeout={1000}>
+{/* Search bar and add button designed */}            <Fade in timeout={1000}>
               <Paper sx={{ 
                 p: 3, 
                 mb: 4, 
@@ -447,8 +446,7 @@ const EventTypesTab = () => {
               </Paper>
             </Fade>
 
-            {/* טבלת סוגי אירועים מעוצבת */}
-            <Fade in timeout={1200}>
+{/* Formatted event type table */}            <Fade in timeout={1200}>
               <StyledTableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -639,8 +637,7 @@ const EventTypesTab = () => {
 
 
 
-            {/* דיאלוג הוספת סוג אירוע מעוצב */}
-            <Dialog 
+{/* Add event type dialog designed */}            <Dialog 
               open={openDialog} 
               onClose={handleDialogClose}
               maxWidth="sm"
@@ -668,7 +665,7 @@ const EventTypesTab = () => {
                 <TextField
                   autoFocus
                   margin="dense"
-                  label="📅 שם סוג האירוע"
+                  label="שם סוג האירוע"
                   fullWidth
                   variant="outlined"
                   value={newEventTypeName}

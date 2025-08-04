@@ -7,10 +7,10 @@ import { checkFormCompletion, fetchOnboardingStatus } from './onboardingSlice';
 import { useAuth } from '../../components/login/AuthContext';
 
 // =============================================================================
-// ASYNC THUNKS - פעולות אסינכרוניות
+// ASYNC THUNKS 
 // =============================================================================
 
-// שליפת תשובות לטופס מסוים של ילד מסוים
+// Retrieving answers to a specific form for a specific child
 export const fetchFormAnswers = createAsyncThunk(
   'answers/fetchFormAnswers',
   async ({ kidId, formId }, { rejectWithValue }) => {
@@ -23,7 +23,7 @@ export const fetchFormAnswers = createAsyncThunk(
   }
 );
 
-// שמירת תשובה יחידה (ללא עדכון סטטוס)
+// Save a single reply (without status update)
 export const saveAnswer = createAsyncThunk(
   'answers/saveAnswer',
   async (answerData, { rejectWithValue }) => {
@@ -36,24 +36,24 @@ export const saveAnswer = createAsyncThunk(
   }
 );
 
-// 🔥 שמירת תשובה עם עדכון אוטומטי של סטטוס קליטה
+// Saving a response with automatic update of reception status
 export const saveAnswerWithStatusCheck = createAsyncThunk(
   'answers/saveAnswerWithStatusCheck',
   async (answerData, { dispatch, rejectWithValue }) => {
     try {
-      // 1. שמירת התשובה
+// 1. Saving the answer
       const response = await axios.post('/Forms/answers', answerData);
       
-      // 2. בדיקת השלמת טופס אוטומטית
+      // 2. Automatic form completion test
       await dispatch(checkFormCompletion({
         kidId: answerData.kidId,
         formId: answerData.formId
       }));
       
-      // 3. טעינה מחדש של סטטוס קליטה (בשביל העדכון בזמן אמת)
+      // // 3. Reload reception status (for real-time update)
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(answerData.kidId));
-      }, 100); // מעט דיליי כדי שהשרת יספיק לעדכן
+      }, 100); // A little delay so the server has time to update
       
       return response.data;
     } catch (error) {
@@ -62,7 +62,7 @@ export const saveAnswerWithStatusCheck = createAsyncThunk(
   }
 );
 
-// עדכון תשובה קיימת
+// Update an existing answer
 export const updateAnswer = createAsyncThunk(
   'answers/updateAnswer',
   async ({ answerId, answerData }, { rejectWithValue }) => {
@@ -76,21 +76,21 @@ export const updateAnswer = createAsyncThunk(
   }
 );
 
-// 🔥 עדכון תשובה עם בדיקת סטטוס
+// Update answer with status check
 export const updateAnswerWithStatusCheck = createAsyncThunk(
   'answers/updateAnswerWithStatusCheck',
   async ({ answerId, answerData }, { dispatch, rejectWithValue }) => {
     try {
-      // 1. עדכון התשובה
+      // 1. Update the answer
       const response = await axios.put(`/Forms/answers/${answerId}`, answerData);
       
-      // 2. בדיקת השלמת טופס
+      // 2. Form completion check
       await dispatch(checkFormCompletion({
         kidId: answerData.kidId,
         formId: answerData.formId
       }));
       
-      // 3. עדכון סטטוס קליטה
+      // 3. Update reception status
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(answerData.kidId));
       }, 100);
@@ -102,7 +102,7 @@ export const updateAnswerWithStatusCheck = createAsyncThunk(
   }
 );
 
-// 🔥 שמירת טופס שלם עם עדכון סטטוס
+// Save entire form with status update
 export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
   'answers/saveFormAnswersWithStatusUpdate',
   async ({ kidId, formId, answers }, { dispatch, rejectWithValue }) => {
@@ -111,7 +111,7 @@ export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
   const {currentUser} = useAuth();
       const userId = currentUser?.id;
 
-      // שמירת כל התשובות אחת אחת
+      // Saving all answers one by one
       for (const answer of answers) {
         const answerData = {
           kidId,
@@ -128,10 +128,10 @@ export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
         savedAnswers.push(response.data);
       }
 
-      // בדיקת השלמה אוטומטית אחרי שמירת כל התשובות
+// Autocomplete check after saving all answers
       await dispatch(checkFormCompletion({ kidId, formId }));
       
-      // עדכון סטטוס קליטה
+// Update reception status
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
       }, 200);
@@ -143,7 +143,7 @@ export const saveFormAnswersWithStatusUpdate = createAsyncThunk(
   }
 );
 
-// מחיקת תשובה
+// Delete Answer
 export const deleteAnswer = createAsyncThunk(
   'answers/deleteAnswer',
   async (answerId, { rejectWithValue }) => {
@@ -156,18 +156,18 @@ export const deleteAnswer = createAsyncThunk(
   }
 );
 
-// 🔥 מחיקת תשובה עם עדכון סטטוס
+// Delete reply with status update
 export const deleteAnswerWithStatusCheck = createAsyncThunk(
   'answers/deleteAnswerWithStatusCheck',
   async ({ answerId, kidId, formId }, { dispatch, rejectWithValue }) => {
     try {
-      // 1. מחיקת התשובה
+      // 1. Deleting the answer
       await axios.delete(`/Forms/answers/${answerId}`);
       
-      // 2. בדיקת השלמת טופס
+      // 2. Form completion check
       await dispatch(checkFormCompletion({ kidId, formId }));
       
-      // 3. עדכון סטטוס קליטה
+      // 3. Update reception status
       setTimeout(() => {
         dispatch(fetchOnboardingStatus(kidId));
       }, 100);
@@ -179,7 +179,7 @@ export const deleteAnswerWithStatusCheck = createAsyncThunk(
   }
 );
 
-// 🆕 שמירת תשובה עם מידע מורכב
+// Saving a response with complex information
 export const saveAnswerWithMultipleEntries = createAsyncThunk(
   'answers/saveAnswerWithMultipleEntries',
   async (answerData, { rejectWithValue }) => {
@@ -192,7 +192,7 @@ export const saveAnswerWithMultipleEntries = createAsyncThunk(
   }
 );
 
-// 🆕 עדכון תשובה עם מידע מורכב
+// Update answer with complex information
 export const updateAnswerWithMultipleEntries = createAsyncThunk(
   'answers/updateAnswerWithMultipleEntries',
   async ({ answerId, answerData }, { rejectWithValue }) => {
@@ -205,7 +205,7 @@ export const updateAnswerWithMultipleEntries = createAsyncThunk(
   }
 );
 
-// 🆕 שליפת מידע רפואי קריטי
+// Retrieving critical medical information
 export const fetchCriticalMedicalInfo = createAsyncThunk(
   'answers/fetchCriticalMedicalInfo',
   async (kidId, { rejectWithValue }) => {
@@ -226,60 +226,60 @@ export const fetchCriticalMedicalInfo = createAsyncThunk(
 const answersSlice = createSlice({
   name: 'answers',
   initialState: {
-    // תשובות לפי ילד וטופס
+    // Answers by child and form
     answersByKidAndForm: {}, // { "kidId_formId": [answers] }
     
-    // תשובות של הטופס הנוכחי
+    // Responses of the current form
     currentFormAnswers: [],
     currentKidId: null,
     currentFormId: null,
     
-    // מצבי טעינה
+    // Charging modes
     status: 'idle', // idle, loading, succeeded, failed
-    saveStatus: 'idle', // מצב שמירה נפרד
+    saveStatus: 'idle', // Separate save mode
     error: null,
     saveError: null,
     
-    // מטמון מקומי לעדכונים
-    localChanges: {}, // שינויים שטרם נשמרו
+    // Local cache for updates
+    localChanges: {}, // Unsaved changes
 
-     // 🆕 מידע רפואי קריטי
+     // Critical medical information
     criticalMedicalInfo: [],
     criticalInfoStatus: 'idle',
     criticalInfoError: null,
   },
   reducers: {
-    // 🧹 ניקוי שגיאות
+    // Error cleaning
     clearError: (state) => {
       state.error = null;
       state.saveError = null;
     },
     
-    // 🎯 הגדרת טופס נוכחי
+    // Set current form
     setCurrentForm: (state, action) => {
       const { kidId, formId } = action.payload;
       state.currentKidId = kidId;
       state.currentFormId = formId;
       
-      // טעינת התשובות לטופס הנוכחי
+      // Load the answers to the current form
       const key = `${kidId}_${formId}`;
       state.currentFormAnswers = state.answersByKidAndForm[key] || [];
     },
     
-    // 🆕 עדכון מקומי של מידע מורכב
+    // Local update of complex information
     updateLocalMultipleEntries: (state, action) => {
       const { questionNo, multipleEntries } = action.payload;
       const key = `${state.currentKidId}_${state.currentFormId}_${questionNo}`;
       
       state.localChanges[key] = {
         questionNo,
-        answer: 'כן', // תמיד "כן" אם יש מידע מורכב
+        answer: 'כן', // Always "yes" if there is complex information
         multipleEntries,
         timestamp: Date.now()
       };
     },
 
-    // ✏️ עדכון תשובה מקומית (לפני שמירה)
+    // Update local answer (before saving)
     updateLocalAnswer: (state, action) => {
       const { questionNo, answer, other } = action.payload;
       const key = `${state.currentKidId}_${state.currentFormId}_${questionNo}`;
@@ -292,7 +292,7 @@ const answersSlice = createSlice({
       };
     },
     
-    // 💾 שמירת שינויים מקומיים לעדכון
+    // Save local changes for update
     applyLocalChanges: (state) => {
       Object.values(state.localChanges).forEach(change => {
         const existingAnswer = state.currentFormAnswers.find(
@@ -303,23 +303,23 @@ const answersSlice = createSlice({
           existingAnswer.answer = change.answer;
           existingAnswer.other = change.other;
         } else {
-          // תשובה חדשה - נוסיף אותה זמנית
+          // New answer - we'll add it temporarily
           state.currentFormAnswers.push({
             questionNo: change.questionNo,
             answer: change.answer,
             other: change.other,
             kidId: state.currentKidId,
             formId: state.currentFormId,
-            isLocal: true // סימון שזה עדכון מקומי
+            isLocal: true // Mark this as a local update
           });
         }
       });
       
-      // ניקוי השינויים המקומיים
+      // Clear local changes
       state.localChanges = {};
     },
     
-    // 🧹 ניקוי תשובות נוכחיות (כשעוזבים טופס)
+    // Clear current responses (when leaving a form)
     clearCurrentFormAnswers: (state) => {
       state.currentFormAnswers = [];
       state.currentKidId = null;
@@ -329,7 +329,7 @@ const answersSlice = createSlice({
       state.saveError = null;
     },
     
-    // 🧹 ניקוי נתוני ילד ספציפי
+    // Clearing specific child data
     clearKidAnswers: (state, action) => {
       const kidId = action.payload;
       Object.keys(state.answersByKidAndForm).forEach(key => {
@@ -338,7 +338,7 @@ const answersSlice = createSlice({
         }
       });
       
-      // אם זה הילד הנוכחי, נקה גם את הנתונים הנוכחיים
+// If this is the current child, clear the current data as well
       if (state.currentKidId === kidId) {
         state.currentFormAnswers = [];
         state.localChanges = {};
@@ -347,7 +347,7 @@ const answersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // 📥 שליפת תשובות טופס
+      // Retrieve form answers
       .addCase(fetchFormAnswers.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -359,7 +359,7 @@ const answersSlice = createSlice({
         
         state.answersByKidAndForm[key] = answers;
         
-        // אם זה הטופס הנוכחי, עדכן גם אותו
+        // If this is the current form, update it too
         if (state.currentKidId === kidId && state.currentFormId === formId) {
           state.currentFormAnswers = answers;
         }
@@ -369,7 +369,7 @@ const answersSlice = createSlice({
         state.error = action.payload;
       })
       
-      // 💾 שמירת תשובה יחידה
+      // Save a single answer
       .addCase(saveAnswer.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
@@ -378,13 +378,13 @@ const answersSlice = createSlice({
         state.saveStatus = 'succeeded';
         const answer = action.payload;
         
-        // עדכון ברשת התשובות
+        // Update the answer grid
         const key = `${answer.kidId}_${answer.formId}`;
         if (!state.answersByKidAndForm[key]) {
           state.answersByKidAndForm[key] = [];
         }
         
-        // בדיקה אם התשובה כבר קיימת (עדכון) או חדשה (הוספה)
+// Check if the answer already exists (update) or is new (add)
         const existingIndex = state.answersByKidAndForm[key].findIndex(
           a => a.questionNo === answer.questionNo
         );
@@ -395,7 +395,7 @@ const answersSlice = createSlice({
           state.answersByKidAndForm[key].push(answer);
         }
         
-        // עדכון בטופס הנוכחי אם רלוונטי
+        // Update the current form if applicable
         if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
           const currentIndex = state.currentFormAnswers.findIndex(
             a => a.questionNo === answer.questionNo
@@ -413,14 +413,14 @@ const answersSlice = createSlice({
         state.saveError = action.payload;
       })
       
-      // 🔥 שמירת תשובה עם עדכון סטטוס
+      // Save reply with status update
       .addCase(saveAnswerWithStatusCheck.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
       })
       .addCase(saveAnswerWithStatusCheck.fulfilled, (state, action) => {
         state.saveStatus = 'succeeded';
-        // אותה לוגיקה כמו saveAnswer.fulfilled
+// Same logic as saveAnswer.fulfilled
         const answer = action.payload;
         
         const key = `${answer.kidId}_${answer.formId}`;
@@ -455,12 +455,12 @@ const answersSlice = createSlice({
         state.saveError = action.payload;
       })
       
-      // ✏️ עדכון תשובה
+      // Update answer
       .addCase(updateAnswer.fulfilled, (state, action) => {
         const answer = action.payload;
         const key = `${answer.kidId}_${answer.formId}`;
         
-        // עדכון ברשת התשובות
+      // Update the answer grid
         if (state.answersByKidAndForm[key]) {
           const index = state.answersByKidAndForm[key].findIndex(
             a => a.answerId === answer.answerId
@@ -470,7 +470,7 @@ const answersSlice = createSlice({
           }
         }
         
-        // עדכון בטופס הנוכחי
+        // Update the current form
         if (state.currentKidId === answer.kidId && state.currentFormId === answer.formId) {
           const currentIndex = state.currentFormAnswers.findIndex(
             a => a.answerId === answer.answerId
@@ -481,9 +481,9 @@ const answersSlice = createSlice({
         }
       })
       
-      // 🔥 עדכון תשובה עם בדיקת סטטוס
+      // Update answer with status check
       .addCase(updateAnswerWithStatusCheck.fulfilled, (state, action) => {
-        // אותה לוגיקה כמו updateAnswer.fulfilled
+        // Same logic as updateAnswer.fulfilled
         const answer = action.payload;
         const key = `${answer.kidId}_${answer.formId}`;
         
@@ -506,7 +506,7 @@ const answersSlice = createSlice({
         }
       })
       
-      // 💾 שמירת טופס שלם
+      // Save entire form
       .addCase(saveFormAnswersWithStatusUpdate.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
@@ -516,15 +516,15 @@ const answersSlice = createSlice({
         const { kidId, formId, answers } = action.payload;
         const key = `${kidId}_${formId}`;
         
-        // שמירת כל התשובות
+        // Saving all answers
         state.answersByKidAndForm[key] = answers;
         
-        // עדכון הטופס הנוכחי
+       // Update the current form
         if (state.currentKidId === kidId && state.currentFormId === formId) {
           state.currentFormAnswers = answers;
         }
         
-        // ניקוי שינויים מקומיים
+        // Clean up local changes
         state.localChanges = {};
       })
       .addCase(saveFormAnswersWithStatusUpdate.rejected, (state, action) => {
@@ -532,26 +532,26 @@ const answersSlice = createSlice({
         state.saveError = action.payload;
       })
       
-      // 🗑️ מחיקת תשובה
+      // Delete answer
       .addCase(deleteAnswer.fulfilled, (state, action) => {
         const answerId = action.payload;
         
-        // מחיקה מכל המקומות
+        // Delete from all places
         Object.keys(state.answersByKidAndForm).forEach(key => {
           state.answersByKidAndForm[key] = state.answersByKidAndForm[key].filter(
             a => a.answerId !== answerId
           );
         });
         
-        // מחיקה מהטופס הנוכחי
+        // Delete from the current form
         state.currentFormAnswers = state.currentFormAnswers.filter(
           a => a.answerId !== answerId
         );
       })
       
-      // 🔥 מחיקת תשובה עם בדיקת סטטוס
+      // Delete reply with status check
       .addCase(deleteAnswerWithStatusCheck.fulfilled, (state, action) => {
-        // אותה לוגיקה כמו deleteAnswer.fulfilled
+        // Same logic as deleteAnswer.fulfilled
         const answerId = action.payload;
         
         Object.keys(state.answersByKidAndForm).forEach(key => {
@@ -565,7 +565,7 @@ const answersSlice = createSlice({
         );
       })
 
-       // 🆕 Save answer with multiple entries
+       //  Save answer with multiple entries
       .addCase(saveAnswerWithMultipleEntries.pending, (state) => {
         state.saveStatus = 'loading';
         state.saveError = null;
@@ -573,7 +573,7 @@ const answersSlice = createSlice({
       .addCase(saveAnswerWithMultipleEntries.fulfilled, (state, action) => {
         state.saveStatus = 'succeeded';
         
-        // עדכון התשובה ברשימה הנוכחית
+        // Update the answer in the current list
         const newAnswer = action.payload;
         const existingIndex = state.currentFormAnswers.findIndex(
           a => a.questionNo === newAnswer.questionNo
@@ -585,7 +585,7 @@ const answersSlice = createSlice({
           state.currentFormAnswers.push(newAnswer);
         }
         
-        // עדכון במטמון הכללי
+        // Update the global cache
         const key = `${state.currentKidId}_${state.currentFormId}`;
         if (!state.answersByKidAndForm[key]) {
           state.answersByKidAndForm[key] = [];
@@ -599,7 +599,7 @@ const answersSlice = createSlice({
           state.answersByKidAndForm[key].push(newAnswer);
         }
         
-        // ניקוי שינויים מקומיים
+        // Clean up local changes
         const localKey = `${state.currentKidId}_${state.currentFormId}_${newAnswer.questionNo}`;
         delete state.localChanges[localKey];
       })
@@ -608,10 +608,10 @@ const answersSlice = createSlice({
         state.saveError = action.payload;
       })
       
-      // 🆕 Update answer with multiple entries
+      //  Update answer with multiple entries
       .addCase(updateAnswerWithMultipleEntries.fulfilled, (state, action) => {
         state.saveStatus = 'succeeded';
-        // לוגיקה דומה לsave
+        // Similar logic to save
         const updatedAnswer = action.payload;
 const existingIndex = state.currentFormAnswers.findIndex(
           a => a.questionNo === updatedAnswer.questionNo
@@ -623,7 +623,7 @@ const existingIndex = state.currentFormAnswers.findIndex(
           state.currentFormAnswers.push(updatedAnswer);
         }
         
-        // עדכון במטמון הכללי
+        // Update the global cache
         const key = `${state.currentKidId}_${state.currentFormId}`;
         if (!state.answersByKidAndForm[key]) {
           state.answersByKidAndForm[key] = [];
@@ -637,12 +637,12 @@ const existingIndex = state.currentFormAnswers.findIndex(
           state.answersByKidAndForm[key].push(updatedAnswer);
         }
         
-        // ניקוי שינויים מקומיים
+       // Clean up local changes
         const localKey = `${state.currentKidId}_${state.currentFormId}_${updatedAnswer.questionNo}`;
         delete state.localChanges[localKey];
       })
 
-      // 🆕 Fetch critical medical info
+      //  Fetch critical medical info
       .addCase(fetchCriticalMedicalInfo.pending, (state) => {
         state.criticalInfoStatus = 'loading';
         state.criticalInfoError = null;
@@ -658,7 +658,7 @@ const existingIndex = state.currentFormAnswers.findIndex(
   }
 });
 
-// SELECTORS - לגישה נוחה לנתונים
+// SELECTORS - for easy data access
 
 export const selectCurrentFormAnswers = (state) => state.answers.currentFormAnswers;
 export const selectAnswersByKidAndForm = (kidId, formId) => (state) => {
@@ -671,11 +671,11 @@ export const selectAnswersError = (state) => state.answers.error;
 export const selectSaveError = (state) => state.answers.saveError;
 export const selectLocalChanges = (state) => state.answers.localChanges;
 
-// בדיקה אם יש שינויים מקומיים שטרם נשמרו
+// Check if there are any local changes that have not yet been saved
 export const selectHasUnsavedChanges = (state) => 
   Object.keys(state.answers.localChanges).length > 0;
 
-// קבלת תשובה לשאלה ספציפית
+// Getting an answer to a specific question
 export const selectAnswerForQuestion = (questionNo) => (state) => 
   state.answers.currentFormAnswers.find(a => a.questionNo === questionNo);
 
@@ -685,7 +685,7 @@ export const {
   updateLocalAnswer, 
   applyLocalChanges,
   clearAnswers,
-  clearCurrentFormAnswers, // 🔥 הוספה
+  clearCurrentFormAnswers, // Add
   clearKidAnswers,
     updateLocalMultipleEntries 
 

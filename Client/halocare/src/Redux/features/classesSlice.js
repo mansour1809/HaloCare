@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// טעינת רשימת הכיתות
+// Load the class list
 export const fetchClasses = createAsyncThunk(
   'classes/fetchClasses',
   async (_, { rejectWithValue }) => {
@@ -14,7 +14,7 @@ export const fetchClasses = createAsyncThunk(
   }
 );
 
-// הוספת כיתה חדשה
+// Add a new class
 export const addClass = createAsyncThunk(
   'classes/addClass',
   async (classData, { rejectWithValue }) => {
@@ -27,7 +27,7 @@ export const addClass = createAsyncThunk(
   }
 );
 
-// עדכון כיתה
+// Update class
 export const updateClass = createAsyncThunk(
   'classes/updateClass',
   async (classData, { rejectWithValue }) => {

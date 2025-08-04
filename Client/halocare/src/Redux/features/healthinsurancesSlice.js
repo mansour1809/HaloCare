@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// טעינת רשימת קופות החולים
+// Loading the list of health insurance funds
 export const fetchHealthInsurances = createAsyncThunk(
   'healthInsurances/fetchHealthInsurances',
   async (_, { rejectWithValue }) => {
@@ -14,7 +14,7 @@ export const fetchHealthInsurances = createAsyncThunk(
   }
 );
 
-// הוספת קופת חולים חדשה
+// Adding a new health insurance plan
 export const addHealthInsurance = createAsyncThunk(
   'healthInsurances/addHealthInsurance',
   async (healthInsuranceData, { rejectWithValue }) => {
@@ -27,7 +27,7 @@ export const addHealthInsurance = createAsyncThunk(
   }
 );
 
-// עדכון קופת חולים
+// Health insurance update
 export const updateHealthInsurance = createAsyncThunk(
   'healthInsurances/updateHealthInsurance',
   async ({ oldName, newData }, { rejectWithValue }) => {

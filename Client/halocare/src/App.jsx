@@ -1,16 +1,17 @@
-// App.jsx - גרסה מתוקנת:
+// App.jsx - revised version:
+
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { rtlCache } from './components/common/rtlCache';
 import { CacheProvider } from '@emotion/react';
 import { ProSidebarProvider } from 'react-pro-sidebar';
 
-// כל הimports שלך...
+// All your imports...
 import Navbar from './components/layout/Navbar/Navbar';
 import ProSidebar from './components/layout/Sidebar/ProSidebar';
 import PrivateRoute from './components/PrivateRoute';
 
-// דפים
+// Pages
 import Calendar from './pages/calendar/Calendar';
 import EmployeeForm from './pages/Employees/EmployeeForm';
 import EmployeesManagement from './pages/Employees/EmployeesManagement';
@@ -21,7 +22,7 @@ import LoginPage from './components/login/login';
 import EventsList from './pages/calendar/EventsList';
 import ResetPassword from './components/login/ResetPassword';
 
-// אותנטיקציה
+// Authentication
 import { useAuth, AuthProvider } from './components/login/AuthContext';
 import { EmployeesProvider } from './pages/Employees/EmployeesContext';
 import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
@@ -35,7 +36,7 @@ import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
 import EmployeeProfile from './pages/Employees/EmployeeProfile';
 
 
-// יצירת ערכת נושא
+// Create a theme
 const theme = createTheme({
   direction: 'rtl',
   palette: {
@@ -79,18 +80,18 @@ const theme = createTheme({
 const DRAWER_WIDTH = 260;
 const NAVBAR_HEIGHT = 64;
 
-// 🔥 פונקציה לבדיקת דף ציבורי - פשוטה ויעילה
+// Function to check a public page - simple and effective
 const isCurrentPathPublic = () => {
   const hash = window.location.hash;
   const publicPaths = [ '/reset-password', '/parent-form'];
   return publicPaths.some(path => hash.includes(path));
 };
 
-// רכיב פנימי שמשתמש בקונטקסט האותנטיקציה
+// Internal component that uses the authentication context
 const AppContent = () => {
   const { isAuthenticated } = useAuth();
   
-  // 🔥 בדיקת דף ציבורי בכל render
+  // Check public page on every render
   const isPublicPath = isCurrentPathPublic();
 
   const showLayout = isAuthenticated && !isPublicPath;
@@ -106,8 +107,7 @@ const AppContent = () => {
   return (
     <Router>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-        {/* 🔥 הצג navbar רק אם מחובר ולא בדף ציבורי */}
-{showLayout && <Navbar />}
+{/* Show navbar only if logged in and not on a public page */}{showLayout && <Navbar />}
         <Box
           sx={{
             display: "flex",
@@ -116,8 +116,7 @@ const AppContent = () => {
             pt: (isAuthenticated && !isPublicPath) ? `${NAVBAR_HEIGHT}px` : 0,
           }}
         >
-          {/* 🔥 הצג sidebar רק אם מחובר ולא בדף ציבורי */}
-          {isAuthenticated && !isPublicPath && <ProSidebar />}
+{/* Show sidebar only if logged in and not on a public page */}          {isAuthenticated && !isPublicPath && <ProSidebar />}
 
           <Box
             component="main"
@@ -139,8 +138,7 @@ const AppContent = () => {
             }}
           >
             <Routes>
-              {/* דפים ציבוריים */}
-              <Route
+{/* Public pages */}              <Route
                 path="/login"
                 element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
               />
@@ -155,8 +153,7 @@ const AppContent = () => {
                 element={<PublicParentFormPage />}
               />
 
-              {/* דף הבית */}
-              <Route
+{/* Home page */}              <Route
                 path="/"
                 element={
                   <PrivateRoute>
@@ -165,8 +162,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* ניהול ילדים */}
-              <Route
+{/* Child management */}              <Route
                 path="/kids/list"
                 element={
                   <PrivateRoute>
@@ -209,8 +205,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* ניהול עובדים */}
-              <Route
+{/* Employee Management */}              <Route
                 path="/employees/list"
                 element={
                   <PrivateRoute>
@@ -227,8 +222,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* לוח שנה */}
-              <Route
+{/* Calendar */}              <Route
                 path="/calendar/schedule"
                 element={
                   <PrivateRoute>
@@ -254,8 +248,7 @@ const AppContent = () => {
                 }
               />
 
-              {/* דוחות */}
-              <Route
+{/* Reports */}              <Route
                 path="/reports/attendance"
                 element={
                   <PrivateRoute>
@@ -283,7 +276,7 @@ const AppContent = () => {
   );
 };
 
-// הרכיב הראשי של האפליקציה
+// The main component of the application
 function App() {
   return (
     <CacheProvider value={rtlCache}>

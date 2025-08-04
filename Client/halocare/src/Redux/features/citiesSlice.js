@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// טעינת רשימת הערים
+// Load the list of cities
 export const fetchCities = createAsyncThunk(
   'cities/fetchCities',
   async (_, { rejectWithValue }) => {
@@ -14,7 +14,7 @@ export const fetchCities = createAsyncThunk(
   }
 );
 
-// הוספת עיר חדשה
+// Add a new city
 export const addCity = createAsyncThunk(
   'cities/addCity',
   async (cityData, { rejectWithValue }) => {
@@ -27,7 +27,7 @@ export const addCity = createAsyncThunk(
   }
 );
 
-// עדכון עיר
+// Update city
 export const updateCity = createAsyncThunk(
   'cities/updateCity',
   async ({ oldName, newData }, { rejectWithValue }) => {
@@ -46,7 +46,7 @@ const citiesSlice = createSlice({
     cities: [],
     status: 'idle',
     error: null,
-    actionStatus: 'idle' // עבור פעולות הוספה/עדכון
+    actionStatus: 'idle' // For insert/update operations
   },
   reducers: {
     clearError: (state) => {

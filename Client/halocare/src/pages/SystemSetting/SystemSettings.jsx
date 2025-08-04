@@ -39,7 +39,7 @@ import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlic
 import { fetchTreatmentTypes } from '../../Redux/features/treatmentTypesSlice';
 import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
 
-// יצירת theme מדהים עם תמיכה ב-RTL
+// Create a theme with RTL support
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -88,7 +88,7 @@ const rtlTheme = createTheme({
   }
 });
 
-// קונטיינר מסך מלא מעוצב
+// Fullscreen container designed
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -105,7 +105,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// כרטיס הכותרת הראשית המעוצב
+// The formatted main title card
 const HeroCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
   backdropFilter: 'blur(20px)',
@@ -128,9 +128,9 @@ const HeroCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// טאבים מעוצבים - לא בשימוש עוד
+// Styled tabs - no longer used
 
-// תוכן הטאבים
+// Tab content
 const TabContent = styled(Box)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -239,8 +239,7 @@ const SystemSettings = () => {
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Container maxWidth="xl" sx={{ py: 4 }}>
             
-            {/* כרטיס הכותרת הראשית */}
-            <Zoom in timeout={800}>
+{/* Main title card */}            <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
                   <Box display="flex" alignItems="center" justifyContent="center">
@@ -267,12 +266,10 @@ const SystemSettings = () => {
 
 
 
-            {/* מערכת הטאבים המעוצבת */}
-            <Fade in timeout={1200}>
+{/* The designed tab system */}            <Fade in timeout={1200}>
               <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden' }}>
                 
-                {/* Tabs Navigation בסגנון כפתורים */}
-                <Paper sx={{ 
+{/* Button-style Navigation Tabs */}                <Paper sx={{ 
                   p: 3, 
                   mb: 0, 
                   borderRadius: '25px 25px 0 0',

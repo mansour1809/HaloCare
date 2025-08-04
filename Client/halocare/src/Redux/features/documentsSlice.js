@@ -2,12 +2,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// אסינק תנקס לטעינת מסמכים לפי ישות
+// Async thanks for loading documents by entity
 export const fetchDocumentsByEntityId = createAsyncThunk(
   'documents/fetchByEntityId',
   async ({ entityId, entityType }, { rejectWithValue }) => {
     try {
-      // שימוש בנתיב דינמי בהתאם לסוג הישות
+      // Using dynamic path depending on entity type
       const endpoint = `/Documents/${entityType}/${entityId}`;
       const response = await axios.get(endpoint);
       return response.data;
@@ -18,7 +18,7 @@ export const fetchDocumentsByEntityId = createAsyncThunk(
   }
 );
 
-// אסינק תנקס לטעינת מסמך בודד
+// Async thanks for loading a single document
 export const fetchDocumentsById = createAsyncThunk(
   'documents/fetchById',
   async ({ documentId }, { rejectWithValue }) => {
@@ -33,12 +33,12 @@ export const fetchDocumentsById = createAsyncThunk(
   }
 );
 
-// אסינק תנקס להעלאת מסמך - **תיקון קריטי**
+// Async thanks for document upload - **Critical fix**
 export const uploadDocument = createAsyncThunk(
   'documents/upload',
   async ({ document, file }, { rejectWithValue }) => {
     try {
-      // בדיקות תקינות בסיסיות
+      // Basic health checks
       if (!file) {
         throw new Error('לא נבחר קובץ');
       }
@@ -49,10 +49,10 @@ export const uploadDocument = createAsyncThunk(
 
       const formData = new FormData();
       
-      // הוספת הקובץ
+      // Add the file
       formData.append('File', file);
       
-      // **תיקון הקריטי - הוספת פרטי המסמך בפורמט שהשרת מצפה**
+// **Critical fix - adding document details in the format the server expects**
       if (document.KidId) {
         formData.append('Document.KidId', document.KidId.toString());
       }
@@ -65,7 +65,7 @@ export const uploadDocument = createAsyncThunk(
         formData.append('Document.DocType', document.DocType);
       }
 
-      // וידוא שיש שם למסמך
+      // Make sure the document has a name
       const docName = document.DocName || file.name;
       formData.append('Document.DocName', docName);
 
@@ -77,7 +77,7 @@ export const uploadDocument = createAsyncThunk(
         entityType: document.KidId ? 'Kid' : 'Employee'
       });
 
-      // שליחת הבקשה עם headers מתאימים
+      // Send the request with appropriate headers
       const response = await axios.post('/Documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -90,7 +90,7 @@ export const uploadDocument = createAsyncThunk(
     } catch (error) {
       console.error('שגיאה בהעלאת מסמך:', error);
       
-      // לוגינג מפורט של השגיאה
+// Detailed error logging
       if (error.response) {
         console.error('פרטי שגיאה מהשרת:', {
           status: error.response.status,
@@ -108,7 +108,7 @@ export const uploadDocument = createAsyncThunk(
   }
 );
 
-// אסינק תנקס למחיקת מסמך
+// Async thanks for deleting a document
 export const deleteDocument = createAsyncThunk(
   'documents/delete',
   async (docId, { rejectWithValue }) => {
@@ -122,7 +122,7 @@ export const deleteDocument = createAsyncThunk(
   }
 );
 
-// יצירת סלייס
+// Create a slice
 const documentsSlice = createSlice({
   name: 'documents',
   initialState: {
@@ -142,7 +142,7 @@ const documentsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // טעינת מסמכים לפי ישות
+      // Load documents by entity
       .addCase(fetchDocumentsByEntityId.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -157,7 +157,7 @@ const documentsSlice = createSlice({
         state.error = action.payload;
       })
       
-      // העלאת מסמך
+      // Upload a document
       .addCase(uploadDocument.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -173,7 +173,7 @@ const documentsSlice = createSlice({
         console.error('Redux: העלאת מסמך נכשלה:', action.payload);
       })
       
-      // מחיקת מסמך
+     // Delete a document
       .addCase(deleteDocument.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -193,7 +193,7 @@ const documentsSlice = createSlice({
 export const { clearDocuments, clearError } = documentsSlice.actions;
 export default documentsSlice.reducer;
 
-// פונקציות עזר לתאימות לאחור
+// Backward compatibility helper functions
 export const fetchDocumentsByEmployeeId = (employeeId) => 
   fetchDocumentsByEntityId({ entityId: employeeId, entityType: 'employee' });
   
