@@ -262,14 +262,14 @@ const ProSidebar = () => {
                 onClick={() => navigate('/employees/list')}
                 style={getActiveStyle('/employees/list')}
               >
-                רשימת צוות
+                רשימת אנשי צוות
               </MenuItem>
               <MenuItem
                 icon={<PersonAddIcon />}
                 onClick={() => navigate('/employees/add')}
                 style={getActiveStyle('/employees/add')}
               >
-                הוספת צוות
+                הוספת איש צוות
               </MenuItem>
             </StyledSubMenu>
 
