@@ -27,56 +27,81 @@ namespace halocare.BL.Services
 
         public async Task<string> GenerateTasheReportAsync(List<TreatmentForTashe> treatments, string kidName, DateTime startDate, DateTime endDate)
         {
-            try
+            int maxRetries = 3;
+            int delaySeconds = 5;
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                // בניית הפרומפט
-                string prompt = BuildTashePrompt(treatments, kidName, startDate, endDate);
-
-                // יצירת הבקשה ל-Gemini
-                var requestBody = new
+                try
                 {
-                    contents = new[]
+                    // בניית הפרומפט
+                    string prompt = BuildTashePrompt(treatments, kidName, startDate, endDate);
+
+                    // יצירת הבקשה ל-Gemini
+                    var requestBody = new
                     {
-                        new
+                        contents = new[]
                         {
-                            parts = new[]
+                            new
                             {
-                                new { text = prompt }
+                                parts = new[]
+                                {
+                                    new { text = prompt }
+                                }
                             }
+                        },
+                        generationConfig = new
+                        {
+                            temperature = 0.7,
+                            topK = 40,
+                            topP = 0.95,
+                            maxOutputTokens = 8192,
                         }
-                    },
-                    generationConfig = new
+                    };
+
+                    string json = JsonSerializer.Serialize(requestBody);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // שליחת הבקשה
+                    var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        temperature = 0.7,
-                        topK = 40,
-                        topP = 0.95,
-                        maxOutputTokens = 8192,
+                        string responseJson = await response.Content.ReadAsStringAsync();
+                        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
+
+                        return geminiResponse?.candidates?.Length > 0
+                               ? geminiResponse.candidates[0].content.parts[0].text
+                               : "שגיאה ביצירת הדוח";
                     }
-                };
 
-                string json = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                // שליחת הבקשה
-                var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
-
-                if (!response.IsSuccessStatusCode)
-                {
+                    // אם זה שגיאת 503 (עומס), ננסה שוב
                     string errorContent = await response.Content.ReadAsStringAsync();
+                    if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
+                        response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    {
+                        if (attempt < maxRetries)
+                        {
+                            await Task.Delay(delaySeconds * 1000 * attempt); // עיכוב מתרחב
+                            continue;
+                        }
+                    }
+
                     throw new Exception($"שגיאה ב-Gemini API: {response.StatusCode} - {errorContent}");
                 }
-
-                string responseJson = await response.Content.ReadAsStringAsync();
-                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
-
-                return geminiResponse?.candidates?.Length > 0
-                       ? geminiResponse.candidates[0].content.parts[0].text
-                       : "שגיאה ביצירת הדוח";
+                catch (Exception ex) when (attempt < maxRetries && (ex.Message.Contains("503") || ex.Message.Contains("429")))
+                {
+                    // אם זה שגיאת עומס ויש לנו עוד ניסיונות
+                    await Task.Delay(delaySeconds * 1000 * attempt);
+                    continue;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"שגיאה בקריאה לשירות הבינה המלאכותית: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"שגיאה בקריאה לשירות הבינה המלאכותית: {ex.Message}");
-            }
+
+            throw new Exception("שירות הבינה המלאכותית לא זמין כרגע, נסו שוב בעוד כמה דקות");
         }
 
         private string BuildTashePrompt(List<TreatmentForTashe> treatments, string kidName, DateTime startDate, DateTime endDate)

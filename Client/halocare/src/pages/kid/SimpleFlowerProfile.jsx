@@ -145,7 +145,7 @@ const SimpleFlowerProfile = ({ kid }) => {
         return (
           <Tooltip PopperProps={{ disablePortal: true }}
             key={treatmentType.treatmentTypeId}
-            title={`לחץ לצפייה בטיפולי ${treatmentType.treatmentTypeName}`}
+            // title={`לחץ לצפייה בטיפולי ${treatmentType.treatmentTypeName}`}
             placement="top"
           >
             <Petal

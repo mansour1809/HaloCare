@@ -63,9 +63,19 @@ namespace halocare.DAL.Repositories
                 { "@Notes", report.Notes ?? (object)DBNull.Value }
             };
 
-            return Convert.ToInt32(ExecuteScalar("sp_InsertTasheReport", parameters));
-        }
+            // הוספת פרמטר OUTPUT
+            parameters.Add("@ReportId", 0);  // ערך ראשוני
 
+            
+            DataTable result = ExecuteQuery("sp_InsertTasheReport", parameters);
+
+            if (result.Rows.Count > 0)
+            {
+                return Convert.ToInt32(result.Rows[0]["reportId"]);
+            }
+
+            throw new Exception("שגיאה ביצירת הדוח - לא הוחזר ID");
+        }
         // שליפת דוחות לפי ילד
         public List<TasheReport> GetTasheReportsByKid(int kidId)
         {

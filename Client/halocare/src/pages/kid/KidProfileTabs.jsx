@@ -37,6 +37,7 @@ import KidIntakeFormsTab from './KidIntakeFormsTab';
 import KidDocumentsTab from './KidDocumentsTab';
 import KidDocumentManager from '../addKid/KidDocumentManager';
 import KidReportsTab from './KidReportsTab';
+import { baseURL } from '../../components/common/axiosConfig';
 
 // Styled Components
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -286,6 +287,7 @@ const KidProfileTabs = ({ selectedKid }) => {
                 fontSize: '1.5rem',
                 fontWeight: 'bold'
               }}
+              src={selectedKid.photoPath ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(selectedKid.photoPath)}` : undefined}
             >
               {selectedKid.firstName?.charAt(0) || '?'}
             </Avatar>

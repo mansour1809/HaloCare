@@ -1,279 +1,404 @@
-// src/components/kids/tabs/KidReportsTab.jsx - טאב דוחות תקופתיים (ריק לעתיד)
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
-  Paper,
   Typography,
   Button,
-  Avatar,
-  Stack,
   Card,
   CardContent,
   Grid,
+  Chip,
+  Alert,
+  CircularProgress,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
   Divider,
-  Chip
+  Paper,
+  Avatar,
+  Tooltip
 } from '@mui/material';
 import {
-  Assessment as ReportsIcon,
-  TrendingUp as ProgressIcon,
-  BarChart as ChartIcon,
-  Description as DocumentIcon,
-  CalendarToday as CalendarIcon,
-  Psychology as DevelopmentIcon,
-  School as EducationIcon,
-  MedicalServices as MedicalIcon,
-  Construction as BuildIcon
+  Add as AddIcon,
+  AutoAwesome as AIIcon,
+  Assessment as ReportIcon,
+  Visibility as ViewIcon,
+  CheckCircle as ApprovedIcon,
+  Schedule as PendingIcon,
+  GetApp as DownloadIcon,
+  Close as CloseIcon,
+  Star as StarIcon,
+  Psychology as BrainIcon
 } from '@mui/icons-material';
 
-const KidReportsTab = ({ selectedKid }) => {
-  
-  //future Features
-  const futureFeatures = [
-    {
-      icon: <ProgressIcon />,
-      title: 'דוח התקדמות תקופתי',
-      description: 'מעקב אחר התקדמות הילד בתחומים שונים לאורך זמן',
-      color: 'primary.main',
-      status: 'בפיתוח'
-    },
-    {
-      icon: <ChartIcon />,
-      title: 'גרפים וויזואליזציה',
-      description: 'הצגה גרפית של נתוני התקדמות ושיפור',
-      color: 'success.main',
-      status: 'מתוכנן'
-    },
-    {
-      icon: <DevelopmentIcon />,
-      title: 'הערכת התפתחות',
-      description: 'דוחות מפורטים על התפתחות קוגניטיבית, חברתית ורגשית',
-      color: 'warning.main',
-      status: 'מתוכנן'
-    },
-    {
-      icon: <EducationIcon />,
-      title: 'דוח חינוכי',
-      description: 'סיכום התקדמות לימודית והמלצות חינוכיות',
-      color: 'info.main',
-      status: 'מתוכנן'
-    },
-    {
-      icon: <MedicalIcon />,
-      title: 'דוח רפואי מסכם',
-      description: 'סיכום מצב רפואי והמלצות טיפוליות',
-      color: 'error.main',
-      status: 'מתוכנן'
-    },
-    {
-      icon: <DocumentIcon />,
-      title: 'יצוא דוחות',
-      description: 'יצוא דוחות ל-PDF, Word ופורמטים נוספים',
-      color: 'secondary.main',
-      status: 'מתוכנן'
-    }
-  ];
+// Import החדש של הרכיבים
+import TasheReportGenerator from './TasheReportGenerator';
+import { 
+  fetchTasheReportsByKid,
+  clearError,
+  approveTasheReport,
+  deleteTasheReport 
+} from '../../Redux/features/tasheReportsSlice';
+import { useAuth } from '../../components/login/AuthContext';
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'בפיתוח': return 'warning';
-      case 'מתוכנן': return 'info';
-      case 'זמין': return 'success';
-      default: return 'default';
+const KidReportsTab = ({ selectedKid }) => {
+  const dispatch = useDispatch();
+  const [generatorOpen, setGeneratorOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  const { currentUser } = useAuth();
+  // Redux state
+  const { reports, status, error } = useSelector(state => state.tasheReports);
+
+    const kidName = `${selectedKid.firstName} ${selectedKid.lastName}`.trim();
+  useEffect(() => {
+    if (selectedKid.id) {
+      loadReports();
+    }
+
+    return () => {
+      dispatch(clearError());
+    };
+  }, [selectedKid.id]);
+
+  const loadReports = async () => {
+    try {
+      await dispatch(fetchTasheReportsByKid(selectedKid.id)).unwrap();
+    } catch (error) {
+      console.error('שגיאה בטעינת דוחות:', error);
     }
   };
 
-  return (
-    <Box dir="rtl" sx={{ p: 3, bgcolor: 'background.default' }}>
-      {/* Main Title */}
-      <Paper sx={{ 
-        p: 4, 
-        mb: 4, 
-        borderRadius: 2, 
-        background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)',
-        textAlign: 'center'
-      }}>
-        <Avatar sx={{ 
-          width: 80, 
-          height: 80, 
-          mx: 'auto', 
-          mb: 3,
-          bgcolor: 'primary.main',
-          fontSize: '2rem'
-        }}>
-          <ReportsIcon sx={{ fontSize: '2.5rem' }} />
-        </Avatar>
-        
-        <Typography variant="h4" fontWeight="bold" color="primary.main" gutterBottom>
-          📊 דוחות תקופתיים
-        </Typography>
-        
-        <Typography variant="h6" color="text.secondary" mb={3}>
-          {selectedKid.firstName} {selectedKid.lastName}
-        </Typography>
-        
-        <Typography variant="body1" color="text.secondary" paragraph>
-          אזור זה יכיל דוחות מפורטים על התקדמות הילד, הערכות תקופתיות וניתוחים סטטיסטיים.
-          הפונקציות נמצאות כעת בפיתוח ויהיו זמינות בקרוב.
-        </Typography>
-        
-        <Chip 
-          icon={<BuildIcon />}
-          label="בפיתוח - זמין בקרוב" 
-          color="warning" 
-          size="large"
-          sx={{ fontWeight: 600, fontSize: '1rem', py: 2, px: 3 }}
+  const handleViewReport = (report) => {
+    setSelectedReport(report);
+    setViewDialogOpen(true);
+  };
+
+  const handleApprove = async (reportId) => {
+    try {
+      await dispatch(approveTasheReport({ 
+        reportId, 
+        approvedByEmployeeId: currentUser.employeeId 
+      })).unwrap();
+      loadReports();
+    } catch (error) {
+      console.error('שגיאה באישור דוח:', error);
+    }
+  };
+
+  const handleDelete = async (reportId) => {
+    if (window.confirm('האם אתם בטוחים שברצונכם למחוק את הדוח?')) {
+      try {
+        await dispatch(deleteTasheReport({ 
+          reportId, 
+          deletedByEmployeeId: currentUser.employeeId 
+        })).unwrap();
+        loadReports();
+      } catch (error) {
+        console.error('שגיאה במחיקת דוח:', error);
+      }
+    }
+  };
+
+  const getStatusChip = (report) => {
+    if (report.isApproved) {
+      return (
+        <Chip
+          icon={<ApprovedIcon />}
+          label="מאושר"
+          color="success"
+          size="small"
         />
-      </Paper>
+      );
+    } else {
+      return (
+        <Chip
+          icon={<PendingIcon />}
+          label="ממתין לאישור"
+          color="warning"
+          size="small"
+        />
+      );
+    }
+  };
+  const canApprove = (report) => {
+    return !report.isApproved && 
+           (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל') &&
+           report.generatedByEmployeeId !== currentUser.employeeId;
+  };
 
-      {/* Future Features */}
-      <Typography variant="h5" fontWeight="bold" color="text.primary" mb={3}>
-        🚀 תכונות שיתווספו בעתיד
-      </Typography>
-      
-      <Grid container spacing={3}>
-        {futureFeatures.map((feature, index) => (
-          <Grid item size={{xs:12,md:6,lg:4}} key={index}>
-            <Card sx={{ 
-              height: '100%',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-              }
-            }}>
-              <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar sx={{ 
-                    bgcolor: feature.color, 
-                    mr: 2,
-                    width: 48,
-                    height: 48
-                  }}>
-                    {feature.icon}
-                  </Avatar>
-                  
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                      {feature.title}
-                    </Typography>
-                    <Chip 
-                      label={feature.status}
-                      color={getStatusColor(feature.status)}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Box>
-                </Box>
-                
-                <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-                  {feature.description}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+  const canDelete = (report) => {
+    return !report.isApproved && 
+           (report.generatedByEmployeeId === currentUser.employeeId || 
+            currentUser.role === 'מנהל/ת');
+  };
 
-      <Divider sx={{ my: 4 }} />
+  if (status === 'loading') {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-      {/* Detailed description of future features */}
-      <Paper sx={{ p: 3, borderRadius: 2 }}>
-        <Typography variant="h6" fontWeight="bold" color="primary.main" mb={3}>
-          💡 מה יכלול מודל הדוחות התקופתיים?
-        </Typography>
-        
-        <Grid container spacing={3}>
-          <Grid item size={{xs:12, md:6}}>
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  📈 מעקב אחר התקדמות
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  גרפים המציגים את השיפור בכל תחום טיפולי לאורך זמן, כולל השוואה בין תקופות שונות
-                </Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  🎯 יעדים והישגים
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  מעקב אחר יעדים טיפוליים, אחוזי השגה ותוכניות עבודה עתידיות
-                </Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  👨‍⚕️ המלצות מקצועיות
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  המלצות מקצועיות מהצוות הטיפולי לשיפור ופיתוח נוספים
-                </Typography>
-              </Box>
-            </Stack>
-          </Grid>
-          
-          <Grid item size={{xs:12, md:6}}>
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  📊 ניתוח סטטיסטי
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  נתונים מפורטים על תדירות טיפולים, רמות שיתוף פעולה וטרנדים
-                </Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  📑 דוחות לגורמים חיצוניים
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  דוחות מותאמים למשרד הרווחה, קופות חולים ומוסדות חינוך
-                </Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary" mb={1}>
-                  🔄 עדכונים אוטומטיים
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  יצירת דוחות אוטומטית בהתאם לתדירות שנקבעה (שבועי/חודשי/תקופתי)
-                </Typography>
-              </Box>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Paper>
+  return (
+    <Box dir="rtl" sx={{ p: 3 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-      {/* Update message */}
-      <Paper sx={{ 
-        p: 3, 
-        mt: 4, 
-        borderRadius: 2,
-        bgcolor: 'info.light',
-        border: '1px solid',
-        borderColor: 'info.main'
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <CalendarIcon sx={{ color: 'info.main', mr: 2 }} />
-          <Typography variant="h6" fontWeight={600} color="info.dark">
-            📅 לוח זמנים לפיתוח
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <BrainIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" fontWeight="bold">
+            דוחות תש"ה
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            {kidName} • דוחות התפתחותיים חכמים
           </Typography>
         </Box>
-        
-        <Typography variant="body2" color="info.dark" paragraph>
-          צוות הפיתוח עובד על מימוש התכונות הללו. המודול הראשון של דוחות התקדמות צפוי להיות זמין 
-          במהלך החודשים הקרובים.
-        </Typography>
-        
-        <Typography variant="body2" color="info.dark">
-          <strong>שלב ראשון:</strong> דוחות התקדמות בסיסיים וגרפים<br />
-          <strong>שלב שני:</strong> יצוא דוחות והתאמה אישית<br />
-          <strong>שלב שלישי:</strong> ניתוחים מתקדמים והמלצות אוטומטיות
-        </Typography>
-      </Paper>
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<AIIcon />}
+          onClick={() => setGeneratorOpen(true)}
+          sx={{
+            background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #FF5252, #26A69A)',
+            },
+            fontWeight: 'bold',
+            px: 3,
+            py: 1.5,
+            borderRadius: 3,
+            boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)'
+          }}
+        >
+          יצירת דוח AI חדש
+        </Button>
+      </Box>
+
+      {/* Reports Grid */}
+      {reports.length === 0 ? (
+        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+          <Avatar sx={{ 
+            width: 80, 
+            height: 80, 
+            mx: 'auto', 
+            mb: 2,
+            background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
+          }}>
+            <ReportIcon sx={{ fontSize: 40 }} />
+          </Avatar>
+          <Typography variant="h5" gutterBottom fontWeight="bold">
+            עדיין אין דוחות תש"ה
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            ליצירת דוח תש"ה מקצועי באמצעות בינה מלאכותית
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AIIcon />}
+            onClick={() => setGeneratorOpen(true)}
+            sx={{
+              background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+              fontWeight: 'bold',
+              px: 4,
+              py: 2,
+              borderRadius: 3
+            }}
+          >
+            צור דוח ראשון
+          </Button>
+        </Paper>
+      ) : (
+        <Grid container spacing={3}>
+          {reports.map((report) => (
+            <Grid item xs={12} key={report.reportId}>
+              <Card sx={{ 
+                borderRadius: 3,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <ReportIcon color="primary" />
+                        <Typography variant="h6" fontWeight="bold">
+                          {report.reportTitle}
+                        </Typography>
+                        {getStatusChip(report)}
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        📅 נוצר: {new Date(report.generatedDate).toLocaleDateString('he-IL')}
+                      </Typography>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        📊 תקופה: {new Date(report.periodStartDate).toLocaleDateString('he-IL')} - {new Date(report.periodEndDate).toLocaleDateString('he-IL')}
+                      </Typography>
+                      
+                      {report.isApproved && (
+                        <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
+                          ✅ אושר ב: {new Date(report.approvedDate).toLocaleDateString('he-IL')}
+                        </Typography>
+                      )}
+
+                      {report.notes && (
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                          fontStyle: 'italic',
+                          p: 1,
+                          bgcolor: 'grey.50',
+                          borderRadius: 1,
+                          mt: 1
+                        }}>
+                          💬 {report.notes}
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                      <Tooltip title="צפה בדוח">
+                        <IconButton
+                          onClick={() => handleViewReport(report)}
+                          color="primary"
+                        >
+                          <ViewIcon />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="הורד דוח">
+                        <IconButton
+                          onClick={() => window.open(`/api/tashereports/${report.reportId}/download`, '_blank')}
+                          color="info"
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canApprove(report) && (
+                        <Tooltip title="אשר דוח">
+                          <IconButton
+                            onClick={() => handleApprove(report.reportId)}
+                            color="success"
+                          >
+                            <ApprovedIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+
+                      {canDelete(report) && (
+                        <Tooltip title="מחק דוח">
+                          <IconButton
+                            onClick={() => handleDelete(report.reportId)}
+                            color="error"
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </Box>
+
+                  {/* Preview של תחילת הדוח */}
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: 'grey.50', 
+                    borderRadius: 2,
+                    mt: 2
+                  }}>
+                    <Typography variant="body2" sx={{ 
+                      maxHeight: 60, 
+                      overflow: 'hidden',
+                      lineHeight: 1.4
+                    }}>
+                      {report.reportContent.substring(0, 150)}...
+                    </Typography>
+                  </Paper>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* כפתור צף */}
+      <Fab
+        color="primary"
+        sx={{ 
+          position: 'fixed', 
+          bottom: 16, 
+          right: 16,
+          background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+          '&:hover': {
+            background: 'linear-gradient(45deg, #FF5252, #26A69A)',
+          }
+        }}
+        onClick={() => setGeneratorOpen(true)}
+      >
+        <AIIcon />
+      </Fab>
+
+      {/* Dialog ליצירת דוח חדש */}
+      <TasheReportGenerator
+        open={generatorOpen}
+        onClose={() => {
+          setGeneratorOpen(false);
+          loadReports(); // רענון הרשימה
+        }}
+        kidId={selectedKid.id}
+        kidName={kidName}
+        currentUser={currentUser}
+      />
+
+      {/* Dialog לצפייה בדוח */}
+      <Dialog
+        open={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        dir="rtl"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight="bold">
+            {selectedReport?.reportTitle}
+          </Typography>
+          <IconButton onClick={() => setViewDialogOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {selectedReport && (
+            <Box>
+              <Typography variant="body1" sx={{ 
+                whiteSpace: 'pre-line',
+                lineHeight: 1.6,
+                p: 2,
+                bgcolor: 'grey.50',
+                borderRadius: 2
+              }}>
+                {selectedReport.reportContent}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

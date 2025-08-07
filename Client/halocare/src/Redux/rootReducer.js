@@ -19,6 +19,7 @@ import parentReducer from './features/parentSlice';
 import healthInsurancesReducer from './features/healthinsurancesSlice';
 import onboardingReducer from './features/onboardingSlice'; 
 import questionsReducer from './features/questionsSlice';
+import tasheReducer from './features/tasheReportsSlice';
 // Combine all reducers into a single root reducer
 const rootReducer = combineReducers({
   cities: citiesReducer,
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   healthInsurances: healthInsurancesReducer,
   onboarding: onboardingReducer,
   questions: questionsReducer,
+  tasheReports: tasheReducer
 
 });
 
