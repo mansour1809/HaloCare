@@ -52,6 +52,7 @@ import {
   resetGenerateStatus,
   clearTreatmentsPreview
 } from '../../Redux/features/tasheReportsSlice';
+import { baseURL } from '../../components/common/axiosConfig';
 
 const TasheReportGenerator = ({ open, onClose, kidId, kidName, currentUser }) => {
   const dispatch = useDispatch();
@@ -133,7 +134,7 @@ const TasheReportGenerator = ({ open, onClose, kidId, kidName, currentUser }) =>
           endDate: formData.periodEndDate.toISOString()
         })).unwrap();
       } catch (error) {
-        return; // נשאר בשלב הנוכחי אם יש שגיאה
+        return; // stay 
       }
     } else if (activeStep === 1) {
       // יצירת הדוח
@@ -368,7 +369,7 @@ const TasheReportGenerator = ({ open, onClose, kidId, kidName, currentUser }) =>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               המערכת מנתחת את {treatmentsPreview?.length || 0} הטיפולים ויוצרת דוח מקצועי ומפורט...
             </Typography>
-            
+            {console.log(generateStatus)}
             {generateStatus === 'loading' && (
               <Box sx={{ mb: 3 }}>
                 <LinearProgress sx={{ mb: 2, borderRadius: 2, height: 8 }} />
@@ -436,12 +437,15 @@ const TasheReportGenerator = ({ open, onClose, kidId, kidName, currentUser }) =>
                   
                   <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
                     <Button
-                      variant="outlined"
-                      startIcon={<PreviewIcon />}
-                      onClick={() => window.open(`/api/tashereports/${currentReport.reportId}/view`, '_blank')}
-                    >
-                      צפה בדוח המלא
-                    </Button>
+  variant="outlined"
+  startIcon={<PreviewIcon />}
+  onClick={() => {
+    const viewUrl = `/tashereports/${currentReport.reportId}/view`;
+    window.open(baseURL + viewUrl, '_blank', 'width=1000,height=800,scrollbars=yes');
+  }}
+>
+  צפה בדוח המלא
+</Button>
                   </Box>
                 </CardContent>
               </Card>

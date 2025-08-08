@@ -87,8 +87,36 @@ namespace halocare.BL.Services
 
         public List<TasheReport> GetReportsByKid(int kidId)
         {
-            return _tasheReportRepository.GetTasheReportsByKid(kidId);
+            var reports = _tasheReportRepository.GetTasheReportsByKid(kidId);
+
+            // הוספת שמות עובדים ובילדים לכל דוח
+            foreach (var report in reports)
+            {
+                var kid = _kidRepository.GetKidById(report.KidId);
+                if (kid != null)
+                {
+                    report.KidName = $"{kid.FirstName} {kid.LastName}";
+                }
+
+                var generatedBy = _employeeRepository.GetEmployeeById(report.GeneratedByEmployeeId);
+                if (generatedBy != null)
+                {
+                    report.GeneratedByEmployeeName = $"{generatedBy.FirstName} {generatedBy.LastName}";
+                }
+
+                if (report.ApprovedByEmployeeId.HasValue)
+                {
+                    var approvedBy = _employeeRepository.GetEmployeeById(report.ApprovedByEmployeeId.Value);
+                    if (approvedBy != null)
+                    {
+                        report.ApprovedByEmployeeName = $"{approvedBy.FirstName} {approvedBy.LastName}";
+                    }
+                }
+            }
+
+            return reports;
         }
+
 
         public List<TreatmentForTashe> GetTreatmentsForTashe(int kidId, DateTime startDate, DateTime endDate)
         {
@@ -114,6 +142,10 @@ namespace halocare.BL.Services
         public bool DeleteReport(int reportId, int deletedByEmployeeId)
         {
             return _tasheReportRepository.DeleteTasheReport(reportId, deletedByEmployeeId);
+        }
+        public TasheReport GetReportById(int reportId)
+        {
+            return _tasheReportRepository.GetTasheReportById(reportId);
         }
     }
 }

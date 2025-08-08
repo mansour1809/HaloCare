@@ -109,17 +109,13 @@ namespace halocare.BL.Services
             StringBuilder prompt = new StringBuilder();
 
             prompt.AppendLine("אתה מומחה בטיפול התפתחותי לילדים עם צרכים מיוחדים.");
-            prompt.AppendLine("עליך ליצור דוח תש\"ה (תוכנית שיקומית התפתחותית) מקצועי ומפורט.");
+            prompt.AppendLine("עליך ליצור דוח תש\"ה (תוכנית שיקומית התפתחותית) בפורמט מדויק וקבוע.");
             prompt.AppendLine();
-            prompt.AppendLine($"פרטי הילד: {kidName}");
-            prompt.AppendLine($"תקופת הדוח: {startDate:dd/MM/yyyy} עד {endDate:dd/MM/yyyy}");
-            prompt.AppendLine();
-            prompt.AppendLine("הטיפולים שבוצעו בתקופה זו:");
+            prompt.AppendLine("חשוב מאוד: השתמש בפורמט הבא בדיוק, ללא שינויים:");
             prompt.AppendLine();
 
-            // קיבוץ טיפולים לפי סוג
+            // בניית סיכום הטיפולים
             Dictionary<string, List<TreatmentForTashe>> groupedTreatments = new Dictionary<string, List<TreatmentForTashe>>();
-
             foreach (var treatment in treatments)
             {
                 if (!groupedTreatments.ContainsKey(treatment.TreatmentTypeName))
@@ -129,43 +125,151 @@ namespace halocare.BL.Services
                 groupedTreatments[treatment.TreatmentTypeName].Add(treatment);
             }
 
+            // חישוב סטטיסטיקות
+            double avgCooperation = treatments.Where(t => t.CooperationLevel.HasValue)
+                .Select(t => t.CooperationLevel.Value)
+                .DefaultIfEmpty(0)
+                .Average();
+
+            prompt.AppendLine("## דוח תש\"ה (תוכנית שיקומית התפתחותית)");
+            prompt.AppendLine();
+            prompt.AppendLine($"**שם הילד:** {kidName}");
+            prompt.AppendLine($"**תקופת הדוח:** {startDate:dd/MM/yyyy} – {endDate:dd/MM/yyyy}");
+            prompt.AppendLine();
+
+            prompt.AppendLine("**1. רקע כללי:**");
+            prompt.AppendLine();
+            prompt.AppendLine($"{kidName} הגיע לטיפול רב-תחומי במסגרת תוכנית שיקומית התפתחותית. ");
+            prompt.AppendLine($"הדוח הנוכחי מסכם את ההתקדמות שנרשמה בתקופה שבין {startDate:dd/MM/yyyy} ל-{endDate:dd/MM/yyyy} ");
+            prompt.AppendLine($"ומציג מטרות טיפוליות להמשך. בתקופה זו בוצעו {treatments.Count} טיפולים ");
+            prompt.AppendLine($"עם ממוצע שיתוף פעולה של {avgCooperation:F1}/5.");
+            prompt.AppendLine();
+
+            prompt.AppendLine("**2. מטרות הורים:**");
+            prompt.AppendLine();
+            prompt.AppendLine("על בסיס הטיפולים שבוצעו, מטרות ההורים כוללות:");
+            prompt.AppendLine();
+
+            // מטרות בהתבסס על סוגי הטיפולים שבוצעו
+            if (groupedTreatments.ContainsKey("פיזיותרפיה"))
+                prompt.AppendLine("* שיפור המיומנויות המוטוריות והניידות העצמאית.");
+            if (groupedTreatments.ContainsKey("ריפוי בעיסוק"))
+                prompt.AppendLine("* פיתוח מיומנויות מוטוריות עדינות ותיאום עין-יד.");
+            if (groupedTreatments.ContainsKey("טיפול רגשי"))
+                prompt.AppendLine("* קידום ההתפתחות הרגשית והחברתית.");
+            if (groupedTreatments.ContainsKey("תזונה"))
+                prompt.AppendLine("* שיפור הרגלי אכילה ותזונה מאוזנת.");
+            if (groupedTreatments.ContainsKey("טיפול במוזיקה"))
+                prompt.AppendLine("* פיתוח כישורי תקשורת והבעה דרך מוזיקה.");
+            prompt.AppendLine();
+
+            prompt.AppendLine("**3. מטרות טיפוליות מפורטות:**");
+            prompt.AppendLine();
+
+            // יצירת טבלאות לכל תחום טיפולי
             foreach (var group in groupedTreatments)
             {
-                prompt.AppendLine($"=== {group.Key} ===");
-                foreach (var treatment in group.Value)
+                prompt.AppendLine($"**{group.Key}:**");
+                prompt.AppendLine();
+                prompt.AppendLine("| נושא | מטרה | תאריך יעד | מצב נוכחי | שלב לפני השגת המטרה | שלב נוסף לאחר השגת המטרה |");
+                prompt.AppendLine("|---|---|---|---|---|---|");
+
+                // ניתוח הטיפולים וייצור מטרות
+                var latestTreatment = group.Value.OrderByDescending(t => t.TreatmentDate).First();
+                var progressDescription = !string.IsNullOrEmpty(latestTreatment.Highlight) ?
+                    latestTreatment.Highlight :
+                    latestTreatment.Description.Length > 50 ?
+                        latestTreatment.Description.Substring(0, 50) + "..." :
+                        latestTreatment.Description;
+
+                // תאריך יעד - 3 חודשים מהיום
+                var targetDate = endDate.AddMonths(3);
+
+                prompt.AppendLine($"| מיומנות מרכזית | שיפור ביכולות ה{group.Key.ToLower()} | {targetDate:dd/MM/yyyy} | {progressDescription} ({latestTreatment.TreatmentDate:dd/MM/yyyy}) | התקדמות חלקית ביעד | השגת יעד מלא והרחבה למיומנויות נוספות |");
+                prompt.AppendLine();
+            }
+
+            prompt.AppendLine("**4. כרטיס משימות לכיתה:**");
+            prompt.AppendLine();
+            prompt.AppendLine("**הנחיות מעשיות לצוות החינוכי:**");
+            prompt.AppendLine();
+
+            foreach (var group in groupedTreatments)
+            {
+                prompt.AppendLine($"* **{group.Key}:**");
+
+                switch (group.Key.ToLower())
                 {
-                    prompt.AppendLine($"תאריך: {treatment.TreatmentDate:dd/MM/yyyy}");
-                    prompt.AppendLine($"מטפל: {treatment.EmployeeName} ({treatment.RoleName})");
-                    prompt.AppendLine($"תיאור: {treatment.Description}");
-                    if (treatment.CooperationLevel.HasValue)
-                    {
-                        prompt.AppendLine($"רמת שיתוף פעולה: {treatment.CooperationLevel}/5");
-                    }
-                    if (!string.IsNullOrEmpty(treatment.Highlight))
-                    {
-                        prompt.AppendLine($"נקודות חשובות: {treatment.Highlight}");
-                    }
-                    prompt.AppendLine("---");
+                    case "פיזיותרפיה":
+                        prompt.AppendLine("  - עידוד פעילות גופנית במהלך היום");
+                        prompt.AppendLine("  - תרגילי חיזוק ושיווי משקל");
+                        prompt.AppendLine("  - זמן מנוחה בין פעילויות מאומצות");
+                        break;
+                    case "ריפוי בעיסוק":
+                        prompt.AppendLine("  - פעילויות יצירה ומיומנויות עדינות");
+                        prompt.AppendLine("  - תרגול שימוש בכלי עבודה");
+                        prompt.AppendLine("  - משחקים המפתחים תיאום עין-יד");
+                        break;
+                    case "טיפול רגשי":
+                        prompt.AppendLine("  - מתן סביבה תומכת ומכילה");
+                        prompt.AppendLine("  - עידוד ביטוי רגשות במילים");
+                        prompt.AppendLine("  - יצירת הזדמנויות לאינטראקציה חברתית");
+                        break;
+                    case "תזונה":
+                        prompt.AppendLine("  - הצגת מזונות חדשים בצורה משחקית");
+                        prompt.AppendLine("  - עידוד שתיית מים במהלך היום");
+                        prompt.AppendLine("  - שמירה על שגרת אכילה קבועה");
+                        break;
+                    case "טיפול במוזיקה":
+                        prompt.AppendLine("  - שילוב מוזיקה בפעילויות יומיומיות");
+                        prompt.AppendLine("  - עידוד השתתפות בפעילויות קבוצתיות");
+                        prompt.AppendLine("  - שימוש במוזיקה להרגעה ורגוש");
+                        break;
+                    default:
+                        prompt.AppendLine("  - המשך יישום התוכנית הטיפולית");
+                        prompt.AppendLine("  - מעקב והתאמה לפי הצורך");
+                        break;
                 }
                 prompt.AppendLine();
             }
 
-            prompt.AppendLine("צור דוח תש\"ה מקצועי הכולל:");
-            prompt.AppendLine("1. רקע כללי על הילד");
-            prompt.AppendLine("2. מטרות הורים (על בסיס הטיפולים שביצענו)");
-            prompt.AppendLine("3. מטרות טיפוליות מפורטות לפי תחומים:");
-            prompt.AppendLine("   - לכל תחום טיפולי: נושא, המטרה, תאריך השגת המטרה, תיאור מצב נוכחי");
-            prompt.AppendLine("   - שלב אחד לפני השגת המטרה");
-            prompt.AppendLine("   - שלב אחד נוסף להתקדמות לאחר השגת המטרה");
-            prompt.AppendLine("4. כרטיס משימות לכיתה עם הנחיות מעשיות");
+            prompt.AppendLine("**5. סיכום והמלצות:**");
             prompt.AppendLine();
-            prompt.AppendLine("השתמש בעברית מקצועית ברמה גבוהה.");
-            prompt.AppendLine("התבסס על הטיפולים הקיימים ויצור מטרות ריאליסטיות להמשך.");
-            prompt.AppendLine("הדוח צריך להיות דומה בפורמט לדוחות תש\"ה סטנדרטיים במוסדות טיפוליים.");
+            prompt.AppendLine($"{kidName} הראה התקדמות בתקופת הדוח. המשך הטיפול הרב-תחומי ");
+            prompt.AppendLine("הוא חיוני להמשך התפתחותו התקינה. מומלץ המשך מעקב צמוד, ");
+            prompt.AppendLine("עבודה משותפת עם ההורים, והערכה מחודשת בעוד שלושה חודשים.");
+            prompt.AppendLine();
+
+            prompt.AppendLine("---");
+            prompt.AppendLine();
+            prompt.AppendLine("**הערה:** דוח זה נוצר באמצעות מערכת דיגיטלית על בסיס נתוני הטיפולים במערכת.");
+
+            // הוספת נתוני הטיפולים לבסיס הפרומפט
+            prompt.AppendLine();
+            prompt.AppendLine("== נתוני הטיפולים לעיבוד ==");
+            foreach (var group in groupedTreatments)
+            {
+                prompt.AppendLine($"=== {group.Key} ===");
+                foreach (var treatment in group.Value.OrderBy(t => t.TreatmentDate))
+                {
+                    prompt.AppendLine($"תאריך: {treatment.TreatmentDate:dd/MM/yyyy}");
+                    prompt.AppendLine($"מטפל: {treatment.EmployeeName}");
+                    prompt.AppendLine($"תיאור: {treatment.Description}");
+                    if (treatment.CooperationLevel.HasValue)
+                        prompt.AppendLine($"שיתוף פעולה: {treatment.CooperationLevel}/5");
+                    if (!string.IsNullOrEmpty(treatment.Highlight))
+                        prompt.AppendLine($"נקודות חשובות: {treatment.Highlight}");
+                    prompt.AppendLine("---");
+                }
+            }
+
+            prompt.AppendLine();
+            prompt.AppendLine("השתמש במידע זה ליצירת דוח בפורמט המדויק שהוגדר למעלה.");
+            prompt.AppendLine("שמור על המבנה, הכותרות והפורמט בדיוק.");
 
             return prompt.ToString();
         }
-
+        
         // מודלים לתגובת Gemini
         private class GeminiResponse
         {

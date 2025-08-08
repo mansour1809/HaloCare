@@ -46,6 +46,7 @@ import {
   deleteTasheReport 
 } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
+import { baseURL } from '../../components/common/axiosConfig';
 
 const KidReportsTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
@@ -76,16 +77,35 @@ const KidReportsTab = ({ selectedKid }) => {
     }
   };
 
-  const handleViewReport = (report) => {
-    setSelectedReport(report);
-    setViewDialogOpen(true);
-  };
+const handleViewReport = (report) => {
+  // פתיחה בחלון חדש עם הדוח המעוצב
+  const viewUrl = `/tashereports/${report.reportId}/view`;
+  window.open(baseURL + viewUrl, '_blank', 'width=1000,height=800,scrollbars=yes');
+};
+// const handleViewReport = (report) => {
+//     setSelectedReport(report);
+//     setViewDialogOpen(true);
+//   };
+
+const handleDownloadReport = (report) => {
+  // הורדת הדוח כ-PDF
+  const downloadUrl = `/api/tashereports/${report.reportId}/download`;
+  
+  // יצירת link זמני להורדה
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `דוח_תשה_${report.reportTitle}_${new Date().toLocaleDateString('he-IL')}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   const handleApprove = async (reportId) => {
+
     try {
       await dispatch(approveTasheReport({ 
         reportId, 
-        approvedByEmployeeId: currentUser.employeeId 
+        approvedByEmployeeId: currentUser.id 
       })).unwrap();
       loadReports();
     } catch (error) {
@@ -98,7 +118,7 @@ const KidReportsTab = ({ selectedKid }) => {
       try {
         await dispatch(deleteTasheReport({ 
           reportId, 
-          deletedByEmployeeId: currentUser.employeeId 
+          deletedByEmployeeId: currentUser.id 
         })).unwrap();
         loadReports();
       } catch (error) {
@@ -129,14 +149,15 @@ const KidReportsTab = ({ selectedKid }) => {
     }
   };
   const canApprove = (report) => {
+    console.log('Curren:', report);
     return !report.isApproved && 
-           (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל') &&
-           report.generatedByEmployeeId !== currentUser.employeeId;
+           (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל') 
+          //  &&           report.generatedByEmployeeId !== currentUser.id;
   };
 
   const canDelete = (report) => {
     return !report.isApproved && 
-           (report.generatedByEmployeeId === currentUser.employeeId || 
+           (report.generatedByEmployeeId === currentUser.id || 
             currentUser.role === 'מנהל/ת');
   };
 
@@ -284,7 +305,7 @@ const KidReportsTab = ({ selectedKid }) => {
                       
                       <Tooltip title="הורד דוח">
                         <IconButton
-                          onClick={() => window.open(`/api/tashereports/${report.reportId}/download`, '_blank')}
+    onClick={() => handleDownloadReport(report)}
                           color="info"
                         >
                           <DownloadIcon />

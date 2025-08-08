@@ -137,5 +137,36 @@ namespace halocare.DAL.Repositories
             DataTable result = ExecuteQuery("sp_DeleteTasheReport", parameters);
             return result.Rows.Count > 0;
         }
+        public TasheReport GetTasheReportById(int reportId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+    {
+        { "@ReportId", reportId }
+    };
+
+            DataTable dataTable = ExecuteQuery("SELECT * FROM tblTasheReports WHERE reportId = @ReportId", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            DataRow row = dataTable.Rows[0];
+
+            return new TasheReport
+            {
+                ReportId = Convert.ToInt32(row["reportId"]),
+                KidId = Convert.ToInt32(row["kidId"]),
+                GeneratedDate = Convert.ToDateTime(row["generatedDate"]),
+                PeriodStartDate = Convert.ToDateTime(row["periodStartDate"]),
+                PeriodEndDate = Convert.ToDateTime(row["periodEndDate"]),
+                ReportContent = row["reportContent"].ToString(),
+                GeneratedByEmployeeId = Convert.ToInt32(row["generatedByEmployeeId"]),
+                IsApproved = Convert.ToBoolean(row["isApproved"]),
+                ApprovedByEmployeeId = row["approvedByEmployeeId"] == DBNull.Value ? null : Convert.ToInt32(row["approvedByEmployeeId"]),
+                ApprovedDate = row["approvedDate"] == DBNull.Value ? null : Convert.ToDateTime(row["approvedDate"]),
+                ReportTitle = row["reportTitle"] == DBNull.Value ? null : row["reportTitle"].ToString(),
+                Notes = row["notes"] == DBNull.Value ? null : row["notes"].ToString()
+            };
+        }
+
     }
 }

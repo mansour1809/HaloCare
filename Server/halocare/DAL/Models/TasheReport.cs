@@ -24,6 +24,11 @@ namespace halocare.DAL.Models
         public DateTime? ApprovedDate { get; set; }
         public string ReportTitle { get; set; }
         public string Notes { get; set; }
+
+
+        public string KidName { get; set; }
+        public string GeneratedByEmployeeName { get; set; }
+        public string ApprovedByEmployeeName { get; set; }
     }
 
     public class TreatmentForTashe
