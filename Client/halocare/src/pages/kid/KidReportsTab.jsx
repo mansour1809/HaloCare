@@ -1,64 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
-  Typography,
   Button,
+  Typography,
   Card,
   CardContent,
+  CardActions,
   Grid,
   Chip,
   Alert,
   CircularProgress,
-  Fab,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
   Dialog,
   DialogTitle,
   DialogContent,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
-  Paper,
-  Avatar,
+  DialogActions,
   Tooltip
 } from '@mui/material';
 import {
+  Psychology as BrainIcon,
   Add as AddIcon,
-  AutoAwesome as AIIcon,
-  Assessment as ReportIcon,
   Visibility as ViewIcon,
+  Download as DownloadIcon,
   CheckCircle as ApprovedIcon,
   Schedule as PendingIcon,
-  GetApp as DownloadIcon,
-  Close as CloseIcon,
-  Star as StarIcon,
-  Psychology as BrainIcon
+  Delete as DeleteIcon,
+  MoreVert as MoreIcon,
+  Description as WordIcon,
+  TextSnippet as TextIcon,
+  Web as HtmlIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
-
-// Import החדש של הרכיבים
-import TasheReportGenerator from './TasheReportGenerator';
+import { useDispatch, useSelector } from 'react-redux';
 import { 
-  fetchTasheReportsByKid,
-  clearError,
-  approveTasheReport,
-  deleteTasheReport 
+  fetchTasheReportsByKid, 
+  approveTasheReport, 
+  deleteTasheReport, 
+  clearError 
 } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
 import { baseURL } from '../../components/common/axiosConfig';
+import TasheReportGenerator from './TasheReportGenerator';
 
 const KidReportsTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState(null);
 
   const { currentUser } = useAuth();
-  // Redux state
   const { reports, status, error } = useSelector(state => state.tasheReports);
 
-    const kidName = `${selectedKid.firstName} ${selectedKid.lastName}`.trim();
+  const kidName = `${selectedKid.firstName} ${selectedKid.lastName}`.trim();
+
   useEffect(() => {
     if (selectedKid.id) {
       loadReports();
@@ -77,53 +77,83 @@ const KidReportsTab = ({ selectedKid }) => {
     }
   };
 
-const handleViewReport = (report) => {
-  // פתיחה בחלון חדש עם הדוח המעוצב
-  const viewUrl = `/tashereports/${report.reportId}/view`;
-  window.open(baseURL + viewUrl, '_blank', 'width=1000,height=800,scrollbars=yes');
-};
-// const handleViewReport = (report) => {
-//     setSelectedReport(report);
-//     setViewDialogOpen(true);
-//   };
+  const handleMenuOpen = (event, report) => {
+    setMenuAnchor(event.currentTarget);
+    setSelectedReport(report);
+  };
 
-const handleDownloadReport = (report) => {
-  // הורדת הדוח כ-PDF
-  const downloadUrl = `/api/tashereports/${report.reportId}/download`;
-  
-  // יצירת link זמני להורדה
-  const link = document.createElement('a');
-  link.href = downloadUrl;
-  link.download = `דוח_תשה_${report.reportTitle}_${new Date().toLocaleDateString('he-IL')}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+    setSelectedReport(null);
+  };
 
-  const handleApprove = async (reportId) => {
+  const handleViewReport = (report) => {
+    // פתיחה בחלון חדש עם הדוח המעוצב
+    const viewUrl = `/api/TasheReports/${report.reportId}/view`;
+    window.open(baseURL + viewUrl, '_blank', 'width=1200,height=900,scrollbars=yes');
+    handleMenuClose();
+  };
 
+  const handleDownloadWord = (report) => {
+    // הורדת הדוח כ-Word
+    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-word`;
+    
+    // יצירת link זמני להורדה
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.docx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleMenuClose();
+  };
+
+  const handleDownloadText = (report) => {
+    // הורדת הדוח כטקסט
+    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-text`;
+    
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleMenuClose();
+  };
+
+  const handleApprove = async (report) => {
     try {
       await dispatch(approveTasheReport({ 
-        reportId, 
+        reportId: report.reportId, 
         approvedByEmployeeId: currentUser.id 
       })).unwrap();
       loadReports();
+      handleMenuClose();
     } catch (error) {
       console.error('שגיאה באישור דוח:', error);
     }
   };
 
-  const handleDelete = async (reportId) => {
-    if (window.confirm('האם אתם בטוחים שברצונכם למחוק את הדוח?')) {
-      try {
-        await dispatch(deleteTasheReport({ 
-          reportId, 
-          deletedByEmployeeId: currentUser.id 
-        })).unwrap();
-        loadReports();
-      } catch (error) {
-        console.error('שגיאה במחיקת דוח:', error);
-      }
+  const handleDeleteClick = (report) => {
+    setReportToDelete(report);
+    setDeleteDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!reportToDelete) return;
+    
+    try {
+      await dispatch(deleteTasheReport({ 
+        reportId: reportToDelete.reportId, 
+        deletedByEmployeeId: currentUser.id 
+      })).unwrap();
+      loadReports();
+    } catch (error) {
+      console.error('שגיאה במחיקת דוח:', error);
+    } finally {
+      setDeleteDialogOpen(false);
+      setReportToDelete(null);
     }
   };
 
@@ -135,6 +165,7 @@ const handleDownloadReport = (report) => {
           label="מאושר"
           color="success"
           size="small"
+          variant="outlined"
         />
       );
     } else {
@@ -144,21 +175,31 @@ const handleDownloadReport = (report) => {
           label="ממתין לאישור"
           color="warning"
           size="small"
+          variant="outlined"
         />
       );
     }
   };
+
   const canApprove = (report) => {
-    console.log('Curren:', report);
     return !report.isApproved && 
-           (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל') 
-          //  &&           report.generatedByEmployeeId !== currentUser.id;
+           (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל');
   };
 
   const canDelete = (report) => {
     return !report.isApproved && 
            (report.generatedByEmployeeId === currentUser.id || 
-            currentUser.role === 'מנהל/ת');
+            currentUser.role === 'מנהל/ת' || 
+            currentUser.role === 'מנהל');
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('he-IL');
+  };
+
+  const onGeneratorSuccess = (newReport) => {
+    setGeneratorOpen(false);
+    loadReports();
   };
 
   if (status === 'loading') {
@@ -191,7 +232,7 @@ const handleDownloadReport = (report) => {
         <Button
           variant="contained"
           size="large"
-          startIcon={<AIIcon />}
+          startIcon={<AddIcon />}
           onClick={() => setGeneratorOpen(true)}
           sx={{
             background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
@@ -211,215 +252,188 @@ const handleDownloadReport = (report) => {
 
       {/* Reports Grid */}
       {reports.length === 0 ? (
-        <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
-          <Avatar sx={{ 
-            width: 80, 
-            height: 80, 
-            mx: 'auto', 
-            mb: 2,
-            background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)'
-          }}>
-            <ReportIcon sx={{ fontSize: 40 }} />
-          </Avatar>
-          <Typography variant="h5" gutterBottom fontWeight="bold">
-            עדיין אין דוחות תש"ה
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <BrainIcon sx={{ fontSize: 80, color: 'grey.300', mb: 2 }} />
+          <Typography variant="h5" color="text.secondary" gutterBottom>
+            עדיין לא נוצרו דוחות תש"ה
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            ליצירת דוח תש"ה מקצועי באמצעות בינה מלאכותית
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+            צרו את הדוח הראשון באמצעות הבינה המלאכותית שלנו
           </Typography>
           <Button
-            variant="contained"
+            variant="outlined"
             size="large"
-            startIcon={<AIIcon />}
+            startIcon={<AddIcon />}
             onClick={() => setGeneratorOpen(true)}
-            sx={{
-              background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-              fontWeight: 'bold',
-              px: 4,
-              py: 2,
-              borderRadius: 3
-            }}
+            sx={{ px: 4, py: 1.5 }}
           >
-            צור דוח ראשון
+            צרו דוח חדש
           </Button>
-        </Paper>
+        </Box>
       ) : (
         <Grid container spacing={3}>
           {reports.map((report) => (
-            <Grid item xs={12} key={report.reportId}>
-              <Card sx={{ 
-                borderRadius: 3,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
-                }
-              }}>
-                <CardContent sx={{ p: 3 }}>
+            <Grid item xs={12} md={6} lg={4} key={report.reportId}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4
+                  }
+                }}
+              >
+                <CardContent sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <ReportIcon color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
-                          {report.reportTitle}
-                        </Typography>
-                        {getStatusChip(report)}
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        📅 נוצר: {new Date(report.generatedDate).toLocaleDateString('he-IL')}
-                      </Typography>
-                      
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        📊 תקופה: {new Date(report.periodStartDate).toLocaleDateString('he-IL')} - {new Date(report.periodEndDate).toLocaleDateString('he-IL')}
-                      </Typography>
-                      
-                      {report.isApproved && (
-                        <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
-                          ✅ אושר ב: {new Date(report.approvedDate).toLocaleDateString('he-IL')}
-                        </Typography>
-                      )}
-
-                      {report.notes && (
-                        <Typography variant="body2" color="text.secondary" sx={{ 
-                          fontStyle: 'italic',
-                          p: 1,
-                          bgcolor: 'grey.50',
-                          borderRadius: 1,
-                          mt: 1
-                        }}>
-                          💬 {report.notes}
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                      <Tooltip title="צפה בדוח">
-                        <IconButton
-                          onClick={() => handleViewReport(report)}
-                          color="primary"
-                        >
-                          <ViewIcon />
-                        </IconButton>
-                      </Tooltip>
-                      
-                      <Tooltip title="הורד דוח">
-                        <IconButton
-    onClick={() => handleDownloadReport(report)}
-                          color="info"
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-                      </Tooltip>
-
-                      {canApprove(report) && (
-                        <Tooltip title="אשר דוח">
-                          <IconButton
-                            onClick={() => handleApprove(report.reportId)}
-                            color="success"
-                          >
-                            <ApprovedIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-
-                      {canDelete(report) && (
-                        <Tooltip title="מחק דוח">
-                          <IconButton
-                            onClick={() => handleDelete(report.reportId)}
-                            color="error"
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
+                    <Typography variant="h6" fontWeight="bold" sx={{ flex: 1, mr: 1 }}>
+                      {report.reportTitle}
+                    </Typography>
+                    <IconButton 
+                      size="small"
+                      onClick={(e) => handleMenuOpen(e, report)}
+                    >
+                      <MoreIcon />
+                    </IconButton>
                   </Box>
 
-                  {/* Preview של תחילת הדוח */}
-                  <Paper sx={{ 
-                    p: 2, 
-                    bgcolor: 'grey.50', 
-                    borderRadius: 2,
-                    mt: 2
-                  }}>
-                    <Typography variant="body2" sx={{ 
-                      maxHeight: 60, 
-                      overflow: 'hidden',
-                      lineHeight: 1.4
-                    }}>
-                      {report.reportContent.substring(0, 150)}...
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    {getStatusChip(report)}
+                    <Typography variant="body2" color="text.secondary">
+                      {formatDate(report.generatedDate)}
                     </Typography>
-                  </Paper>
+                  </Box>
+
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <strong>תקופה:</strong> {formatDate(report.periodStartDate)} - {formatDate(report.periodEndDate)}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <strong>נוצר על ידי:</strong> {report.generatedByEmployeeName}
+                  </Typography>
+
+                  {report.isApproved && (
+                    <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                      <strong>אושר על ידי:</strong> {report.approvedByEmployeeName}
+                      <br />
+                      <strong>בתאריך:</strong> {formatDate(report.approvedDate)}
+                    </Typography>
+                  )}
+
+                  {report.notes && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+                      {report.notes}
+                    </Typography>
+                  )}
                 </CardContent>
+
+                <CardActions sx={{ px: 2, pb: 2 }}>
+                  <Button
+                    size="small"
+                    startIcon={<ViewIcon />}
+                    onClick={() => handleViewReport(report)}
+                    sx={{ mr: 1 }}
+                  >
+                    צפייה
+                  </Button>
+                  
+                  <Tooltip title="הורדה כ-Word">
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleDownloadWord(report)}
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <WordIcon />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
 
-      {/* כפתור צף */}
-      <Fab
-        color="primary"
-        sx={{ 
-          position: 'fixed', 
-          bottom: 16, 
-          right: 16,
-          background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-          '&:hover': {
-            background: 'linear-gradient(45deg, #FF5252, #26A69A)',
-          }
-        }}
-        onClick={() => setGeneratorOpen(true)}
+      {/* Menu for report actions */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <AIIcon />
-      </Fab>
+        <MenuItem onClick={() => handleViewReport(selectedReport)}>
+          <ListItemIcon>
+            <HtmlIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>צפייה בדפדפן</ListItemText>
+        </MenuItem>
 
-      {/* Dialog ליצירת דוח חדש */}
+        <MenuItem onClick={() => handleDownloadWord(selectedReport)}>
+          <ListItemIcon>
+            <WordIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>הורדה כ-Word</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={() => handleDownloadText(selectedReport)}>
+          <ListItemIcon>
+            <TextIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>הורדה כטקסט</ListItemText>
+        </MenuItem>
+
+        {canApprove(selectedReport) && (
+          <MenuItem onClick={() => handleApprove(selectedReport)}>
+            <ListItemIcon>
+              <ApprovedIcon fontSize="small" color="success" />
+            </ListItemIcon>
+            <ListItemText>אישור דוח</ListItemText>
+          </MenuItem>
+        )}
+
+        {canDelete(selectedReport) && (
+          <MenuItem onClick={() => handleDeleteClick(selectedReport)}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" color="error" />
+            </ListItemIcon>
+            <ListItemText>מחיקת דוח</ListItemText>
+          </MenuItem>
+        )}
+      </Menu>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>אישור מחיקה</DialogTitle>
+        <DialogContent>
+          <Typography>
+            האם אתם בטוחים שברצונכם למחוק את הדוח "{reportToDelete?.reportTitle}"?
+            <br />
+            פעולה זו אינה ניתנת לביטול.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            ביטול
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm} 
+            color="error" 
+            variant="contained"
+          >
+            מחיקה
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Report Generator Dialog */}
       <TasheReportGenerator
         open={generatorOpen}
-        onClose={() => {
-          setGeneratorOpen(false);
-          loadReports(); // רענון הרשימה
-        }}
-        kidId={selectedKid.id}
-        kidName={kidName}
-        currentUser={currentUser}
+        onClose={() => setGeneratorOpen(false)}
+        selectedKid={selectedKid}
+        onSuccess={onGeneratorSuccess}
       />
-
-      {/* Dialog לצפייה בדוח */}
-      <Dialog
-        open={viewDialogOpen}
-        onClose={() => setViewDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-        dir="rtl"
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" fontWeight="bold">
-            {selectedReport?.reportTitle}
-          </Typography>
-          <IconButton onClick={() => setViewDialogOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          {selectedReport && (
-            <Box>
-              <Typography variant="body1" sx={{ 
-                whiteSpace: 'pre-line',
-                lineHeight: 1.6,
-                p: 2,
-                bgcolor: 'grey.50',
-                borderRadius: 2
-              }}>
-                {selectedReport.reportContent}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };
