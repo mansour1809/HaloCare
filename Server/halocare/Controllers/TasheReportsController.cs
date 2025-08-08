@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -17,10 +18,12 @@ namespace halocare.Controllers
     public class TasheReportsController : ControllerBase
     {
         private readonly TasheReportService _tasheReportService;
+        private readonly WordExportService _wordExportService;
 
         public TasheReportsController(IConfiguration configuration)
         {
             _tasheReportService = new TasheReportService(configuration);
+            _wordExportService = new WordExportService(configuration);
         }
 
         // POST: api/TasheReports/generate
@@ -29,6 +32,7 @@ namespace halocare.Controllers
         {
             try
             {
+                // בדיקות תקינות
                 if (request.PeriodStartDate >= request.PeriodEndDate)
                 {
                     return BadRequest("תאריך התחלה חייב להיות לפני תאריך הסיום");
@@ -40,7 +44,13 @@ namespace halocare.Controllers
                     return BadRequest("תקופת הדוח לא יכולה לעלות על 6 חודשים");
                 }
 
-                TasheReport report = await _tasheReportService.GenerateReportAsync(
+                // בדיקה שהתאריכים לא בעתיד
+                if (request.PeriodEndDate > DateTime.Now.Date)
+                {
+                    return BadRequest("לא ניתן ליצור דוח לתקופה עתידית");
+                }
+
+                var report = await _tasheReportService.GenerateReport(
                     request.KidId,
                     request.PeriodStartDate,
                     request.PeriodEndDate,
@@ -57,28 +67,51 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה ביצירת הדוח: {ex.Message}");
             }
         }
 
-        // GET: api/TasheReports/kid/5
+        // GET: api/TasheReports/kid/{kidId}
         [HttpGet("kid/{kidId}")]
         public ActionResult<List<TasheReport>> GetReportsByKid(int kidId)
         {
             try
             {
-                List<TasheReport> reports = _tasheReportService.GetReportsByKid(kidId);
+                var reports = _tasheReportService.GetReportsByKid(kidId);
                 return Ok(reports);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה בשליפת הדוחות: {ex.Message}");
+            }
+        }
+
+        // GET: api/TasheReports/{reportId}
+        [HttpGet("{reportId}")]
+        public ActionResult<TasheReport> GetReport(int reportId)
+        {
+            try
+            {
+                var report = _tasheReportService.GetReportById(reportId);
+                if (report == null)
+                {
+                    return NotFound("הדוח לא נמצא");
+                }
+
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בשליפת הדוח: {ex.Message}");
             }
         }
 
         // GET: api/TasheReports/treatments-preview
         [HttpGet("treatments-preview")]
-        public ActionResult<List<TreatmentForTashe>> GetTreatmentsPreview(int kidId, DateTime startDate, DateTime endDate)
+        public ActionResult<List<TreatmentForTashe>> GetTreatmentsPreview(
+            [FromQuery] int kidId,
+            [FromQuery] DateTime startDate,
+            [FromQuery] DateTime endDate)
         {
             try
             {
@@ -87,12 +120,12 @@ namespace halocare.Controllers
                     return BadRequest("תאריך התחלה חייב להיות לפני תאריך הסיום");
                 }
 
-                List<TreatmentForTashe> treatments = _tasheReportService.GetTreatmentsForTashe(kidId, startDate, endDate);
+                var treatments = _tasheReportService.GetTreatmentsForTashe(kidId, startDate, endDate);
                 return Ok(treatments);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה בשליפת הטיפולים: {ex.Message}");
             }
         }
 
@@ -102,15 +135,15 @@ namespace halocare.Controllers
         {
             try
             {
-                bool result = _tasheReportService.ApproveReport(request.ReportId, request.ApprovedByEmployeeId);
+                bool success = _tasheReportService.ApproveReport(request.ReportId, request.ApprovedByEmployeeId);
 
-                if (result)
+                if (success)
                 {
-                    return Ok("הדוח אושר בהצלחה");
+                    return Ok(new { message = "הדוח אושר בהצלחה" });
                 }
                 else
                 {
-                    return NotFound("הדוח לא נמצא או לא ניתן לאשר");
+                    return BadRequest("שגיאה באישור הדוח");
                 }
             }
             catch (ArgumentException ex)
@@ -119,431 +152,271 @@ namespace halocare.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה באישור הדוח: {ex.Message}");
             }
         }
 
-        // DELETE: api/TasheReports/5
+        // DELETE: api/TasheReports/{reportId}
         [HttpDelete("{reportId}")]
         public ActionResult DeleteReport(int reportId, [FromQuery] int deletedByEmployeeId)
         {
             try
             {
-                bool result = _tasheReportService.DeleteReport(reportId, deletedByEmployeeId);
+                bool success = _tasheReportService.DeleteReport(reportId, deletedByEmployeeId);
 
-                if (result)
+                if (success)
                 {
-                    return Ok("הדוח נמחק בהצלחה");
+                    return Ok(new { message = "הדוח נמחק בהצלחה" });
                 }
                 else
                 {
-                    return NotFound("הדוח לא נמצא או לא ניתן למחוק");
+                    return BadRequest("שגיאה במחיקת הדוח");
                 }
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה במחיקת הדוח: {ex.Message}");
             }
         }
+
+        // GET: api/TasheReports/{reportId}/view - תצוגה מעוצבת בדפדפן
         [HttpGet("{reportId}/view")]
         public ActionResult ViewReport(int reportId)
         {
             try
             {
-                var reports = _tasheReportService.GetReportsByKid(203918376); // נקבל הכל ונסנן
-                var report = reports.FirstOrDefault(r => r.ReportId == reportId);
-
+                var report = _tasheReportService.GetReportById(reportId);
                 if (report == null)
                 {
                     return NotFound("הדוח לא נמצא");
                 }
 
-                // יצירת HTML לתצוגה
-                var htmlContent = $@"
-<!DOCTYPE html>
-<html dir='rtl' lang='he'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>{report.ReportTitle}</title>
-    <style>
-        body {{ 
-            font-family: Arial, sans-serif; 
-            line-height: 1.6; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px;
-            background: #f5f5f5;
-        }}
-        .container {{
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }}
-        h1, h2 {{ color: #2c3e50; }}
-        table {{ 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 15px 0; 
-        }}
-        th, td {{ 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: right; 
-        }}
-        th {{ 
-            background-color: #4CAF50; 
-            color: white; 
-            font-weight: bold;
-        }}
-        .header {{
-            text-align: center;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }}
-        .metadata {{
-            background: #e8f5e8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }}
-        @media print {{
-            body {{ background: white; }}
-            .container {{ box-shadow: none; }}
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>🏥 גן הילד - חיפה</h1>
-            <h2>📋 {report.ReportTitle}</h2>
-        </div>
-        
-        <div class='metadata'>
-            <p><strong>📅 תאריך יצירה:</strong> {report.GeneratedDate:dd/MM/yyyy HH:mm}</p>
-            <p><strong>📊 תקופת הדוח:</strong> {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}</p>
-            <p><strong>👨‍⚕️ נוצר על ידי:</strong> {report.GeneratedByEmployeeName}</p>
-            {(report.IsApproved ? $"<p><strong>✅ סטטוס:</strong> מאושר</p>" : "<p><strong>⏳ סטטוס:</strong> ממתין לאישור</p>")}
-        </div>
-        
-        <div class='content'>
-            {report.ReportContent.Replace("\n", "<br>")}
-        </div>
-        
-        <div style='margin-top: 40px; text-align: center; color: #666; font-size: 12px;'>
-            <p>דוח זה נוצר במערכת הדיגיטלית של גן הילד</p>
-            <p>מודפס ב: {DateTime.Now:dd/MM/yyyy HH:mm}</p>
-        </div>
-    </div>
-    
-    <script>
-        // הדפסה אוטומטית כשלוחצים Ctrl+P
-        document.addEventListener('keydown', function(e) {{
-            if (e.ctrlKey && e.key === 'p') {{
-                window.print();
-            }}
-        }});
-    </script>
-</body>
-</html>";
+                // יצירת HTML מעוצב לתצוגה
+                string htmlContent = GenerateHtmlView(report);
 
-                return Content(htmlContent, "text/html", System.Text.Encoding.UTF8);
+                return Content(htmlContent, "text/html; charset=utf-8");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
+                return StatusCode(500, $"שגיאה בהצגת הדוח: {ex.Message}");
             }
         }
 
-        private string BuildTashePrompt(List<TreatmentForTashe> treatments, string kidName, DateTime startDate, DateTime endDate)
+        // GET: api/TasheReports/{reportId}/download-word - הורדה כ-Word
+        [HttpGet("{reportId}/download-word")]
+        public ActionResult DownloadWordReport(int reportId)
         {
-            StringBuilder prompt = new StringBuilder();
-
-            prompt.AppendLine("אתה מומחה בטיפול התפתחותי לילדים עם צרכים מיוחדים.");
-            prompt.AppendLine("עליך ליצור דוח תש\"ה (תוכנית שיקומית התפתחותית) בפורמט מדויק וקבוע.");
-            prompt.AppendLine();
-            prompt.AppendLine("חשוב מאוד: השתמש בפורמט הבא בדיוק, ללא שינויים:");
-            prompt.AppendLine();
-
-            // בניית סיכום הטיפולים
-            Dictionary<string, List<TreatmentForTashe>> groupedTreatments = new Dictionary<string, List<TreatmentForTashe>>();
-            foreach (var treatment in treatments)
+            try
             {
-                if (!groupedTreatments.ContainsKey(treatment.TreatmentTypeName))
+                var report = _tasheReportService.GetReportById(reportId);
+                if (report == null)
                 {
-                    groupedTreatments[treatment.TreatmentTypeName] = new List<TreatmentForTashe>();
+                    return NotFound("הדוח לא נמצא");
                 }
-                groupedTreatments[treatment.TreatmentTypeName].Add(treatment);
+
+                // יצירת קובץ Word
+                byte[] wordBytes = _wordExportService.GenerateWordDocument(report);
+
+                string fileName = $"דוח_תשה_{report.KidName?.Replace(" ", "_")}_{report.PeriodStartDate:yyyy-MM}.docx";
+
+                return File(wordBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
             }
-
-            // חישוב סטטיסטיקות
-            double avgCooperation = treatments.Where(t => t.CooperationLevel.HasValue)
-                .Select(t => t.CooperationLevel.Value)
-                .DefaultIfEmpty(0)
-                .Average();
-
-            prompt.AppendLine("## דוח תש\"ה (תוכנית שיקומית התפתחותית)");
-            prompt.AppendLine();
-            prompt.AppendLine($"**שם הילד:** {kidName}");
-            prompt.AppendLine($"**תקופת הדוח:** {startDate:dd/MM/yyyy} – {endDate:dd/MM/yyyy}");
-            prompt.AppendLine();
-
-            prompt.AppendLine("**1. רקע כללי:**");
-            prompt.AppendLine();
-            prompt.AppendLine($"{kidName} הגיע לטיפול רב-תחומי במסגרת תוכנית שיקומית התפתחותית. ");
-            prompt.AppendLine($"הדוח הנוכחי מסכם את ההתקדמות שנרשמה בתקופה שבין {startDate:dd/MM/yyyy} ל-{endDate:dd/MM/yyyy} ");
-            prompt.AppendLine($"ומציג מטרות טיפוליות להמשך. בתקופה זו בוצעו {treatments.Count} טיפולים ");
-            prompt.AppendLine($"עם ממוצע שיתוף פעולה של {avgCooperation:F1}/5.");
-            prompt.AppendLine();
-
-            prompt.AppendLine("**2. מטרות הורים:**");
-            prompt.AppendLine();
-            prompt.AppendLine("על בסיס הטיפולים שבוצעו, מטרות ההורים כוללות:");
-            prompt.AppendLine();
-
-            // מטרות בהתבסס על סוגי הטיפולים שבוצעו
-            if (groupedTreatments.ContainsKey("פיזיותרפיה"))
-                prompt.AppendLine("* שיפור המיומנויות המוטוריות והניידות העצמאית.");
-            if (groupedTreatments.ContainsKey("ריפוי בעיסוק"))
-                prompt.AppendLine("* פיתוח מיומנויות מוטוריות עדינות ותיאום עין-יד.");
-            if (groupedTreatments.ContainsKey("טיפול רגשי"))
-                prompt.AppendLine("* קידום ההתפתחות הרגשית והחברתית.");
-            if (groupedTreatments.ContainsKey("תזונה"))
-                prompt.AppendLine("* שיפור הרגלי אכילה ותזונה מאוזנת.");
-            if (groupedTreatments.ContainsKey("טיפול במוזיקה"))
-                prompt.AppendLine("* פיתוח כישורי תקשורת והבעה דרך מוזיקה.");
-            prompt.AppendLine();
-
-            prompt.AppendLine("**3. מטרות טיפוליות מפורטות:**");
-            prompt.AppendLine();
-
-            // יצירת טבלאות לכל תחום טיפולי
-            foreach (var group in groupedTreatments)
+            catch (Exception ex)
             {
-                prompt.AppendLine($"**{group.Key}:**");
-                prompt.AppendLine();
-                prompt.AppendLine("| נושא | מטרה | תאריך יעד | מצב נוכחי | שלב לפני השגת המטרה | שלב נוסף לאחר השגת המטרה |");
-                prompt.AppendLine("|---|---|---|---|---|---|");
-
-                // ניתוח הטיפולים וייצור מטרות
-                var latestTreatment = group.Value.OrderByDescending(t => t.TreatmentDate).First();
-                var progressDescription = !string.IsNullOrEmpty(latestTreatment.Highlight) ?
-                    latestTreatment.Highlight :
-                    latestTreatment.Description.Length > 50 ?
-                        latestTreatment.Description.Substring(0, 50) + "..." :
-                        latestTreatment.Description;
-
-                // תאריך יעד - 3 חודשים מהיום
-                var targetDate = endDate.AddMonths(3);
-
-                prompt.AppendLine($"| מיומנות מרכזית | שיפור ביכולות ה{group.Key.ToLower()} | {targetDate:dd/MM/yyyy} | {progressDescription} ({latestTreatment.TreatmentDate:dd/MM/yyyy}) | התקדמות חלקית ביעד | השגת יעד מלא והרחבה למיומנויות נוספות |");
-                prompt.AppendLine();
+                return StatusCode(500, $"שגיאה בהורדת הדוח: {ex.Message}");
             }
-
-            prompt.AppendLine("**4. כרטיס משימות לכיתה:**");
-            prompt.AppendLine();
-            prompt.AppendLine("**הנחיות מעשיות לצוות החינוכי:**");
-            prompt.AppendLine();
-
-            foreach (var group in groupedTreatments)
-            {
-                prompt.AppendLine($"* **{group.Key}:**");
-
-                switch (group.Key.ToLower())
-                {
-                    case "פיזיותרפיה":
-                        prompt.AppendLine("  - עידוד פעילות גופנית במהלך היום");
-                        prompt.AppendLine("  - תרגילי חיזוק ושיווי משקל");
-                        prompt.AppendLine("  - זמן מנוחה בין פעילויות מאומצות");
-                        break;
-                    case "ריפוי בעיסוק":
-                        prompt.AppendLine("  - פעילויות יצירה ומיומנויות עדינות");
-                        prompt.AppendLine("  - תרגול שימוש בכלי עבודה");
-                        prompt.AppendLine("  - משחקים המפתחים תיאום עין-יד");
-                        break;
-                    case "טיפול רגשי":
-                        prompt.AppendLine("  - מתן סביבה תומכת ומכילה");
-                        prompt.AppendLine("  - עידוד ביטוי רגשות במילים");
-                        prompt.AppendLine("  - יצירת הזדמנויות לאינטראקציה חברתית");
-                        break;
-                    case "תזונה":
-                        prompt.AppendLine("  - הצגת מזונות חדשים בצורה משחקית");
-                        prompt.AppendLine("  - עידוד שתיית מים במהלך היום");
-                        prompt.AppendLine("  - שמירה על שגרת אכילה קבועה");
-                        break;
-                    case "טיפול במוזיקה":
-                        prompt.AppendLine("  - שילוב מוזיקה בפעילויות יומיומיות");
-                        prompt.AppendLine("  - עידוד השתתפות בפעילויות קבוצתיות");
-                        prompt.AppendLine("  - שימוש במוזיקה להרגעה ורגוש");
-                        break;
-                    default:
-                        prompt.AppendLine("  - המשך יישום התוכנית הטיפולית");
-                        prompt.AppendLine("  - מעקב והתאמה לפי הצורך");
-                        break;
-                }
-                prompt.AppendLine();
-            }
-
-            prompt.AppendLine("**5. סיכום והמלצות:**");
-            prompt.AppendLine();
-            prompt.AppendLine($"{kidName} הראה התקדמות בתקופת הדוח. המשך הטיפול הרב-תחומי ");
-            prompt.AppendLine("הוא חיוני להמשך התפתחותו התקינה. מומלץ המשך מעקב צמוד, ");
-            prompt.AppendLine("עבודה משותפת עם ההורים, והערכה מחודשת בעוד שלושה חודשים.");
-            prompt.AppendLine();
-
-            prompt.AppendLine("---");
-            prompt.AppendLine();
-            prompt.AppendLine("**הערה:** דוח זה נוצר באמצעות מערכת דיגיטלית על בסיס נתוני הטיפולים במערכת.");
-
-            // הוספת נתוני הטיפולים לבסיס הפרומפט
-            prompt.AppendLine();
-            prompt.AppendLine("== נתוני הטיפולים לעיבוד ==");
-            foreach (var group in groupedTreatments)
-            {
-                prompt.AppendLine($"=== {group.Key} ===");
-                foreach (var treatment in group.Value.OrderBy(t => t.TreatmentDate))
-                {
-                    prompt.AppendLine($"תאריך: {treatment.TreatmentDate:dd/MM/yyyy}");
-                    prompt.AppendLine($"מטפל: {treatment.EmployeeName}");
-                    prompt.AppendLine($"תיאור: {treatment.Description}");
-                    if (treatment.CooperationLevel.HasValue)
-                        prompt.AppendLine($"שיתוף פעולה: {treatment.CooperationLevel}/5");
-                    if (!string.IsNullOrEmpty(treatment.Highlight))
-                        prompt.AppendLine($"נקודות חשובות: {treatment.Highlight}");
-                    prompt.AppendLine("---");
-                }
-            }
-
-            prompt.AppendLine();
-            prompt.AppendLine("השתמש במידע זה ליצירת דוח בפורמט המדויק שהוגדר למעלה.");
-            prompt.AppendLine("שמור על המבנה, הכותרות והפורמט בדיוק.");
-
-            return prompt.ToString();
         }
 
-
-       [HttpGet("{reportId}/download")]
-public ActionResult DownloadReport(int reportId)
-{
-    try
-    {
-        var reports = _tasheReportService.GetReportsByKid(0); // נקבל הכל ונסנן
-        var report = reports.FirstOrDefault(r => r.ReportId == reportId);
-        
-        if (report == null)
+        // GET: api/TasheReports/{reportId}/download-text - הורדה כטקסט
+        [HttpGet("{reportId}/download-text")]
+        public ActionResult DownloadTextReport(int reportId)
         {
-            return NotFound("הדוח לא נמצא");
+            try
+            {
+                var report = _tasheReportService.GetReportById(reportId);
+                if (report == null)
+                {
+                    return NotFound("הדוח לא נמצא");
+                }
+
+                // יצירת תוכן טקסט מעוצב
+                string textContent = GenerateTextContent(report);
+                byte[] textBytes = Encoding.UTF8.GetBytes(textContent);
+
+                string fileName = $"דוח_תשה_{report.KidName?.Replace(" ", "_")}_{report.PeriodStartDate:yyyy-MM}.txt";
+
+                return File(textBytes, "text/plain; charset=utf-8", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בהורדת הדוח: {ex.Message}");
+            }
         }
 
-        // יצירת תוכן הקובץ
-        var content = $@"
-==================================================
-              גן הילד - חיפה
-              {report.ReportTitle}
-==================================================
+        // GET: api/TasheReports/statistics/{kidId} - סטטיסטיקות דוחות לילד
+        [HttpGet("statistics/{kidId}")]
+        public ActionResult GetReportStatistics(int kidId)
+        {
+            try
+            {
+                var reports = _tasheReportService.GetReportsByKid(kidId);
 
-תאריך יצירה: {report.GeneratedDate:dd/MM/yyyy HH:mm}
-תקופת הדוח: {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}
-נוצר על ידי: {report.GeneratedByEmployeeName}
-סטטוס: {(report.IsApproved ? "מאושר" : "ממתין לאישור")}
+                var statistics = new
+                {
+                    TotalReports = reports.Count,
+                    ApprovedReports = reports.Count(r => r.IsApproved),
+                    PendingReports = reports.Count(r => !r.IsApproved),
+                    LastReportDate = reports.Any() ? reports.Max(r => r.GeneratedDate) : (DateTime?)null,
+                    ReportsByMonth = reports.GroupBy(r => new { r.GeneratedDate.Year, r.GeneratedDate.Month })
+                                           .Select(g => new {
+                                               Month = $"{g.Key.Year}-{g.Key.Month:D2}",
+                                               Count = g.Count()
+                                           })
+                                           .OrderBy(x => x.Month)
+                                           .ToList()
+                };
 
-{(report.Notes != null ? $"הערות: {report.Notes}\n" : "")}
+                return Ok(statistics);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בשליפת הסטטיסטיקות: {ex.Message}");
+            }
+        }
 
-==================================================
-                תוכן הדוח
-==================================================
-
-{report.ReportContent}
-
-==================================================
-דוח זה נוצר במערכת הדיגיטלית של גן הילד
-הורד בתאריך: {DateTime.Now:dd/MM/yyyy HH:mm}
-==================================================
-";
-
-        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
-        var fileName = $"דוח_תשה_{report.KidName}_{report.GeneratedDate:yyyy-MM-dd}.txt";
-        
-        return File(bytes, "text/plain", fileName);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, $"שגיאה פנימית: {ex.Message}");
-    }
-}
-
-        // פונקציות עזר להמרה
-        private string ConvertReportToHtml(TasheReport report)
+        private string GenerateHtmlView(TasheReport report)
         {
             var html = new StringBuilder();
+
             html.AppendLine("<!DOCTYPE html>");
             html.AppendLine("<html dir='rtl' lang='he'>");
             html.AppendLine("<head>");
-            html.AppendLine("<meta charset='UTF-8'>");
-            html.AppendLine("<title>" + report.ReportTitle + "</title>");
+            html.AppendLine("<meta charset='utf-8'>");
+            html.AppendLine("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            html.AppendLine($"<title>{report.ReportTitle}</title>");
             html.AppendLine("<style>");
             html.AppendLine(@"
-        body { 
-            font-family: Arial, sans-serif; 
-            direction: rtl; 
-            text-align: right;
-            margin: 40px;
-            line-height: 1.6;
-        }
-        h1, h2, h3 { color: #2c3e50; }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0;
-            direction: rtl;
-        }
-        table, th, td { 
-            border: 1px solid #ddd; 
-        }
-        th, td { 
-            padding: 12px; 
-            text-align: right;
-        }
-        th { 
-            background-color: #f2f2f2; 
-            font-weight: bold;
-        }
-        .header-info {
-            background-color: #e8f4f8;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #3498db;
-            font-size: 0.9em;
-            color: #666;
-        }
-    ");
+                body { 
+                    font-family: 'Segoe UI', Arial, sans-serif; 
+                    margin: 40px; 
+                    line-height: 1.6; 
+                    background-color: #f5f5f5;
+                }
+                .container { 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                    background: white; 
+                    padding: 40px; 
+                    border-radius: 10px; 
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                }
+                .header { 
+                    text-align: center; 
+                    border-bottom: 3px solid #2196F3; 
+                    padding-bottom: 20px; 
+                    margin-bottom: 30px;
+                }
+                .header h1 { 
+                    color: #2196F3; 
+                    margin: 0; 
+                    font-size: 2.5em;
+                }
+                .header h2 { 
+                    color: #666; 
+                    margin: 10px 0 0 0; 
+                    font-weight: normal;
+                }
+                .report-info { 
+                    background: #f8f9fa; 
+                    padding: 20px; 
+                    border-right: 4px solid #2196F3; 
+                    margin-bottom: 30px;
+                }
+                .report-info p { 
+                    margin: 5px 0; 
+                    font-weight: bold;
+                }
+                .content { 
+                    text-align: right;
+                }
+                .content h1 { 
+                    color: #2196F3; 
+                    border-bottom: 2px solid #e0e0e0; 
+                    padding-bottom: 10px;
+                }
+                .content h2 { 
+                    color: #1976D2; 
+                    margin-top: 30px;
+                }
+                .content h3 { 
+                    color: #1565C0;
+                }
+                .status { 
+                    display: inline-block; 
+                    padding: 5px 15px; 
+                    border-radius: 20px; 
+                    font-weight: bold; 
+                    font-size: 0.9em;
+                }
+                .status.approved { 
+                    background: #4CAF50; 
+                    color: white;
+                }
+                .status.pending { 
+                    background: #FF9800; 
+                    color: white;
+                }
+                @media print {
+                    body { margin: 0; background: white; }
+                    .container { box-shadow: none; margin: 0; }
+                }
+            ");
             html.AppendLine("</style>");
             html.AppendLine("</head>");
             html.AppendLine("<body>");
+            html.AppendLine("<div class='container'>");
 
             // כותרת
-            html.AppendLine("<div class='header-info'>");
+            html.AppendLine("<div class='header'>");
             html.AppendLine($"<h1>{report.ReportTitle}</h1>");
-            html.AppendLine($"<p><strong>תקופה:</strong> {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}</p>");
-            html.AppendLine($"<p><strong>נוצר בתאריך:</strong> {report.GeneratedDate:dd/MM/yyyy}</p>");
+            html.AppendLine("<h2>גן הילד - חיפה</h2>");
             html.AppendLine("</div>");
 
-            // תוכן הדוח (המרה מ-Markdown ל-HTML)
-            var htmlContent = ConvertMarkdownToHtml(report.ReportContent);
+            // פרטי הדוח
+            html.AppendLine("<div class='report-info'>");
+            html.AppendLine($"<p><strong>שם הילד:</strong> {report.KidName ?? "לא צוין"}</p>");
+            html.AppendLine($"<p><strong>תקופת הדוח:</strong> {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}</p>");
+            html.AppendLine($"<p><strong>תאריך יצירה:</strong> {report.GeneratedDate:dd/MM/yyyy HH:mm}</p>");
+            html.AppendLine($"<p><strong>נוצר על ידי:</strong> {report.GeneratedByEmployeeName ?? "לא צוין"}</p>");
+
+            string statusClass = report.IsApproved ? "approved" : "pending";
+            string statusText = report.IsApproved ? "מאושר" : "ממתין לאישור";
+            html.AppendLine($"<p><strong>סטטוס:</strong> <span class='status {statusClass}'>{statusText}</span></p>");
+
+            if (report.IsApproved && report.ApprovedDate.HasValue)
+            {
+                html.AppendLine($"<p><strong>תאריך אישור:</strong> {report.ApprovedDate.Value:dd/MM/yyyy}</p>");
+                if (!string.IsNullOrEmpty(report.ApprovedByEmployeeName))
+                {
+                    html.AppendLine($"<p><strong>אושר על ידי:</strong> {report.ApprovedByEmployeeName}</p>");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(report.Notes))
+            {
+                html.AppendLine($"<p><strong>הערות:</strong> {report.Notes}</p>");
+            }
+            html.AppendLine("</div>");
+
+            // תוכן הדוח
+            html.AppendLine("<div class='content'>");
+
+            // המרת הMarkdown ל-HTML בסיסי
+            string htmlContent = ConvertMarkdownToHtml(report.ReportContent);
             html.AppendLine(htmlContent);
 
-            html.AppendLine("<div class='footer'>");
-            html.AppendLine("<p><em>דוח זה נוצר במערכת ניהול גן הילד באמצעות בינה מלאכותית</em></p>");
             html.AppendLine("</div>");
-
+            html.AppendLine("</div>");
             html.AppendLine("</body>");
             html.AppendLine("</html>");
 
@@ -552,90 +425,91 @@ public ActionResult DownloadReport(int reportId)
 
         private string ConvertMarkdownToHtml(string markdown)
         {
-            // המרה פשוטה מ-Markdown ל-HTML
-            var html = markdown
-                .Replace("\n# ", "\n<h1>")
-                .Replace("\n## ", "\n<h2>")
-                .Replace("\n### ", "\n<h3>")
-                .Replace("**", "<strong>", StringComparison.OrdinalIgnoreCase)
-                .Replace("**", "</strong>", StringComparison.OrdinalIgnoreCase)
-                .Replace("\n\n", "</p><p>")
-                .Replace("\n", "<br>");
+            if (string.IsNullOrEmpty(markdown))
+                return "<p>תוכן הדוח לא זמין.</p>";
 
-            // טיפול בטבלאות
-            if (html.Contains("|"))
+            var html = new StringBuilder();
+            string[] lines = markdown.Split(new[] { '\n', '\r' }, StringSplitOptions.None);
+
+            foreach (string line in lines)
             {
-                html = ConvertMarkdownTablesToHtml(html);
-            }
+                string trimmedLine = line.Trim();
 
-            return "<p>" + html + "</p>";
-        }
-
-        private string ConvertMarkdownTablesToHtml(string markdown)
-        {
-            var lines = markdown.Split('\n');
-            var result = new StringBuilder();
-            bool inTable = false;
-
-            foreach (var line in lines)
-            {
-                if (line.Contains("|") && !line.StartsWith("|----"))
+                if (string.IsNullOrEmpty(trimmedLine))
                 {
-                    if (!inTable)
-                    {
-                        result.AppendLine("<table>");
-                        inTable = true;
-                    }
+                    html.AppendLine("<br>");
+                    continue;
+                }
 
-                    var cells = line.Split('|').Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
-
-                    if (cells.Any(c => c.Contains("נושא") || c.Contains("מטרה"))) // כותרת
-                    {
-                        result.AppendLine("<tr>");
-                        foreach (var cell in cells)
-                        {
-                            result.AppendLine($"<th>{cell.Trim()}</th>");
-                        }
-                        result.AppendLine("</tr>");
-                    }
-                    else // תוכן
-                    {
-                        result.AppendLine("<tr>");
-                        foreach (var cell in cells)
-                        {
-                            result.AppendLine($"<td>{cell.Trim()}</td>");
-                        }
-                        result.AppendLine("</tr>");
-                    }
+                if (trimmedLine.StartsWith("# "))
+                {
+                    html.AppendLine($"<h1>{trimmedLine.Substring(2)}</h1>");
+                }
+                else if (trimmedLine.StartsWith("## "))
+                {
+                    html.AppendLine($"<h2>{trimmedLine.Substring(3)}</h2>");
+                }
+                else if (trimmedLine.StartsWith("### "))
+                {
+                    html.AppendLine($"<h3>{trimmedLine.Substring(4)}</h3>");
+                }
+                else if (trimmedLine.StartsWith("**") && trimmedLine.EndsWith("**") && trimmedLine.Length > 4)
+                {
+                    string boldText = trimmedLine.Substring(2, trimmedLine.Length - 4);
+                    html.AppendLine($"<p><strong>{boldText}</strong></p>");
+                }
+                else if (trimmedLine.StartsWith("• ") || trimmedLine.StartsWith("- "))
+                {
+                    string bulletText = trimmedLine.Substring(2);
+                    html.AppendLine($"<li>{bulletText}</li>");
                 }
                 else
                 {
-                    if (inTable)
-                    {
-                        result.AppendLine("</table>");
-                        inTable = false;
-                    }
-                    result.AppendLine(line);
+                    html.AppendLine($"<p>{trimmedLine}</p>");
                 }
             }
 
-            if (inTable)
+            return html.ToString();
+        }
+
+        private string GenerateTextContent(TasheReport report)
+        {
+            var content = new StringBuilder();
+
+            content.AppendLine("==================================================");
+            content.AppendLine("              גן הילד - חיפה");
+            content.AppendLine($"              {report.ReportTitle}");
+            content.AppendLine("==================================================");
+            content.AppendLine();
+            content.AppendLine($"שם הילד: {report.KidName ?? "לא צוין"}");
+            content.AppendLine($"תקופת הדוח: {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}");
+            content.AppendLine($"תאריך יצירה: {report.GeneratedDate:dd/MM/yyyy HH:mm}");
+            content.AppendLine($"נוצר על ידי: {report.GeneratedByEmployeeName ?? "לא צוין"}");
+            content.AppendLine($"סטטוס: {(report.IsApproved ? "מאושר" : "ממתין לאישור")}");
+
+            if (report.IsApproved && report.ApprovedDate.HasValue)
             {
-                result.AppendLine("</table>");
+                content.AppendLine($"תאריך אישור: {report.ApprovedDate.Value:dd/MM/yyyy}");
+                if (!string.IsNullOrEmpty(report.ApprovedByEmployeeName))
+                {
+                    content.AppendLine($"אושר על ידי: {report.ApprovedByEmployeeName}");
+                }
             }
 
-            return result.ToString();
-        }
+            if (!string.IsNullOrEmpty(report.Notes))
+            {
+                content.AppendLine($"הערות: {report.Notes}");
+            }
 
-        private byte[] ConvertReportToPdf(TasheReport report)
-        {
-            // כאן תוכלו להוסיף ספרייה להמרת PDF כמו iTextSharp או PuppeteerSharp
-            // לעת עתה, נחזיר את ה-HTML כ-bytes
-            var htmlContent = ConvertReportToHtml(report);
-            return Encoding.UTF8.GetBytes(htmlContent);
-        }
+            content.AppendLine();
+            content.AppendLine("==================================================");
+            content.AppendLine("                    תוכן הדוח");
+            content.AppendLine("==================================================");
+            content.AppendLine();
+            content.AppendLine(report.ReportContent);
 
-    
+            return content.ToString();
+        }
     }
 
     // מודלים לבקשות

@@ -1,151 +1,426 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Google.Protobuf;
 using halocare.DAL.Models;
-using halocare.DAL.Repositories;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace halocare.BL.Services
 {
-    public class TasheReportService
+    public class WordExportService
     {
-        private readonly TasheReportRepository _tasheReportRepository;
-        private readonly KidRepository _kidRepository;
-        private readonly EmployeeRepository _employeeRepository;
-        private readonly GeminiService _geminiService;
+        private readonly string _tempPath;
 
-        public TasheReportService(IConfiguration configuration)
+        public WordExportService(IConfiguration configuration)
         {
-            _tasheReportRepository = new TasheReportRepository(configuration);
-            _kidRepository = new KidRepository(configuration);
-            _employeeRepository = new EmployeeRepository(configuration);
-            _geminiService = new GeminiService(configuration);
+            _tempPath = configuration.GetValue<string>("TempFilesPath") ?? Path.GetTempPath();
         }
 
-        public async Task<TasheReport> GenerateReportAsync(int kidId, DateTime periodStartDate, DateTime periodEndDate,
-                                                          int generatedByEmployeeId, string reportTitle = null, string notes = null)
+        public byte[] GenerateWordDocument(TasheReport report)
         {
-            // בדיקה שהילד קיים ופעיל
-            Kid kid = _kidRepository.GetKidById(kidId);
-            if (kid == null)
+            // יצירת קובץ זמני
+            string tempFilePath = Path.Combine(_tempPath, $"tashe_report_{report.ReportId}_{Guid.NewGuid()}.docx");
+
+            try
             {
-                throw new ArgumentException("הילד לא נמצא במערכת");
-            }
-            if (!kid.IsActive)
-            {
-                throw new ArgumentException("לא ניתן ליצור דוח לילד שאינו פעיל");
-            }
-
-            // בדיקה שהעובד קיים ופעיל
-            Employee employee = _employeeRepository.GetEmployeeById(generatedByEmployeeId);
-            if (employee == null)
-            {
-                throw new ArgumentException("העובד לא נמצא במערכת");
-            }
-            if (!employee.IsActive)
-            {
-                throw new ArgumentException("לא ניתן ליצור דוח עבור עובד שאינו פעיל");
-            }
-
-            // שליפת הטיפולים לתקופה
-            List<TreatmentForTashe> treatments = _tasheReportRepository.GetTreatmentsForTashe(kidId, periodStartDate, periodEndDate);
-
-            if (treatments.Count == 0)
-            {
-                throw new ArgumentException("לא נמצאו טיפולים לתקופה המבוקשת");
-            }
-
-            // יצירת הדוח באמצעות AI
-            string kidName = $"{kid.FirstName} {kid.LastName}";
-            string reportContent = await _geminiService.GenerateTasheReportAsync(treatments, kidName, periodStartDate, periodEndDate);
-
-            // יצירת כותרת ברירת מחדל אם לא סופקה
-            if (string.IsNullOrEmpty(reportTitle))
-            {
-                reportTitle = $"דוח תש\"ה - {kidName} - {periodStartDate:MM/yyyy}";
-            }
-
-            // שמירת הדוח במסד הנתונים
-            TasheReport newReport = new TasheReport
-            {
-                KidId = kidId,
-                PeriodStartDate = periodStartDate,
-                PeriodEndDate = periodEndDate,
-                ReportContent = reportContent,
-                GeneratedByEmployeeId = generatedByEmployeeId,
-                ReportTitle = reportTitle,
-                Notes = notes,
-                GeneratedDate = DateTime.Now,
-                IsApproved = false
-            };
-
-            int reportId = _tasheReportRepository.AddTasheReport(newReport);
-            newReport.ReportId = reportId;
-
-            return newReport;
-        }
-
-        public List<TasheReport> GetReportsByKid(int kidId)
-        {
-            var reports = _tasheReportRepository.GetTasheReportsByKid(kidId);
-
-            // הוספת שמות עובדים ובילדים לכל דוח
-            foreach (var report in reports)
-            {
-                var kid = _kidRepository.GetKidById(report.KidId);
-                if (kid != null)
+                // יצירת מסמך Word
+                using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(tempFilePath, WordprocessingDocumentType.Document))
                 {
-                    report.KidName = $"{kid.FirstName} {kid.LastName}";
+                    // הוספת חלקי המסמך הראשיים
+                    MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+                    mainPart.Document = new Document();
+                    Body body = mainPart.Document.AppendChild(new Body());
+
+                    // הוספת עמוד כותרת
+                    AddTitlePage(body, report);
+
+                    // עיבוד תוכן הדוח והוספתו למסמך
+                    ProcessReportContent(body, report.ReportContent);
+
+                    // הוספת כותרת עליונה ותחתונה
+                    AddHeaderAndFooter(mainPart, report);
+
+                    // שמירת המסמך
+                    mainPart.Document.Save();
                 }
 
-                var generatedBy = _employeeRepository.GetEmployeeById(report.GeneratedByEmployeeId);
-                if (generatedBy != null)
+                // קריאת הקובץ והחזרתו כ-byte array
+                byte[] fileBytes = File.ReadAllBytes(tempFilePath);
+                return fileBytes;
+            }
+            finally
+            {
+                // מחיקת הקובץ הזמני
+                if (File.Exists(tempFilePath))
                 {
-                    report.GeneratedByEmployeeName = $"{generatedBy.FirstName} {generatedBy.LastName}";
-                }
-
-                if (report.ApprovedByEmployeeId.HasValue)
-                {
-                    var approvedBy = _employeeRepository.GetEmployeeById(report.ApprovedByEmployeeId.Value);
-                    if (approvedBy != null)
+                    try
                     {
-                        report.ApprovedByEmployeeName = $"{approvedBy.FirstName} {approvedBy.LastName}";
+                        File.Delete(tempFilePath);
+                    }
+                    catch
+                    {
+                        // התעלמות משגיאות מחיקה
                     }
                 }
             }
-
-            return reports;
         }
 
-
-        public List<TreatmentForTashe> GetTreatmentsForTashe(int kidId, DateTime startDate, DateTime endDate)
+        private void AddTitlePage(Body body, TasheReport report)
         {
-            return _tasheReportRepository.GetTreatmentsForTashe(kidId, startDate, endDate);
-        }
+            // כותרת ראשית - מרכז העמוד
+            Paragraph titleParagraph = new Paragraph();
+            titleParagraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Center },
+                new SpacingBetweenLines() { Before = "720", After = "720" } // 36pt לפני ואחרי
+            ));
 
-        public bool ApproveReport(int reportId, int approvedByEmployeeId)
-        {
-            // בדיקה שהעובד המאשר קיים ופעיל
-            Employee employee = _employeeRepository.GetEmployeeById(approvedByEmployeeId);
-            if (employee == null)
+            Run titleRun = new Run();
+            titleRun.AppendChild(new RunProperties(
+                new Bold(),
+                new FontSize() { Val = "32" }, // 16pt
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            titleRun.AppendChild(new Text("דוח תש\"ה"));
+            titleParagraph.AppendChild(titleRun);
+            body.AppendChild(titleParagraph);
+
+            // כותרת משנה
+            Paragraph subtitleParagraph = new Paragraph();
+            subtitleParagraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Center },
+                new SpacingBetweenLines() { After = "480" }
+            ));
+
+            Run subtitleRun = new Run();
+            subtitleRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "24" }, // 12pt
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            subtitleRun.AppendChild(new Text("תוכנית שיקומית התפתחותית"));
+            subtitleParagraph.AppendChild(subtitleRun);
+            body.AppendChild(subtitleParagraph);
+
+            // פרטי הדוח
+            AddDetailLine(body, "שם הילד:", report.KidName ?? "לא צוין");
+            AddDetailLine(body, "תקופת הדוח:", $"{report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}");
+            AddDetailLine(body, "תאריך יצירה:", report.GeneratedDate.ToString("dd/MM/yyyy"));
+            AddDetailLine(body, "נוצר על ידי:", report.GeneratedByEmployeeName ?? "לא צוין");
+
+            if (report.IsApproved)
             {
-                throw new ArgumentException("העובד המאשר לא נמצא במערכת");
+                AddDetailLine(body, "סטטוס:", "מאושר");
+                if (report.ApprovedDate.HasValue)
+                {
+                    AddDetailLine(body, "תאריך אישור:", report.ApprovedDate.Value.ToString("dd/MM/yyyy"));
+                }
+                if (!string.IsNullOrEmpty(report.ApprovedByEmployeeName))
+                {
+                    AddDetailLine(body, "אושר על ידי:", report.ApprovedByEmployeeName);
+                }
             }
-            if (!employee.IsActive)
+            else
             {
-                throw new ArgumentException("לא ניתן לאשר דוח על ידי עובד שאינו פעיל");
+                AddDetailLine(body, "סטטוס:", "ממתין לאישור");
             }
 
-            return _tasheReportRepository.ApproveTasheReport(reportId, approvedByEmployeeId);
+            // מעבר עמוד
+            body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));
         }
 
-        public bool DeleteReport(int reportId, int deletedByEmployeeId)
+        private void AddDetailLine(Body body, string label, string value)
         {
-            return _tasheReportRepository.DeleteTasheReport(reportId, deletedByEmployeeId);
+            Paragraph paragraph = new Paragraph();
+            paragraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Right },
+                new SpacingBetweenLines() { After = "120" }
+            ));
+
+            // התווית (מודגשת)
+            Run labelRun = new Run();
+            labelRun.AppendChild(new RunProperties(
+                new Bold(),
+                new FontSize() { Val = "22" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            labelRun.AppendChild(new Text($"{label} "));
+
+            // הערך
+            Run valueRun = new Run();
+            valueRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "22" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            valueRun.AppendChild(new Text(value));
+
+            paragraph.AppendChild(labelRun);
+            paragraph.AppendChild(valueRun);
+            body.AppendChild(paragraph);
         }
-        public TasheReport GetReportById(int reportId)
+
+        private void ProcessReportContent(Body body, string content)
         {
-            return _tasheReportRepository.GetTasheReportById(reportId);
+            if (string.IsNullOrEmpty(content))
+            {
+                AddParagraph(body, "תוכן הדוח לא זמין.", false);
+                return;
+            }
+
+            // פיצול התוכן לשורות
+            string[] lines = content.Split(new[] { '\n', '\r' }, StringSplitOptions.None);
+
+            foreach (string line in lines)
+            {
+                string trimmedLine = line.Trim();
+
+                if (string.IsNullOrEmpty(trimmedLine))
+                {
+                    // שורה ריקה
+                    AddEmptyParagraph(body);
+                    continue;
+                }
+
+                // זיהוי כותרות
+                if (IsMainHeading(trimmedLine))
+                {
+                    AddHeading(body, trimmedLine, 1);
+                }
+                else if (IsSubHeading(trimmedLine))
+                {
+                    AddHeading(body, trimmedLine, 2);
+                }
+                else if (IsSubSubHeading(trimmedLine))
+                {
+                    AddHeading(body, trimmedLine, 3);
+                }
+                else if (IsBoldText(trimmedLine))
+                {
+                    AddParagraph(body, CleanBoldText(trimmedLine), true);
+                }
+                else if (IsBulletPoint(trimmedLine))
+                {
+                    AddBulletPoint(body, CleanBulletText(trimmedLine));
+                }
+                else
+                {
+                    // פסקה רגילה
+                    AddParagraph(body, trimmedLine, false);
+                }
+            }
+        }
+
+        private bool IsMainHeading(string line)
+        {
+            return line.StartsWith("# ") || line.StartsWith("## ");
+        }
+
+        private bool IsSubHeading(string line)
+        {
+            return line.StartsWith("### ");
+        }
+
+        private bool IsSubSubHeading(string line)
+        {
+            return line.StartsWith("#### ");
+        }
+
+        private bool IsBoldText(string line)
+        {
+            return line.StartsWith("**") && line.EndsWith("**") && line.Length > 4;
+        }
+
+        private bool IsBulletPoint(string line)
+        {
+            return line.StartsWith("• ") || line.StartsWith("- ") || line.StartsWith("* ");
+        }
+
+        private string CleanBoldText(string line)
+        {
+            return line.Substring(2, line.Length - 4); // הסרת ** מההתחלה והסוף
+        }
+
+        private string CleanBulletText(string line)
+        {
+            if (line.StartsWith("• ")) return line.Substring(2);
+            if (line.StartsWith("- ")) return line.Substring(2);
+            if (line.StartsWith("* ")) return line.Substring(2);
+            return line;
+        }
+
+        private void AddHeading(Body body, string text, int level)
+        {
+            string cleanText = text.TrimStart('#', ' ');
+
+            Paragraph paragraph = new Paragraph();
+
+            // הגדרת סגנון לפי רמה
+            ParagraphProperties props = new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Right }
+            );
+
+            string fontSize = level switch
+            {
+                1 => "28", // 14pt
+                2 => "26", // 13pt
+                3 => "24", // 12pt
+                _ => "22"  // 11pt
+            };
+
+            props.AppendChild(new SpacingBetweenLines()
+            {
+                Before = level == 1 ? "480" : "360",
+                After = level == 1 ? "240" : "180"
+            });
+
+            paragraph.AppendChild(props);
+
+            Run run = new Run();
+            run.AppendChild(new RunProperties(
+                new Bold(),
+                new FontSize() { Val = fontSize },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
+                new Color() { Val = level == 1 ? "2F5496" : "1F3864" } // כחול כהה יותר לכותרות עיקריות
+            ));
+            run.AppendChild(new Text(cleanText));
+
+            paragraph.AppendChild(run);
+            body.AppendChild(paragraph);
+        }
+
+        private void AddParagraph(Body body, string text, bool isBold)
+        {
+            Paragraph paragraph = new Paragraph();
+            paragraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Right },
+                new SpacingBetweenLines() { After = "120" }
+            ));
+
+            Run run = new Run();
+            RunProperties runProps = new RunProperties(
+                new FontSize() { Val = "22" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            );
+
+            if (isBold)
+            {
+                runProps.AppendChild(new Bold());
+            }
+
+            run.AppendChild(runProps);
+            run.AppendChild(new Text(text));
+
+            paragraph.AppendChild(run);
+            body.AppendChild(paragraph);
+        }
+
+        private void AddBulletPoint(Body body, string text)
+        {
+            Paragraph paragraph = new Paragraph();
+            paragraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Right },
+                new SpacingBetweenLines() { After = "60" },
+                new Indentation() { Right = "720" } // הזחה 
+            ));
+
+            // סימן התבליט
+            Run bulletRun = new Run();
+            bulletRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "22" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            bulletRun.AppendChild(new Text("• "));
+
+            // הטקסט
+            Run textRun = new Run();
+            textRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "22" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
+            ));
+            textRun.AppendChild(new Text(text));
+
+            paragraph.AppendChild(bulletRun);
+            paragraph.AppendChild(textRun);
+            body.AppendChild(paragraph);
+        }
+
+        private void AddEmptyParagraph(Body body)
+        {
+            Paragraph paragraph = new Paragraph();
+            paragraph.AppendChild(new Run(new Text("")));
+            body.AppendChild(paragraph);
+        }
+
+        private void AddHeaderAndFooter(MainDocumentPart mainPart, TasheReport report)
+        {
+            // הוספת כותרת עליונה
+            HeaderPart headerPart = mainPart.AddNewPart<HeaderPart>();
+            headerPart.Header = new Header();
+
+            Paragraph headerParagraph = new Paragraph();
+            headerParagraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Center }
+            ));
+
+            Run headerRun = new Run();
+            headerRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "20" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
+                new Color() { Val = "7F7F7F" }
+            ));
+            headerRun.AppendChild(new Text("גן הילד - חיפה | דוח תש\"ה"));
+
+            headerParagraph.AppendChild(headerRun);
+            headerPart.Header.AppendChild(headerParagraph);
+
+            // הוספת כותרת תחתונה
+            FooterPart footerPart = mainPart.AddNewPart<FooterPart>();
+            footerPart.Footer = new Footer();
+
+            Paragraph footerParagraph = new Paragraph();
+            footerParagraph.AppendChild(new ParagraphProperties(
+                new Justification() { Val = JustificationValues.Center }
+            ));
+
+            Run footerRun = new Run();
+            footerRun.AppendChild(new RunProperties(
+                new FontSize() { Val = "18" },
+                new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
+                new Color() { Val = "7F7F7F" }
+            ));
+            footerRun.AppendChild(new Text($"עמוד "));
+
+            // הוספת מספר עמוד
+            footerRun.AppendChild(new FieldChar() { FieldCharType = FieldCharValues.Begin });
+            footerRun.AppendChild(new FieldCode() { Text = "PAGE" });
+            footerRun.AppendChild(new FieldChar() { FieldCharType = FieldCharValues.End });
+
+            footerParagraph.AppendChild(footerRun);
+            footerPart.Footer.AppendChild(footerParagraph);
+
+            // קישור הכותרות למסמך
+            SectionProperties sectionProps = mainPart.Document.Body.Elements<SectionProperties>().FirstOrDefault();
+            if (sectionProps == null)
+            {
+                sectionProps = new SectionProperties();
+                mainPart.Document.Body.AppendChild(sectionProps);
+            }
+
+            sectionProps.AppendChild(new HeaderReference()
+            {
+                Type = HeaderFooterValues.Default,
+                Id = mainPart.GetIdOfPart(headerPart)
+            });
+
+            sectionProps.AppendChild(new FooterReference()
+            {
+                Type = HeaderFooterValues.Default,
+                Id = mainPart.GetIdOfPart(footerPart)
+            });
         }
     }
 }
