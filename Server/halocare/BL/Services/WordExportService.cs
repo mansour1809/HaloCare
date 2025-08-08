@@ -1,15 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using Google.Protobuf;
 using halocare.DAL.Models;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
-using static System.Net.Mime.MediaTypeNames;
+
+// Alias to avoid conflicts
+using WordText = DocumentFormat.OpenXml.Wordprocessing.Text;
 
 namespace halocare.BL.Services
 {
@@ -86,7 +86,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "32" }, // 16pt
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            titleRun.AppendChild(new Text("דוח תש\"ה"));
+            titleRun.AppendChild(new WordText("דוח תש\"ה"));
             titleParagraph.AppendChild(titleRun);
             body.AppendChild(titleParagraph);
 
@@ -102,7 +102,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "24" }, // 12pt
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            subtitleRun.AppendChild(new Text("תוכנית שיקומית התפתחותית"));
+            subtitleRun.AppendChild(new WordText("תוכנית שיקומית התפתחותית"));
             subtitleParagraph.AppendChild(subtitleRun);
             body.AppendChild(subtitleParagraph);
 
@@ -148,7 +148,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "22" },
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            labelRun.AppendChild(new Text($"{label} "));
+            labelRun.AppendChild(new WordText($"{label} "));
 
             // הערך
             Run valueRun = new Run();
@@ -156,7 +156,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "22" },
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            valueRun.AppendChild(new Text(value));
+            valueRun.AppendChild(new WordText(value));
 
             paragraph.AppendChild(labelRun);
             paragraph.AppendChild(valueRun);
@@ -286,7 +286,7 @@ namespace halocare.BL.Services
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
                 new Color() { Val = level == 1 ? "2F5496" : "1F3864" } // כחול כהה יותר לכותרות עיקריות
             ));
-            run.AppendChild(new Text(cleanText));
+            run.AppendChild(new WordText(cleanText));
 
             paragraph.AppendChild(run);
             body.AppendChild(paragraph);
@@ -312,7 +312,7 @@ namespace halocare.BL.Services
             }
 
             run.AppendChild(runProps);
-            run.AppendChild(new Text(text));
+            run.AppendChild(new WordText(text));
 
             paragraph.AppendChild(run);
             body.AppendChild(paragraph);
@@ -333,7 +333,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "22" },
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            bulletRun.AppendChild(new Text("• "));
+            bulletRun.AppendChild(new WordText("• "));
 
             // הטקסט
             Run textRun = new Run();
@@ -341,7 +341,7 @@ namespace halocare.BL.Services
                 new FontSize() { Val = "22" },
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" }
             ));
-            textRun.AppendChild(new Text(text));
+            textRun.AppendChild(new WordText(text));
 
             paragraph.AppendChild(bulletRun);
             paragraph.AppendChild(textRun);
@@ -351,7 +351,7 @@ namespace halocare.BL.Services
         private void AddEmptyParagraph(Body body)
         {
             Paragraph paragraph = new Paragraph();
-            paragraph.AppendChild(new Run(new Text("")));
+            paragraph.AppendChild(new Run(new WordText("")));
             body.AppendChild(paragraph);
         }
 
@@ -372,7 +372,7 @@ namespace halocare.BL.Services
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
                 new Color() { Val = "7F7F7F" }
             ));
-            headerRun.AppendChild(new Text("גן הילד - חיפה | דוח תש\"ה"));
+            headerRun.AppendChild(new WordText("גן הילד - חיפה | דוח תש\"ה"));
 
             headerParagraph.AppendChild(headerRun);
             headerPart.Header.AppendChild(headerParagraph);
@@ -392,7 +392,7 @@ namespace halocare.BL.Services
                 new RunFonts() { Ascii = "Arial", HighAnsi = "Arial" },
                 new Color() { Val = "7F7F7F" }
             ));
-            footerRun.AppendChild(new Text($"עמוד "));
+            footerRun.AppendChild(new WordText($"עמוד "));
 
             // הוספת מספר עמוד
             footerRun.AppendChild(new FieldChar() { FieldCharType = FieldCharValues.Begin });

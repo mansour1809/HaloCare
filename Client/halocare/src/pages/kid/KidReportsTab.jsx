@@ -182,6 +182,7 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const canApprove = (report) => {
+    console.log(report)
     return !report.isApproved && 
            (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל');
   };

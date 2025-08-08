@@ -22,8 +22,14 @@ namespace halocare.BL.Services
             _geminiService = new GeminiService(configuration);
         }
 
-        public async Task<TasheReport> GenerateReportAsync(int kidId, DateTime periodStartDate, DateTime periodEndDate,
-                                                          int generatedByEmployeeId, string reportTitle = null, string notes = null)
+        // המתודה החדשה - זו שחסרה!
+        public async Task<TasheReport> GenerateReport(
+            int kidId,
+            DateTime periodStartDate,
+            DateTime periodEndDate,
+            int generatedByEmployeeId,
+            string reportTitle = null,
+            string notes = null)
         {
             // בדיקה שהילד קיים ופעיל
             Kid kid = _kidRepository.GetKidById(kidId);
@@ -44,10 +50,10 @@ namespace halocare.BL.Services
             }
             if (!employee.IsActive)
             {
-                throw new ArgumentException("לא ניתן ליצור דוח עבור עובד שאינו פעיל");
+                throw new ArgumentException("לא ניתן ליצור דוח על ידי עובד שאינו פעיל");
             }
 
-            // שליפת הטיפולים לתקופה
+            // שליפת טיפולים לתקופה
             List<TreatmentForTashe> treatments = _tasheReportRepository.GetTreatmentsForTashe(kidId, periodStartDate, periodEndDate);
 
             if (treatments.Count == 0)
@@ -81,6 +87,10 @@ namespace halocare.BL.Services
 
             int reportId = _tasheReportRepository.AddTasheReport(newReport);
             newReport.ReportId = reportId;
+
+            // הוספת שמות לתצוגה
+            newReport.KidName = kidName;
+            newReport.GeneratedByEmployeeName = $"{employee.FirstName} {employee.LastName}";
 
             return newReport;
         }
@@ -117,7 +127,6 @@ namespace halocare.BL.Services
             return reports;
         }
 
-
         public List<TreatmentForTashe> GetTreatmentsForTashe(int kidId, DateTime startDate, DateTime endDate)
         {
             return _tasheReportRepository.GetTreatmentsForTashe(kidId, startDate, endDate);
@@ -143,9 +152,37 @@ namespace halocare.BL.Services
         {
             return _tasheReportRepository.DeleteTasheReport(reportId, deletedByEmployeeId);
         }
+
         public TasheReport GetReportById(int reportId)
         {
-            return _tasheReportRepository.GetTasheReportById(reportId);
+            var report = _tasheReportRepository.GetTasheReportById(reportId);
+
+            if (report != null)
+            {
+                // הוספת שמות לתצוגה
+                var kid = _kidRepository.GetKidById(report.KidId);
+                if (kid != null)
+                {
+                    report.KidName = $"{kid.FirstName} {kid.LastName}";
+                }
+
+                var generatedBy = _employeeRepository.GetEmployeeById(report.GeneratedByEmployeeId);
+                if (generatedBy != null)
+                {
+                    report.GeneratedByEmployeeName = $"{generatedBy.FirstName} {generatedBy.LastName}";
+                }
+
+                if (report.ApprovedByEmployeeId.HasValue)
+                {
+                    var approvedBy = _employeeRepository.GetEmployeeById(report.ApprovedByEmployeeId.Value);
+                    if (approvedBy != null)
+                    {
+                        report.ApprovedByEmployeeName = $"{approvedBy.FirstName} {approvedBy.LastName}";
+                    }
+                }
+            }
+
+            return report;
         }
     }
 }

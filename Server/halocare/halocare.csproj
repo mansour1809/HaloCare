@@ -22,6 +22,19 @@
   <PackageReference Include="Google.Cloud.Language.V1" Version="3.3.0" />
   <PackageReference Include="Google.Cloud.Translation.V2" Version="3.1.0" />
 </ItemGroup>
+<ItemGroup>
+<!-- עבור יצירת קבצי Word -->
+<PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+
+<!-- עבור עבודה עם תאריכים משופרת -->
+<PackageReference Include="System.Text.Json" Version="7.0.0" />
+
+<!-- אם אתה רוצה לשפר את הטיפול בקבצים -->
+<PackageReference Include="System.IO.Abstractions" Version="19.2.0" />
+
+<!-- הוספת תמיכה משופרת ב-HTTP -->
+<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+</ItemGroup>
   <ItemGroup>
     <Folder Include="uploads\employees\documents\" />
     <Folder Include="uploads\employees\pictures\" />

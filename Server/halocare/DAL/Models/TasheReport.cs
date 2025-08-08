@@ -197,13 +197,4 @@ namespace halocare.DAL.Models
         Rejected = 3
     }
 
-    // Enum לסוגי טיפול (למיפוי עם מסד הנתונים)
-    public enum TreatmentType
-    {
-        Emotional = 1,      // טיפול רגשי
-        Physiotherapy = 2,  // פיזיותרפיה  
-        Occupational = 3,   // ריפוי בעיסוק
-        Nutrition = 4,      // תזונה
-        Medical = 5         // רפואי
-    }
 }

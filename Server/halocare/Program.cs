@@ -62,8 +62,26 @@ namespace halocare
 
             builder.Services.AddScoped<ParentFormService>();
 
-           
+            builder.Services.AddScoped<GeminiService>();
+            builder.Services.AddScoped<WordExportService>();
+            builder.Services.AddScoped<TasheReportService>();
 
+            // הוספת HttpClient עבור Gemini
+            builder.Services.AddHttpClient();
+
+            // יצירת תיקיות אם לא קיימות
+            var uploadsPath = builder.Configuration.GetValue<string>("UploadsBasePath");
+            var tempPath = builder.Configuration.GetValue<string>("TempFilesPath");
+
+            if (!string.IsNullOrEmpty(uploadsPath) && !Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            if (!string.IsNullOrEmpty(tempPath) && !Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
 
             builder.Services.AddHttpClient();
 

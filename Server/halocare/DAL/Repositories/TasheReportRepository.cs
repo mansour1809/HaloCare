@@ -35,7 +35,7 @@ namespace halocare.DAL.Repositories
                     Description = row["description"].ToString(),
                     CooperationLevel = row["cooperationLevel"] == DBNull.Value ? null : Convert.ToInt32(row["cooperationLevel"]),
                     Highlight = row["highlight"] == DBNull.Value ? null : row["highlight"].ToString(),
-                    TreatmentTypeId = row["treatmentTypeId"] == DBNull.Value ? null : Convert.ToInt32(row["treatmentTypeId"]),
+                    TreatmentTypeId = Convert.ToInt32(row["treatmentTypeId"]),
                     TreatmentTypeName = row["treatmentTypeName"].ToString(),
                     TreatmentColor = row["treatmentColor"] == DBNull.Value ? "" : row["treatmentColor"].ToString(),
                     EmployeeName = row["employeeName"].ToString(),
