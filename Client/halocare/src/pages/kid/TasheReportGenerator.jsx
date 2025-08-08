@@ -173,7 +173,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
         periodEndDate: formData.endDate.format('YYYY-MM-DD'),
         generatedByEmployeeId: currentUser.id,
         reportTitle: formData.reportTitle.trim(),
-        notes: formData.notes.trim() || null
+        notes: formData.notes.trim() || ''
       };
 
       const response = await dispatch(generateTasheReport(reportData)).unwrap();
@@ -268,7 +268,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
     switch (activeStep) {
       case 0:
         return (
-          <Box sx={{ py: 3 }}>
+          <Box sx={{ py: 3 }} dir="rtl">
             <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
               <CalendarIcon sx={{ mr: 1, color: 'primary.main' }} />
               בחירת תקופת הדוח
@@ -320,7 +320,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
 
       case 1:
         return (
-          <Box sx={{ py: 3 }}>
+          <Box sx={{ py: 3 }} dir="rtl">
             <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
               <TimelineIcon sx={{ mr: 1, color: 'primary.main' }} />
               סיכום טיפולים בתקופה
@@ -414,7 +414,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
 
       case 2:
         return (
-          <Box sx={{ py: 3 }}>
+          <Box sx={{ py: 3 }} dir="rtl">
             <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
               <ReportIcon sx={{ mr: 1, color: 'primary.main' }} />
               פרטי הדוח
@@ -459,7 +459,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
 
       case 3:
         return (
-          <Box sx={{ py: 3, textAlign: 'center' }}>
+          <Box sx={{ py: 3, textAlign: 'center' }} dir="rtl">
             {generating ? (
               <>
                 <CircularProgress size={60} sx={{ mb: 3 }} />
@@ -510,6 +510,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
         open={open} 
         onClose={handleClose}
         maxWidth="md"
+        dir="rtl"
         fullWidth
         disableEscapeKeyDown={generating}
       >

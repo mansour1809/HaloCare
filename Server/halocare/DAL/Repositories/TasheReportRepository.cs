@@ -144,7 +144,7 @@ namespace halocare.DAL.Repositories
         { "@ReportId", reportId }
     };
 
-            DataTable dataTable = ExecuteQuery("SELECT * FROM tblTasheReports WHERE reportId = @ReportId", parameters);
+            DataTable dataTable = ExecuteQuery("SP_GetTasheReportById", parameters);
 
             if (dataTable.Rows.Count == 0)
                 return null;

@@ -47,6 +47,17 @@ import { baseURL } from '../../components/common/axiosConfig';
 import TasheReportGenerator from './TasheReportGenerator';
 
 const KidReportsTab = ({ selectedKid }) => {
+  // בדיקה בסיסית שהילד קיים
+  if (!selectedKid) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <Typography variant="h6" color="text.secondary">
+          אנא בחרו ילד מהרשימה לצפייה בדוחות
+        </Typography>
+      </Box>
+    );
+  }
+
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState(null);
@@ -55,21 +66,26 @@ const KidReportsTab = ({ selectedKid }) => {
   const [reportToDelete, setReportToDelete] = useState(null);
 
   const { currentUser } = useAuth();
-  const { reports, status, error } = useSelector(state => state.tasheReports);
+  const { reports = [], status, error } = useSelector(state => state.tasheReports || {});
 
-  const kidName = `${selectedKid.firstName} ${selectedKid.lastName}`.trim();
+  const kidName = selectedKid ? `${selectedKid.firstName || ''} ${selectedKid.lastName || ''}`.trim() : 'לא נבחר ילד';
 
   useEffect(() => {
-    if (selectedKid.id) {
+    if (selectedKid?.id) { // בדיקה שהילד קיים ויש לו ID
       loadReports();
     }
 
     return () => {
       dispatch(clearError());
     };
-  }, [selectedKid.id]);
+  }, [selectedKid?.id]);
 
   const loadReports = async () => {
+    if (!selectedKid?.id) {
+      console.warn('לא ניתן לטעון דוחות - אין ילד נבחר');
+      return;
+    }
+
     try {
       await dispatch(fetchTasheReportsByKid(selectedKid.id)).unwrap();
     } catch (error) {
@@ -89,14 +105,14 @@ const KidReportsTab = ({ selectedKid }) => {
 
   const handleViewReport = (report) => {
     // פתיחה בחלון חדש עם הדוח המעוצב
-    const viewUrl = `/api/TasheReports/${report.reportId}/view`;
+    const viewUrl = `/TasheReports/${report.reportId}/view`;
     window.open(baseURL + viewUrl, '_blank', 'width=1200,height=900,scrollbars=yes');
     handleMenuClose();
   };
 
   const handleDownloadWord = (report) => {
     // הורדת הדוח כ-Word
-    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-word`;
+    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-word`;
     
     // יצירת link זמני להורדה
     const link = document.createElement('a');
@@ -110,7 +126,7 @@ const KidReportsTab = ({ selectedKid }) => {
 
   const handleDownloadText = (report) => {
     // הורדת הדוח כטקסט
-    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-text`;
+    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-text`;
     
     const link = document.createElement('a');
     link.href = downloadUrl;
@@ -158,6 +174,8 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const getStatusChip = (report) => {
+    if (!report) return null; // הוספת בדיקה למקרה של null/undefined
+    
     if (report.isApproved) {
       return (
         <Chip
@@ -182,12 +200,15 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const canApprove = (report) => {
-    console.log(report)
+    if (!report) return false; // הוספת בדיקה למקרה של null/undefined
+    
     return !report.isApproved && 
            (currentUser.role === 'מנהל/ת' || currentUser.role === 'מנהל');
   };
 
   const canDelete = (report) => {
+    if (!report) return false; // הוספת בדיקה למקרה של null/undefined
+    
     return !report.isApproved && 
            (report.generatedByEmployeeId === currentUser.id || 
             currentUser.role === 'מנהל/ת' || 
@@ -195,6 +216,7 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'לא זמין'; // הוספת בדיקה למקרה של תאריך חסר
     return new Date(dateString).toLocaleDateString('he-IL');
   };
 
@@ -235,10 +257,11 @@ const KidReportsTab = ({ selectedKid }) => {
           size="large"
           startIcon={<AddIcon />}
           onClick={() => setGeneratorOpen(true)}
+          disabled={!selectedKid?.id} // השבתה אם אין ילד נבחר
           sx={{
-            background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+            background: !selectedKid?.id ? 'grey.400' : 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
             '&:hover': {
-              background: 'linear-gradient(45deg, #FF5252, #26A69A)',
+              background: !selectedKid?.id ? 'grey.400' : 'linear-gradient(45deg, #FF5252, #26A69A)',
             },
             fontWeight: 'bold',
             px: 3,
@@ -274,7 +297,7 @@ const KidReportsTab = ({ selectedKid }) => {
       ) : (
         <Grid container spacing={3}>
           {reports.map((report) => (
-            <Grid item xs={12} md={6} lg={4} key={report.reportId}>
+            <Grid item size={{sx:12,md:6,lg:4}} key={report.reportId}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -359,48 +382,52 @@ const KidReportsTab = ({ selectedKid }) => {
       {/* Menu for report actions */}
       <Menu
         anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
+        open={Boolean(menuAnchor) && Boolean(selectedReport)}
         onClose={handleMenuClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={() => handleViewReport(selectedReport)}>
-          <ListItemIcon>
-            <HtmlIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>צפייה בדפדפן</ListItemText>
-        </MenuItem>
+        {selectedReport && (
+          <>
+            <MenuItem onClick={() => handleViewReport(selectedReport)}>
+              <ListItemIcon>
+                <HtmlIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>צפייה בדפדפן</ListItemText>
+            </MenuItem>
 
-        <MenuItem onClick={() => handleDownloadWord(selectedReport)}>
-          <ListItemIcon>
-            <WordIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>הורדה כ-Word</ListItemText>
-        </MenuItem>
+            <MenuItem onClick={() => handleDownloadWord(selectedReport)}>
+              <ListItemIcon>
+                <WordIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>הורדה כ-Word</ListItemText>
+            </MenuItem>
 
-        <MenuItem onClick={() => handleDownloadText(selectedReport)}>
-          <ListItemIcon>
-            <TextIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>הורדה כטקסט</ListItemText>
-        </MenuItem>
+            <MenuItem onClick={() => handleDownloadText(selectedReport)}>
+              <ListItemIcon>
+                <TextIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>הורדה כטקסט</ListItemText>
+            </MenuItem>
 
-        {canApprove(selectedReport) && (
-          <MenuItem onClick={() => handleApprove(selectedReport)}>
-            <ListItemIcon>
-              <ApprovedIcon fontSize="small" color="success" />
-            </ListItemIcon>
-            <ListItemText>אישור דוח</ListItemText>
-          </MenuItem>
-        )}
+            {canApprove(selectedReport) && (
+              <MenuItem onClick={() => handleApprove(selectedReport)}>
+                <ListItemIcon>
+                  <ApprovedIcon fontSize="small" color="success" />
+                </ListItemIcon>
+                <ListItemText>אישור דוח</ListItemText>
+              </MenuItem>
+            )}
 
-        {canDelete(selectedReport) && (
-          <MenuItem onClick={() => handleDeleteClick(selectedReport)}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>מחיקת דוח</ListItemText>
-          </MenuItem>
+            {canDelete(selectedReport) && (
+              <MenuItem onClick={() => handleDeleteClick(selectedReport)}>
+                <ListItemIcon>
+                  <DeleteIcon fontSize="small" color="error" />
+                </ListItemIcon>
+                <ListItemText>מחיקת דוח</ListItemText>
+              </MenuItem>
+            )}
+          </>
         )}
       </Menu>
 
