@@ -423,7 +423,22 @@ const EmployeesManagement = () => {
                         ➕ הוספת עובד חדש
                       </AnimatedButton>
                       
-                      <Tooltip PopperProps={{ disablePortal: true }} title="רענון נתונים">
+                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="רענון נתונים">
                         <IconButton 
                           onClick={refreshEmployees}
                           sx={{
@@ -757,7 +772,22 @@ const EmployeesManagement = () => {
                                   }}
                                   onClick={() => navigate(`/employees/profile/${employee.employeeId}`)}
                                 >
-                                                                <Tooltip PopperProps={{ disablePortal: true }} title="פרופיל עובד">
+                                                                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="פרופיל עובד">
 
                                   <PersonIcon sx={{ fontSize: 20 }} />
                               </Tooltip>

@@ -232,7 +232,22 @@ const FilesList = ({
               </Box>
               
               <Box sx={{ display: 'flex', gap: 0.5 }}>
-                <Tooltip PopperProps={{ disablePortal: true }} title="הורד">
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="הורד">
                   <IconButton
                     size="small"
                     onClick={() => handleDownload(doc.docId, doc.docName)}
@@ -240,7 +255,22 @@ const FilesList = ({
                     <DownloadIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Tooltip PopperProps={{ disablePortal: true }} title="מחק">
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="מחק">
                   <IconButton
                     size="small"
                     onClick={() => handleDelete(doc.docId)}
@@ -340,7 +370,22 @@ const FilesList = ({
                 </TableCell>
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                    <Tooltip PopperProps={{ disablePortal: true }} title="הורד קובץ">
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="הורד קובץ">
                       <IconButton
                         size="small"
                         onClick={() => handleDownload(doc.docId, doc.docName)}
@@ -349,7 +394,22 @@ const FilesList = ({
                         <DownloadIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip PopperProps={{ disablePortal: true }} title="מחק קובץ">
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="מחק קובץ">
                       <IconButton
                         size="small"
                         onClick={() => handleDelete(doc.docId)}

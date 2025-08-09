@@ -119,16 +119,17 @@ namespace halocare.BL.Services
 
             // הגדרת התפקיד והמטרה
             prompt.AppendLine("אתה מומחה בכתיבת דוחות תש\"ה (תוכניות שיקומיות התפתחותיות) למעונות יום טיפוליים.");
-            prompt.AppendLine("תפקידך ליצור דוח מקצועי, מובנה ועקבי בפורמט אחיד.");
+            prompt.AppendLine("תפקידך ליצור דוח מקצועי בפורמט אחיד שתואם למבנה הסטנדרטי של גן הילד בחיפה.");
             prompt.AppendLine();
 
             // הוראות כלליות
             prompt.AppendLine("== הוראות כלליות ==");
             prompt.AppendLine("• השתמש בשפה מקצועית אך נגישה");
-            prompt.AppendLine("• תאמן על מידע רק מהנתונים שסופקו");
+            prompt.AppendLine("• התבסס רק על הנתונים שסופקו");
             prompt.AppendLine("• שמור על פורמט אחיד בכל הסעיפים");
             prompt.AppendLine("• השתמש בטרמינולוגיה רפואית מדויקת");
             prompt.AppendLine("• הקפד על אובייקטיביות ומקצועיות");
+            prompt.AppendLine("• אל תוסיף כפילויות או חזרות על אותו מידע");
             prompt.AppendLine();
 
             // פרטי הדוח
@@ -138,9 +139,9 @@ namespace halocare.BL.Services
             prompt.AppendLine($"תאריך יצירת הדוח: {DateTime.Now:dd/MM/yyyy}");
             prompt.AppendLine();
 
-            // המבנה הנדרש - זה החלק הקריטי לעקביות!
+            // המבנה הנדרש - בהתאם למבנה של נאדר
             prompt.AppendLine("== מבנה הדוח הנדרש ==");
-            prompt.AppendLine("יש ליצור דוח עם המבנה הבא בדיוק, כולל הכותרות והפורמט:");
+            prompt.AppendLine("יש ליצור דוח עם המבנה הבא בדיוק (ללא כפילויות!):");
             prompt.AppendLine();
 
             prompt.AppendLine("# דוח תש\"ה (תוכנית שיקומית התפתחותית)");
@@ -151,40 +152,57 @@ namespace halocare.BL.Services
             prompt.AppendLine();
 
             prompt.AppendLine("## 1. רקע כללי");
-            prompt.AppendLine("כתוב פסקה קצרה על מטרת הדוח ותקופת הטיפול.");
+            prompt.AppendLine("כתוב פסקה קצרה (2-3 שורות) על מטרת הדוח ותקופת הטיפול.");
             prompt.AppendLine();
 
-            prompt.AppendLine("## 2. סיכום כללי של התקופה");
-            prompt.AppendLine("סיכום קצר של ההתקדמות הכוללת בכל התחומים.");
+            prompt.AppendLine("## 2. מטרות הורים");
+            prompt.AppendLine("כתוב על המטרות והציפיות של ההורים (על בסיס הטיפולים שבוצעו).");
+            prompt.AppendLine();
+
+            prompt.AppendLine("## 3. מטרות טיפוליות על פי תחומים");
             prompt.AppendLine();
 
             // בנייה דינמית של תחומי הטיפול
             var treatmentGroups = treatments.GroupBy(t => t.TreatmentTypeName).ToList();
 
-            prompt.AppendLine("## 3. התקדמות לפי תחומי טיפול");
+            foreach (var group in treatmentGroups.OrderBy(g => GetTreatmentTypeOrder(g.Key)))
+            {
+                prompt.AppendLine($"### {group.Key}");
+                prompt.AppendLine();
+                prompt.AppendLine("| מטרות ראשוניות | המצב כיום | עדכון מטרות אמצע |");
+                prompt.AppendLine("|---|---|---|");
+                prompt.AppendLine("| כתוב 2-3 מטרות ספציפיות | תאר את המצב הנוכחי | כתוב המלצות להמשך |");
+                prompt.AppendLine();
+            }
+
+            prompt.AppendLine("## 4. כרטיס משימות");
+            prompt.AppendLine();
+            prompt.AppendLine("**מטפלים:** (הוסף את שמות המטפלים הרלוונטיים)");
+            prompt.AppendLine();
+            prompt.AppendLine("**משימות:**");
             prompt.AppendLine();
 
             foreach (var group in treatmentGroups.OrderBy(g => GetTreatmentTypeOrder(g.Key)))
             {
-                prompt.AppendLine($"### {group.Key}");
-                prompt.AppendLine("יש לכלול:");
-                prompt.AppendLine("- תיאור המצב הנוכחי");
-                prompt.AppendLine("- הישגים בתקופת הדוח");
-                prompt.AppendLine("- מטרות להמשך");
-                prompt.AppendLine("- המלצות לטיפול");
+                prompt.AppendLine($"• **{group.Key}:**");
+                prompt.AppendLine("  - משימה 1 (תדירות ומשך)");
+                prompt.AppendLine("  - משימה 2 (תדירות ומשך)");
+                prompt.AppendLine("  - משימה 3 (תדירות ומשך)");
                 prompt.AppendLine();
             }
 
-            prompt.AppendLine("## 4. מטרות טיפוליות להמשך");
-            prompt.AppendLine("רשימה של 3-5 מטרות עיקריות לתקופה הבאה.");
+            prompt.AppendLine("**הערות:**");
+            prompt.AppendLine("• יש להתאים את משך הזמן ותדירות המשימות ליכולותיו של הילד");
+            prompt.AppendLine("• חשוב לשלב את המשימות באופן טבעי בתוך שגרת היום-יום");
+            prompt.AppendLine("• יש לעודד את הילד ולהתאים את המשימות לרמת הקושי שלו");
+            prompt.AppendLine("• יש לתעד את ההתקדמות ולעדכן את תוכנית הטיפול בהתאם");
             prompt.AppendLine();
 
-            prompt.AppendLine("## 5. המלצות כלליות");
-            prompt.AppendLine("המלצות לצוות הטיפולי וההורים.");
-            prompt.AppendLine();
-
-            prompt.AppendLine("## 6. סיכום ומעקב");
-            prompt.AppendLine("מועד הערכה מחודשת והערות נוספות.");
+            prompt.AppendLine("## 5. המלצות");
+            prompt.AppendLine("• המשך טיפולים רב-תחומיים לפי התוכנית המפורטת");
+            prompt.AppendLine("• מעקב רפואי צמוד");
+            prompt.AppendLine("• שיתוף פעולה מלא בין ההורים, הצוות הטיפולי והגננת");
+            prompt.AppendLine("• הערכה מחודשת של התקדמותו של הילד בתוך 3 חודשים");
             prompt.AppendLine();
 
             // נתוני הטיפולים לעיבוד
@@ -241,11 +259,13 @@ namespace halocare.BL.Services
             prompt.AppendLine("• שמור על המבנה והכותרות בדיוק כפי שהוגדרו");
             prompt.AppendLine("• השתמש בעברית תקנית וברורה");
             prompt.AppendLine("• היה ספציפי ומבוסס נתונים");
-            prompt.AppendLine("• הקפד על אורך מתאים לכל סעיף (2-4 משפטים לתת-סעיף)");
+            prompt.AppendLine("• הקפד על אורך מתאים לכל סעיף");
             prompt.AppendLine("• הימנע מהכללות או מידע שלא מופיע בנתונים");
+            prompt.AppendLine("• אל תכפיל מידע או תחזור על אותו תוכן");
+            prompt.AppendLine("• אל תוסיף פרטי דוח נוספים מעבר למה שכבר נכתב");
             prompt.AppendLine();
 
-            prompt.AppendLine("צור את הדוח כעת בהתאם להוראות:");
+            prompt.AppendLine("צור את הדוח כעת בהתאם להוראות (ללא כפילויות!):");
 
             return prompt.ToString();
         }

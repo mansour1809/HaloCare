@@ -213,7 +213,7 @@ const KidProfileTabs = ({ selectedKid }) => {
       icon: <ReportsIcon />,
       component: KidReportsTab,
       badge: null,
-      description: 'דוחות והערכות (בפיתוח)'
+      description: 'דוחות תש"ה'
     }
   ];
 
@@ -310,20 +310,61 @@ const KidProfileTabs = ({ selectedKid }) => {
                     size="small"
                   />
                 )}
-                {selectedKid.birthDate && (
-                  <Chip 
-                    label={`גיל: ${new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear()}`}
-                    variant="outlined"
-                    size="small"
-                  />
-                )}
+             {selectedKid.birthDate && (() => {
+  const birthDate = new Date(selectedKid.birthDate);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  let days = today.getDate() - birthDate.getDate();
+
+  // אם החודש עוד לא הגיע השנה
+  if (months < 0 || (months === 0 && days < 0)) {
+    years--;
+    months += 12;
+  }
+
+  // אם היום עוד לא הגיע החודש
+  if (days < 0) {
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
+    months--;
+    if (months < 0) {
+      months += 12;
+      years--;
+    }
+  }
+
+  return (
+    <Chip 
+      label={`גיל: ${years} שנים, ${months} חודשים, ${days} ימים`}
+      variant="outlined"
+      size="small"
+    />
+  );
+})()}
               </Stack>
             </Box>
           </Box>
           
           {/* Quick access buttons */}
           <Stack direction="row" spacing={1}>
-            <Tooltip PopperProps={{ disablePortal: true }} title="יומן כללי">
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="יומן כללי">
               <QuickActionButton
                 startIcon={<CalendarIcon />}
                 onClick={() => navigate('/calendar/schedule')}
@@ -332,7 +373,22 @@ const KidProfileTabs = ({ selectedKid }) => {
               </QuickActionButton>
             </Tooltip>
             
-            <Tooltip PopperProps={{ disablePortal: true }} title="נוכחות היום">
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נוכחות היום">
               <QuickActionButton
                 startIcon={<AttendanceIcon />}
                 onClick={() => navigate('/reports/attendance')}
@@ -341,7 +397,22 @@ const KidProfileTabs = ({ selectedKid }) => {
               </QuickActionButton>
             </Tooltip>
             
-            <Tooltip PopperProps={{ disablePortal: true }} title="רענן נתונים">
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="רענן נתונים">
               <IconButton
                 onClick={handleRefresh}
                 sx={{ 
@@ -354,7 +425,22 @@ const KidProfileTabs = ({ selectedKid }) => {
               </IconButton>
             </Tooltip>
             
-            <Tooltip PopperProps={{ disablePortal: true }} title="הדפס סיכום">
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="הדפס סיכום">
               <IconButton
                 onClick={handlePrint}
                 sx={{ 

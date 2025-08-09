@@ -225,7 +225,22 @@ const DigitalSignature = ({
           
           <Box sx={{ display: 'flex', gap: 1 }}>
             {value && (
-              <Tooltip PopperProps={{ disablePortal: true }} title="צפייה בחתימה">
+              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="צפייה בחתימה">
                 <IconButton 
                   size="small" 
                   onClick={() => setDialogOpen(true)}
@@ -237,7 +252,22 @@ const DigitalSignature = ({
             )}
             
             {!readOnly && (
-              <Tooltip PopperProps={{ disablePortal: true }} title={value ? "עריכת חתימה" : "חתימה"}>
+              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={value ? "עריכת חתימה" : "חתימה"}>
                 <IconButton 
                   size="small" 
                   onClick={() => setDialogOpen(true)}

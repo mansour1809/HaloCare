@@ -351,7 +351,22 @@ const AttendanceMarking = () => {
                           </Stack>
                         </TableCell>
                         <AttendanceCell>
-                          <Tooltip PopperProps={{ disablePortal: true }} title={isPresent ? "נוכח - לחץ לסמן כנעדר" : "נעדר - לחץ לסמן כנוכח"} arrow>
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={isPresent ? "נוכח - לחץ לסמן כנעדר" : "נעדר - לחץ לסמן כנוכח"} arrow>
                             <StyledCheckbox
                               icon={<CancelIcon color="error" />}
                               checkedIcon={<CheckCircleIcon color="success" />}
@@ -462,7 +477,22 @@ const AttendanceMarking = () => {
                   </Stack>
                 </Box>
                 
-                <Tooltip PopperProps={{ disablePortal: true }} title="בחר תאריך אחר" arrow>
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="בחר תאריך אחר" arrow>
                   <IconButton 
                     color="primary" 
                     onClick={() => setShowDatePicker(true)}
@@ -481,14 +511,44 @@ const AttendanceMarking = () => {
               
               {/* Navigation buttons */}
               <Stack direction="row" spacing={1} alignItems="center">
-                <Tooltip PopperProps={{ disablePortal: true }} title="יום קודם" arrow>
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="יום קודם" arrow>
                   <NavButton onClick={() => changeDay(-1)}>
                     <NavigateBeforeIcon />
                   </NavButton>
                 </Tooltip>
                 
                 {!selectedDate.isSame(dayjs(), 'day') && (
-                  <Tooltip PopperProps={{ disablePortal: true }} title="חזור להיום" arrow>
+                  <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="חזור להיום" arrow>
                     <NavButton 
                       onClick={() => setSelectedDate(dayjs())}
                       sx={{ 
@@ -503,7 +563,22 @@ const AttendanceMarking = () => {
                   </Tooltip>
                 )}
                 
-                <Tooltip PopperProps={{ disablePortal: true }} title="יום הבא" arrow>
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="יום הבא" arrow>
                   <NavButton 
                     onClick={() => selectedDate.isSame(dayjs(), 'day') ? null : changeDay(1)}
                     disabled={selectedDate.isSame(dayjs(), 'day')}
