@@ -275,7 +275,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
             </Typography>
             
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{ xs: 12, sm:6}}>
                 <DatePicker
                   label="תאריך התחלה"
                   value={formData.startDate}
@@ -290,7 +290,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
                 />
               </Grid>
               
-              <Grid item xs={12} sm={6}>
+              <Grid item size={{ xs: 12, sm:6}}>
                 <DatePicker
                   label="תאריך סיום"
                   value={formData.endDate}
@@ -334,7 +334,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
               <>
                 <Grid container spacing={2} sx={{ mb: 3 }}>
                   {getTreatmentsSummary().map(({ type, count, color }) => (
-                    <Grid item xs={12} sm={6} md={4} key={type}>
+                    <Grid item size={{ xs: 12, sm:6, md:4}} key={type}>
                       <Card sx={{ height: '100%', border: '2px solid', borderColor: color }}>
                         <CardContent sx={{ textAlign: 'center' }}>
                           <Box 
@@ -421,7 +421,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
             </Typography>
 
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <TextField
                   fullWidth
                   label="כותרת הדוח"
@@ -432,7 +432,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid item size={{xs:12}}>
                 <TextField
                   fullWidth
                   multiline

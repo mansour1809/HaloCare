@@ -503,7 +503,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
 
             {/* Stats Overview */}
             <Grid container spacing={3} mb={3}>
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs: 12, sm: 6, md:3 }}>
                 <Zoom in timeout={800}>
                   <StatsCard color="#4caf50">
                     <CardContent sx={{ textAlign: 'center', p: 2 }}>
@@ -529,7 +529,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 </Zoom>
               </Grid>
               
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs: 12, sm: 6, md:3 }}>
                 <Zoom in timeout={1000}>
                   <StatsCard color="#ff9800">
                     <CardContent sx={{ textAlign: 'center', p: 2 }}>
@@ -555,7 +555,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 </Zoom>
               </Grid>
               
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs: 12, sm: 6, md:3 }}>
                 <Zoom in timeout={1200}>
                   <StatsCard color="#2196f3">
                     <CardContent sx={{ textAlign: 'center', p: 2 }}>
@@ -581,7 +581,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 </Zoom>
               </Grid>
               
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs: 12, sm: 6, md:3 }}>
                 <Zoom in timeout={1400}>
                   <StatsCard color="#9c27b0">
                     <CardContent sx={{ textAlign: 'center', p: 2 }}>
@@ -667,7 +667,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
             {todaysTreatments.length > 0 ? (
               <Grid container spacing={3}>
                 {todaysTreatments.map((treatment, index) => (
-                  <Grid item xs={12} md={6} lg={4} key={treatment.treatmentId}>
+                  <Grid item size={{xs:12, md:6, lg:4}} key={treatment.treatmentId}>
                     <Zoom in timeout={1000 + index * 200}>
                       <TreatmentCard 
                         treatmentColor={treatment.treatmentType?.treatmentColor || '#4caf50'}
@@ -858,7 +858,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
             <DialogContent sx={{ p: 4 }}>
               <Grid container spacing={3}>
                 {/* Kid Info */}
-                <Grid item xs={12} md={6}>
+                <Grid item size={{ xs: 12,  md:6 }}>
                   <Paper elevation={2} sx={{ 
                     p: 3, 
                     borderRadius: '16px',
@@ -891,7 +891,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 </Grid>
 
                 {/* Therapist Info */}
-                <Grid item xs={12} md={6}>
+                <Grid item size={{ xs: 12,  md:6 }}>
                   <Paper elevation={2} sx={{ 
                     p: 3, 
                     borderRadius: '16px',
@@ -918,7 +918,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
 
                 {/* Cooperation Level */}
                 {selectedTreatment.cooperationLevel > 0 && (
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs: 12}}>
                     <Paper elevation={2} sx={{ 
                       p: 3, 
                       borderRadius: '16px',
@@ -943,7 +943,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
                 )}
 
                 {/* Description */}
-                <Grid item xs={12}>
+                <Grid item size={{ xs: 12}}>
                   <Paper elevation={2} sx={{ 
                     p: 3, 
                     borderRadius: '16px',
@@ -963,7 +963,7 @@ const TreatmentsSection = ({ onNavigateToTreatment }) => {
 
                 {/* Highlight */}
                 {selectedTreatment.highlight && (
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs: 12}}>
                     <Alert severity="info" sx={{ borderRadius: '16px', fontSize: '1rem' }}>
                       <Typography variant="body1" fontWeight={600}>
                         <strong>נקודה חשובה:</strong> {selectedTreatment.highlight}

@@ -498,7 +498,7 @@ const TreatmentViewDialog = () => {
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   {/* Date */}
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{ xs:12,md:6}}>
                     <DatePicker
                       label="תאריך טיפול"
                       value={formData.treatmentDate}
@@ -518,7 +518,7 @@ const TreatmentViewDialog = () => {
                   </Grid>
 
                   {/* Cooperation Level */}
-                  <Grid item xs={12} md={6}>
+                  <Grid itemsize={{ xs:12,md:6}}>
                     <Box>
                       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
                         רמת שיתוף פעולה
@@ -547,7 +547,7 @@ const TreatmentViewDialog = () => {
                   </Grid>
 
                   {/* Description */}
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs:12}}>
                     <StyledTextField
                       fullWidth
                       multiline
@@ -561,7 +561,7 @@ const TreatmentViewDialog = () => {
                   </Grid>
 
                   {/* Highlight */}
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs:12}}>
                     <StyledTextField
                       fullWidth
                       multiline
@@ -580,7 +580,7 @@ const TreatmentViewDialog = () => {
           <Fade in>
             <Grid container spacing={3}>
               {/* Basic Details */}
-              <Grid item xs={12}>
+              <Grid item size={{ xs:12}}>
                 <EnhancedCard>
                   <Box 
                     sx={{ 
@@ -606,7 +606,7 @@ const TreatmentViewDialog = () => {
                   <Collapse in={expandedSections.details}>
                     <CardContent sx={{ pt: 0 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
+                        <Grid item size={{ xs:12,md:6}}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: alpha('#4cb5c3', 0.05) }}>
                             <CalendarIcon sx={{ color: '#4cb5c3' }} />
                             <Box>
@@ -620,7 +620,7 @@ const TreatmentViewDialog = () => {
                           </Box>
                         </Grid>
                         
-                        <Grid item xs={12} md={6}>
+                        <Grid item size={{ xs:12,md:6}}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: alpha('#ff7043', 0.05) }}>
                             <PersonIcon sx={{ color: '#ff7043' }} />
                             <Box>
@@ -634,7 +634,7 @@ const TreatmentViewDialog = () => {
                           </Box>
                         </Grid>
                         
-                        <Grid item xs={12}>
+                        <Grid item size={{ xs:12}}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, borderRadius: 2, bgcolor: alpha('#10b981', 0.05) }}>
                             <StarIcon sx={{ color: '#10b981' }} />
                             <Box sx={{ flex: 1 }}>
@@ -662,7 +662,7 @@ const TreatmentViewDialog = () => {
               </Grid>
 
               {/* Treatment Description */}
-              <Grid item xs={12}>
+              <Grid item size={{ xs:12}}>
                 <EnhancedCard>
                   <Box 
                     sx={{ 
@@ -707,7 +707,7 @@ const TreatmentViewDialog = () => {
 
               {/* Highlight */}
               {currentTreatment.highlight && (
-                <Grid item xs={12}>
+                <Grid item size={{ xs:12}}>
                   <EnhancedCard>
                     <Box 
                       sx={{ 

@@ -446,7 +446,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
           
           <Grid container spacing={3}>
             {/* Therapist Selection */}
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md:6}}>
               <Zoom in timeout={300}>
                 <FormSection>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -492,7 +492,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
 
             {/* Date Selection */}
-            <Grid item xs={12} md={6}>
+            <Grid item size={{ xs: 12, md:6}}>
               <Zoom in timeout={400}>
                 <FormSection>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -529,7 +529,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
 
             {/* Cooperation Level */}
-            <Grid item xs={12}>
+            <Grid item size={{ xs: 12}}>
               <Zoom in timeout={500}>
                 <FormSection>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -576,7 +576,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
 
             {/* Treatment Description */}
-            <Grid item xs={12}>
+            <Grid item size={{ xs: 12}}>
               <Zoom in timeout={600}>
                 <FormSection>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
@@ -604,7 +604,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             </Grid>
 
             {/* Highlight (Optional) */}
-            <Grid item xs={12}>
+            <Grid item size={{ xs: 12}}>
               <Zoom in timeout={700}>
                 <FormSection>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>

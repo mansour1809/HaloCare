@@ -330,7 +330,7 @@ const TreatmentsFilters = () => {
           <Fade in timeout={800}>
             <Grid container spacing={3} alignItems="center">
               {/* Search field */}
-              <Grid item xs={12} md={6}>
+              <Grid item size={{ xs: 12, md:6}}>
                 <SearchField
                   fullWidth
                   placeholder="חיפוש בתיאור הטיפול, הארות ועוד..."
@@ -344,7 +344,7 @@ const TreatmentsFilters = () => {
                     ),
                     endAdornment: searchTerm && (
                       <InputAdornment position="end">
-                        <Tooltip title="נקה חיפוש">
+                        <Tooltip  PopperProps={{ disablePortal: true }} title="נקה חיפוש">
                           <IconButton onClick={clearSearchTerm} size="small">
                             <ClearIcon />
                           </IconButton>
@@ -356,7 +356,7 @@ const TreatmentsFilters = () => {
               </Grid>
 
               {/* Filter controls */}
-              <Grid item xs={12} md={6}>
+              <Grid item size={{ xs: 12, md:6}}>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', alignItems: 'center' }}>
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
                     {filteredTreatments.length} תוצאות
@@ -376,7 +376,7 @@ const TreatmentsFilters = () => {
                   </FilterBadge>
                   
                   {activeFiltersCount > 0 && (
-                    <Tooltip title="נקה את כל הפילטרים">
+                    <Tooltip PopperProps={{ disablePortal: true }} title="נקה את כל הפילטרים">
                       <AnimatedButton 
                         className="clear-button"
                         variant="contained" 
@@ -453,13 +453,13 @@ const TreatmentsFilters = () => {
                 
                 <Grid container spacing={3}>
                   {/* Date range */}
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{ xs: 12, md:6}}>
                     <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                       <CalendarTodayIcon sx={{ mr: 1, verticalAlign: 'middle', color: '#4cb5c3' }} />
                       טווח תאריכים
                     </Typography>
                     <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                      <Grid item size={{ xs: 6}}>
                         <DatePicker
                           label="מתאריך"
                           value={dateFrom}
@@ -481,7 +481,7 @@ const TreatmentsFilters = () => {
                           }}
                         />
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item size={{ xs: 6}}>
                         <DatePicker
                           label="עד תאריך"
                           value={dateTo}
@@ -507,7 +507,7 @@ const TreatmentsFilters = () => {
                   </Grid>
 
                   {/* Employee filter */}
-                  <Grid item xs={12} md={6}>
+                  <Grid item size={{ xs: 12, md:6}}>
                     <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                       <PersonIcon sx={{ mr: 1, verticalAlign: 'middle', color: '#4cb5c3' }} />
                       סינון לפי מטפל
@@ -533,7 +533,7 @@ const TreatmentsFilters = () => {
                   </Grid>
 
                   {/* Cooperation level */}
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs:12}}>
                     <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
                       <StarIcon sx={{ mr: 1, verticalAlign: 'middle', color: '#4cb5c3' }} />
                       רמת שיתוף פעולה
@@ -573,7 +573,7 @@ const TreatmentsFilters = () => {
                   </Grid>
 
                   {/* Filter actions */}
-                  <Grid item xs={12}>
+                  <Grid item size={{ xs:12}}>
                     <Divider sx={{ my: 2 }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
@@ -582,7 +582,7 @@ const TreatmentsFilters = () => {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Tooltip title="נקה את כל הפילטרים">
+                        <Tooltip PopperProps={{ disablePortal: true }} title="נקה את כל הפילטרים">
                           <AnimatedButton
                             className="clear-button"
                             variant="outlined"

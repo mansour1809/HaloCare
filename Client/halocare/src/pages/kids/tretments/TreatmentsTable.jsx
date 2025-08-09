@@ -226,7 +226,7 @@ const CooperationRating = ({ level }) => {
   }
   
   return (
-    <Tooltip title={`רמת שיתוף פעולה: ${level}/5`}>
+    <Tooltip PopperProps={{ disablePortal: true }} title={`רמת שיתוף פעולה: ${level}/5`}>
       <Stack direction="row" spacing={0.5} alignItems="center">
         {stars}
         <Typography 

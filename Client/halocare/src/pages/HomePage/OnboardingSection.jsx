@@ -635,7 +635,7 @@ const getStatusText = (status) => {
 
                         {/* Actions */}
                         {/* Actions - 2 Direct Buttons */}
-<Grid item xs={2}>
+<Grid item size={{xs:2}}>
   <Stack direction="row" spacing={1}>
     <Tooltip title="דף קליטה" PopperProps={{ disablePortal: true }}>
       {console.log(selectedKid)}

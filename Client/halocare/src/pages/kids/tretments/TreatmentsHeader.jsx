@@ -367,7 +367,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
           <Container maxWidth="xl">
             <Grid container spacing={3} sx={{ mb: 4 }}>
               {/* Total treatments */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={300}>
                   <StatsCard>
                     <AnimatedAvatar sx={{ 
@@ -399,7 +399,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
 
               {/* Average cooperation */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={400}>
                   <StatsCard>
                     <AnimatedAvatar sx={{ 
@@ -443,7 +443,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
 
               {/* Different therapists */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={500}>
                   <StatsCard>
                     <AnimatedAvatar sx={{ 
@@ -481,7 +481,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               </Grid>
 
               {/* Recent treatments */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={600}>
                   <StatsCard>
                     <AnimatedAvatar sx={{ 
@@ -535,7 +535,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                   </Typography>
                   <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap justifyContent="center">
                     {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
-                      <Tooltip key={type} title={`${count} טיפולים מסוג ${type}`}>
+                      <Tooltip PopperProps={{ disablePortal: true }} key={type} title={`${count} טיפולים מסוג ${type}`}>
                         <GlowingChip
                           label={`${type}: ${count}`}
                           variant="outlined"

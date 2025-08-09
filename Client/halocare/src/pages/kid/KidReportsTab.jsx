@@ -363,7 +363,7 @@ const KidReportsTab = ({ selectedKid }) => {
                     צפייה
                   </Button>
                   
-                  <Tooltip title="הורדה כ-Word">
+                  <Tooltip PopperProps={{ disablePortal: true }} title="הורדה כ-Word">
                     <IconButton 
                       size="small" 
                       onClick={() => handleDownloadWord(report)}

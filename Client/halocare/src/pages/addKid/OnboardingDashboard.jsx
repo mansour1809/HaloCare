@@ -261,7 +261,7 @@ const OnboardingDashboard = ({
     <Box dir="rtl">
       {/* General Statistics - PRESERVED functionality, updated styling */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{ xs: 12, sm: 3 }}>
           <StatsCard>
             <CardContent>
               <Typography variant="h3" fontWeight="bold" sx={{ color: '#4cb5c3' }}>
@@ -273,7 +273,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{ xs: 12, sm: 3 }}>
           <StatsCard>
             <CardContent>
               <Typography variant="h3" fontWeight="bold" sx={{ color: '#10b981' }}>
@@ -285,7 +285,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{ xs: 12, sm: 3 }}>
           <StatsCard>
             <CardContent>
               <Typography variant="h3" fontWeight="bold" sx={{ color: '#ff7043' }}>
@@ -297,7 +297,7 @@ const OnboardingDashboard = ({
             </CardContent>
           </StatsCard>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item size={{ xs: 12, sm: 3 }}>
           <StatsCard>
             <CardContent>
               <Typography variant="h3" fontWeight="bold" sx={{ color: '#667eea' }}>
