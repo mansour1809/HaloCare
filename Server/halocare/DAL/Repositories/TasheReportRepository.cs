@@ -129,13 +129,22 @@ namespace halocare.DAL.Repositories
         public bool DeleteTasheReport(int reportId, int deletedByEmployeeId)
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>
-            {
-                { "@ReportId", reportId },
-                { "@DeletedByEmployeeId", deletedByEmployeeId }
-            };
+    {
+        { "@ReportId", reportId },
+        { "@DeletedByEmployeeId", deletedByEmployeeId }
+    };
 
-            DataTable result = ExecuteQuery("sp_DeleteTasheReport", parameters);
-            return result.Rows.Count > 0;
+            try
+            {
+                DataTable result = ExecuteQuery("sp_DeleteTasheReport", parameters);
+                return result.Rows.Count > 0;
+            }
+            catch (Exception ex)
+            {
+                // השגיאה כבר מטופלת ב-SP, פשוט נעביר אותה הלאה
+                throw new Exception(ex.Message);
+            }
+
         }
         public TasheReport GetTasheReportById(int reportId)
         {

@@ -740,7 +740,22 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                     overlap="circular"
                     anchorOrigin={{ vertical: "top", horizontal: "right" }}
                     badgeContent={
-                      <Tooltip PopperProps={{ disablePortal: true }} title="העלאת תמונה">
+                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="העלאת תמונה">
                         <label htmlFor="kid-photo-upload">
                           <IconButton
                             aria-label="העלאת תמונה"
@@ -1530,7 +1545,22 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                       </SectionTitle>
                     </Box>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Tooltip PopperProps={{ disablePortal: true }} title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
+                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="פרטי הורה משני אינם חובה אך מומלצים למילוי">
                         <InfoIcon
                           fontSize="small"
                           sx={{ color: theme.palette.info.main }}

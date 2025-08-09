@@ -538,7 +538,22 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <Tooltip PopperProps={{ disablePortal: true }} title={showPasswords.emailAuth ? "הסתר סיסמה" : "הצג סיסמה"}>
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={showPasswords.emailAuth ? "הסתר סיסמה" : "הצג סיסמה"}>
                             <IconButton
                               onClick={() => setShowPasswords(prev => ({ ...prev, emailAuth: !prev.emailAuth }))}
                               edge="end"
@@ -619,7 +634,22 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <Tooltip PopperProps={{ disablePortal: true }} title={showPasswords.current ? "הסתר סיסמה" : "הצג סיסמה"}>
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={showPasswords.current ? "הסתר סיסמה" : "הצג סיסמה"}>
                             <IconButton
                               onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
                               edge="end"
@@ -651,7 +681,22 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <Tooltip PopperProps={{ disablePortal: true }} title={showPasswords.new ? "הסתר סיסמה" : "הצג סיסמה"}>
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={showPasswords.new ? "הסתר סיסמה" : "הצג סיסמה"}>
                             <IconButton
                               onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
                               edge="end"
@@ -683,7 +728,22 @@ const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <Tooltip PopperProps={{ disablePortal: true }} title={showPasswords.confirm ? "הסתר סיסמה" : "הצג סיסמה"}>
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={showPasswords.confirm ? "הסתר סיסמה" : "הצג סיסמה"}>
                             <IconButton
                               onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
                               edge="end"

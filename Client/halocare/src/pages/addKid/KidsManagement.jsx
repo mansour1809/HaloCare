@@ -288,7 +288,22 @@ const OnboardingStatusChip = ({ onboardingData }) => {
   const config = getStatusConfig(overallStatus);
   
   return (
-    <Tooltip PopperProps={{ disablePortal: true }} title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
+    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
       <Chip 
         label={config.label} 
         color={config.color} 
@@ -550,7 +565,22 @@ const KidsManagement = () => {
               </Box>
               
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Tooltip PopperProps={{ disablePortal: true }} title="רענון נתונים">
+                <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="רענון נתונים">
                   <IconButton 
                     onClick={handleRefresh} 
                     disabled={loading}
@@ -789,7 +819,22 @@ const KidsManagement = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Tooltip PopperProps={{ disablePortal: true }} title="פרופיל ילד">
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="פרופיל ילד">
                             <IconButton
                               sx={{
                                 width: 45,

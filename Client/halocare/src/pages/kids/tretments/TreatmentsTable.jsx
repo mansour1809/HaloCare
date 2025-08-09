@@ -226,7 +226,22 @@ const CooperationRating = ({ level }) => {
   }
   
   return (
-    <Tooltip PopperProps={{ disablePortal: true }} title={`רמת שיתוף פעולה: ${level}/5`}>
+    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={`רמת שיתוף פעולה: ${level}/5`}>
       <Stack direction="row" spacing={0.5} alignItems="center">
         {stars}
         <Typography 
@@ -451,7 +466,22 @@ const TreatmentsTable = () => {
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <Tooltip PopperProps={{ disablePortal: true }} title="צפייה בפרטי הטיפול">
+                          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="צפייה בפרטי הטיפול">
                             <ActionButton
                               actiontype="view"
                               size="small"

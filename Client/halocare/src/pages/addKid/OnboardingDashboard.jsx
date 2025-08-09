@@ -526,7 +526,22 @@ const OnboardingDashboard = ({
                   <Box>
                     {/* PRESERVED - Original send to parent logic */}
                     {canSendToParent(form) && form.formId != '1002' && (
-                        <Tooltip PopperProps={{ disablePortal: true }} title="שלח להורה" arrow >
+                        <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="שלח להורה" arrow >
 
                       <AnimatedButton
                         size="small"

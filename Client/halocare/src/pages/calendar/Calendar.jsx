@@ -310,7 +310,22 @@ const Calendar = () => {
                     {showFilterForm ? "הסתר סינון" : "סינון"}
                   </GlowButton>
                   
-                  <Tooltip PopperProps={{ disablePortal: true }} title="רענן יומן" arrow>
+                  <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="רענן יומן" arrow>
                     <IconButton 
                       onClick={fetchEvents}
                       disabled={isLoading}

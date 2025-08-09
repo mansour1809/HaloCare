@@ -535,7 +535,22 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                   </Typography>
                   <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap justifyContent="center">
                     {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
-                      <Tooltip PopperProps={{ disablePortal: true }} key={type} title={`${count} טיפולים מסוג ${type}`}>
+                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}key={type} title={`${count} טיפולים מסוג ${type}`}>
                         <GlowingChip
                           label={`${type}: ${count}`}
                           variant="outlined"

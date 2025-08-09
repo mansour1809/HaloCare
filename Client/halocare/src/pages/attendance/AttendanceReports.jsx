@@ -674,11 +674,41 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           </TableCell>
                           <TableCell align="center">
                             {record.isPresent ? (
-                              <Tooltip PopperProps={{ disablePortal: true }} title="נוכח" arrow>
+                              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נוכח" arrow>
                                 <CheckCircleIcon color="success" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             ) : (
-                              <Tooltip PopperProps={{ disablePortal: true }} title="נעדר" arrow>
+                              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נעדר" arrow>
                                 <CancelIcon color="error" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             )}

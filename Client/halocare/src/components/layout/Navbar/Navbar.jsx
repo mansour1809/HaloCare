@@ -190,7 +190,22 @@ const Navbar = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             
             {/* User menu */}
-            <Tooltip PopperProps={{ disablePortal: true }} title="תפריט משתמש" arrow>
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="תפריט משתמש" arrow>
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
                 <Avatar 
@@ -246,7 +261,22 @@ const Navbar = () => {
             
             {/* Action buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip PopperProps={{ disablePortal: true }} title="הודעות" arrow>
+              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="הודעות" arrow>
                 <ActionButton size="medium">
                   <Badge badgeContent={3} color="error">
                     <ChatIcon />
@@ -254,7 +284,22 @@ const Navbar = () => {
                 </ActionButton>
               </Tooltip>
               
-              <Tooltip PopperProps={{ disablePortal: true }} title="התראות" arrow>
+              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="התראות" arrow>
                 <ActionButton size="medium" onClick={handleOpenNotificationsMenu}>
                   <Badge badgeContent={notifications.length} color="error">
                     <NotificationsIcon />

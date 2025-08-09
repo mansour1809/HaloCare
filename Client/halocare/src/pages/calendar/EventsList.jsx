@@ -378,7 +378,22 @@ const EventsList = () => {
                 {/* Monthly Navigation */}
                 <Grid item size={{xs:12, md:4}}>
                   <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש קודם" arrow>
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="חודש קודם" arrow>
                       <NavButton onClick={goToPreviousMonth} size="small">
                         <ChevronRightIcon />
                       </NavButton>
@@ -397,13 +412,43 @@ const EventsList = () => {
                       {currentMonth.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
                     </Typography>
 
-                    <Tooltip PopperProps={{ disablePortal: true }} title="חודש הבא" arrow>
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="חודש הבא" arrow>
                       <NavButton onClick={goToNextMonth} size="small">
                         <ChevronLeftIcon />
                       </NavButton>
                     </Tooltip>
 
-                    <Tooltip PopperProps={{ disablePortal: true }} title="חזור להיום" arrow>
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="חזור להיום" arrow>
                       <IconButton
                         onClick={goToCurrentMonth}
                         sx={{
@@ -748,7 +793,22 @@ const EventsList = () => {
                             </CardContent>
 
                             <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
-                              <Tooltip PopperProps={{ disablePortal: true }} title="פרטים נוספים" arrow>
+                              <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="פרטים נוספים" arrow>
                                 <IconButton
                                   size="small"
                                   sx={{

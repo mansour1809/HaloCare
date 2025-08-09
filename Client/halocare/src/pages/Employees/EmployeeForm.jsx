@@ -1103,7 +1103,22 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                   ),
                                   endAdornment: (
                                     <InputAdornment position="end">
-                                      <Tooltip PopperProps={{ disablePortal: true }} title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
+                                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
                                         <IconButton
                                           onClick={() => setShowPassword(!showPassword)}
                                           edge="end"

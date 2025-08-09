@@ -489,7 +489,22 @@ const EmployeeDocumentManager = ({
                       </AnimatedButton>
                     )}
 
-                    <Tooltip PopperProps={{ disablePortal: true }} title="רענון מסמכים">
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="רענון מסמכים">
                       <IconButton
                         onClick={handleRefresh}
                         disabled={refreshing}

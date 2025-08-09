@@ -344,7 +344,22 @@ const TreatmentsFilters = () => {
                     ),
                     endAdornment: searchTerm && (
                       <InputAdornment position="end">
-                        <Tooltip  PopperProps={{ disablePortal: true }} title="נקה חיפוש">
+                        <Tooltip  placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נקה חיפוש">
                           <IconButton onClick={clearSearchTerm} size="small">
                             <ClearIcon />
                           </IconButton>
@@ -376,7 +391,22 @@ const TreatmentsFilters = () => {
                   </FilterBadge>
                   
                   {activeFiltersCount > 0 && (
-                    <Tooltip PopperProps={{ disablePortal: true }} title="נקה את כל הפילטרים">
+                    <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נקה את כל הפילטרים">
                       <AnimatedButton 
                         className="clear-button"
                         variant="contained" 
@@ -582,7 +612,22 @@ const TreatmentsFilters = () => {
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Tooltip PopperProps={{ disablePortal: true }} title="נקה את כל הפילטרים">
+                        <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}title="נקה את כל הפילטרים">
                           <AnimatedButton
                             className="clear-button"
                             variant="outlined"

@@ -11,10 +11,6 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -29,11 +25,9 @@ import {
   CheckCircle as ApprovedIcon,
   Schedule as PendingIcon,
   Delete as DeleteIcon,
-  MoreVert as MoreIcon,
   Description as WordIcon,
   TextSnippet as TextIcon,
-  Web as HtmlIcon,
-  Edit as EditIcon
+  ThumbUp as ApproveIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -60,8 +54,6 @@ const KidReportsTab = ({ selectedKid }) => {
 
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedReport, setSelectedReport] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState(null);
 
@@ -94,25 +86,22 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const handleMenuOpen = (event, report) => {
-    setMenuAnchor(event.currentTarget);
-    setSelectedReport(report);
+    // הסרנו את הפונקציה הזו - לא צריך יותר
   };
 
   const handleMenuClose = () => {
-    setMenuAnchor(null);
-    setSelectedReport(null);
+    // הסרנו את הפונקציה הזו - לא צריך יותר
   };
 
   const handleViewReport = (report) => {
     // פתיחה בחלון חדש עם הדוח המעוצב
-    const viewUrl = `/TasheReports/${report.reportId}/view`;
+    const viewUrl = `/api/TasheReports/${report.reportId}/view`;
     window.open(baseURL + viewUrl, '_blank', 'width=1200,height=900,scrollbars=yes');
-    handleMenuClose();
   };
 
   const handleDownloadWord = (report) => {
     // הורדת הדוח כ-Word
-    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-word`;
+    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-word`;
     
     // יצירת link זמני להורדה
     const link = document.createElement('a');
@@ -121,21 +110,19 @@ const KidReportsTab = ({ selectedKid }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    handleMenuClose();
   };
 
-  const handleDownloadText = (report) => {
-    // הורדת הדוח כטקסט
-    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-text`;
+  // const handleDownloadText = (report) => {
+  //   // הורדת הדוח כטקסט
+  //   const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-text`;
     
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    handleMenuClose();
-  };
+  //   const link = document.createElement('a');
+  //   link.href = downloadUrl;
+  //   link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.txt`;
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
 
   const handleApprove = async (report) => {
     try {
@@ -144,7 +131,6 @@ const KidReportsTab = ({ selectedKid }) => {
         approvedByEmployeeId: currentUser.id 
       })).unwrap();
       loadReports();
-      handleMenuClose();
     } catch (error) {
       console.error('שגיאה באישור דוח:', error);
     }
@@ -153,7 +139,6 @@ const KidReportsTab = ({ selectedKid }) => {
   const handleDeleteClick = (report) => {
     setReportToDelete(report);
     setDeleteDialogOpen(true);
-    handleMenuClose();
   };
 
   const handleDeleteConfirm = async () => {
@@ -270,7 +255,7 @@ const KidReportsTab = ({ selectedKid }) => {
             boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)'
           }}
         >
-          יצירת דוח AI חדש
+          יצירת דוח תש"ה חדש
         </Button>
       </Box>
 
@@ -297,7 +282,7 @@ const KidReportsTab = ({ selectedKid }) => {
       ) : (
         <Grid container spacing={3}>
           {reports.map((report) => (
-            <Grid item size={{sx:12,md:6,lg:4}} key={report.reportId}>
+            <Grid item size={{lg:12}} key={report.reportId}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -315,19 +300,7 @@ const KidReportsTab = ({ selectedKid }) => {
                     <Typography variant="h6" fontWeight="bold" sx={{ flex: 1, mr: 1 }}>
                       {report.reportTitle}
                     </Typography>
-                    <IconButton 
-                      size="small"
-                      onClick={(e) => handleMenuOpen(e, report)}
-                    >
-                      <MoreIcon />
-                    </IconButton>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     {getStatusChip(report)}
-                    <Typography variant="body2" color="text.secondary">
-                      {formatDate(report.generatedDate)}
-                    </Typography>
                   </Box>
 
                   <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -336,6 +309,10 @@ const KidReportsTab = ({ selectedKid }) => {
 
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     <strong>נוצר על ידי:</strong> {report.generatedByEmployeeName}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    <strong>תאריך יצירה:</strong> {formatDate(report.generatedDate)}
                   </Typography>
 
                   {report.isApproved && (
@@ -348,88 +325,150 @@ const KidReportsTab = ({ selectedKid }) => {
 
                   {report.notes && (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
-                      {report.notes}
+                      <strong>הערות:</strong> {report.notes}
                     </Typography>
                   )}
                 </CardContent>
 
-                <CardActions sx={{ px: 2, pb: 2 }}>
-                  <Button
-                    size="small"
-                    startIcon={<ViewIcon />}
-                    onClick={() => handleViewReport(report)}
-                    sx={{ mr: 1 }}
-                  >
-                    צפייה
-                  </Button>
-                  
-                  <Tooltip PopperProps={{ disablePortal: true }} title="הורדה כ-Word">
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleDownloadWord(report)}
-                      sx={{ color: 'primary.main' }}
+                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+                  {/* כפתורי צפייה והורדה */}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<ViewIcon />}
+                      onClick={() => handleViewReport(report)}
+                      sx={{ mr: 1 }}
                     >
-                      <WordIcon />
-                    </IconButton>
-                  </Tooltip>
+                      צפייה
+                    </Button>
+                    
+                    <Tooltip title="הורדה כ-Word" placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }} >
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDownloadWord(report)}
+                        sx={{ 
+                          color: 'primary.main',
+                          border: '1px solid',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.50'
+                          }
+                        }}
+                      >
+                        <WordIcon />
+                      </IconButton>
+                    </Tooltip>
+
+                    {/* <Tooltip title="הורדה כטקסט">
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDownloadText(report)}
+                        sx={{ 
+                          color: 'info.main',
+                          border: '1px solid',
+                          borderColor: 'info.main',
+                          '&:hover': {
+                            backgroundColor: 'info.50'
+                          }
+                        }}
+                      >
+                        <TextIcon />
+                      </IconButton>
+                    </Tooltip> */}
+                  </Box>
+                  
+                  {/* כפתורי פעולות מנהלים */}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {canApprove(report) && (
+                      <Tooltip title="אישור דוח" placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleApprove(report)}
+                          sx={{ 
+                            color: 'success.main',
+                            border: '1px solid',
+                            borderColor: 'success.main',
+                            '&:hover': {
+                              backgroundColor: 'success.50'
+                            }
+                          }}
+                        >
+                          <ApproveIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
+                    {canDelete(report) && (
+                      <Tooltip title="מחיקת דוח" placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleDeleteClick(report)}
+                          sx={{ 
+                            color: 'error.main',
+                            border: '1px solid',
+                            borderColor: 'error.main',
+                            '&:hover': {
+                              backgroundColor: 'error.50'
+                            }
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
                 </CardActions>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
-
-      {/* Menu for report actions */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor) && Boolean(selectedReport)}
-        onClose={handleMenuClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        {selectedReport && (
-          <>
-            <MenuItem onClick={() => handleViewReport(selectedReport)}>
-              <ListItemIcon>
-                <HtmlIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>צפייה בדפדפן</ListItemText>
-            </MenuItem>
-
-            <MenuItem onClick={() => handleDownloadWord(selectedReport)}>
-              <ListItemIcon>
-                <WordIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>הורדה כ-Word</ListItemText>
-            </MenuItem>
-
-            <MenuItem onClick={() => handleDownloadText(selectedReport)}>
-              <ListItemIcon>
-                <TextIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>הורדה כטקסט</ListItemText>
-            </MenuItem>
-
-            {canApprove(selectedReport) && (
-              <MenuItem onClick={() => handleApprove(selectedReport)}>
-                <ListItemIcon>
-                  <ApprovedIcon fontSize="small" color="success" />
-                </ListItemIcon>
-                <ListItemText>אישור דוח</ListItemText>
-              </MenuItem>
-            )}
-
-            {canDelete(selectedReport) && (
-              <MenuItem onClick={() => handleDeleteClick(selectedReport)}>
-                <ListItemIcon>
-                  <DeleteIcon fontSize="small" color="error" />
-                </ListItemIcon>
-                <ListItemText>מחיקת דוח</ListItemText>
-              </MenuItem>
-            )}
-          </>
-        )}
-      </Menu>
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

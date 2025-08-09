@@ -1089,12 +1089,14 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
       >
         <DialogTitle sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
           <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
+            {console.log(kidDetailsDialog.kid)}
             <FloatingAvatar
               status={kidDetailsDialog.kid?.isPresent}
               sx={{ width: 80, height: 80, fontSize: '2rem' }}
+
               src={
                 kidDetailsDialog.kid?.photoPath
-                  ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kidDetailsDialog.kid.photoPath)}`
+                  ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kidDetailsDialog.kid?.photoPath)}`
                   : ''
               }
               alt={`${kidDetailsDialog.kid?.firstName} ${kidDetailsDialog.kid?.lastName}`}
@@ -1129,23 +1131,23 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               }}
             >
               <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#667eea' }}>
-                📞 פרטי קשר חירום
+                📞 פרטי קשר חירום - {kidDetailsDialog.kid?.emergencyContactName}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <PhoneIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  {kidDetailsDialog.kid?.parentPhone || 'לא זמין'}
+                  {kidDetailsDialog.kid?.emergencyPhone || 'לא זמין'}
                 </Typography>
-                {kidDetailsDialog.kid?.parentPhone && (
+                {/* {kidDetailsDialog.kid?.emergencyPhone && (
                   <GlowingButton
                     size="small"
                     startIcon={<CallIcon />}
-                    onClick={() => window.open(`tel:${kidDetailsDialog.kid.parentPhone}`)}
+                    onClick={() => window.open(`tel:${kidDetailsDialog.kid.emergencyPhone}`)}
                     glowColor="#10b981"
                   >
                     📞 חייג כעת
                   </GlowingButton>
-                )}
+                )} */}
               </Stack>
             </Paper>
             
