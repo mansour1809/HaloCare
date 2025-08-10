@@ -572,7 +572,7 @@ const KidOnboarding = () => {
                           onClick={switchToEditMode}
                           color="primary"
                         >
-                          עבר לעריכה
+                          עבור לעריכה
                         </Button>
                       )}
                       
