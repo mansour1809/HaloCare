@@ -463,7 +463,7 @@ const EmployeesManagement = () => {
                   <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
                     <Chip
                       icon={<GroupIcon />}
-                      label={`${stats.total} סה"כ עובדים`}
+                      label={`${stats.total} אנשי צוות`}
                       sx={{
                         background: 'rgba(255, 255, 255, 0.34)',
                         backdropFilter: 'blur(10px)',
@@ -493,22 +493,7 @@ const EmployeesManagement = () => {
                       }}
                       size="medium"
                     />
-                    <Chip
-                      icon={<StarIcon />}
-                      label={`${stats.roles} תפקידים`}
-                      sx={{
-                        background: 'rgba(255, 111, 67, 0.8)',
-                        backdropFilter: 'blur(10px)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 112, 67, 0.3)',
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                        px: 2,
-                        py: 1,
-                        height: 'auto'
-                      }}
-                      size="medium"
-                    />
+                   
                   </Stack>
                 </ModernHeader>
               </Fade>

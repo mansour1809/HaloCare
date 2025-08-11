@@ -1962,7 +1962,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                   רשימת עובדים
                 </Link>
                 <Typography>
-                  עריכת עובד
+                  פרטי עובד
                 </Typography>
               </Breadcrumbs>
             </Fade>

@@ -270,11 +270,16 @@ const Calendar = () => {
               >
                 {/* Statistics */}
                 <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <StatsChip 
-                      label={`✨ ${displayEvents.length} אירועים`}
-                    />
-                  </Box>
+                <GlowButton 
+                    variant="contained" 
+                    color="primary" 
+                    startIcon={<AddIcon />}
+                    onClick={createNewEvent}
+                    glowColor="#667eea"
+                    sx={{ minWidth: 140 }}
+                  >
+                    אירוע חדש
+                  </GlowButton>
                   
                   {hasActiveFilters && (
                     <Chip 
@@ -289,16 +294,7 @@ const Calendar = () => {
 
                 {/* Action buttons */}
                 <Stack direction="row" spacing={2} flexWrap="wrap">
-                  <GlowButton 
-                    variant="contained" 
-                    color="primary" 
-                    startIcon={<AddIcon />}
-                    onClick={createNewEvent}
-                    glowColor="#667eea"
-                    sx={{ minWidth: 140 }}
-                  >
-                    אירוע חדש
-                  </GlowButton>
+                  
                   
                   <GlowButton
                     variant={showFilterForm ? "contained" : "outlined"}

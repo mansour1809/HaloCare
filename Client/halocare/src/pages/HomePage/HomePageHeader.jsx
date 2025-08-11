@@ -1,34 +1,14 @@
 import  { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
-  Grid,
-  Card,
-  CardContent,
   Typography,
-  Button,
-  Avatar,
-  Chip,
   Stack,
   Paper,
-  Divider,
   IconButton,
-  Tooltip,
-  LinearProgress
+  Tooltip
 } from '@mui/material';
 import {
-  School as SchoolIcon,
-  CalendarToday as CalendarIcon,
-  Assignment as AssignmentIcon,
-  LocalHospital as HospitalIcon,
-  Person as PersonIcon,
-  Check as CheckIcon,
-  Warning as WarningIcon,
-  AccessTime as TimeIcon,
-  Groups as GroupsIcon,
-  Refresh as RefreshIcon,
-  Visibility as ViewIcon,
-  ArrowBack as BackIcon
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 
 const HomePageHeader = ({ onRefresh }) => {
@@ -64,7 +44,7 @@ const HomePageHeader = ({ onRefresh }) => {
             color="primary.main"
             sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}
           >
-            👋 ברוכה הבאה, מנהלת הגן
+            ברוכים הבאים 👋
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
             📅 {currentDate}
@@ -72,21 +52,6 @@ const HomePageHeader = ({ onRefresh }) => {
         </Box>
         
         <Stack direction="row" spacing={3} alignItems="center">
-          {/* סטטיסטיקות מהירות */}
-          <Stack direction="row" spacing={3}>
-            <Box textAlign="center">
-              <Typography variant="h5" fontWeight="bold" color="success.main">15/18</Typography>
-              <Typography variant="caption" color="text.secondary">נוכחות היום</Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="h5" fontWeight="bold" color="primary.main">12</Typography>
-              <Typography variant="caption" color="text.secondary">אירועים היום</Typography>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="h5" fontWeight="bold" color="warning.main">5</Typography>
-              <Typography variant="caption" color="text.secondary">בתהליך קליטה</Typography>
-            </Box>
-          </Stack>
           
           <Tooltip placement="top" 
   PopperProps={{
