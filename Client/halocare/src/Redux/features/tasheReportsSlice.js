@@ -70,6 +70,45 @@ export const deleteTasheReport = createAsyncThunk(
     }
   }
 );
+// עדכון דוח תש"ה
+export const updateTasheReport = createAsyncThunk(
+  'tasheReports/updateReport',
+  async ({ reportId, reportData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`/TasheReports/${reportId}`, reportData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בעדכון הדוח');
+    }
+  }
+);
+
+// בדיקת הרשאות עריכה
+export const checkCanEditReport = createAsyncThunk(
+  'tasheReports/checkCanEdit',
+  async ({ reportId, employeeId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/TasheReports/${reportId}/can-edit?employeeId=${employeeId}`);
+      return { reportId, canEdit: response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בבדיקת הרשאות');
+    }
+  }
+);
+
+// שליפת סטטיסטיקות דוחות
+export const fetchReportStatistics = createAsyncThunk(
+  'tasheReports/fetchStatistics',
+  async (kidId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/TasheReports/statistics/${kidId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'שגיאה בשליפת הסטטיסטיקות');
+    }
+  }
+);
+
 
 const tasheReportsSlice = createSlice({
   name: 'tasheReports',
@@ -82,7 +121,9 @@ const tasheReportsSlice = createSlice({
     previewStatus: 'idle',
     error: null,
     generateError: null,
-    previewError: null
+    previewError: null,
+    statistics: null,
+    editPermissions: {}, // { reportId: boolean }
   },
   reducers: {
     clearError: (state) => {
@@ -165,6 +206,36 @@ const tasheReportsSlice = createSlice({
       // Delete report
       .addCase(deleteTasheReport.fulfilled, (state, action) => {
         state.reports = state.reports.filter(r => r.reportId !== action.payload);
+      })
+
+      .addCase(updateTasheReport.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(updateTasheReport.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        const index = state.reports.findIndex(report => report.reportId === action.payload.reportId);
+        if (index !== -1) {
+          state.reports[index] = action.payload;
+        }
+      })
+      .addCase(updateTasheReport.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+
+      .addCase(checkCanEditReport.fulfilled, (state, action) => {
+        state.editPermissions[action.payload.reportId] = action.payload.canEdit;
+      })
+
+      .addCase(fetchReportStatistics.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(fetchReportStatistics.fulfilled, (state, action) => {
+        state.statistics = action.payload;
+      })
+      .addCase(fetchReportStatistics.rejected, (state, action) => {
+        state.error = action.payload;
       });
   }
 });
@@ -174,7 +245,8 @@ export const {
   clearReports, 
   clearTreatmentsPreview, 
   setCurrentReport,
-  resetGenerateStatus 
+  resetGenerateStatus ,
+  clearStatistics
 } = tasheReportsSlice.actions;
 
 export default tasheReportsSlice.reducer;

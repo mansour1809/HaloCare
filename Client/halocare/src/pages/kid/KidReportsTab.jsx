@@ -27,18 +27,22 @@ import {
   Delete as DeleteIcon,
   Description as WordIcon,
   TextSnippet as TextIcon,
-  ThumbUp as ApproveIcon
+  ThumbUp as ApproveIcon,
+  Edit as EditIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   fetchTasheReportsByKid, 
   approveTasheReport, 
   deleteTasheReport, 
-  clearError 
+  clearError,
+  checkCanEditReport
 } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
 import { baseURL } from '../../components/common/axiosConfig';
 import TasheReportGenerator from './TasheReportGenerator';
+import EditReportDialog from './EditReportDialog';
+import ReportsStatisticsWidget from './ReportsStatisticsWidget';
 
 const KidReportsTab = ({ selectedKid }) => {
   // בדיקה בסיסית שהילד קיים
@@ -54,23 +58,29 @@ const KidReportsTab = ({ selectedKid }) => {
 
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [reportToEdit, setReportToEdit] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState(null);
 
   const { currentUser } = useAuth();
-  const { reports = [], status, error } = useSelector(state => state.tasheReports || {});
+  const { reports = [], editPermissions = {}, status, error } = useSelector(state => state.tasheReports || {});
 
   const kidName = selectedKid ? `${selectedKid.firstName || ''} ${selectedKid.lastName || ''}`.trim() : 'לא נבחר ילד';
 
   useEffect(() => {
     if (selectedKid?.id) { // בדיקה שהילד קיים ויש לו ID
       loadReports();
+      // בדיקת הרשאות עריכה לכל הדוחות
+      reports.forEach(report => {
+        dispatch(checkCanEditReport({ reportId: report.reportId, employeeId: currentUser.id }));
+      });
     }
 
     return () => {
       dispatch(clearError());
     };
-  }, [selectedKid?.id]);
+  }, [selectedKid?.id, reports.length]);
 
   const loadReports = async () => {
     if (!selectedKid?.id) {
@@ -85,23 +95,37 @@ const KidReportsTab = ({ selectedKid }) => {
     }
   };
 
-  const handleMenuOpen = (event, report) => {
-    // הסרנו את הפונקציה הזו - לא צריך יותר
+  const handleEditClick = (report) => {
+    setReportToEdit(report);
+    setEditDialogOpen(true);
   };
 
-  const handleMenuClose = () => {
-    // הסרנו את הפונקציה הזו - לא צריך יותר
+  const handleEditSuccess = () => {
+    setEditDialogOpen(false);
+    setReportToEdit(null);
+    loadReports(); // רענון הרשימה
+  };
+
+  const canEdit = (report) => {
+    if (!report) return false;
+    // בדיקה מקומית + בדיקה מהשרת
+    const localCheck = !report.isApproved && 
+                      (report.generatedByEmployeeId === currentUser.id || 
+                       currentUser.role === 'מנהל/ת' || 
+                       currentUser.role === 'מנהל');
+    const serverCheck = editPermissions[report.reportId];
+    return localCheck && (serverCheck !== false); 
   };
 
   const handleViewReport = (report) => {
     // פתיחה בחלון חדש עם הדוח המעוצב
-    const viewUrl = `/api/TasheReports/${report.reportId}/view`;
+    const viewUrl = `/TasheReports/${report.reportId}/view`;
     window.open(baseURL + viewUrl, '_blank', 'width=1200,height=900,scrollbars=yes');
   };
 
   const handleDownloadWord = (report) => {
     // הורדת הדוח כ-Word
-    const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-word`;
+    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-word`;
     
     // יצירת link זמני להורדה
     const link = document.createElement('a');
@@ -226,7 +250,13 @@ const KidReportsTab = ({ selectedKid }) => {
         </Alert>
       )}
 
-      {/* Header */}
+      {/* Statistics Widget */}
+      {selectedKid?.id && (
+        <ReportsStatisticsWidget 
+          kidId={selectedKid.id} 
+          kidName={kidName}
+        />
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
         <BrainIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
         <Box sx={{ flex: 1 }}>
@@ -255,7 +285,7 @@ const KidReportsTab = ({ selectedKid }) => {
             boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)'
           }}
         >
-          יצירת דוח תש"ה חדש
+          יצירת דוח AI חדש
         </Button>
       </Box>
 
@@ -282,7 +312,7 @@ const KidReportsTab = ({ selectedKid }) => {
       ) : (
         <Grid container spacing={3}>
           {reports.map((report) => (
-            <Grid item size={{lg:12}} key={report.reportId}>
+            <Grid item xs={12} lg={6} key={report.reportId}>
               <Card 
                 sx={{ 
                   height: '100%', 
@@ -343,8 +373,7 @@ const KidReportsTab = ({ selectedKid }) => {
                       צפייה
                     </Button>
                     
-                    <Tooltip title="הורדה כ-Word" placement="top" 
-  PopperProps={{
+                    <Tooltip title="הורדה כ-Word" placement="top"  PopperProps={{
     disablePortal: true,
     modifiers: [
       {
@@ -358,7 +387,7 @@ const KidReportsTab = ({ selectedKid }) => {
         },
       },
     ],
-  }} >
+  }}>
                       <IconButton 
                         size="small" 
                         onClick={() => handleDownloadWord(report)}
@@ -375,7 +404,21 @@ const KidReportsTab = ({ selectedKid }) => {
                       </IconButton>
                     </Tooltip>
 
-                    {/* <Tooltip title="הורדה כטקסט">
+                    {/* <Tooltip title="הורדה כטקסט"   placement="top" PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
                       <IconButton 
                         size="small" 
                         onClick={() => handleDownloadText(report)}
@@ -395,9 +438,41 @@ const KidReportsTab = ({ selectedKid }) => {
                   
                   {/* כפתורי פעולות מנהלים */}
                   <Box sx={{ display: 'flex', gap: 1 }}>
+                    {canEdit(report) && (
+                      <Tooltip title="עריכת דוח"  placement="top" PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleEditClick(report)}
+                          sx={{ 
+                            color: 'info.main',
+                            border: '1px solid',
+                            borderColor: 'info.main',
+                            '&:hover': {
+                              backgroundColor: 'info.50'
+                            }
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
                     {canApprove(report) && (
-                      <Tooltip title="אישור דוח" placement="top" 
-  PopperProps={{
+                      <Tooltip title="אישור דוח"  placement="top" PopperProps={{
     disablePortal: true,
     modifiers: [
       {
@@ -430,8 +505,7 @@ const KidReportsTab = ({ selectedKid }) => {
                     )}
 
                     {canDelete(report) && (
-                      <Tooltip title="מחיקת דוח" placement="top" 
-  PopperProps={{
+                      <Tooltip title="מחיקת דוח"  placement="top" PopperProps={{
     disablePortal: true,
     modifiers: [
       {
@@ -469,6 +543,14 @@ const KidReportsTab = ({ selectedKid }) => {
           ))}
         </Grid>
       )}
+
+      {/* Edit Report Dialog */}
+      <EditReportDialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        report={reportToEdit}
+        onSuccess={handleEditSuccess}
+      />
 
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

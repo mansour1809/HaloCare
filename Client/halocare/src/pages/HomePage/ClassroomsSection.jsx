@@ -59,6 +59,7 @@ import {
 import {useAuth} from '../../components/login/AuthContext'
 import { fetchClasses } from '../../Redux/features/classesSlice';
 import { fetchKids } from '../../Redux/features/kidsSlice';
+import { fetchEmployees } from '../../Redux/features/employeesSlice';
 import { fetchAttendanceByDate, addAttendanceRecord, updateAttendanceRecord } from '../../Redux/features/attendanceSlice';
 import { baseURL } from '../../components/common/axiosConfig';
 import Swal from 'sweetalert2';
@@ -264,7 +265,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const { classes, status: classesStatus } = useSelector(state => state.classes);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   const { todayRecords, status: attendanceStatus } = useSelector(state => state.attendance);
-  
+  const { employees } = useSelector(state => state.employees);
+
   // Local state
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterMode, setFilterMode] = useState('all');
@@ -282,6 +284,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     dispatch(fetchClasses());
     dispatch(fetchKids());
     dispatch(fetchAttendanceByDate(selectedDate));
+    dispatch(fetchEmployees())
   }, [dispatch, selectedDate]);
 
   // Auto refresh every 5 minutes
@@ -835,7 +838,12 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                   {classData.className}
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary">
-                                  👩‍🏫 גננת: {classData.teacherName || 'לא מוגדר'}
+                                  {/* 👩‍🏫 גננת: {classData.teacherName || 'לא מוגדר'} */}
+                                  {console.log(employees)}
+                                  {console.log(classData)}
+{employees.find(emp => emp.employeeId === classData.teacherId) 
+  ? `${employees.find(emp => emp.employeeId === classData.teacherId).firstName} ${employees.find(emp => emp.employeeId === classData.teacherId).lastName}`
+  : 'לא מוגדר'}
                                 </Typography>
                               </Box>
                               

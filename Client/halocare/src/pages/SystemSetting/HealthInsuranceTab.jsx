@@ -380,7 +380,7 @@ const HealthInsuranceTab = () => {
             </Zoom>
 
 {/* Search bar and add button designed */}            <Fade in timeout={1000}>
-              <Paper sx={{
+              <Paper dir="rtl" sx={{
                 p: 3,
                 mb: 4,
                 borderRadius: 4,

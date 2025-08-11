@@ -637,8 +637,21 @@ const getStatusText = (status) => {
                         {/* Actions - 2 Direct Buttons */}
 <Grid item size={{xs:2}}>
   <Stack direction="row" spacing={1}>
-    <Tooltip title="דף קליטה" PopperProps={{ disablePortal: true }}>
-      {console.log(selectedKid)}
+    <Tooltip title="דף קליטה" placement="top" PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
       <IconButton 
         size="small"
         onClick={(e) => {
@@ -658,13 +671,28 @@ const getStatusText = (status) => {
       </IconButton>
     </Tooltip>
     
-    <Tooltip title="פרופיל ילד" PopperProps={{ disablePortal: true }}>
+    <Tooltip title="פרופיל ילד"  placement="top" PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}>
       <IconButton 
         size="small"
         onClick={(e) => {
+          console.log("sadsfsdfsdf",kid)
           e.stopPropagation();
           setSelectedKid(kid);
-          navigate(`/kids/${selectedKid?.id}`);
+          navigate(`/kids/${kid.id}`);
         }}
         sx={{ 
           background: 'rgba(16, 185, 129, 0.1)',

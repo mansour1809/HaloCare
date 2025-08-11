@@ -2161,6 +2161,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
+                              placement="top"
                               label="🏙️ עיר"
                               name="cityName"
                               value={formData.cityName}
@@ -2178,7 +2179,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 )
                               }}
                               onFocus={() => {
-                                // נסה לאתחל שוב במקרה שלא עבד קודם
+                                
                                 if (!autocompleteCity.current && window.google?.maps?.places) {
                                   setTimeout(() => initializeGooglePlaces(), 100);
                                 }

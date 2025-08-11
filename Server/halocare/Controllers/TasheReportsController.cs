@@ -252,8 +252,57 @@ namespace halocare.Controllers
                 return StatusCode(500, $"שגיאה בהורדת הדוח: {ex.Message}");
             }
         }
+        [HttpPut("{reportId}")]
+        public ActionResult<TasheReport> UpdateReport(int reportId, [FromBody] UpdateReportRequest request)
+        {
+            try
+            {
+                // בדיקות תקינות
+                if (request.UpdatedByEmployeeId <= 0)
+                {
+                    return BadRequest("נדרש מזהה עובד תקין");
+                }
 
-        // GET: api/TasheReports/statistics/{kidId} - סטטיסטיקות דוחות לילד
+                var updatedReport = _tasheReportService.UpdateReport(
+                    reportId,
+                    request.ReportTitle,
+                    request.ReportContent,
+                    request.Notes,
+                    request.UpdatedByEmployeeId
+                );
+
+                return Ok(updatedReport);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בעדכון הדוח: {ex.Message}");
+            }
+        }
+
+        // GET: api/TasheReports/{reportId}/can-edit - בדיקת הרשאות עריכה
+        [HttpGet("{reportId}/can-edit")]
+        public ActionResult<bool> CanEditReport(int reportId, [FromQuery] int employeeId)
+        {
+            try
+            {
+                bool canEdit = _tasheReportService.CanEditReport(reportId, employeeId);
+                return Ok(canEdit);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בבדיקת הרשאות: {ex.Message}");
+            }
+        }
+
+        // GET: api/TasheReports/statistics/{kidId} 
         [HttpGet("statistics/{kidId}")]
         public ActionResult GetReportStatistics(int kidId)
         {
@@ -527,5 +576,12 @@ namespace halocare.Controllers
     {
         public int ReportId { get; set; }
         public int ApprovedByEmployeeId { get; set; }
+    }
+    public class UpdateReportRequest
+    {
+        public string ReportTitle { get; set; }
+        public string ReportContent { get; set; }
+        public string Notes { get; set; }
+        public int UpdatedByEmployeeId { get; set; }
     }
 }

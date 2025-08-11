@@ -183,7 +183,7 @@ export const updateKidWithParents = createAsyncThunk(
         hName: formData.hName,
         pathToFolder: formData.pathToFolder,
         classId: formData.classId,
-        photo: formData.photo || null,
+        photoPath: formData.photoPath || null,
         emergencyPhone: formData.emergencyPhone || null,
         emergencyContactName: formData.emergencyContactName || null,
       };

@@ -176,6 +176,71 @@ namespace halocare.DAL.Repositories
                 Notes = row["notes"] == DBNull.Value ? null : row["notes"].ToString()
             };
         }
+        public TasheReport UpdateTasheReport(int reportId, string reportTitle, string reportContent, string notes, int updatedByEmployeeId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+        {
+            { "@ReportId", reportId },
+            { "@ReportTitle", reportTitle ?? (object)DBNull.Value },
+            { "@ReportContent", reportContent ?? (object)DBNull.Value },
+            { "@Notes", notes ?? (object)DBNull.Value },
+            { "@UpdatedByEmployeeId", updatedByEmployeeId }
+        };
+
+            DataTable dataTable = ExecuteQuery("sp_UpdateTasheReport", parameters);
+
+            if (dataTable.Rows.Count == 0)
+                return null;
+
+            DataRow row = dataTable.Rows[0];
+
+            return new TasheReport
+            {
+                ReportId = Convert.ToInt32(row["reportId"]),
+                KidId = Convert.ToInt32(row["kidId"]),
+                GeneratedDate = Convert.ToDateTime(row["generatedDate"]),
+                PeriodStartDate = Convert.ToDateTime(row["periodStartDate"]),
+                PeriodEndDate = Convert.ToDateTime(row["periodEndDate"]),
+                ReportContent = row["reportContent"].ToString(),
+                GeneratedByEmployeeId = Convert.ToInt32(row["generatedByEmployeeId"]),
+                IsApproved = Convert.ToBoolean(row["isApproved"]),
+                ApprovedByEmployeeId = row["approvedByEmployeeId"] == DBNull.Value ? null : Convert.ToInt32(row["approvedByEmployeeId"]),
+                ApprovedDate = row["approvedDate"] == DBNull.Value ? null : Convert.ToDateTime(row["approvedDate"]),
+                ReportTitle = row["reportTitle"] == DBNull.Value ? null : row["reportTitle"].ToString(),
+                Notes = row["notes"] == DBNull.Value ? null : row["notes"].ToString(),
+                KidName = row["kidName"].ToString(),
+                GeneratedByEmployeeName = row["generatedByEmployeeName"].ToString(),
+                ApprovedByEmployeeName = row["approvedByEmployeeName"] == DBNull.Value ? null : row["approvedByEmployeeName"].ToString()
+            };
+        }
+
+        // מתודה לבדיקת הרשאות עריכה
+        public bool CanEditReport(int reportId, int employeeId)
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+        {
+            { "@ReportId", reportId },
+            { "@EmployeeId", employeeId }
+        };
+
+            string query = @"
+            SELECT COUNT(*) as CanEdit
+            FROM [dbo].[tblTasheReports] tr
+            INNER JOIN [dbo].[tblEmployee] e ON e.employeeId = @EmployeeId
+            WHERE tr.reportId = @ReportId 
+            AND tr.isApproved = 0  -- לא אושר
+            AND (tr.generatedByEmployeeId = @EmployeeId OR e.roleName IN ('מנהל', 'מנהל/ת'))  -- יוצר הדוח או מנהל
+            AND e.isActive = 1";
+
+            DataTable result = ExecuteQuery(query, parameters);
+
+            if (result.Rows.Count > 0)
+            {
+                return Convert.ToInt32(result.Rows[0]["CanEdit"]) > 0;
+            }
+
+            return false;
+        }
 
     }
 }

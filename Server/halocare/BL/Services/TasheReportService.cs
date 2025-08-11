@@ -184,5 +184,41 @@ namespace halocare.BL.Services
 
             return report;
         }
+
+        public TasheReport UpdateReport(int reportId, string reportTitle, string reportContent, string notes, int updatedByEmployeeId)
+        {
+            // בדיקת הרשאות
+            if (!_tasheReportRepository.CanEditReport(reportId, updatedByEmployeeId))
+            {
+                throw new UnauthorizedAccessException("אין הרשאה לערוך דוח זה");
+            }
+
+            // בדיקה שהעובד המעדכן קיים ופעיל
+            Employee employee = _employeeRepository.GetEmployeeById(updatedByEmployeeId);
+            if (employee == null)
+            {
+                throw new ArgumentException("העובד לא נמצא במערכת");
+            }
+            if (!employee.IsActive)
+            {
+                throw new ArgumentException("לא ניתן לעדכן דוח על ידי עובד שאינו פעיל");
+            }
+
+            // עדכון הדוח
+            var updatedReport = _tasheReportRepository.UpdateTasheReport(reportId, reportTitle, reportContent, notes, updatedByEmployeeId);
+
+            if (updatedReport == null)
+            {
+                throw new ArgumentException("שגיאה בעדכון הדוח");
+            }
+
+            return updatedReport;
+        }
+
+        // מתודה לבדיקת הרשאות עריכה
+        public bool CanEditReport(int reportId, int employeeId)
+        {
+            return _tasheReportRepository.CanEditReport(reportId, employeeId);
+        }
     }
 }

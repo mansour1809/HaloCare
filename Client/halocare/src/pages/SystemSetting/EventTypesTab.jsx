@@ -395,7 +395,7 @@ const EventTypesTab = () => {
             </Zoom>
 
 {/* Search bar and add button designed */}            <Fade in timeout={1000}>
-              <Paper sx={{ 
+              <Paper dir="rtl" sx={{ 
                 p: 3, 
                 mb: 4, 
                 borderRadius: 4,
@@ -451,14 +451,15 @@ const EventTypesTab = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>📅 שם סוג האירוע</TableCell>
-                      <TableCell>🎨 צבע</TableCell>
+                      <TableCell align="center">📅 שם סוג האירוע</TableCell>
+                      <TableCell align="center">🎨 צבע</TableCell>
                       <TableCell align="center">⚡ פעולות</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {filteredEventTypes.map((type) => (
                       <TableRow 
+                      align="center"
                         key={type.eventTypeId}
                         hover
                         sx={{
@@ -472,7 +473,7 @@ const EventTypesTab = () => {
                           }
                         }}
                       >
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === type.eventTypeId ? (
                             <TextField
                               value={editValue}
@@ -510,7 +511,7 @@ const EventTypesTab = () => {
                             </Box>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === type.eventTypeId ? (
                             <Box display="flex" alignItems="center" gap={2}>
                               <input

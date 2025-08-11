@@ -2574,7 +2574,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
   // Function to set initial values
   const getInitialValues = () => {
     if (data && isEditMode) {
-      console.log(data)
+      console.log("sdaasdasdsa",data)
       return {
         // Kid info
         id: data.id || 0,
@@ -2586,7 +2586,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
         cityName: data.cityName || '',
         address: data.address || '',
         hName: data.hName || '',
-        photo: data.photo || '',
+        photoPath: data.photoPath || '',
         classId: data.classId || '',
         pathToFolder: data.pathToFolder || '',
         isActive: data.isActive !== undefined ? data.isActive : true,

@@ -378,9 +378,10 @@ const CitiesTab = () => {
             </Zoom>
 
 {/* Search bar and add button designed */}            <Fade in timeout={1000}>
-              <Paper sx={{ 
+              <Paper dir="rtl" sx={{ 
                 p: 3, 
                 mb: 4, 
+                
                 borderRadius: 4,
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',

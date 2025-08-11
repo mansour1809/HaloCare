@@ -21,6 +21,8 @@ const sidebarTheme = createTheme({
   direction: 'rtl',
   typography: {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
+        fontSize: '1.1rem !important',
+
   },
   palette: {
     primary: {
@@ -59,6 +61,8 @@ const CategoryHeader = styled(Box)(({ theme }) => ({
   marginTop: '8px',
   marginBottom: '2px',
   borderBottom: '1px solid rgba(76, 181, 195, 0.1)',
+      fontSize: '1.2rem !important',
+
   position: 'relative',
   '&::before': {
     content: '""',
@@ -84,7 +88,7 @@ const StyledSubMenu = styled(SubMenu)(({ theme }) => ({
     padding: '8px 12px !important',
     borderRadius: '8px !important',
     fontWeight: '700 !important',
-    fontSize: '0.9rem !important',
+    fontSize: '1.1rem !important',
     color: '#2a8a95 !important',
 
     '&:hover': {

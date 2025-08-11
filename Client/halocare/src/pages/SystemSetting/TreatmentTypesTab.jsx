@@ -393,7 +393,7 @@ const TreatmentTypesTab = () => {
             </Zoom>
 
 {/* Search bar and add button designed */}            <Fade in timeout={1000}>
-              <Paper sx={{ 
+              <Paper dir="rtl" sx={{ 
                 p: 3, 
                 mb: 4, 
                 borderRadius: 4,
@@ -445,7 +445,7 @@ const TreatmentTypesTab = () => {
             </Fade>
 
 {/* Formatted treatment types table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper}>
+              <StyledTableContainer dir="rtl" component={Paper}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -659,8 +659,9 @@ const TreatmentTypesTab = () => {
               }}>
                  הוספת סוג טיפול חדש
               </DialogTitle>
-              <DialogContent sx={{ p: 3 }}>
+              <DialogContent  sx={{ p: 3 }}>
                 <TextField
+                
                   autoFocus
                   margin="dense"
                   label=" שם סוג הטיפול"

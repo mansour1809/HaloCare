@@ -167,7 +167,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
 }));
 
 // Animated button
-const AnimatedButton = styled(Button)(({ theme }) => ({
+const AnimatedButton = styled(Button)(() => ({
   borderRadius: 16,
   padding: '12px 24px',
   fontWeight: 600,
@@ -197,17 +197,6 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// Designed Fab
-const StyledFab = styled(Fab)(({ theme }) => ({
-  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-  boxShadow: '0 8px 30px rgba(76, 181, 195, 0.4)',
-  '&:hover': {
-    transform: 'scale(1.1) rotate(10deg)',
-    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-    boxShadow: '0 12px 40px rgba(76, 181, 195, 0.5)',
-  },
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-}));
 
 const ClassesTab = () => {
   const theme = useTheme();
@@ -392,7 +381,7 @@ const ClassesTab = () => {
             </Zoom>
 
 {/* Search bar and add button designed */}            <Fade in timeout={1000}>
-              <Paper sx={{ 
+              <Paper dir="rtl" sx={{ 
                 p: 3, 
                 mb: 4, 
                 borderRadius: 4,
