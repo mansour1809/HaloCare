@@ -464,7 +464,7 @@ const EventTypesTab = () => {
                         hover
                         sx={{
                           '&:nth-of-type(odd)': {
-                            backgroundColor: alpha(theme.palette.action.hover, 0.5),
+                            backgroundColor: alpha(theme.palette.action.hover, 0.05),
                           },
                           '&:hover': {
                             backgroundColor: alpha('#4cb5c3', 0.1),
