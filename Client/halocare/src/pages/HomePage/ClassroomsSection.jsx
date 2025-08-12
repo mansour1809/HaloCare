@@ -498,7 +498,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
       
       setSnackbar({
         open: true,
-        message: `${updates.length} שינויי נוכחות נשמרו בהצלחה! ✨`,
+        message: `✨ שינויי נוכחות נשמרו בהצלחה`,
         severity: 'success'
       });
       

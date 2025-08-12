@@ -3,20 +3,13 @@ import {
   AppBar,
   Box,
   Toolbar,
-  IconButton,
   Typography,
   Menu,
   Avatar,
   Tooltip,
-  MenuItem,
-  InputBase,
-  Badge,
-  Divider,
-  Chip
+  MenuItem
 } from '@mui/material';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import ChatIcon from '@mui/icons-material/Chat';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -56,25 +49,6 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
     right: 0,
     height: '2px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-  }
-}));
-
-// Styled action buttons
-const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: 'rgba(76, 181, 195, 0.08)',
-  border: '2px solid rgba(76, 181, 195, 0.15)',
-  borderRadius: 16,
-  margin: theme.spacing(0, 0.5),
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    backgroundColor: 'rgba(76, 181, 195, 0.15)',
-    borderColor: '#4cb5c3',
-    transform: 'translateY(-2px) scale(1.05)',
-    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
-  },
-  '& .MuiSvgIcon-root': {
-    color: '#4cb5c3',
-    fontSize: '1.3rem'
   }
 }));
 
@@ -144,11 +118,13 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
 }));
 
 import { useAuth } from '../../login/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const {currentUser} = useAuth();
   const [anchorElUser, setAnchorElUser] = useState(null);
-  const [anchorElNotifications, setAnchorElNotifications] = useState(null);
+  const { logout} = useAuth();
+  const navigate = useNavigate();
 
   console.log(currentUser)
   const selectedEmployeeId = currentUser?.id; 
@@ -160,25 +136,15 @@ const Navbar = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-  
-  const handleOpenNotificationsMenu = (event) => {
-    setAnchorElNotifications(event.currentTarget);
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
-  
-  const handleCloseNotificationsMenu = () => {
-    setAnchorElNotifications(null);
-  };
-  
+
   const userSettings = [
     { name: 'פרופיל', icon: <PersonIcon />, action: () => window.location.href = '/#/employees/profile/' + selectedEmployeeId },
     { name: 'הגדרות מערכת', icon: <SettingsIcon />, action: () => window.location.href = '/#/settings' },
-    { name: 'התנתקות', icon: <LogoutIcon />, action: () => {} }
-  ];
-  
-  const notifications = [
-    { id: 1, content: 'התקבלה בקשת הרשמה חדשה', time: 'לפני 5 דקות', type: 'info' },
-    { id: 2, content: 'הוספת ילד חדש למערכת', time: 'לפני שעה', type: 'success' },
-    { id: 3, content: 'ישיבת צוות ב-10:00', time: 'לפני 3 שעות', type: 'warning' },
+    { name: 'התנתקות', icon: <LogoutIcon />, action: () => handleLogout() }
   ];
   
   return (
@@ -186,26 +152,30 @@ const Navbar = () => {
       <StyledAppBar position="fixed">
         <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
           
-          {/* Right side - Profile and buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Right side - Profile only */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             
             {/* User menu */}
-            <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="תפריט משתמש" arrow>
+            <Tooltip 
+              placement="top" 
+              PopperProps={{
+                disablePortal: true,
+                modifiers: [
+                  {
+                    name: 'flip',
+                    enabled: false 
+                  },
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary: 'window', 
+                    },
+                  },
+                ],
+              }}
+              title="תפריט משתמש" 
+              arrow
+            >
               <UserProfileContainer onClick={handleOpenUserMenu}>
                 <KeyboardArrowDownIcon sx={{ color: '#4cb5c3', fontSize: '1.2rem' }} />
                 <Avatar 
@@ -255,105 +225,6 @@ const Navbar = () => {
                 >
                   {setting.icon}
                   <Typography>{setting.name}</Typography>
-                </MenuItem>
-              ))}
-            </StyledMenu>
-            
-            {/* Action buttons */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="הודעות" arrow>
-                <ActionButton size="medium">
-                  <Badge badgeContent={3} color="error">
-                    <ChatIcon />
-                  </Badge>
-                </ActionButton>
-              </Tooltip>
-              
-              <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="התראות" arrow>
-                <ActionButton size="medium" onClick={handleOpenNotificationsMenu}>
-                  <Badge badgeContent={notifications.length} color="error">
-                    <NotificationsIcon />
-                  </Badge>
-                </ActionButton>
-              </Tooltip>
-            </Box>
-
-            {/* Notifications menu */}
-            <StyledMenu
-              id="notifications-menu"
-              anchorEl={anchorElNotifications}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              keepMounted
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              open={Boolean(anchorElNotifications)}
-              onClose={handleCloseNotificationsMenu}
-              PaperProps={{ sx: { maxWidth: 350, minWidth: 300 } }}
-            >
-              <Box sx={{ p: 2 }}>
-                <Typography variant="h6" fontWeight="bold" color="#2d3748">
-                  🔔 התראות
-                </Typography>
-              </Box>
-              <Divider />
-              
-              {notifications.map((notification) => (
-                <MenuItem 
-                  key={notification.id} 
-                  onClick={handleCloseNotificationsMenu}
-                  sx={{ 
-                    flexDirection: 'column', 
-                    alignItems: 'flex-start',
-                    py: 1.5,
-                    borderBottom: '1px solid rgba(0,0,0,0.05)'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1 }}>
-                    <Chip 
-                      size="small" 
-                      label={notification.type} 
-                      color={
-                        notification.type === 'success' ? 'success' : 
-                        notification.type === 'warning' ? 'warning' : 'info'
-                      }
-                      sx={{ fontSize: '0.7rem' }}
-                    />
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {notification.content}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                    {notification.time}
-                  </Typography>
                 </MenuItem>
               ))}
             </StyledMenu>
