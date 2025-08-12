@@ -431,11 +431,12 @@ const CitiesTab = () => {
             </Fade>
 
 {/* Formatted cities table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper}>
+              <StyledTableContainer component={Paper} dir="rtL" sx={{
+                mt: 2,}}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>🏙️ שם העיר</TableCell>
+                      <TableCell align="center">🏙️ שם העיר</TableCell>
                       <TableCell align="center">⚡ פעולות</TableCell>
                     </TableRow>
                   </TableHead>
@@ -455,7 +456,7 @@ const CitiesTab = () => {
                           }
                         }}
                       >
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === city.cityName ? (
                             <TextField
                               value={editValue}

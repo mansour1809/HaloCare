@@ -9,10 +9,8 @@ import {
 } from "@mui/material";
 import {
   Person as PersonIcon,
-  Refresh as RefreshIcon,
   FilterList as FilterIcon,
   Group as GroupIcon,
-  Star as StarIcon,
   AutoAwesome as AutoAwesomeIcon,
   Celebration as CelebrationIcon
 } from '@mui/icons-material';
@@ -423,39 +421,7 @@ const EmployeesManagement = () => {
                         ➕ הוספת עובד חדש
                       </AnimatedButton>
                       
-                      <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="רענון נתונים">
-                        <IconButton 
-                          onClick={refreshEmployees}
-                          sx={{
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            backdropFilter: 'blur(10px)',
-                            color: 'white',
-                            border: '1px solid rgba(255,255,255,0.3)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255,255,255,0.3)',
-                              transform: 'scale(1.1)'
-                            },
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          <RefreshIcon />
-                        </IconButton>
-                      </Tooltip>
+                      
                     </Stack>
                   </Box>
 

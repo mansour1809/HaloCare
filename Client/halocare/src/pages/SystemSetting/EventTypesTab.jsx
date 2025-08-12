@@ -447,7 +447,7 @@ const EventTypesTab = () => {
             </Fade>
 
 {/* Formatted event type table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper}>
+              <StyledTableContainer dir="rtl" component={Paper}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -489,7 +489,7 @@ const EventTypesTab = () => {
                               }}
                             />
                           ) : (
-                            <Box display="flex" alignItems="center" gap={2}>
+                            <Box>
                               <Typography 
                                 variant="body1" 
                                 onDoubleClick={() => handleEditStart(type)}

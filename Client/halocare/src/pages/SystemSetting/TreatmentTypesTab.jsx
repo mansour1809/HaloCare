@@ -449,8 +449,8 @@ const TreatmentTypesTab = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>💉 שם סוג הטיפול</TableCell>
-                      <TableCell>🎨 צבע</TableCell>
+                      <TableCell align="center">💉 שם סוג הטיפול</TableCell>
+                      <TableCell align="center">🎨 צבע</TableCell>
                       <TableCell align="center">⚡ פעולות</TableCell>
                     </TableRow>
                   </TableHead>
@@ -470,7 +470,7 @@ const TreatmentTypesTab = () => {
                           }
                         }}
                       >
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === type.treatmentTypeId ? (
                             <TextField
                               value={editValue}
@@ -486,7 +486,7 @@ const TreatmentTypesTab = () => {
                               }}
                             />
                           ) : (
-                            <Box display="flex" alignItems="center" gap={2}>
+                            <Box>
                               <Typography 
                                 variant="body1" 
                                 onDoubleClick={() => handleEditStart(type)}
@@ -508,7 +508,7 @@ const TreatmentTypesTab = () => {
                             </Box>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === type.treatmentTypeId ? (
                             <Box display="flex" alignItems="center" gap={2}>
                               <input

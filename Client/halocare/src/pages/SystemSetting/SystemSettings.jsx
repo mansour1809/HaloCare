@@ -243,6 +243,7 @@ const SystemSettings = () => {
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
                   <Box display="flex" alignItems="center" justifyContent="center">
+                  <AutoAwesomeIcon sx={{ fontSize: '3.5rem', ml: 3, color: '#fbbf24' }} />
                     <Box display="flex" alignItems="center">                      
                       <Box textAlign="center">
                         <Typography variant="h4" sx={{ 
@@ -257,7 +258,6 @@ const SystemSettings = () => {
                          הגדרות מערכת
                         </Typography>                        
                       </Box>
-                      <AutoAwesomeIcon sx={{ fontSize: '3.5rem', ml: 3, color: '#fbbf24' }} />
                     </Box>
                   </Box>
                 </CardContent>

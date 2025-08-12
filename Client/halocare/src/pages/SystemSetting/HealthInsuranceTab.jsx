@@ -432,11 +432,12 @@ const HealthInsuranceTab = () => {
             </Fade>
 
 {/* Formatted health insurance table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper}>
+              <StyledTableContainer component={Paper} align="center" dir="rtl" sx={{
+                mt: 2,}}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>🏥 שם קופת החולים</TableCell>
+                      <TableCell align="center">🏥 שם קופת החולים</TableCell>
                       <TableCell align="center">⚡ פעולות</TableCell>
                     </TableRow>
                   </TableHead>
@@ -456,13 +457,12 @@ const HealthInsuranceTab = () => {
                           }
                         }}
                       >
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === insurance.hName ? (
                             <TextField
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               size="small"
-                              fullWidth
                               autoFocus
                               onKeyPress={(e) => {
                                 if (e.key === 'Enter') {
@@ -479,7 +479,7 @@ const HealthInsuranceTab = () => {
                               }}
                             />
                           ) : (
-                            <Box display="flex" alignItems="center" gap={2}>
+                            <Box>
                               <Typography
                                 variant="body1"
                                 onDoubleClick={() => handleEditStart(insurance)}

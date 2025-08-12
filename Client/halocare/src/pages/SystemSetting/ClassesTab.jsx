@@ -433,13 +433,14 @@ const ClassesTab = () => {
             </Fade>
 
 {/* Formatted class table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper}>
+              <StyledTableContainer component={Paper} align="center" dir="rtl" sx={{
+                mt: 2,}}>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell> שם הכיתה</TableCell>
-                      <TableCell> מזהה מורה</TableCell>
-                      <TableCell align="center"> פעולות</TableCell>
+                      <TableCell align="center"> שם הכיתה 🎓</TableCell>
+                      <TableCell align="center"> מזהה מורה 🏷️</TableCell>
+                      <TableCell align="center"> פעולות ⚡</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -458,7 +459,7 @@ const ClassesTab = () => {
                           }
                         }}
                       >
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === cls.classId ? (
                             <TextField
                               value={editValue}
@@ -494,7 +495,7 @@ const ClassesTab = () => {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="center">
                           {editingId === cls.classId ? (
                             <TextField
                               value={editTeacherId}
@@ -510,7 +511,7 @@ const ClassesTab = () => {
                               }}
                             />
                           ) : (
-                            <Box display="flex" alignItems="center" gap={1}>
+                            <Box >
                               <PersonIcon sx={{ color: '#6b7280', fontSize: '1.2rem' }} />
                               <Typography 
                                 variant="body1" 
