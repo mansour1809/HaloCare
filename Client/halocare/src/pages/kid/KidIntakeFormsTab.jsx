@@ -44,6 +44,7 @@ import { fetchForms } from '../../Redux/features/formsSlice';
 import { fetchFormAnswers } from '../../Redux/features/answersSlice';
 import { fetchQuestionsByFormId } from '../../Redux/features/questionsSlice';
 import DigitalSignature from '../addKid/DigitalSignature';
+import html2pdf from "html2pdf.js";
 
 // Animation keyframes
 const slideIn = keyframes`
@@ -69,7 +70,7 @@ const EnhancedPaper = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   borderRadius: 20,
   background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
+  // backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   position: 'relative',
@@ -90,18 +91,18 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   borderRadius: '16px !important',
   background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
+  // backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.3)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   animation: `${slideIn} 0.5s ease-out`,
-  '&:hover': {
-    transform: 'translateY(-4px) scale(1.01)',
-    boxShadow: '0 12px 48px rgba(76, 181, 195, 0.15)',
-    border: '1px solid rgba(76, 181, 195, 0.3)',
-  },
+  // '&:hover': {
+  //   transform: 'translateY(-4px) scale(1.01)',
+  //   boxShadow: '0 12px 48px rgba(76, 181, 195, 0.15)',
+  //   border: '1px solid rgba(76, 181, 195, 0.3)',
+  // },
   '&:before': {
     display: 'none',
   },
@@ -157,7 +158,7 @@ const StyledBadge = styled(Badge)(() => ({
 const StyledChip = styled(Chip)(() => ({
   borderRadius: 10,
   fontWeight: 600,
-  backdropFilter: 'blur(10px)',
+  // backdropFilter: 'blur(10px)',
   transition: 'all 0.2s ease',
   '&:hover': {
     transform: 'scale(1.05)',
@@ -196,7 +197,7 @@ const QuestionCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(2),
   borderRadius: 16,
   background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(10px)',
+  // backdropFilter: 'blur(10px)',
   border: '1px solid rgba(255, 255, 255, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
@@ -477,50 +478,6 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     loadData();
   }, [dispatch, kidId, forms.length, questionsByForm]);
 
-  // Function to export data 
-  const exportToFile = (format = 'txt') => {
-    const organizedData = organizeDataByFormsAndCategories();
-    let content = '';
-    
-    if (format === 'txt') {
-      content = `תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}\n`;
-      content += `תאריך יצוא: ${new Date().toLocaleDateString('he-IL')}\n`;
-      content += '='.repeat(50) + '\n\n';
-      
-      Object.values(organizedData).forEach(formData => {
-        content += `${formData.formName}\n`;
-        content += '-'.repeat(30) + '\n';
-        
-        Object.values(formData.categories).forEach(categoryData => {
-          content += `\n📋 ${categoryData.categoryName}:\n`;
-          
-          categoryData.questions.forEach(({ question, answer }) => {
-            content += `\nשאלה: ${question.questionText}\n`;
-            content += `תשובה: ${answer.answer || 'לא נענה'}\n`;
-            if (answer.other) {
-              content += `הערה נוספת: ${answer.other}\n`;
-            }
-            if (answer.ansDate) {
-              content += `תאריך מענה: ${new Date(answer.ansDate).toLocaleDateString('he-IL')}\n`;
-            }
-            content += '\n';
-          });
-        });
-        content += '\n' + '='.repeat(50) + '\n\n';
-      });
-      
-      // Create text file for download
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `טפסי_קליטה_${selectedKid.firstName}_${selectedKid.lastName}_${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-  };
 
   // Function for printing  (just the content, not the HTML)
   const printData = () => {
@@ -628,117 +585,159 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
   };
 
   // Function to create PDF  (just the content, not the HTML)
-  const exportToPdf = () => {
-    const organizedData = organizeDataByFormsAndCategories();
+  // const exportToPdf = () => {
+  //   const organizedData = organizeDataByFormsAndCategories();
     
-    let htmlContent = `
-      <html dir="rtl">
-        <head>
-          <title>טפסי קליטה - ${selectedKid.firstName} ${selectedKid.lastName}</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              margin: 20px; 
-              direction: rtl; 
-              line-height: 1.6;
-            }
-            h1 { 
-              color: #1976d2; 
-              border-bottom: 3px solid #1976d2; 
-              padding-bottom: 10px;
-            }
-            h2 { 
-              color: #666; 
-              border-bottom: 1px solid #ddd; 
-              padding-bottom: 5px; 
-              margin-top: 30px;
-            }
-            h3 {
-              color: #1976d2;
-              background: #f5f5f5;
-              padding: 8px 12px;
-              border-right: 4px solid #1976d2;
-              margin: 20px 0 10px 0;
-            }
-            .question-block { 
-              margin: 15px 0; 
-              padding: 10px;
-              border: 1px solid #e0e0e0;
-              border-radius: 5px;
-              background: #fafafa;
-            }
-            .question { 
-              font-weight: bold; 
-              color: #333;
-              margin-bottom: 5px;
-            }
-            .answer { 
-              margin-right: 20px;
-              color: #555;
-            }
-            .answer-date {
-              font-size: 0.8em;
-              color: #888;
-              margin-top: 5px;
-            }
-            .pdf-instructions {
-              background: #e3f2fd;
-              padding: 15px;
-              border-radius: 5px;
-              margin-bottom: 20px;
-              border: 1px solid #1976d2;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="pdf-instructions">
-            <strong>💡 להורדת PDF:</strong> 
-            לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה
-          </div>
+  //   let htmlContent = `
+  //     <html dir="rtl">
+  //       <head>
+  //         <title>טפסי קליטה - ${selectedKid.firstName} ${selectedKid.lastName}</title>
+  //         <style>
+  //           body { 
+  //             font-family: Arial, sans-serif; 
+  //             margin: 20px; 
+  //             direction: rtl; 
+  //             line-height: 1.6;
+  //           }
+  //           h1 { 
+  //             color: #1976d2; 
+  //             border-bottom: 3px solid #1976d2; 
+  //             padding-bottom: 10px;
+  //           }
+  //           h2 { 
+  //             color: #666; 
+  //             border-bottom: 1px solid #ddd; 
+  //             padding-bottom: 5px; 
+  //             margin-top: 30px;
+  //           }
+  //           h3 {
+  //             color: #1976d2;
+  //             background: #f5f5f5;
+  //             padding: 8px 12px;
+  //             border-right: 4px solid #1976d2;
+  //             margin: 20px 0 10px 0;
+  //           }
+  //           .question-block { 
+  //             margin: 15px 0; 
+  //             padding: 10px;
+  //             border: 1px solid #e0e0e0;
+  //             border-radius: 5px;
+  //             background: #fafafa;
+  //           }
+  //           .question { 
+  //             font-weight: bold; 
+  //             color: #333;
+  //             margin-bottom: 5px;
+  //           }
+  //           .answer { 
+  //             margin-right: 20px;
+  //             color: #555;
+  //           }
+  //           .answer-date {
+  //             font-size: 0.8em;
+  //             color: #888;
+  //             margin-top: 5px;
+  //           }
+  //           .pdf-instructions {
+  //             background: #e3f2fd;
+  //             padding: 15px;
+  //             border-radius: 5px;
+  //             margin-bottom: 20px;
+  //             border: 1px solid #1976d2;
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <div class="pdf-instructions">
+  //           <strong>💡 להורדת PDF:</strong> 
+  //           לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה
+  //         </div>
           
-          <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
-          <p><strong>תאריך יצוא:</strong> ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</p>
-          <p><strong>גיל:</strong> ${selectedKid.birthDate ? 
-            new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear() + ' שנים' : 
-            'לא מצוין'}</p>
-          <p><strong>כיתה:</strong> ${selectedKid.className || 'לא משויך'}</p>
-          <hr>
-    `;
+  //         <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
+  //         <p><strong>תאריך יצוא:</strong> ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</p>
+  //         <p><strong>גיל:</strong> ${selectedKid.birthDate ? 
+  //           new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear() + ' שנים' : 
+  //           'לא מצוין'}</p>
+  //         <p><strong>כיתה:</strong> ${selectedKid.className || 'לא משויך'}</p>
+  //         <hr>
+  //   `;
     
-    Object.values(organizedData).forEach(formData => {
-      htmlContent += `<h2>${formData.formName}</h2>`;
+  //   Object.values(organizedData).forEach(formData => {
+  //     htmlContent += `<h2>${formData.formName}</h2>`;
       
-      Object.values(formData.categories).forEach(categoryData => {
-        htmlContent += `<h3>📋 ${categoryData.categoryName} (${categoryData.questions.length} שאלות)</h3>`;
+  //     Object.values(formData.categories).forEach(categoryData => {
+  //       htmlContent += `<h3>📋 ${categoryData.categoryName} (${categoryData.questions.length} שאלות)</h3>`;
         
-        categoryData.questions.forEach(({ question, answer }) => {
-          htmlContent += `
-            <div class="question-block">
-              <div class="question">שאלה: ${question.questionText}</div>
-              <div class="answer">תשובה: ${answer.answer || 'לא נענה'}</div>
-              ${answer.other ? `<div class="answer">הערה נוספת: ${answer.other}</div>` : ''}
-              ${answer.ansDate ? 
-                `<div class="answer-date">תאריך מענה: ${new Date(answer.ansDate).toLocaleDateString('he-IL')}</div>` : 
-                ''}
+  //       categoryData.questions.forEach(({ question, answer }) => {
+  //         htmlContent += `
+  //           <div class="question-block">
+  //             <div class="question">שאלה: ${question.questionText}</div>
+  //             <div class="answer">תשובה: ${answer.answer || 'לא נענה'}</div>
+  //             ${answer.other ? `<div class="answer">הערה נוספת: ${answer.other}</div>` : ''}
+  //             ${answer.ansDate ? 
+  //               `<div class="answer-date">תאריך מענה: ${new Date(answer.ansDate).toLocaleDateString('he-IL')}</div>` : 
+  //               ''}
+  //           </div>
+  //         `;
+  //       });
+  //     });
+  //   });
+    
+  //   htmlContent += '</body></html>';
+    
+  //   // Open new window with PDF instructions
+  //   const pdfWindow = window.open('', '_blank');
+  //   pdfWindow.document.write(htmlContent);
+  //   pdfWindow.document.close();
+    
+  //   // Display instructions to the user
+  //   setTimeout(() => {
+  //     alert('💡 להורדת PDF: לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה');
+  //   }, 500);
+  // };
+
+const exportToPdf = () => {
+  const organizedData = organizeDataByFormsAndCategories();
+
+  // בונים DIV נסתר עם התוכן
+  const container = document.createElement("div");
+  container.innerHTML = `
+    <div dir="rtl" style="font-family: Arial; padding: 20px;">
+      <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
+      <p><strong>תאריך יצוא:</strong> ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</p>
+      <p><strong>גיל:</strong> ${selectedKid.birthDate ? 
+        new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear() + ' שנים' : 
+        'לא מצוין'}</p>
+      <p><strong>כיתה:</strong> ${selectedKid.className || 'לא משויך'}</p>
+      <hr>
+      ${Object.values(organizedData).map(formData => `
+        <h2>${formData.formName}</h2>
+        ${Object.values(formData.categories).map(categoryData => `
+          <h3>📋 ${categoryData.categoryName} (${categoryData.questions.length} שאלות)</h3>
+          ${categoryData.questions.map(({ question, answer }) => `
+            <div style="border: 1px solid #ccc; padding: 8px; margin: 8px 0;">
+              <div><strong>שאלה:</strong> ${question.questionText}</div>
+              <div><strong>תשובה:</strong> ${answer.answer || 'לא נענה'}</div>
+              ${answer.other ? `<div>הערה נוספת: ${answer.other}</div>` : ''}
+              ${answer.ansDate ? `<div style="font-size: 0.8em; color: gray;">תאריך מענה: ${new Date(answer.ansDate).toLocaleDateString('he-IL')}</div>` : ''}
             </div>
-          `;
-        });
-      });
-    });
-    
-    htmlContent += '</body></html>';
-    
-    // Open new window with PDF instructions
-    const pdfWindow = window.open('', '_blank');
-    pdfWindow.document.write(htmlContent);
-    pdfWindow.document.close();
-    
-    // Display instructions to the user
-    setTimeout(() => {
-      alert('💡 להורדת PDF: לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה');
-    }, 500);
+          `).join("")}
+        `).join("")}
+      `).join("")}
+    </div>
+  `;
+
+  // הגדרת אפשרויות PDF
+  const options = {
+    margin: 10,
+    filename: `תיק-${selectedKid.firstName}-${selectedKid.lastName}.pdf`,
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
   };
 
+  // המרת HTML ל־PDF והורדה
+  html2pdf().from(container).set(options).save();
+};
   // Function to handle accordion toggle 
   const handleAccordionChange = (categoryKey) => (event, isExpanded) => {
     setExpandedCategory(isExpanded ? categoryKey : null);
@@ -1046,14 +1045,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
               PDF
             </AnimatedButton>
             
-            <AnimatedButton
-              variant="outlined"
-              size="small"
-              startIcon={<ExportIcon />}
-              onClick={() => exportToFile('txt')}
-            >
-              טקסט
-            </AnimatedButton>
+          
           </Stack>
         </Box>
       </EnhancedPaper>
