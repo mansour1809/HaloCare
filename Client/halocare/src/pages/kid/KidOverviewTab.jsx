@@ -1,4 +1,4 @@
-// src/components/kids/tabs/KidOverviewTab.jsx - טאב סקירה כללית משופר
+// src/components/kids/tabs/KidOverviewTab.jsx - Professional styled version with ALL functionality preserved
 import React, { useEffect, useState } from 'react';
 import {
   Box,
@@ -24,7 +24,10 @@ import {
   TableContainer,
   TableRow,
   CircularProgress,
-  TableHead
+  TableHead,
+  styled,
+  alpha,
+  keyframes
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -47,7 +50,202 @@ import { useSelector, useDispatch } from 'react-redux';
 import SimpleFlowerProfile from './SimpleFlowerProfile';
 import { fetchCriticalMedicalInfo } from '../../Redux/features/answersSlice';
 
-// Critical Info Card
+// Animation keyframes
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+`;
+
+// Enhanced styled components
+const EnhancedPaper = styled(Paper)(({ theme }) => ({
+  borderRadius: 20,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
+  },
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 15px 50px rgba(0,0,0,0.15)',
+  }
+}));
+
+const CriticalPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  borderRadius: 20,
+  background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(244, 67, 54, 0.05) 100%)',
+  backdropFilter: 'blur(20px)',
+  border: '2px solid',
+  borderImage: 'linear-gradient(135deg, #ff9800, #f44336) 1',
+  boxShadow: '0 10px 40px rgba(255, 152, 0, 0.2)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '200%',
+    height: '200%',
+    background: 'radial-gradient(circle, rgba(255, 152, 0, 0.1) 0%, transparent 70%)',
+    transform: 'translate(-50%, -50%)',
+    pointerEvents: 'none',
+  }
+}));
+
+const StyledAlert = styled(Alert)(({ theme, severity }) => ({
+  marginBottom: theme.spacing(2),
+  border: '2px solid',
+  borderColor: theme.palette[severity]?.main,
+  borderRadius: 16,
+  background: `linear-gradient(135deg, ${alpha(theme.palette[severity]?.main, 0.05)} 0%, ${alpha(theme.palette[severity]?.dark, 0.05)} 100%)`,
+  backdropFilter: 'blur(10px)',
+  position: 'relative',
+  overflow: 'hidden',
+  '& .MuiAlert-icon': { 
+    fontSize: '1.8rem',
+    animation: severity === 'error' ? `${pulse} 2s infinite` : 'none',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${theme.palette[severity]?.light}, ${theme.palette[severity]?.main}, ${theme.palette[severity]?.dark})`,
+  }
+}));
+
+const InfoItemPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(1),
+  backgroundColor: 'rgba(255,255,255,0.95)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: 12,
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+  }
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
+  width: 32,
+  height: 32,
+  background: bgcolor || 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
+  '& svg': {
+    fontSize: '1.2rem',
+  }
+}));
+
+const PersonalInfoAvatar = styled(Avatar)(({ theme }) => ({
+  width: 28,
+  height: 28,
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  boxShadow: '0 3px 10px rgba(76, 181, 195, 0.25)',
+  '& svg': {
+    fontSize: '1rem',
+  }
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  background: props => {
+    if (props.color === 'error') {
+      return 'linear-gradient(45deg, #f44336 30%, #ef5350 90%)';
+    }
+    if (props.color === 'warning') {
+      return 'linear-gradient(45deg, #ff9800 30%, #ffa726 90%)';
+    }
+    return theme.palette[props.color]?.main;
+  },
+  color: 'white',
+  boxShadow: '0 3px 10px rgba(0,0,0,0.2)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+  }
+}));
+
+const FlowerContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(3),
+  borderRadius: 16,
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.03) 0%, rgba(255, 112, 67, 0.03) 100%)',
+  border: '1px solid rgba(76, 181, 195, 0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at center, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
+    pointerEvents: 'none',
+  }
+}));
+
+const LoadingBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  padding: theme.spacing(2),
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.9)',
+  '& .MuiCircularProgress-root': {
+    color: theme.palette.warning.main,
+  }
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 12,
+  overflow: 'hidden',
+  '& .MuiTable-root': {
+    '& .MuiTableHead-root': {
+      '& .MuiTableCell-root': {
+        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
+        fontWeight: 700,
+        borderBottom: '2px solid rgba(76, 181, 195, 0.2)',
+      }
+    },
+    '& .MuiTableBody-root': {
+      '& .MuiTableRow-root': {
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          backgroundColor: 'rgba(76, 181, 195, 0.05)',
+        }
+      }
+    }
+  }
+}));
+
+// Critical Info Card Component - Enhanced styling only
 const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -58,17 +256,7 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
   };
 
   return (
-    <Alert 
-      severity={color} 
-      sx={{ 
-        mb: 2, 
-        border: '2px solid',
-        borderColor: `${color}.main`,
-        backgroundColor: bgColor || `${color}.lighter`,
-        '& .MuiAlert-icon': { fontSize: '1.5rem' },
-        borderRadius: 2
-      }}
-    >
+    <StyledAlert severity={color}>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ 
           display: 'flex', 
@@ -77,33 +265,39 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
           cursor: 'pointer'
         }} onClick={handleToggle}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {icon}
+            <StyledAvatar bgcolor={`${color}.main`}>
+              {icon}
+            </StyledAvatar>
             <Typography variant="h6" fontWeight="bold">
               {title} ({data.length})
             </Typography>
           </Box>
-          <IconButton size="small" sx={{ color: 'inherit' }}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          <IconButton 
+            size="small" 
+            sx={{ 
+              color: 'inherit',
+              transition: 'transform 0.3s ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)'
+            }}
+          >
+            <ExpandMoreIcon />
           </IconButton>
         </Box>
         
         <Collapse in={expanded}>
           <Box sx={{ mt: 2 }}>
             {data.map((item, index) => (
-              <Paper key={index} sx={{ 
-                p: 2, 
-                mb: 1, 
-                backgroundColor: 'rgba(255,255,255,0.9)',
-                borderRadius: 1
-              }}>
+              <InfoItemPaper key={index}>
                 {title === 'תרופות' && (
-                  <TableContainer>
+                  <StyledTableContainer>
                     <Table size="small">
                       <TableHead>
+                        <TableRow>
                           <TableCell><strong>שם התרופה:</strong></TableCell>
                           <TableCell><strong>מינון:</strong></TableCell>
                           <TableCell><strong>זמנים:</strong></TableCell>
                           <TableCell><strong>הערות:</strong></TableCell>
+                        </TableRow>
                       </TableHead>
                       <TableBody>
                         <TableRow>
@@ -114,7 +308,7 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                         </TableRow>
                       </TableBody>
                     </Table>
-                  </TableContainer>
+                  </StyledTableContainer>
                 )}
                 
                 {title === 'רגישויות ואלרגיות' && (
@@ -125,7 +319,7 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                     </Grid>
                     <Grid item size={{xs:3}}>
                       <Typography variant="subtitle2" color="text.secondary">חומרה</Typography>
-                      <Chip 
+                      <StyledChip 
                         label={item.severity} 
                         color={item.severity === 'חמורה' ? 'error' : 'warning'}
                         size="small"
@@ -139,7 +333,7 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                 )}
                 
                 {title === 'התקפים' && (
-                  <TableContainer>
+                  <StyledTableContainer>
                     <Table size="small">
                       <TableBody>
                         <TableRow>
@@ -156,14 +350,14 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
                         </TableRow>
                       </TableBody>
                     </Table>
-                  </TableContainer>
+                  </StyledTableContainer>
                 )}
-              </Paper>
+              </InfoItemPaper>
             ))}
           </Box>
         </Collapse>
       </Box>
-    </Alert>
+    </StyledAlert>
   );
 };
 
@@ -172,7 +366,7 @@ const KidOverviewTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
   const { kidId } = useParams();
   
-  // Local state for loading critical data
+  // Local state for loading critical data 
   const [criticalInfo, setCriticalInfo] = useState({
     medications: [],
     allergies: [],
@@ -181,13 +375,14 @@ const KidOverviewTab = ({ selectedKid }) => {
   const [loadingCritical, setLoadingCritical] = useState(false);
   const [criticalError, setCriticalError] = useState(null);
 
-  // Fetch critical data on component load
+  // Fetch critical data on component load 
   useEffect(() => {
     if (kidId) {
       fetchCriticalInfo();
     }
   }, [kidId]);
 
+  // Fetch critical info function 
   const fetchCriticalInfo = async () => {
     setLoadingCritical(true);
     setCriticalError(null);
@@ -216,7 +411,7 @@ const KidOverviewTab = ({ selectedKid }) => {
               break;
           }
         } catch (error) {
-          console.error('שגיאה בפרסור JSON:', error);
+          console.error('Error parsing JSON:', error);
         }
       });
       
@@ -229,7 +424,7 @@ const KidOverviewTab = ({ selectedKid }) => {
     }
   };
 
-  //Helper functions
+  // Helper functions 
   const formatDate = (dateString) => {
     if (!dateString) return '–';
     try {
@@ -259,12 +454,12 @@ const KidOverviewTab = ({ selectedKid }) => {
     }
   };
 
-  // Check if critical data exists
+  // Check if critical data exists 
   const hasCriticalInfo = criticalInfo.medications.length > 0 || 
                          criticalInfo.allergies.length > 0 || 
                          criticalInfo.seizures.length > 0;
 
-  // personal Info
+  // Personal Info 
   const personalInfo = [
     {
       icon: <PersonIcon />,
@@ -293,15 +488,9 @@ const KidOverviewTab = ({ selectedKid }) => {
       value: selectedKid.address ? 
         `${selectedKid.address}${selectedKid.cityName ? `, ${selectedKid.cityName}` : ''}` : '–'
     },
-    // {
-    //   icon: <PhoneIcon />,
-    //   label: 'איש קשר חירום',
-    //   value: selectedKid.emergencyContact || '–',
-    //   secondary: selectedKid.emergencyPhone
-    // }
   ];
 
-  //parents Info
+  // Parents Info 
   const parentsInfo = [
     {
       label: 'הורה ראשי',
@@ -314,25 +503,42 @@ const KidOverviewTab = ({ selectedKid }) => {
   ];
 
   return (
-    <Box dir="rtl" sx={{ p: 3, bgcolor: 'background.default' }}>
-      {/* Critical information for the caregiver - at the top of the page */}
+    <Box dir="rtl" sx={{ 
+      p: 3, 
+      background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.02) 0%, rgba(255, 112, 67, 0.02) 100%)',
+      minHeight: '100%'
+    }}>
+      {/* Critical information for the caregiver - Enhanced styling only */}
       {(loadingCritical || hasCriticalInfo || criticalError) && (
-        <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '2px solid #ff9800' }}>
-          <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, color: 'error.main' }}>
+        <CriticalPaper>
+          <Typography 
+            variant="h5" 
+            fontWeight="bold" 
+            sx={{ 
+              mb: 2, 
+              background: 'linear-gradient(45deg, #ff9800 30%, #f44336 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}
+          >
             🚨 מידע קריטי למטפל
           </Typography>
           
           {loadingCritical && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <LoadingBox>
               <CircularProgress size={24} />
               <Typography>טוען מידע קריטי...</Typography>
-            </Box>
+            </LoadingBox>
           )}
           
           {criticalError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <StyledAlert severity="error">
               {criticalError}
-            </Alert>
+            </StyledAlert>
           )}
           
           {!loadingCritical && hasCriticalInfo && (
@@ -364,75 +570,122 @@ const KidOverviewTab = ({ selectedKid }) => {
           )}
           
           {!loadingCritical && !hasCriticalInfo && !criticalError && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <StyledAlert severity="success">
               <Typography fontWeight="bold">
                 ✅ אין מידע קריטי רשום
               </Typography>
               <Typography variant="body2">
                 לא דווחו תרופות, רגישויות או התקפים
               </Typography>
-            </Alert>
+            </StyledAlert>
           )}
-        </Paper>
+        </CriticalPaper>
       )}
 
       <Grid container spacing={3}>
-        {/* Left column - Treatment Flower */}
+        {/* Left column - Treatment Flower - Enhanced styling only */}
         <Grid item size={{xs:12, lg:8}}>
-          <Paper sx={{ 
-            p: 3, 
-            borderRadius: 2,
-            background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)',
-            border: '1px solid',
-            borderColor: 'divider'
-          }}>
-            <Typography variant="h6" fontWeight="bold" color="primary.main" mb={3}>
+          <EnhancedPaper sx={{ p: 3 }}>
+            <Typography 
+              variant="h6" 
+              fontWeight="bold" 
+              sx={{
+                mb: 3,
+                background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
               🌸 תחומי טיפול
             </Typography>
             
-            <Typography variant="body2" color="text.secondary" mb={3}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 3,
+                fontWeight: 500,
+                letterSpacing: '0.5px'
+              }}
+            >
               לחץ על כל עלה כדי לעבור לטיפולים באותו תחום
             </Typography>
             
-            {/* Existing flower */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'center',
-              minHeight: '400px',
-              alignItems: 'center'
-            }}>
-              <SimpleFlowerProfile kid={selectedKid} />
-            </Box>
+            {/* Existing flower - Enhanced container only */}
+            <FlowerContainer>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center',
+                minHeight: '400px',
+                alignItems: 'center'
+              }}>
+                <SimpleFlowerProfile kid={selectedKid} />
+              </Box>
+            </FlowerContainer>
             
-            <Divider sx={{ mt: 8 }} />
-            
-            
-          </Paper>
+            <Divider sx={{ 
+              mt: 8,
+              background: 'linear-gradient(90deg, transparent, rgba(76, 181, 195, 0.3), transparent)'
+            }} />
+          </EnhancedPaper>
         </Grid>
 
-        {/* Right column - Basic Information */}
+        {/* Right column - Basic Information - Enhanced styling only */}
         <Grid item size={{xs:12, lg:4}}>
           <Stack spacing={2}>
-            {/* Personal Details */}
-            <Paper sx={{ p: 2, borderRadius: 2 }}>
-              <Typography variant="h6" fontWeight="bold" color="primary.main" mb={2}>
+            {/* Personal Details - Enhanced styling only */}
+            <EnhancedPaper sx={{ p: 2 }}>
+              <Typography 
+                variant="h6" 
+                fontWeight="bold" 
+                sx={{
+                  mb: 2,
+                  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 👤 פרטים אישיים
               </Typography>
               
               <Stack spacing={1.5}>
                 {personalInfo.map((info, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.light' }}>
+                  <Box 
+                    key={index} 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1.5,
+                      p: 1,
+                      borderRadius: 2,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: 'rgba(76, 181, 195, 0.05)',
+                        transform: 'translateX(-4px)',
+                      }
+                    }}
+                  >
+                    <PersonalInfoAvatar>
                       {info.icon}
-                    </Avatar>
+                    </PersonalInfoAvatar>
                     <Box>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
                         {info.label}
                       </Typography>
-                      <Typography variant="body1" fontWeight={500}>
+                      <Typography variant="body1" fontWeight={600}>
                         {info.value}
                         {info.secondary && (
-                          <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                          <Typography 
+                            component="span" 
+                            variant="body2" 
+                            sx={{ 
+                              ml: 1,
+                              color: 'primary.main',
+                              fontWeight: 500
+                            }}
+                          >
                             ({info.secondary})
                           </Typography>
                         )}
@@ -441,29 +694,48 @@ const KidOverviewTab = ({ selectedKid }) => {
                   </Box>
                 ))}
               </Stack>
-            </Paper>
+            </EnhancedPaper>
 
-           
-
-            {/* Parents Details */}
-            <Paper sx={{ p: 2, borderRadius: 2 }}>
-              <Typography variant="h6" fontWeight="bold" color="primary.main" mb={2}>
+            {/* Parents Details - Enhanced styling only */}
+            <EnhancedPaper sx={{ p: 2 }}>
+              <Typography 
+                variant="h6" 
+                fontWeight="bold" 
+                sx={{
+                  mb: 2,
+                  background: 'linear-gradient(45deg, #ff7043 30%, #ff9575 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 👨‍👩‍👧‍👦 פרטי הורים
               </Typography>
               
               <Stack spacing={1.5}>
                 {parentsInfo.map((parent, index) => (
-                  <Box key={index}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box 
+                    key={index}
+                    sx={{
+                      p: 1,
+                      borderRadius: 2,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: 'rgba(255, 112, 67, 0.05)',
+                        transform: 'translateX(-4px)',
+                      }
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       {parent.label}
                     </Typography>
-                    <Typography variant="body1" fontWeight={500}>
+                    <Typography variant="body1" fontWeight={600}>
                       {parent.value}
                     </Typography>
                   </Box>
                 ))}
               </Stack>
-            </Paper>
+            </EnhancedPaper>
           </Stack>
         </Grid>
       </Grid>

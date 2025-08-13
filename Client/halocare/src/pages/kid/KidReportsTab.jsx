@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -21,7 +21,6 @@ import {
   Psychology as BrainIcon,
   Add as AddIcon,
   Visibility as ViewIcon,
-  Download as DownloadIcon,
   CheckCircle as ApprovedIcon,
   Schedule as PendingIcon,
   Delete as DeleteIcon,
@@ -35,26 +34,17 @@ import {
   fetchTasheReportsByKid, 
   approveTasheReport, 
   deleteTasheReport, 
-  clearError,
-  checkCanEditReport
+  clearError
 } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
 import { baseURL } from '../../components/common/axiosConfig';
 import TasheReportGenerator from './TasheReportGenerator';
 import EditReportDialog from './EditReportDialog';
 import ReportsStatisticsWidget from './ReportsStatisticsWidget';
+import Swal from 'sweetalert2';
 
 const KidReportsTab = ({ selectedKid }) => {
-  // בדיקה בסיסית שהילד קיים
-  if (!selectedKid) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-        <Typography variant="h6" color="text.secondary">
-          אנא בחרו ילד מהרשימה לצפייה בדוחות
-        </Typography>
-      </Box>
-    );
-  }
+ 
 
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
@@ -64,24 +54,31 @@ const KidReportsTab = ({ selectedKid }) => {
   const [reportToDelete, setReportToDelete] = useState(null);
 
   const { currentUser } = useAuth();
-  const { reports = [], editPermissions = {}, status, error } = useSelector(state => state.tasheReports || {});
+  const { reports = [], status, error } = useSelector(state => state.tasheReports || {});
 
   const kidName = selectedKid ? `${selectedKid.firstName || ''} ${selectedKid.lastName || ''}`.trim() : 'לא נבחר ילד';
 
   useEffect(() => {
     if (selectedKid?.id) { // בדיקה שהילד קיים ויש לו ID
       loadReports();
-      // בדיקת הרשאות עריכה לכל הדוחות
-      reports.forEach(report => {
-        dispatch(checkCanEditReport({ reportId: report.reportId, employeeId: currentUser.id }));
-      });
     }
 
     return () => {
       dispatch(clearError());
     };
-  }, [selectedKid?.id, reports.length]);
+  }, [selectedKid?.id]);
 
+
+   // בדיקה בסיסית שהילד קיים
+  if (!selectedKid) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <Typography variant="h6" color="text.secondary">
+          אנא בחרו ילד מהרשימה לצפייה בדוחות
+        </Typography>
+      </Box>
+    );
+  }
   const loadReports = async () => {
     if (!selectedKid?.id) {
       console.warn('לא ניתן לטעון דוחות - אין ילד נבחר');
@@ -107,14 +104,14 @@ const KidReportsTab = ({ selectedKid }) => {
   };
 
   const canEdit = (report) => {
-    if (!report) return false;
-    // בדיקה מקומית + בדיקה מהשרת
-    const localCheck = !report.isApproved && 
-                      (report.generatedByEmployeeId === currentUser.id || 
-                       currentUser.role === 'מנהל/ת' || 
-                       currentUser.role === 'מנהל');
-    const serverCheck = editPermissions[report.reportId];
-    return localCheck && (serverCheck !== false); 
+    if (!report || !currentUser) return false;
+    
+    // בדיקה פשוטה: רק מנהל יכול לערוך כל דוח, או יוצר הדוח יכול לערוך את הדוח שלו
+    const isManager = currentUser.role === 'מנהל' || currentUser.role === 'מנהל/ת';
+    const isCreator = report.generatedByEmployeeId === currentUser.id;
+    const isNotApproved = !report.isApproved;
+    
+    return isNotApproved && (isManager || isCreator);
   };
 
   const handleViewReport = (report) => {
@@ -136,17 +133,17 @@ const KidReportsTab = ({ selectedKid }) => {
     document.body.removeChild(link);
   };
 
-  // const handleDownloadText = (report) => {
-  //   // הורדת הדוח כטקסט
-  //   const downloadUrl = `${baseURL}/api/TasheReports/${report.reportId}/download-text`;
+  const handleDownloadText = (report) => {
+    // הורדת הדוח כטקסט
+    const downloadUrl = `${baseURL}/TasheReports/${report.reportId}/download-text`;
     
-  //   const link = document.createElement('a');
-  //   link.href = downloadUrl;
-  //   link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.txt`;
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `דוח_תשה_${kidName.replace(/\s+/g, '_')}_${new Date(report.periodStartDate).toLocaleDateString('he-IL').replace(/\//g, '-')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleApprove = async (report) => {
     try {
@@ -154,6 +151,16 @@ const KidReportsTab = ({ selectedKid }) => {
         reportId: report.reportId, 
         approvedByEmployeeId: currentUser.id 
       })).unwrap();
+
+      Swal.fire({
+    title: 'הדוח אושר בהצלחה! 👍',
+    text: `הדוח "${report.reportTitle}" אושר ונעול לעריכה`,
+    icon: 'success',
+    confirmButtonText: 'הבנתי',
+    confirmButtonColor: '#4CAF50',
+    timer: 2000,
+    timerProgressBar: true
+  });
       loadReports();
     } catch (error) {
       console.error('שגיאה באישור דוח:', error);
@@ -173,6 +180,16 @@ const KidReportsTab = ({ selectedKid }) => {
         reportId: reportToDelete.reportId, 
         deletedByEmployeeId: currentUser.id 
       })).unwrap();
+
+      Swal.fire({
+    title: 'הדוח נמחק בהצלחה! 🗑️',
+    text: `הדוח "${reportToDelete.reportTitle}" הוסר מהמערכת`,
+    icon: 'success',
+    confirmButtonText: 'אוקיי',
+    confirmButtonColor: '#FF5722',
+    timer: 2000,
+    timerProgressBar: true
+  });
       loadReports();
     } catch (error) {
       console.error('שגיאה במחיקת דוח:', error);
@@ -229,7 +246,7 @@ const KidReportsTab = ({ selectedKid }) => {
     return new Date(dateString).toLocaleDateString('he-IL');
   };
 
-  const onGeneratorSuccess = (newReport) => {
+  const onGeneratorSuccess = () => {
     setGeneratorOpen(false);
     loadReports();
   };
@@ -373,21 +390,7 @@ const KidReportsTab = ({ selectedKid }) => {
                       צפייה
                     </Button>
                     
-                    <Tooltip title="הורדה כ-Word" placement="top"  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
+                    <Tooltip title="הורדה כ-Word">
                       <IconButton 
                         size="small" 
                         onClick={() => handleDownloadWord(report)}
@@ -404,21 +407,7 @@ const KidReportsTab = ({ selectedKid }) => {
                       </IconButton>
                     </Tooltip>
 
-                    {/* <Tooltip title="הורדה כטקסט"   placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
+                    <Tooltip title="הורדה כטקסט">
                       <IconButton 
                         size="small" 
                         onClick={() => handleDownloadText(report)}
@@ -433,27 +422,13 @@ const KidReportsTab = ({ selectedKid }) => {
                       >
                         <TextIcon />
                       </IconButton>
-                    </Tooltip> */}
+                    </Tooltip>
                   </Box>
                   
                   {/* כפתורי פעולות מנהלים */}
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {canEdit(report) && (
-                      <Tooltip title="עריכת דוח"  placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
+                      <Tooltip title="עריכת דוח">
                         <IconButton 
                           size="small" 
                           onClick={() => handleEditClick(report)}
@@ -472,21 +447,7 @@ const KidReportsTab = ({ selectedKid }) => {
                     )}
 
                     {canApprove(report) && (
-                      <Tooltip title="אישור דוח"  placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
+                      <Tooltip title="אישור דוח">
                         <IconButton 
                           size="small" 
                           onClick={() => handleApprove(report)}
@@ -505,21 +466,7 @@ const KidReportsTab = ({ selectedKid }) => {
                     )}
 
                     {canDelete(report) && (
-                      <Tooltip title="מחיקת דוח"  placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
+                      <Tooltip title="מחיקת דוח">
                         <IconButton 
                           size="small" 
                           onClick={() => handleDeleteClick(report)}

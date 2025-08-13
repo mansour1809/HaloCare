@@ -13,10 +13,8 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  Chip,
   Paper,
   Grid,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -30,8 +28,6 @@ import {
   Psychology as BrainIcon,
   Assessment as ReportIcon,
   CheckCircle as CheckIcon,
-  Warning as WarningIcon,
-  Person as PersonIcon,
   Timeline as TimelineIcon
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -41,6 +37,8 @@ import dayjs from 'dayjs';
 import { useDispatch } from 'react-redux';
 import { generateTasheReport, fetchTreatmentsPreview } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
+import Swal from 'sweetalert2';
+import FullscreenAILoader from './FullscreenAILoader';
 
 const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
   const dispatch = useDispatch();
@@ -48,8 +46,8 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
   
   // State management
   const [activeStep, setActiveStep] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
@@ -181,7 +179,22 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
       clearInterval(progressInterval);
       setGenerationProgress(100);
       
-      setSuccess('הדוח נוצר בהצלחה! 🎉');
+      // setSuccess('הדוח נוצר בהצלחה! 🎉');
+      Swal.fire({
+    title: 'הדוח נוצר בהצלחה! 🎉',
+    text: `הדוח "${reportData.reportTitle}" נוצר בהצלחה `,
+    icon: 'success',
+    confirmButtonText: 'מעולה!',
+    confirmButtonColor: '#4CAF50',
+    timer: 3500,
+    timerProgressBar: true,
+    showClass: {
+      popup: 'animate__animated animate__fadeInDown'
+    },
+    hideClass: {
+      popup: 'animate__animated animate__fadeOutUp'
+    }
+  });
       setActiveStep(3);
       
       // קריאה לפונקציה של הקומפוננט האב לרענון הרשימה
@@ -585,11 +598,15 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
                 }
               }}
             >
-              {generating ? <CircularProgress size={20} /> : 'יצירת דוח AI'}
+              {generating ? <CircularProgress size={20}/> : 'יצירת דוח AI'}
             </Button>
           )}
         </DialogActions>
       </Dialog>
+      <FullscreenAILoader
+        open={generating} 
+        progress={generationProgress} 
+      />
     </LocalizationProvider>
   );
 };

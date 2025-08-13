@@ -21,6 +21,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { updateTasheReport } from '../../Redux/features/tasheReportsSlice';
 import { useAuth } from '../../components/login/AuthContext';
+import Swal from 'sweetalert2';
 
 const EditReportDialog = ({ open, onClose, report, onSuccess }) => {
   const dispatch = useDispatch();
@@ -78,7 +79,7 @@ const EditReportDialog = ({ open, onClose, report, onSuccess }) => {
       const updateData = {
         reportTitle: formData.reportTitle.trim(),
         reportContent: formData.reportContent.trim(),
-        notes: formData.notes.trim() || null,
+        notes: formData.notes.trim() || "",
         updatedByEmployeeId: currentUser.id
       };
 
@@ -87,6 +88,15 @@ const EditReportDialog = ({ open, onClose, report, onSuccess }) => {
         reportData: updateData 
       })).unwrap();
 
+Swal.fire({
+    title: 'הדוח עודכן בהצלחה! ✅',
+    text: `השינויים בדוח "${updateData.reportTitle}" נשמרו במערכת`,
+    icon: 'success',
+    confirmButtonText: 'מצוין!',
+    confirmButtonColor: '#2196F3',
+    timer: 2500,
+    timerProgressBar: true
+  });
       // הצלחה
       if (onSuccess) {
         onSuccess();

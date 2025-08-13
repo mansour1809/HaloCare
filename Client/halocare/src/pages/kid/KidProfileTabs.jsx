@@ -1,5 +1,4 @@
-// src/components/kids/KidProfileTabs.jsx - מבנה טאבים עם כפתורי גישה מהירה
-import React, { useState, useEffect } from 'react';
+import  { useState } from 'react';
 import {
   Box,
   Tabs,
@@ -9,13 +8,11 @@ import {
   Avatar,
   Badge,
   Chip,
-  Divider,
-  useTheme,
   styled,
   Button,
   Stack,
-  IconButton,
-  Tooltip
+  Tooltip,
+  alpha
 } from '@mui/material';
 import {
   Visibility as OverviewIcon,
@@ -24,68 +21,201 @@ import {
   Assessment as ReportsIcon,
   CalendarToday as CalendarIcon,
   Groups as AttendanceIcon,
-  Refresh as RefreshIcon,
-  Print as PrintIcon,
-  Settings as SettingsIcon
+
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 // Import components for each tab
 import KidOverviewTab from './KidOverviewTab';
 import KidIntakeFormsTab from './KidIntakeFormsTab';
 import KidDocumentsTab from './KidDocumentsTab';
-import KidDocumentManager from '../addKid/KidDocumentManager';
 import KidReportsTab from './KidReportsTab';
 import { baseURL } from '../../components/common/axiosConfig';
 
-// Styled Components
+// Enhanced Styled Components with professional design
+const MainContainer = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: 'gradientShift 20s ease infinite',
+  padding: theme.spacing(3),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+  '@keyframes gradientShift': {
+    '0%': { backgroundPosition: '0% 50%' },
+    '50%': { backgroundPosition: '100% 50%' },
+    '100%': { backgroundPosition: '0% 50%' },
+  }
+}));
+
+const EnhancedHeaderPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  borderRadius: 20,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+  zIndex: 2,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '200%',
+    height: '200%',
+    background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`,
+    transform: 'translate(-50%, -50%)',
+    pointerEvents: 'none',
+  }
+}));
+
 const StyledTabs = styled(Tabs)(({ theme }) => ({
-  borderBottom: '1px solid',
-  borderColor: theme.palette.divider,
+  borderBottom: 'none',
+  marginTop: theme.spacing(3),
   '& .MuiTabs-indicator': {
-    backgroundColor: theme.palette.primary.main,
-    height: 3,
-    borderRadius: '3px 3px 0 0',
+    backgroundColor: 'transparent',
+    height: 0,
   },
   '& .MuiTab-root': {
     textTransform: 'none',
     minWidth: 120,
     fontWeight: 600,
     fontSize: '0.95rem',
-    padding: '12px 24px',
-    margin: '0 4px',
-    borderRadius: '12px 12px 0 0',
-    transition: 'all 0.2s ease-in-out',
+    padding: '16px 24px',
+    margin: '0 8px',
+    borderRadius: 16,
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    position: 'relative',
+    overflow: 'hidden',
     '&:hover': {
-      backgroundColor: 'rgba(76, 181, 195, 0.08)',
-      transform: 'translateY(-2px)',
+      transform: 'translateY(-4px) scale(1.02)',
+      boxShadow: '0 8px 25px rgba(76, 181, 195, 0.25)',
+      background: 'rgba(255, 255, 255, 0.9)',
+      '&::after': {
+        left: '100%',
+      }
     },
     '&.Mui-selected': {
       color: theme.palette.primary.main,
-      backgroundColor: 'rgba(76, 181, 195, 0.1)',
+      background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.15) 0%, rgba(255, 112, 67, 0.15) 100%)',
+      border: '1px solid rgba(76, 181, 195, 0.3)',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
+    },
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: '-100%',
+      width: '100%',
+      height: '100%',
+      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+      transition: 'all 0.5s ease',
     },
   },
 }));
 
-const QuickActionButton = styled(Button)(({ theme }) => ({
+const AnimatedQuickActionButton = styled(Button)(() => ({
   minWidth: 'auto',
-  padding: '8px 16px',
-  borderRadius: '8px',
+  padding: '10px 20px',
+  borderRadius: 12,
   textTransform: 'none',
   fontSize: '0.875rem',
-  fontWeight: 500,
-  border: '1px solid',
-  borderColor: theme.palette.divider,
-  color: theme.palette.text.primary,
-  backgroundColor: theme.palette.background.paper,
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.primary.lighter || 'rgba(76, 181, 195, 0.08)',
-    transform: 'translateY(-1px)',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  fontWeight: 600,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  color: 'white',
+  boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
   },
+  '&:hover': {
+    transform: 'translateY(-3px) scale(1.05)',
+    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
+    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+    '&::before': {
+      left: '100%',
+    }
+  },
+}));
+
+
+const StyledAvatar = styled(Avatar)(() => ({
+  width: 64,
+  height: 64,
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  fontSize: '1.5rem',
+  fontWeight: 'bold',
+  boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+  border: '3px solid rgba(255, 255, 255, 0.9)',
+}));
+
+const StyledChip = styled(Chip)(() => ({
+  borderRadius: 8,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  }
+}));
+
+const TabContentPaper = styled(Paper)(() => ({
+  borderRadius: 20,
+  minHeight: '500px',
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  zIndex: 2,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+  }
 }));
 
 const TabPanel = ({ children, value, index, ...other }) => (
@@ -105,66 +235,20 @@ const TabPanel = ({ children, value, index, ...other }) => (
 );
 
 const KidProfileTabs = ({ selectedKid }) => {
-  const theme = useTheme();
   const { kidId } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   
-  // State for the current tab
+  // State for the current tab 
   const [currentTab, setCurrentTab] = useState(0);
   
-  //  Fetching data from Redux
+  // Fetching data from Redux 
   const { forms } = useSelector(state => state.forms);
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { documents } = useSelector(state => state.documents);
 
-  // handle Refresh
-  const handleRefresh = () => {
-    //  Refresh all relevant data
-    if (kidId) {
-      
-      window.location.reload(); // Temporary solution – can be improved
-    }
-  };
 
-  const handlePrint = () => {
-    //  Print child summary
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html dir="rtl">
-        <head>
-          <title>סיכום ילד - ${selectedKid.firstName} ${selectedKid.lastName}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; direction: rtl; }
-            h1 { color: #1976d2; }
-            h2 { color: #666; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-            .info-row { margin: 10px 0; }
-            .label { font-weight: bold; display: inline-block; width: 150px; }
-          </style>
-        </head>
-        <body>
-          <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
-          <h2>פרטים בסיסיים</h2>
-          <div class="info-row"><span class="label">תאריך לידה:</span> ${selectedKid.birthDate || 'לא מצוין'}</div>
-          <div class="info-row"><span class="label">מגדר:</span> ${selectedKid.gender || 'לא מצוין'}</div>
-          <div class="info-row"><span class="label">כתובת:</span> ${selectedKid.address || 'לא מצוין'}</div>
-          <div class="info-row"><span class="label">כיתה:</span> ${selectedKid.className || 'לא משויך'}</div>
-          <div class="info-row"><span class="label">סטטוס:</span> ${selectedKid.isActive ? 'פעיל' : 'לא פעיל'}</div>
-          <div class="info-row"><span class="label">הורה ראשי:</span> ${selectedKid.parentName1 || 'לא מצוין'}</div>
-          <div class="info-row"><span class="label">הורה משני:</span> ${selectedKid.parentName2 || 'לא מצוין'}</div>
-          <div class="info-row"><span class="label">איש קשר חירום:</span> ${selectedKid.emergencyContact || 'לא מצוין'}</div>
-          <h2>הערות</h2>
-          <p>${selectedKid.notes || 'אין הערות'}</p>
-          <br><br>
-          <p><small>הופק ב: ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</small></p>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  };
 
-  // Function to calculate number of completed forms
+  // Function to calculate number of completed forms 
   const getCompletedFormsCount = () => {
     if (!forms || !kidId) return 0;
     
@@ -175,13 +259,13 @@ const KidProfileTabs = ({ selectedKid }) => {
     }).length;
   };
 
-  //Function to calculate number of documents
+  // Function to calculate number of documents 
   const getDocumentsCount = () => {
     if (!documents || !kidId) return 0;
     return documents.filter(doc => doc.kidId === parseInt(kidId)).length;
   };
 
-  //  Tabs configuration
+  // Tabs configuration 
   const tabs = [
     {
       id: 'overview',
@@ -234,9 +318,11 @@ const KidProfileTabs = ({ selectedKid }) => {
         <Avatar sx={{ 
           width: 32, 
           height: 32,
-          bgcolor: isSelected ? 'primary.main' : 'grey.300',
+          background: isSelected ? 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)' : 'rgba(200, 200, 200, 0.3)',
           color: isSelected ? 'white' : 'grey.600',
-          fontSize: '1rem'
+          fontSize: '1rem',
+          boxShadow: isSelected ? '0 4px 12px rgba(76, 181, 195, 0.3)' : 'none',
+          transition: 'all 0.3s ease'
         }}>
           {tab.icon}
         </Avatar>
@@ -259,7 +345,9 @@ const KidProfileTabs = ({ selectedKid }) => {
                   '& .MuiBadge-badge': {
                     fontSize: '0.75rem',
                     minWidth: '20px',
-                    height: '20px'
+                    height: '20px',
+                    background: 'linear-gradient(45deg, #ff7043 30%, #ff9575 90%)',
+                    boxShadow: '0 2px 8px rgba(255, 112, 67, 0.3)'
                   }
                 }}
               />
@@ -274,192 +362,153 @@ const KidProfileTabs = ({ selectedKid }) => {
   };
 
   return (
-    <Box dir="rtl">
-      {/* Top header with child details and quick access buttons */}
-      <Paper sx={{ p: 3, mb: 3, borderRadius: 3, boxShadow: 2 }}>
+    <MainContainer dir="rtl">
+      {/* Top header with child details and quick access buttons - Enhanced styling only */}
+      <EnhancedHeaderPaper>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar 
-              sx={{ 
-                width: 64, 
-                height: 64,
-                bgcolor: 'primary.main',
-                fontSize: '1.5rem',
-                fontWeight: 'bold'
-              }}
+            <StyledAvatar
               src={selectedKid.photoPath ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(selectedKid.photoPath)}` : undefined}
             >
               {selectedKid.firstName?.charAt(0) || '?'}
-            </Avatar>
+            </StyledAvatar>
             
             <Box>
-              <Typography variant="h5" fontWeight="bold" color="primary.main">
+              <Typography 
+                variant="h5" 
+                fontWeight="bold" 
+                sx={{ 
+                  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              >
                 {selectedKid.firstName} {selectedKid.lastName}
               </Typography>
               
               <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                <Chip 
+                <StyledChip 
                   label={selectedKid.isActive ? '✅ פעיל' : '❌ לא פעיל'}
                   color={selectedKid.isActive ? 'success' : 'error'}
                   size="small"
                 />
                 {selectedKid.className && (
-                  <Chip 
+                  <StyledChip 
                     label={`כיתה: ${selectedKid.className}`}
                     variant="outlined"
                     size="small"
                   />
                 )}
-             {selectedKid.birthDate && (() => {
-  const birthDate = new Date(selectedKid.birthDate);
-  const today = new Date();
+                {selectedKid.birthDate && (() => {
+                  const birthDate = new Date(selectedKid.birthDate);
+                  const today = new Date();
 
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months = today.getMonth() - birthDate.getMonth();
-  let days = today.getDate() - birthDate.getDate();
+                  let years = today.getFullYear() - birthDate.getFullYear();
+                  let months = today.getMonth() - birthDate.getMonth();
+                  let days = today.getDate() - birthDate.getDate();
 
-  // אם החודש עוד לא הגיע השנה
-  if (months < 0 || (months === 0 && days < 0)) {
-    years--;
-    months += 12;
-  }
+                  // If the month hasn't arrived yet this year
+                  if (months < 0 || (months === 0 && days < 0)) {
+                    years--;
+                    months += 12;
+                  }
 
-  // אם היום עוד לא הגיע החודש
-  if (days < 0) {
-    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-    days += prevMonth.getDate();
-    months--;
-    if (months < 0) {
-      months += 12;
-      years--;
-    }
-  }
+                  // If the day hasn't arrived yet this month
+                  if (days < 0) {
+                    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                    days += prevMonth.getDate();
+                    months--;
+                    if (months < 0) {
+                      months += 12;
+                      years--;
+                    }
+                  }
 
-  return (
-    <Chip 
-      label={`גיל: ${years} שנים, ${months} חודשים, ${days} ימים`}
-      variant="outlined"
-      size="small"
-    />
-  );
-})()}
+                  return (
+                    <StyledChip 
+                      label={`גיל: ${years} שנים, ${months} חודשים, ${days} ימים`}
+                      variant="outlined"
+                      size="small"
+                    />
+                  );
+                })()}
               </Stack>
             </Box>
           </Box>
           
-          {/* Quick access buttons */}
+          {/* Quick access buttons - Enhanced styling only */}
           <Stack direction="row" spacing={1}>
             <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="יומן כללי">
-              <QuickActionButton
+              PopperProps={{
+                disablePortal: true,
+                modifiers: [
+                  {
+                    name: 'flip',
+                    enabled: false 
+                  },
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary: 'window', 
+                    },
+                  },
+                ],
+              }}
+              title="יומן כללי"
+            >
+              <AnimatedQuickActionButton
                 startIcon={<CalendarIcon />}
                 onClick={() => navigate('/calendar/schedule')}
               >
                 יומן
-              </QuickActionButton>
+              </AnimatedQuickActionButton>
             </Tooltip>
             
             <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="נוכחות היום">
-              <QuickActionButton
+              PopperProps={{
+                disablePortal: true,
+                modifiers: [
+                  {
+                    name: 'flip',
+                    enabled: false 
+                  },
+                  {
+                    name: 'preventOverflow',
+                    options: {
+                      boundary: 'window', 
+                    },
+                  },
+                ],
+              }}
+              title="נוכחות היום"
+            >
+              <AnimatedQuickActionButton
                 startIcon={<AttendanceIcon />}
                 onClick={() => navigate('/reports/attendance')}
               >
                 נוכחות
-              </QuickActionButton>
+              </AnimatedQuickActionButton>
             </Tooltip>
             
-            <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="רענן נתונים">
-              <IconButton
-                onClick={handleRefresh}
-                sx={{ 
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  '&:hover': { borderColor: 'primary.main' }
-                }}
-              >
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-            
-            <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="הדפס סיכום">
-              <IconButton
-                onClick={handlePrint}
-                sx={{ 
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  '&:hover': { borderColor: 'primary.main' }
-                }}
-              >
-                <PrintIcon />
-              </IconButton>
-            </Tooltip>
+           
+           
           </Stack>
         </Box>
         
-        <Typography variant="body2" color="text.secondary">
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            color: 'text.secondary',
+            fontWeight: 500,
+            letterSpacing: '0.5px'
+          }}
+        >
           תיק דיגיטלי מלא של {selectedKid.firstName} - טיפולים, טפסים, מסמכים ודוחות
         </Typography>
 
-        {/* The tabs themselves */}
+        {/* The tabs themselves - Enhanced styling only */}
         <Box sx={{ mt: 3 }}>
           <StyledTabs
             value={currentTab}
@@ -483,15 +532,10 @@ const KidProfileTabs = ({ selectedKid }) => {
             ))}
           </StyledTabs>
         </Box>
-      </Paper>
+      </EnhancedHeaderPaper>
 
-      {/* Tab content */}
-      <Paper sx={{ 
-        borderRadius: 3,
-        minHeight: '500px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      {/* Tab content - Enhanced styling only */}
+      <TabContentPaper>
         {tabs.map((tab, index) => {
           const Component = tab.component;
           return (
@@ -500,8 +544,8 @@ const KidProfileTabs = ({ selectedKid }) => {
             </TabPanel>
           );
         })}
-      </Paper>
-    </Box>
+      </TabContentPaper>
+    </MainContainer>
   );
 };
 

@@ -74,7 +74,7 @@ html, body {
   font-size: 16px; /* default */
 }
 html {
-  zoom: 0.85 !important;
+  zoom: 0.90 !important;
   transform: none !important;
   -webkit-transform: none !important;
   -moz-transform: none !important;
@@ -82,7 +82,7 @@ html {
   -o-transform: none !important;
 }
 body {
-  zoom: 0.85 !important;
+  zoom: 0.90 !important;
   transform: none !important;
   
 }

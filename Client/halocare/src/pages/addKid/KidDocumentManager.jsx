@@ -1,9 +1,9 @@
 // KidDocumentManager.jsx - ONLY visual styling changes, ALL original functionality preserved
 
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Paper, Typography, Tabs, Tab, Button, Alert, Fade, 
+  Box, Paper, Typography, Tabs, Tab, Button, Alert,  
   CircularProgress, Chip, Dialog, DialogTitle, DialogContent,
   DialogActions, IconButton, Collapse
 } from '@mui/material';
@@ -21,14 +21,12 @@ import { styled, alpha } from '@mui/material/styles';
 import FileUploader from '../../components/common/FileUploader';
 import FilesList from '../../components/common/FilesList';
 
-// Redux imports - PRESERVED
 import { 
   fetchDocumentsByKidId, 
   clearDocuments 
 } from '../../Redux/features/documentsSlice';
 
-// Modern Container matching Employee design - VISUAL ONLY
-const ModernContainer = styled(Paper)(({ theme }) => ({
+const ModernContainer = styled(Paper)(() => ({
   borderRadius: 20,
   boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   backdropFilter: 'blur(20px)',
@@ -49,8 +47,7 @@ const ModernContainer = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// Animated Button matching Employee design - VISUAL ONLY
-const AnimatedButton = styled(Button)(({ theme }) => ({
+const AnimatedButton = styled(Button)(() => ({
   borderRadius: 16,
   padding: '12px 24px',
   fontWeight: 600,
@@ -81,7 +78,6 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-// Stats Card matching Employee design - VISUAL ONLY
 const StatsCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: 16,
@@ -96,8 +92,7 @@ const StatsCard = styled(Paper)(({ theme }) => ({
   }
 }));
 
-// Tab styling matching Employee design - VISUAL ONLY
-const StyledTabs = styled(Tabs)(({ theme }) => ({
+const StyledTabs = styled(Tabs)(() => ({
   borderBottom: `1px solid ${alpha('#4cb5c3', 0.2)}`,
   '& .MuiTab-root': {
     fontWeight: 600,
@@ -142,7 +137,7 @@ const CompactContainer = styled(Paper)(({ theme, maxHeight }) => ({
   }
 }));
 
-const ExpandButton = styled(IconButton)(({ expanded, theme }) => ({
+const ExpandButton = styled(IconButton)(({ expanded }) => ({
   transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
   transition: 'transform 0.3s ease',
   color: '#4cb5c3',

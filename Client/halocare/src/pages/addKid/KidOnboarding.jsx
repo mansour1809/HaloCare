@@ -15,7 +15,7 @@ import {
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
-// New Redux - PRESERVED EXACTLY
+// New Redux 
 import { 
   fetchOnboardingStatus, 
   setCurrentKid,
@@ -378,7 +378,7 @@ const KidOnboarding = () => {
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <FullScreenContainer dir="rtl" maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
-          {/* Breadcrumbs - PRESERVED EXACTLY with enhanced styling */}
+          {/* Breadcrumbs  with enhanced styling */}
           <Breadcrumbs sx={{ 
             mb: 3,
             '& .MuiBreadcrumbs-separator': { color: 'rgba(255, 255, 255, 0.7)' }
@@ -414,7 +414,7 @@ const KidOnboarding = () => {
             </Typography>
           </Breadcrumbs>
 
-          {/* Errors - PRESERVED EXACTLY */}
+          {/* Errors  */}
           {onboardingError && (
             <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
               <AlertTitle>שגיאה</AlertTitle>
@@ -422,7 +422,7 @@ const KidOnboarding = () => {
             </Alert>
           )}
 
-          {/* Logo with progress - PRESERVED EXACTLY */}
+          {/* Logo with progress  */}
           {!isNewKid && currentOnboarding && (
             <ProgressLogo 
               onboardingData={currentOnboarding}
@@ -432,10 +432,10 @@ const KidOnboarding = () => {
             />
           )}
 
-          {/* Dynamic content based on state - PRESERVED EXACTLY */}
+          {/* Dynamic content based on state  */}
           <Fade in={true} timeout={500}>
             <Box>
-              {/* Personal information form for a new child - PRESERVED EXACTLY */}
+              {/* Personal information form for a new child  */}
               {isNewKid && (
                 <EnhancedPaper sx={{ mb: 3 }}>
                   <EnhancedHeaderBox>
@@ -469,7 +469,7 @@ const KidOnboarding = () => {
                         {selectedForm.formDescription}
                       </Typography>
                       
-                      {/* Status Indicator - PRESERVED EXACTLY */}
+                      {/* Status Indicator  */}
                       <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Chip
                           icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
@@ -511,7 +511,7 @@ const KidOnboarding = () => {
                 </EnhancedPaper>
               )}
 
-              {/* Onboarding Process Dashboard - PRESERVED EXACTLY */}
+              {/* Onboarding Process Dashboard  */}
               {viewMode === 'dashboard' && currentOnboarding && (
                 <>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -533,7 +533,7 @@ const KidOnboarding = () => {
                 </>
               )}
 
-              {/* Filling/Viewing Dynamic Form - PRESERVED EXACTLY */}
+              {/* Filling/Viewing Dynamic Form  */}
               {viewMode === 'form' && selectedForm && (
                 <EnhancedPaper>
                   <EnhancedHeaderBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -545,7 +545,7 @@ const KidOnboarding = () => {
                         {selectedForm.formDescription}
                       </Typography>
                       
-                      {/* Status Indicator - PRESERVED EXACTLY */}
+                      {/* Status Indicator  */}
                       <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Chip
                           icon={formReadOnly ? <ViewIcon /> : <EditIcon />}
@@ -601,7 +601,7 @@ const KidOnboarding = () => {
             </Box>
           </Fade>
 
-          {/* Notifications - PRESERVED EXACTLY */}
+          {/* Notifications  */}
           <Snackbar
             open={notification.open}
             autoHideDuration={4000}

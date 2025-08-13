@@ -83,18 +83,6 @@ export const updateTasheReport = createAsyncThunk(
   }
 );
 
-// בדיקת הרשאות עריכה
-export const checkCanEditReport = createAsyncThunk(
-  'tasheReports/checkCanEdit',
-  async ({ reportId, employeeId }, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`/TasheReports/${reportId}/can-edit?employeeId=${employeeId}`);
-      return { reportId, canEdit: response.data };
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'שגיאה בבדיקת הרשאות');
-    }
-  }
-);
 
 // שליפת סטטיסטיקות דוחות
 export const fetchReportStatistics = createAsyncThunk(
@@ -224,9 +212,6 @@ const tasheReportsSlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(checkCanEditReport.fulfilled, (state, action) => {
-        state.editPermissions[action.payload.reportId] = action.payload.canEdit;
-      })
 
       .addCase(fetchReportStatistics.pending, (state) => {
         state.error = null;

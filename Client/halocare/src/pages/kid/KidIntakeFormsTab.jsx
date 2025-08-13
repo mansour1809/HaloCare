@@ -1,5 +1,4 @@
-// src/components/kids/tabs/KidIntakeFormsTab.jsx - טאב מידע מטפסי קליטה משופר
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import {
   Box,
   Accordion,
@@ -20,7 +19,9 @@ import {
   Divider,
   Badge,
   IconButton,
-  Button
+  Button,
+  alpha,
+  keyframes
 } from '@mui/material';
 import ExportIcon from '@mui/icons-material/SaveAlt';
 import PrintIcon from '@mui/icons-material/Print';
@@ -28,18 +29,13 @@ import PdfIcon from '@mui/icons-material/PictureAsPdf';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   ExpandMore as ExpandMoreIcon,
-  Person as PersonIcon,
   LocalHospital as MedicalIcon,
   Restaurant as NutritionIcon,
   Psychology as DevelopmentIcon,
   Home as HomeIcon,
-  School as EducationIcon,
-  Info as InfoIcon,
   Assignment as AssignmentIcon,
   Security as SecurityIcon,
   Search as SearchIcon,
-  CheckCircle as CheckCircleIcon,
-  RadioButtonUnchecked as UncheckedIcon,
   QuestionAnswer as QuestionIcon
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
@@ -47,56 +43,262 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { fetchForms } from '../../Redux/features/formsSlice';
 import { fetchFormAnswers } from '../../Redux/features/answersSlice';
 import { fetchQuestionsByFormId } from '../../Redux/features/questionsSlice';
-import { Navigate } from 'react-router-dom';
 import DigitalSignature from '../addKid/DigitalSignature';
-// Styled Components
+
+// Animation keyframes
+const slideIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+// Enhanced Styled Components
+const EnhancedPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  borderRadius: 20,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
+  }
+}));
+
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   marginBottom: theme.spacing(2),
-  borderRadius: '12px !important',
-  border: `1px solid ${theme.palette.divider}`,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-  transition: 'all 0.3s ease-in-out',
+  borderRadius: '16px !important',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  animation: `${slideIn} 0.5s ease-out`,
   '&:hover': {
-    boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-    transform: 'translateY(-2px)',
+    transform: 'translateY(-4px) scale(1.01)',
+    boxShadow: '0 12px 48px rgba(76, 181, 195, 0.15)',
+    border: '1px solid rgba(76, 181, 195, 0.3)',
   },
   '&:before': {
     display: 'none',
   },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  },
   '& .MuiAccordionSummary-root': {
-    padding: theme.spacing(2, 3),
-    borderRadius: '12px',
-    minHeight: '64px',
+    padding: theme.spacing(2.5, 3),
+    borderRadius: '16px',
+    minHeight: '72px',
+    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.03) 0%, rgba(255, 112, 67, 0.03) 100%)',
     '&.Mui-expanded': {
-      borderRadius: '12px 12px 0 0',
+      borderRadius: '16px 16px 0 0',
+      background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
     }
   },
   '& .MuiAccordionDetails-root': {
     padding: theme.spacing(3),
-    borderTop: `1px solid ${theme.palette.divider}`,
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderTop: '1px solid rgba(76, 181, 195, 0.1)',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
   }
 }));
 
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 48,
+  height: 48,
+  background: props => `linear-gradient(135deg, ${theme.palette[props.color]?.light} 0%, ${theme.palette[props.color]?.main} 100%)`,
+  boxShadow: props => `0 4px 15px ${alpha(theme.palette[props.color]?.main, 0.3)}`,
+  '& svg': {
+    fontSize: '1.5rem',
+  }
+}));
+
+const StyledBadge = styled(Badge)(() => ({
+  '& .MuiBadge-badge': {
+    background: 'linear-gradient(45deg, #ff7043 30%, #ff9575 90%)',
+    color: 'white',
+    fontWeight: 700,
+    boxShadow: '0 2px 8px rgba(255, 112, 67, 0.3)',
+  }
+}));
+
+const StyledChip = styled(Chip)(() => ({
+  borderRadius: 10,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  }
+}));
+
+const AnimatedButton = styled(Button)(() => ({
+  borderRadius: 12,
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: '8px 16px',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+    '&::before': {
+      left: '100%',
+    }
+  }
+}));
+
+const QuestionCard = styled(Card)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  borderRadius: 16,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '3px',
+    height: '100%',
+    background: 'linear-gradient(180deg, #4cb5c3, #2a8a95)',
+    opacity: 0,
+    transition: 'opacity 0.3s ease',
+  },
+  '&:hover': {
+    transform: 'translateX(-4px) scale(1.01)',
+    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.15)',
+    borderColor: 'primary.light',
+    '&::before': {
+      opacity: 1,
+    }
+  }
+}));
+
+const AnswerBox = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+  borderRadius: 12,
+  border: '1px solid rgba(76, 181, 195, 0.1)',
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '100%',
+    height: '100%',
+    background: 'radial-gradient(circle, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
+    transform: 'translate(-50%, -50%)',
+    pointerEvents: 'none',
+  }
+}));
+
+const SearchField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 1)',
+      '& fieldset': {
+        borderColor: theme.palette.primary.main,
+      }
+    },
+    '&.Mui-focused': {
+      background: 'rgba(255, 255, 255, 1)',
+      '& fieldset': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: '2px',
+      }
+    }
+  }
+}));
+
+const LoadingContainer = styled(Box)(() => ({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '400px',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 20,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+}));
+
+// CategoryHeader Component - Enhanced styling only
 const CategoryHeader = ({ icon, title, description, color, dataCount, formName }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-    <Avatar sx={{ 
-      bgcolor: `${color}.light`,
-      color: `${color}.main`,
-      width: 48,
-      height: 48
-    }}>
+    <StyledAvatar color={color}>
       {icon}
-    </Avatar>
+    </StyledAvatar>
     
     <Box sx={{ flex: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="h6" fontWeight="bold" color={`${color}.main`}>
+        <Typography 
+          variant="h6" 
+          fontWeight="bold" 
+          sx={{
+            background: `linear-gradient(45deg, ${color}.main 30%, ${color}.light 90%)`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           {title}
         </Typography>
-        <Badge badgeContent={dataCount} color="primary" />
+        <StyledBadge badgeContent={dataCount} color="primary" />
         {formName && (
-          <Chip 
+          <StyledChip 
             label={formName} 
             size="small" 
             variant="outlined" 
@@ -104,15 +306,16 @@ const CategoryHeader = ({ icon, title, description, color, dataCount, formName }
           />
         )}
       </Box>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
         {description}
       </Typography>
     </Box>
   </Box>
 );
 
-const QuestionCard = ({ question, answer }) => {
-  // Function to process response (handle JSON if present)
+// QuestionCard Component - Enhanced styling only
+const QuestionCardComponent = ({ question, answer }) => {
+  // Function to process response (handle JSON if present) 
   const formatAnswer = (answer) => {
     if (!answer) return 'לא נענה';
     
@@ -121,7 +324,13 @@ const QuestionCard = ({ question, answer }) => {
       const parsed = JSON.parse(answer);
       if (Array.isArray(parsed)) {
         return parsed.map((item, index) => (
-          <Box key={index} sx={{ mb: 1, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
+          <Box key={index} sx={{ 
+            mb: 1, 
+            p: 1.5, 
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%)',
+            borderRadius: 2,
+            border: '1px solid rgba(76, 181, 195, 0.1)'
+          }}>
             {Object.entries(item).map(([key, value]) => (
               <Typography key={key} variant="body2">
                 <strong>{key}:</strong> {value}
@@ -131,7 +340,7 @@ const QuestionCard = ({ question, answer }) => {
         ));
       }
     } catch (e) {
-      //Not JSON – return as is
+      // Not JSON – return as is
     }
 
     if(answer && answer.startsWith('data:image/')) {
@@ -145,55 +354,77 @@ const QuestionCard = ({ question, answer }) => {
   };
 
   return (
-    <Card sx={{ 
-      mb: 2, 
-      borderRadius: 2, 
-      border: '1px solid', 
-      borderColor: 'divider',
-      '&:hover': { 
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        borderColor: 'primary.light'
-      }
-    }}>
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-          <QuestionIcon sx={{ color: 'primary.main', mt: 0.5, fontSize: '1.2rem' }} />
-          <Typography variant="subtitle2" color="primary.main" fontWeight={600} sx={{ flex: 1 }}>
+    <QuestionCard>
+      <CardContent sx={{ p: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
+          <QuestionIcon sx={{ 
+            color: 'primary.main', 
+            mt: 0.5, 
+            fontSize: '1.3rem',
+            animation: `${pulse} 2s infinite`
+          }} />
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              flex: 1,
+              fontWeight: 700,
+              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             {question.questionText}
           </Typography>
           {question.isMandatory && (
-            <Chip label="חובה" size="small" color="error" variant="outlined" />
+            <StyledChip 
+              label="חובה" 
+              size="small" 
+              color="error" 
+              variant="outlined"
+              sx={{
+                background: 'linear-gradient(45deg, #f44336 30%, #ef5350 90%)',
+                color: 'white',
+                borderColor: 'transparent',
+              }}
+            />
           )}
         </Box>
         
         <Box sx={{ mr: 3 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
             תשובה:
           </Typography>
-          <Box sx={{ 
-            p: 1.5, 
-            bgcolor: 'grey.50', 
-            borderRadius: 1,
-            border: '1px solid',
-            borderColor: 'grey.200'
-          }}>
-           
+          <AnswerBox>
             {formatAnswer(answer?.answer)}
             {answer?.other && (
-              <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+              <Typography variant="body2" sx={{ 
+                mt: 1, 
+                fontStyle: 'italic',
+                color: 'primary.main',
+                fontWeight: 500
+              }}>
                 אחר: {answer.other}
               </Typography>
             )}
-          </Box>
+          </AnswerBox>
           
           {answer?.ansDate && (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                mt: 1, 
+                display: 'block',
+                color: 'text.secondary',
+                fontWeight: 500
+              }}
+            >
               נענה ב: {new Date(answer.ansDate).toLocaleDateString('he-IL')}
             </Typography>
           )}
         </Box>
       </CardContent>
-    </Card>
+    </QuestionCard>
   );
 };
 
@@ -202,22 +433,22 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
   const navigate = useNavigate();
   const { kidId } = useParams();
   
-  // States
+  // States 
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Redux selectors
+  // Redux selectors 
   const { forms } = useSelector(state => state.forms);
   const { answersByKidAndForm } = useSelector(state => state.answers);
   const { questionsByForm } = useSelector(state => state.questions);
 
-  // Loading data
+  // Loading data 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        //  Load forms if not existing
+        // Load forms if not existing
         if (!forms.length) {
           await dispatch(fetchForms()).unwrap();
         }
@@ -228,7 +459,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
             // Loading answers
             await dispatch(fetchFormAnswers({ kidId, formId: form.formId }));
             
-            //  Loading questions if not loaded yet
+            // Loading questions if not loaded yet
             if (!questionsByForm[form.formId]) {
               await dispatch(fetchQuestionsByFormId(form.formId));
             }
@@ -246,7 +477,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     loadData();
   }, [dispatch, kidId, forms.length, questionsByForm]);
 
-  //Function to export data
+  // Function to export data 
   const exportToFile = (format = 'txt') => {
     const organizedData = organizeDataByFormsAndCategories();
     let content = '';
@@ -278,7 +509,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
         content += '\n' + '='.repeat(50) + '\n\n';
       });
       
-      //  Create text file for download
+      // Create text file for download
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -291,7 +522,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     }
   };
 
-  // Function for printing
+  // Function for printing  (just the content, not the HTML)
   const printData = () => {
     const organizedData = organizeDataByFormsAndCategories();
     
@@ -396,9 +627,8 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     printWindow.print();
   };
 
-  // Function to create PDF (using print interface)
+  // Function to create PDF  (just the content, not the HTML)
   const exportToPdf = () => {
-    // Uses the same function as printing but with instruction to generate PDF
     const organizedData = organizeDataByFormsAndCategories();
     
     let htmlContent = `
@@ -503,30 +733,19 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     pdfWindow.document.write(htmlContent);
     pdfWindow.document.close();
     
-    //  Display instructions to the user
+    // Display instructions to the user
     setTimeout(() => {
       alert('💡 להורדת PDF: לחץ על Ctrl+P (או Cmd+P במק), בחר "Save as PDF" ולחץ על שמירה');
     }, 500);
   };
 
-  // Function to handle accordion toggle
+  // Function to handle accordion toggle 
   const handleAccordionChange = (categoryKey) => (event, isExpanded) => {
     setExpandedCategory(isExpanded ? categoryKey : null);
   };
-  const getAllAnswers = () => {
-    if (!kidId || !answersByKidAndForm) return [];
-    
-    const allAnswers = [];
-    Object.keys(answersByKidAndForm).forEach(key => {
-      if (key.startsWith(`${kidId}_`)) {
-        allAnswers.push(...answersByKidAndForm[key]);
-      }
-    });
-    
-    return allAnswers;
-  };
 
-  //  Retrieve questions with answers by form
+
+  // Retrieve questions with answers by form 
   const getQuestionsWithAnswers = (formId) => {
     const formKey = `${kidId}_${formId}`;
     const answers = answersByKidAndForm[formKey] || [];
@@ -540,20 +759,20 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return { answersMap };
   };
 
-  // Group data by forms and categories
+  // Group data by forms and categories 
   const organizeDataByFormsAndCategories = () => {
     const formGroups = {};
     
     forms.forEach(form => {
-      //  Skip personal details form (1002)
+      // Skip personal details form (1002)
       if (form.formId === 1002) return;
       
       const { answersMap } = getQuestionsWithAnswers(form.formId);
       const formQuestions = questionsByForm[form.formId] || [];
       
-      //  If there are answers for this form
+      // If there are answers for this form
       if (Object.keys(answersMap).length > 0) {
-        //  Grouping by categories within the form
+        // Grouping by categories within the form
         const categories = {};
         
         formQuestions.forEach(question => {
@@ -575,7 +794,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
           }
         });
         
-        //  Only if there are categories with answers
+        // Only if there are categories with answers
         if (Object.keys(categories).length > 0) {
           formGroups[form.formId] = {
             formName: form.formName,
@@ -590,7 +809,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
     return formGroups;
   };
 
-  //get Form Icon
+  // get Form Icon 
   const getFormIcon = (formName) => {
     if (formName.includes('רקע התפתחותי')) return <DevelopmentIcon />;
     if (formName.includes('בריאות')) return <MedicalIcon />;
@@ -627,10 +846,10 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
           return (
             // Search in question text
             question.questionText?.toLowerCase().includes(searchLower) ||
-            //  Search in answer content
+            // Search in answer content
             answer.answer?.toLowerCase().includes(searchLower) ||
             answer.other?.toLowerCase().includes(searchLower) ||
-            //  Search in category
+            // Search in category
             category.categoryName?.toLowerCase().includes(searchLower)
           );
         });
@@ -664,22 +883,46 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <LoadingContainer>
         <Stack alignItems="center" spacing={2}>
-          <CircularProgress size={48} />
-          <Typography variant="h6" color="text.secondary">
+          <CircularProgress 
+            size={48} 
+            sx={{ 
+              color: 'primary.main',
+              '& .MuiCircularProgress-circle': {
+                strokeLinecap: 'round',
+              }
+            }} 
+          />
+          <Typography 
+            variant="h6" 
+            sx={{
+              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 600
+            }}
+          >
             טוען מידע מטפסי קליטה...
           </Typography>
         </Stack>
-      </Box>
+      </LoadingContainer>
     );
   }
 
   if (totalDataItems === 0 && !searchTerm) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="info" sx={{ borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>
+        <Alert 
+          severity="info" 
+          sx={{ 
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(3, 169, 244, 0.05) 100%)',
+            border: '1px solid rgba(33, 150, 243, 0.2)',
+          }}
+        >
+          <Typography variant="h6" gutterBottom fontWeight={700}>
             אין מידע זמין מטפסי קליטה
           </Typography>
           <Typography>
@@ -693,27 +936,49 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
 
   return (
     <Box dir="rtl" sx={{ p: 3 }}>
-      {/* Title and Search */}
-      <Paper sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+      {/* Title and Search - Enhanced styling only */}
+      <EnhancedPaper>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Typography variant="h5" fontWeight="bold" color="primary.main" gutterBottom>
-          📋 מידע מטפסי קליטה
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          position="left"
-          onClick={() => navigate(`/kids/onboarding/${selectedKid.id}`)}
+          <Typography 
+            variant="h5" 
+            fontWeight="bold" 
+            gutterBottom
+            sx={{
+              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            📋 מידע מטפסי קליטה
+          </Typography>
+          <AnimatedButton
+            variant="outlined"
+            size="small"
+            onClick={() => navigate(`/kids/onboarding/${selectedKid.id}`)}
+            sx={{
+              borderColor: 'primary.main',
+              color: 'primary.main',
+              '&:hover': {
+                borderColor: 'primary.dark',
+                background: 'rgba(76, 181, 195, 0.05)',
+              }
+            }}
           >
             ניהול טפסי קליטה
-          </Button>
+          </AnimatedButton>
         </Box>
-        <Typography variant="body1" color="text.secondary" mb={3}>
+        <Typography 
+          variant="body1" 
+          color="text.secondary" 
+          mb={3}
+          sx={{ fontWeight: 500, letterSpacing: '0.5px' }}
+        >
           כל המידע שנאסף בתהליך הקליטה, מאורגן לפי טפסים וקטגוריות
         </Typography>
         
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
-          <TextField
+          <SearchField
             size="small"
             placeholder="חיפוש במידע..."
             value={searchTerm}
@@ -721,7 +986,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon sx={{ color: 'primary.main' }} />
                 </InputAdornment>
               ),
               endAdornment: searchTerm && (
@@ -729,7 +994,13 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                   <IconButton
                     size="small"
                     onClick={() => setSearchTerm('')}
-                    sx={{ mr: -1 }}
+                    sx={{ 
+                      mr: -1,
+                      transition: 'transform 0.3s ease',
+                      '&:hover': {
+                        transform: 'rotate(90deg)',
+                      }
+                    }}
                   >
                     <CloseIcon />
                   </IconButton>
@@ -739,28 +1010,33 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
             sx={{ minWidth: 250 }}
           />
           
-          <Chip 
+          <StyledChip 
             label={`${totalDataItems} פריטי מידע`} 
             color="primary" 
             variant="outlined" 
+            sx={{
+              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+              color: 'white',
+              borderColor: 'transparent',
+            }}
           />
-          <Chip 
+          <StyledChip 
             label={`${Object.keys(organizedData).length} טפסים`} 
             color="info" 
             variant="outlined" 
           />
           
           <Stack direction="row" spacing={1} sx={{ mr: 'auto' }}>
-            <Button
+            <AnimatedButton
               variant="outlined"
               size="small"
               startIcon={<PrintIcon />}
               onClick={printData}
             >
               הדפס
-            </Button>
+            </AnimatedButton>
             
-            <Button
+            <AnimatedButton
               variant="outlined"
               size="small"
               startIcon={<PdfIcon />}
@@ -768,42 +1044,57 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
               color="error"
             >
               PDF
-            </Button>
+            </AnimatedButton>
             
-            <Button
+            <AnimatedButton
               variant="outlined"
               size="small"
               startIcon={<ExportIcon />}
               onClick={() => exportToFile('txt')}
             >
               טקסט
-            </Button>
+            </AnimatedButton>
           </Stack>
         </Box>
-      </Paper>
+      </EnhancedPaper>
 
-      {/* Forms */}
+      {/* Forms - Enhanced styling only */}
       <Stack spacing={2}>
         {Object.keys(organizedData).length === 0 && searchTerm ? (
-          // Message when no search results found
-          <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
-            <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" gutterBottom color="text.secondary">
+          // Message when no search results found - Enhanced styling only
+          <EnhancedPaper sx={{ p: 4, textAlign: 'center' }}>
+            <SearchIcon sx={{ 
+              fontSize: 48, 
+              color: 'text.secondary', 
+              mb: 2,
+              animation: `${pulse} 2s infinite`
+            }} />
+            <Typography 
+              variant="h6" 
+              gutterBottom 
+              sx={{
+                background: 'linear-gradient(45deg, #ff7043 30%, #ff9575 90%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 700
+              }}
+            >
               לא נמצאו תוצאות עבור "{searchTerm}"
             </Typography>
             <Typography variant="body2" color="text.secondary" mb={3}>
               נסה לחפש במילים אחרות או נקה את תיבת החיפוש כדי לראות את כל המידע
             </Typography>
-            <Button
+            <AnimatedButton
               variant="outlined"
               startIcon={<CloseIcon />}
               onClick={() => setSearchTerm('')}
             >
               נקה חיפוש
-            </Button>
-          </Paper>
+            </AnimatedButton>
+          </EnhancedPaper>
         ) : (
-          // Regular results
+          // Regular results - Enhanced styling only
           Object.entries(organizedData).map(([formId, formData]) => {
             const form = forms.find(f => f.formId == formId);
             if (!form) return null;
@@ -815,7 +1106,10 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                 onChange={handleAccordionChange(formId)}
               >
                 <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
+                  expandIcon={<ExpandMoreIcon sx={{ 
+                    transition: 'transform 0.3s ease',
+                    transform: expandedCategory === formId ? 'rotate(180deg)' : 'rotate(0deg)'
+                  }} />}
                   aria-controls={`${formId}-content`}
                   id={`${formId}-header`}
                 >
@@ -829,18 +1123,22 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                 </AccordionSummary>
                 
                 <AccordionDetails>
-                  {/* Categories within the form */}
+                  {/* Categories within the form - Enhanced styling only */}
                   <Stack spacing={3}>
                     {Object.entries(formData.categories).map(([categoryKey, categoryData]) => (
                       <Box key={categoryKey}>
                         <Typography 
                           variant="h6" 
-                          color="primary.main" 
                           sx={{ 
                             mb: 2, 
                             pb: 1, 
                             borderBottom: '2px solid',
-                            borderColor: 'primary.light'
+                            borderImage: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981) 1',
+                            background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            fontWeight: 700
                           }}
                         >
                           📋 {categoryData.categoryName} ({categoryData.questions.length})
@@ -848,7 +1146,7 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                         
                         <Stack spacing={2}>
                           {categoryData.questions.map(({ question, answer }, index) => (
-                            <QuestionCard
+                            <QuestionCardComponent
                               key={`${question.formId}-${question.questionNo}-${index}`}
                               question={question}
                               answer={answer}
@@ -856,10 +1154,14 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
                           ))}
                         </Stack>
                         
-                        {/* Separator between categories */}
+                        {/* Separator between categories - Enhanced styling only */}
                         {Object.keys(formData.categories).length > 1 && 
                          categoryKey !== Object.keys(formData.categories).slice(-1)[0] && (
-                          <Divider sx={{ mt: 3, mb: 1 }} />
+                          <Divider sx={{ 
+                            mt: 3, 
+                            mb: 1,
+                            background: 'linear-gradient(90deg, transparent, rgba(76, 181, 195, 0.3), transparent)'
+                          }} />
                         )}
                       </Box>
                     ))}
