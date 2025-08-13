@@ -214,33 +214,7 @@ namespace halocare.DAL.Repositories
             };
         }
 
-        // מתודה לבדיקת הרשאות עריכה
-        public bool CanEditReport(int reportId, int employeeId)
-        {
-            Dictionary<string, object> parameters = new Dictionary<string, object>
-        {
-            { "@ReportId", reportId },
-            { "@EmployeeId", employeeId }
-        };
 
-            string query = @"
-            SELECT COUNT(*) as CanEdit
-            FROM [dbo].[tblTasheReports] tr
-            INNER JOIN [dbo].[tblEmployee] e ON e.employeeId = @EmployeeId
-            WHERE tr.reportId = @ReportId 
-            AND tr.isApproved = 0  -- לא אושר
-            AND (tr.generatedByEmployeeId = @EmployeeId OR e.roleName IN ('מנהל', 'מנהל/ת'))  -- יוצר הדוח או מנהל
-            AND e.isActive = 1";
-
-            DataTable result = ExecuteQuery(query, parameters);
-
-            if (result.Rows.Count > 0)
-            {
-                return Convert.ToInt32(result.Rows[0]["CanEdit"]) > 0;
-            }
-
-            return false;
-        }
 
     }
 }

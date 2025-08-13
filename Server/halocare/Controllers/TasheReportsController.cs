@@ -287,20 +287,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/TasheReports/{reportId}/can-edit - בדיקת הרשאות עריכה
-        [HttpGet("{reportId}/can-edit")]
-        public ActionResult<bool> CanEditReport(int reportId, [FromQuery] int employeeId)
-        {
-            try
-            {
-                bool canEdit = _tasheReportService.CanEditReport(reportId, employeeId);
-                return Ok(canEdit);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה בבדיקת הרשאות: {ex.Message}");
-            }
-        }
+
 
         // GET: api/TasheReports/statistics/{kidId} 
         [HttpGet("statistics/{kidId}")]

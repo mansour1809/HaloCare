@@ -187,12 +187,6 @@ namespace halocare.BL.Services
 
         public TasheReport UpdateReport(int reportId, string reportTitle, string reportContent, string notes, int updatedByEmployeeId)
         {
-            // בדיקת הרשאות
-            if (!_tasheReportRepository.CanEditReport(reportId, updatedByEmployeeId))
-            {
-                throw new UnauthorizedAccessException("אין הרשאה לערוך דוח זה");
-            }
-
             // בדיקה שהעובד המעדכן קיים ופעיל
             Employee employee = _employeeRepository.GetEmployeeById(updatedByEmployeeId);
             if (employee == null)
@@ -204,7 +198,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לעדכן דוח על ידי עובד שאינו פעיל");
             }
 
-            // עדכון הדוח
+            // עדכון הדוח - הבדיקות יתבצעו ב-SP
             var updatedReport = _tasheReportRepository.UpdateTasheReport(reportId, reportTitle, reportContent, notes, updatedByEmployeeId);
 
             if (updatedReport == null)
@@ -215,10 +209,5 @@ namespace halocare.BL.Services
             return updatedReport;
         }
 
-        // מתודה לבדיקת הרשאות עריכה
-        public bool CanEditReport(int reportId, int employeeId)
-        {
-            return _tasheReportRepository.CanEditReport(reportId, employeeId);
-        }
     }
 }
