@@ -1,5 +1,5 @@
 
-import  { useEffect, useState } from 'react';
+import  { useState } from 'react';
 import {
   Box,
   Container,
@@ -10,7 +10,6 @@ import {
 import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import TreatmentsSection from './TreatmentsSection'
 import OnboardingSection from './OnboardingSection'
 import ClassroomsSection from './ClassroomsSection'
 import CalendarSection from './CalendarSection'
@@ -54,18 +53,15 @@ const HomePage = () => {
     console.log(`Navigate to kid onboarding: ${kidId}`);
   };
 
-  const handleViewAllTreatments = () => {
-    console.log('Navigate to all treatments');
-  };
-
   return (
-    <Container maxWidth="xl" sx={{ py: 3, direction: 'rtl' }}>
-      {/* כותרת ראשית */}
+    <Container maxWidth="xl" sx={{ py: 3, direction: 'rtl', minHeight: '100vh',  // ← הוסיפי את זה
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      {/* Header */}
       <HomePageHeader onRefresh={handleRefresh} />
 
       {/* לייאוט ראשי */}
       <Grid container spacing={3}>
-        {/* עמודה ראשית - כיתות */}
+        {/* ClassroomsSection */}
         <Grid item size={{sx:12 , lg:12}}>
           <ClassroomsSection 
             onKidClick={handleKidClick}
@@ -73,7 +69,7 @@ const HomePage = () => {
           />
         </Grid>
 
-        {/* עמודה ימנית - יומן */}
+        {/*CalendarSection */}
         <Grid item size={{sx:12 , lg:6}}>
           <CalendarSection 
             onViewFullCalendar={handleViewFullCalendar}
@@ -81,19 +77,13 @@ const HomePage = () => {
           />
         </Grid>
 
-        {/* שורה תחתונה - קליטה וטיפולים */}
+        {/* OnboardingSection */}
         <Grid item size={{sx:12 , lg:6}}>
           <OnboardingSection 
             onViewFullOnboarding={handleViewFullOnboarding}
             onKidOnboardingClick={handleKidOnboardingClick}
           />
         </Grid>
-
-        {/* <Grid item size={{sx:12 , lg:8}}>
-          <TreatmentsSection 
-            onViewAllTreatments={handleViewAllTreatments}
-          />
-        </Grid> */}
       </Grid>
 
       {/* אינדיקטור טעינה */}

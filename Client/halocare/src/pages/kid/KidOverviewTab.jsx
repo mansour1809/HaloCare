@@ -497,7 +497,7 @@ const KidOverviewTab = ({ selectedKid }) => {
       value: selectedKid.parentName1 || '–'
     },
     {
-      label: 'הורה משני', 
+      label: 'הורה שני', 
       value: selectedKid.parentName2 || '–'
     }
   ];
@@ -550,7 +550,6 @@ const KidOverviewTab = ({ selectedKid }) => {
                 color="warning"
                 bgColor="rgba(255, 152, 0, 0.1)"
               />
-              
               <CriticalInfoCard
                 title="רגישויות ואלרגיות"
                 icon={<WarningIcon />}
@@ -558,7 +557,6 @@ const KidOverviewTab = ({ selectedKid }) => {
                 color="error"
                 bgColor="rgba(244, 67, 54, 0.1)"
               />
-              
               <CriticalInfoCard
                 title="התקפים"
                 icon={<EmergencyIcon />}
@@ -597,7 +595,7 @@ const KidOverviewTab = ({ selectedKid }) => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              🌸 תחומי טיפול
+               תחומי טיפול
             </Typography>
             
             <Typography 
@@ -647,7 +645,7 @@ const KidOverviewTab = ({ selectedKid }) => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                👤 פרטים אישיים
+                 פרטים אישיים
               </Typography>
               
               <Stack spacing={1.5}>
@@ -709,7 +707,7 @@ const KidOverviewTab = ({ selectedKid }) => {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                👨‍👩‍👧‍👦 פרטי הורים
+               פרטי הורים
               </Typography>
               
               <Stack spacing={1.5}>

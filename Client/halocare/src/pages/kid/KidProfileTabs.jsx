@@ -269,7 +269,7 @@ const KidProfileTabs = ({ selectedKid }) => {
   const tabs = [
     {
       id: 'overview',
-      label: 'סקירה כללית',
+      label: 'מבט כללי',
       icon: <OverviewIcon />,
       component: KidOverviewTab,
       badge: null,
@@ -289,7 +289,7 @@ const KidProfileTabs = ({ selectedKid }) => {
       icon: <DocumentsIcon />,
       component: KidDocumentsTab,
       badge: getDocumentsCount(),
-      description: 'קבצים ומסמכים מועלים'
+      description: 'קבצים ומסמכים'
     },
     {
       id: 'reports',

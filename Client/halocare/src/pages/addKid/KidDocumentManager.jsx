@@ -446,14 +446,14 @@ const KidDocumentManager = ({
           borderBottom: `1px solid ${alpha('#4cb5c3', 0.1)}`
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" sx={{ 
-              fontWeight: 700, 
+            <Typography variant="h5" sx={{ 
+              fontWeight: 'bold', 
               color: '#2a8a95',
               display: 'flex',
               alignItems: 'center'
             }}>
               <FolderIcon sx={{ mr: 2, color: '#4cb5c3' }} />
-              📄 מסמכי {kidName || 'הילד'}
+               המסמכים של {kidName || 'הילד'}
             </Typography>
             
             <Box sx={{ display: 'flex', gap: 1 }}>

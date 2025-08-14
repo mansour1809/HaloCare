@@ -1146,16 +1146,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 <Typography variant="h6" fontWeight={600}>
                   {kidDetailsDialog.kid?.emergencyPhone || 'לא זמין'}
                 </Typography>
-                {/* {kidDetailsDialog.kid?.emergencyPhone && (
-                  <GlowingButton
-                    size="small"
-                    startIcon={<CallIcon />}
-                    onClick={() => window.open(`tel:${kidDetailsDialog.kid.emergencyPhone}`)}
-                    glowColor="#10b981"
-                  >
-                    📞 חייג כעת
-                  </GlowingButton>
-                )} */}
               </Stack>
             </Paper>
             
