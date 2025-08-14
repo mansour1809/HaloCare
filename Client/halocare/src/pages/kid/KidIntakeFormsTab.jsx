@@ -44,7 +44,9 @@ import { fetchForms } from '../../Redux/features/formsSlice';
 import { fetchFormAnswers } from '../../Redux/features/answersSlice';
 import { fetchQuestionsByFormId } from '../../Redux/features/questionsSlice';
 import DigitalSignature from '../addKid/DigitalSignature';
-import html2pdf from "html2pdf.js";
+import {jsPDF} from 'jspdf';
+import html2canvas from 'html2canvas';
+import Swal from 'sweetalert2';
 
 // Animation keyframes
 const slideIn = keyframes`
@@ -696,47 +698,308 @@ const KidIntakeFormsTab = ({ selectedKid }) => {
   //   }, 500);
   // };
 
-const exportToPdf = () => {
-  const organizedData = organizeDataByFormsAndCategories();
+const exportToPdf = async () => {
+  // Show loading message
+  if (window.Swal) {
+    Swal.fire({
+      title: 'מכין את הקובץ...',
+      html: 'אנא המתן',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      willOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
 
-  // בונים DIV נסתר עם התוכן
-  const container = document.createElement("div");
+  const organizedData = organizeDataByFormsAndCategories();
+  
+  // Create a temporary container with the content
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.top = '0';
+  container.style.width = '210mm'; // A4 width
+  container.style.padding = '10mm';
+  container.style.background = 'white';
+  container.style.fontFamily = 'Arial, sans-serif';
+  
   container.innerHTML = `
-    <div dir="rtl" style="font-family: Arial; padding: 20px;">
-      <h1>תיק ילד - ${selectedKid.firstName} ${selectedKid.lastName}</h1>
-      <p><strong>תאריך יצוא:</strong> ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}</p>
-      <p><strong>גיל:</strong> ${selectedKid.birthDate ? 
-        new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear() + ' שנים' : 
-        'לא מצוין'}</p>
-      <p><strong>כיתה:</strong> ${selectedKid.className || 'לא משויך'}</p>
-      <hr>
+    <div style="
+      direction: rtl;
+      text-align: right;
+      font-family: Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+    ">
+      <!-- Header -->
+      <div style="
+        background: linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-radius: 15px;
+        margin-bottom: 30px;
+      ">
+        <h1 style="
+          margin: 0;
+          font-size: 32px;
+          font-weight: bold;
+        ">טפסי קליטה</h1>
+        <h2 style="
+          margin: 10px 0 0 0;
+          font-size: 24px;
+          font-weight: normal;
+        ">${selectedKid.firstName} ${selectedKid.lastName}</h2>
+      </div>
+
+      <!-- Info Section -->
+      <div style="
+        background: #f8f9fa;
+        border-right: 5px solid #4cb5c3;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+      ">
+        <table style="width: 100%; font-size: 16px;">
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #4cb5c3; width: 150px;">
+              תאריך יצוא:
+            </td>
+            <td style="padding: 8px 0;">
+              ${new Date().toLocaleDateString('he-IL')}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #4cb5c3;">
+              גיל:
+            </td>
+            <td style="padding: 8px 0;">
+              ${selectedKid.birthDate ? 
+                `${new Date().getFullYear() - new Date(selectedKid.birthDate).getFullYear()} שנים` : 
+                'לא מצוין'}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; font-weight: bold; color: #4cb5c3;">
+              כיתה:
+            </td>
+            <td style="padding: 8px 0;">
+              ${selectedKid.className || 'לא משויך'}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Forms Data -->
       ${Object.values(organizedData).map(formData => `
-        <h2>${formData.formName}</h2>
-        ${Object.values(formData.categories).map(categoryData => `
-          <h3>📋 ${categoryData.categoryName} (${categoryData.questions.length} שאלות)</h3>
-          ${categoryData.questions.map(({ question, answer }) => `
-            <div style="border: 1px solid #ccc; padding: 8px; margin: 8px 0;">
-              <div><strong>שאלה:</strong> ${question.questionText}</div>
-              <div><strong>תשובה:</strong> ${answer.answer || 'לא נענה'}</div>
-              ${answer.other ? `<div>הערה נוספת: ${answer.other}</div>` : ''}
-              ${answer.ansDate ? `<div style="font-size: 0.8em; color: gray;">תאריך מענה: ${new Date(answer.ansDate).toLocaleDateString('he-IL')}</div>` : ''}
+        <div style="margin: 30px 0; page-break-inside: avoid;">
+          <!-- Form Title -->
+          <div style="
+            background: linear-gradient(90deg, #2196f3 0%, #4cb5c3 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+          ">
+            ${formData.formName}
+          </div>
+
+          <!-- Categories -->
+          ${Object.values(formData.categories).map(categoryData => `
+            <div style="margin: 20px 0;">
+              <!-- Category Header -->
+              <div style="
+                background: #e3f2fd;
+                border-right: 5px solid #2196f3;
+                padding: 12px 20px;
+                margin-bottom: 15px;
+                border-radius: 8px;
+                font-size: 18px;
+                font-weight: bold;
+                color: #1976d2;
+              ">
+                ${categoryData.categoryName}
+                <span style="
+                  float: left;
+                  background: #2196f3;
+                  color: white;
+                  padding: 4px 12px;
+                  border-radius: 15px;
+                  font-size: 14px;
+                ">
+                  ${categoryData.questions.length} שאלות
+                </span>
+              </div>
+
+              <!-- Questions -->
+              ${categoryData.questions.map((item, index) => `
+                <div style="
+                  background: white;
+                  border: 1px solid #e0e0e0;
+                  border-radius: 10px;
+                  padding: 15px;
+                  margin: 12px 0;
+                  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                ">
+                  <div style="
+                    color: #333;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                    font-size: 15px;
+                  ">
+                    ${index + 1}. ${item.question.questionText}
+                  </div>
+                  
+                  <div style="
+                    background: #f5f5f5;
+                    padding: 10px;
+                    border-right: 3px solid #4cb5c3;
+                    border-radius: 5px;
+                    margin: 8px 0;
+                  ">
+                    <strong style="color: #4cb5c3;">תשובה:</strong> 
+                    ${item.answer.answer || 'לא נענה'}
+                  </div>
+                  
+                  ${item.answer.other ? `
+                    <div style="
+                      background: #fff3e0;
+                      padding: 10px;
+                      border-right: 3px solid #ff9800;
+                      border-radius: 5px;
+                      margin: 8px 0;
+                    ">
+                      <strong style="color: #ff9800;">הערה:</strong> 
+                      ${item.answer.other}
+                    </div>
+                  ` : ''}
+                  
+                  ${item.answer.ansDate ? `
+                    <div style="
+                      color: #999;
+                      font-size: 12px;
+                      margin-top: 8px;
+                      text-align: left;
+                    ">
+                      נענה: ${new Date(item.answer.ansDate).toLocaleDateString('he-IL')}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
             </div>
-          `).join("")}
-        `).join("")}
-      `).join("")}
+          `).join('')}
+        </div>
+      `).join('')}
+
+      <!-- Footer -->
+      <div style="
+        margin-top: 50px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        text-align: center;
+        border-top: 3px solid #4cb5c3;
+      ">
+        <div style="color: #666; font-size: 14px;">
+          מסמך זה הופק באופן אוטומטי מהמערכת<br>
+          © ${new Date().getFullYear()} כל הזכויות שמורות
+        </div>
+      </div>
     </div>
   `;
 
-  // הגדרת אפשרויות PDF
-  const options = {
-    margin: 10,
-    filename: `תיק-${selectedKid.firstName}-${selectedKid.lastName}.pdf`,
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-  };
+  // Add to document
+  document.body.appendChild(container);
 
-  // המרת HTML ל־PDF והורדה
-  html2pdf().from(container).set(options).save();
+  try {
+    // Use html2canvas to convert to image
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      letterRendering: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    });
+
+    // Calculate PDF dimensions
+    const imgWidth = 210; // A4 width in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pageHeight = 297; // A4 height in mm
+    
+    // Create PDF
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    let position = 0;
+
+    // Add image to PDF (handle multiple pages if needed)
+    if (imgHeight <= pageHeight) {
+      // Single page
+      pdf.addImage(
+        canvas.toDataURL('image/png'),
+        'PNG',
+        0,
+        0,
+        imgWidth,
+        imgHeight
+      );
+    } else {
+      // Multiple pages
+      let heightLeft = imgHeight;
+      
+      while (heightLeft > 0) {
+        pdf.addImage(
+          canvas.toDataURL('image/png'),
+          'PNG',
+          0,
+          position,
+          imgWidth,
+          imgHeight
+        );
+        
+        heightLeft -= pageHeight;
+        
+        if (heightLeft > 0) {
+          position = -pageHeight;
+          pdf.addPage();
+        }
+      }
+    }
+
+    // Save the PDF
+    pdf.save(`טפסי_קליטה_${selectedKid.firstName}_${selectedKid.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    // Success message
+    if (window.Swal) {
+      Swal.fire({
+        title: 'הקובץ הורד בהצלחה! 📄',
+        text: 'קובץ ה-PDF נשמר במחשב שלך',
+        icon: 'success',
+        confirmButtonText: 'אוקיי',
+        confirmButtonColor: '#4cb5c3',
+        timer: 3000,
+        timerProgressBar: true
+      });
+    }
+
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    
+    if (window.Swal) {
+      Swal.fire({
+        title: 'שגיאה',
+        text: 'לא הצלחנו ליצור את הקובץ. אנא נסה שנית.',
+        icon: 'error',
+        confirmButtonText: 'הבנתי',
+        confirmButtonColor: '#f44336'
+      });
+    }
+  } finally {
+    // Clean up
+    document.body.removeChild(container);
+  }
 };
   // Function to handle accordion toggle 
   const handleAccordionChange = (categoryKey) => (event, isExpanded) => {
