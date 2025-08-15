@@ -115,7 +115,7 @@ const PublicParentFormPage = () => {
     setError('');
 
     try {
-      // אימות טוקן ותעודת זהות
+      // Validate token and ID number
       const validateResponse = await axios.post('/ParentForm/validate', {
         token,
         kidIdNumber: kidIdNumber.trim()
@@ -128,7 +128,7 @@ const PublicParentFormPage = () => {
         if (formResponse.data) {
           setFormData(formResponse.data);
           
-          // טעינת תשובות קיימות
+            // Load existing answers
           const existingAnswers = {};
           formResponse.data.existingAnswers?.forEach(answer => {
             existingAnswers[answer.questionNo] = {
@@ -153,7 +153,7 @@ const PublicParentFormPage = () => {
     }
   };
 
-  // עדכון תשובה
+  // Update answer
   const handleAnswerChange = (questionNo, answer, other = '') => {
     setAnswers(prev => ({
       ...prev,
@@ -161,14 +161,14 @@ const PublicParentFormPage = () => {
     }));
   };
 
-  // שליחת הטופס עם תרגום חזרה
+  // Submit the form with translation back to Hebrew
   const handleSubmit = async () => {
     setLoading(true);
     
     try {
       let finalAnswers = answers;
 
-      // אם הטופס מולא בשפה אחרת, נתרגם חזרה לעברית
+      // If the form was filled in another language, translate back to Hebrew
       if (currentLanguage !== 'he') {
         const answersToTranslate = Object.entries(answers).map(([questionNo, answerData]) => ({
           questionNo: parseInt(questionNo),
@@ -183,7 +183,7 @@ const PublicParentFormPage = () => {
           });
 
           if (translateResponse.data.success) {
-            // המרת התשובות המתורגמות לפורמט הנדרש
+            // Convert the translated answers to the required format
             const translatedAnswersMap = {};
             translateResponse.data.translatedAnswers.forEach(item => {
               translatedAnswersMap[item.questionNo] = {
@@ -195,11 +195,11 @@ const PublicParentFormPage = () => {
           }
         } catch (translateError) {
           console.error('שגיאה בתרגום התשובות:', translateError);
-          // ממשיכים עם התשובות המקוריות
+            // Continue with the original answers
         }
       }
 
-      // המרת התשובות לפורמט הנדרש
+      // Convert answers to required format
       const formattedAnswers = Object.entries(finalAnswers).map(([questionNo, answerData]) => {
         const question = formData.questions.find(q => q.questionNo === parseInt(questionNo));
         
