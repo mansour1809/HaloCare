@@ -295,10 +295,23 @@ const EventDialog = () => {
             </Box>
           </Stack>
 
-          <Tooltip title="סגור" arrow
-          PopperProps={{
-                disablePortal: true
-              }}>
+          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }} title="סגור" arrow
+          >
             <IconButton
               onClick={() => setOpenDialog(false)}
               sx={{
@@ -690,9 +703,22 @@ const EventDialog = () => {
             <Tooltip
               title="יוצר האירוע"
               arrow
-              PopperProps={{
-                disablePortal: true
-              }}
+              placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
             >
               <Stack direction="row" spacing={1} alignItems="center">
                 <AccountCircleIcon

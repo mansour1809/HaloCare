@@ -2450,7 +2450,22 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                           {showPassword ? <VisibilityOff /> : <Visibility />}
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip PopperProps={{ disablePortal: true }}title="העתק סיסמה">
+                                      <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }} title="העתק סיסמה">
                                         <IconButton
                                           disabled={!formData.password}
                                           edge="end"

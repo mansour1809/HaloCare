@@ -143,10 +143,24 @@ const SimpleFlowerProfile = ({ kid }) => {
         const shadowColor = isHovered ? lightenColor(baseColor, 10) : baseColor;
         
         return (
-          <Tooltip PopperProps={{ disablePortal: true }}
+          <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
             key={treatmentType.treatmentTypeId}
-            // title={`לחץ לצפייה בטיפולי ${treatmentType.treatmentTypeName}`}
-            placement="top"
+
           >
             <Petal
               angle={angle}

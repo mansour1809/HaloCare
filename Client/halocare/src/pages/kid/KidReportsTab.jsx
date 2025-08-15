@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import  { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -18,7 +18,17 @@ import {
   Tooltip,
   styled,
   alpha,
-  keyframes
+  keyframes,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  ToggleButton,
+  ToggleButtonGroup,
+  Paper,
+  Divider
 } from '@mui/material';
 import {
   Psychology as BrainIcon,
@@ -30,7 +40,14 @@ import {
   Description as WordIcon,
   TextSnippet as TextIcon,
   ThumbUp as ApproveIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Search as SearchIcon,
+  FilterList as FilterIcon,
+  Sort as SortIcon,
+  Clear as ClearIcon,
+  CalendarToday as CalendarIcon,
+  GridView as GridViewIcon,
+  ViewList as ListViewIcon
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -144,7 +161,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   flexDirection: 'column',
   borderRadius: 20,
   background: 'rgba(255, 255, 255, 0.95)',
-  // backdropFilter: 'blur(20px)',
+  backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
   position: 'relative',
@@ -271,6 +288,75 @@ const DialogTitleStyled = styled(DialogTitle)(({ theme }) => ({
   fontSize: '1.3rem',
 }));
 
+const FilterBar = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(3),
+  borderRadius: 16,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.9)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 1)',
+      '& fieldset': {
+        borderColor: theme.palette.primary.main,
+      }
+    },
+    '&.Mui-focused': {
+      background: 'rgba(255, 255, 255, 1)',
+      '& fieldset': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: '2px',
+      }
+    }
+  }
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.9)',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 1)',
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(0, 0, 0, 0.23)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+    borderWidth: '2px',
+  }
+}));
+
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  '& .MuiToggleButton-root': {
+    borderRadius: 12,
+    border: '1px solid rgba(0, 0, 0, 0.12)',
+    margin: theme.spacing(0, 0.5),
+    padding: theme.spacing(0.5, 1.5),
+    transition: 'all 0.3s ease',
+    '&.Mui-selected': {
+      background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+      color: 'white',
+      '&:hover': {
+        background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+      }
+    },
+    '&:hover': {
+      background: 'rgba(76, 181, 195, 0.08)',
+    }
+  }
+}));
+
 const KidReportsTab = ({ selectedKid }) => {
   const dispatch = useDispatch();
   const [generatorOpen, setGeneratorOpen] = useState(false);
@@ -278,6 +364,13 @@ const KidReportsTab = ({ selectedKid }) => {
   const [reportToEdit, setReportToEdit] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState(null);
+
+  // New state for filtering and sorting
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [periodFilter, setPeriodFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date-desc');
+  const [viewMode, setViewMode] = useState('grid');
 
   const { currentUser } = useAuth();
   const { reports = [], status, error } = useSelector(state => state.tasheReports || {});
@@ -293,6 +386,86 @@ const KidReportsTab = ({ selectedKid }) => {
       dispatch(clearError());
     };
   }, [selectedKid?.id]);
+
+   // Filter and sort reports
+  const filteredAndSortedReports = useMemo(() => {
+    let filtered = [...reports];
+
+    // Search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(report => 
+        report.reportTitle?.toLowerCase().includes(search) ||
+        report.generatedByEmployeeName?.toLowerCase().includes(search) ||
+        report.notes?.toLowerCase().includes(search)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(report => {
+        if (statusFilter === 'approved') return report.isApproved;
+        if (statusFilter === 'pending') return !report.isApproved;
+        return true;
+      });
+    }
+
+    // Period filter
+    if (periodFilter !== 'all') {
+      const now = new Date();
+      const filterDate = new Date();
+      
+      switch(periodFilter) {
+        case 'last30':
+          filterDate.setDate(now.getDate() - 30);
+          break;
+        case 'last90':
+          filterDate.setDate(now.getDate() - 90);
+          break;
+        case 'last180':
+          filterDate.setDate(now.getDate() - 180);
+          break;
+        case 'lastYear':
+          filterDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+      
+      filtered = filtered.filter(report => 
+        new Date(report.generatedDate) >= filterDate
+      );
+    }
+
+    // Sorting
+    filtered.sort((a, b) => {
+      switch(sortBy) {
+        case 'date-desc':
+          return new Date(b.generatedDate) - new Date(a.generatedDate);
+        case 'date-asc':
+          return new Date(a.generatedDate) - new Date(b.generatedDate);
+        case 'title-asc':
+          return (a.reportTitle || '').localeCompare(b.reportTitle || '');
+        case 'title-desc':
+          return (b.reportTitle || '').localeCompare(a.reportTitle || '');
+        case 'period-desc':
+          return new Date(b.periodEndDate) - new Date(a.periodEndDate);
+        case 'period-asc':
+          return new Date(a.periodEndDate) - new Date(b.periodEndDate);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [reports, searchTerm, statusFilter, periodFilter, sortBy]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setPeriodFilter('all');
+    setSortBy('date-desc');
+  };
+
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || periodFilter !== 'all' || sortBy !== 'date-desc';
 
   // Basic check that child exists
   if (!selectedKid) {
@@ -358,6 +531,8 @@ const KidReportsTab = ({ selectedKid }) => {
     link.click();
     document.body.removeChild(link);
   };
+
+ 
 
   const handleApprove = async (report) => {
     try {
@@ -475,6 +650,7 @@ const KidReportsTab = ({ selectedKid }) => {
     loadReports();
   };
 
+ 
   if (status === 'loading') {
     return (
       <LoadingContainer>
@@ -532,12 +708,205 @@ const KidReportsTab = ({ selectedKid }) => {
           onClick={() => setGeneratorOpen(true)}
           disabled={!selectedKid?.id}
         >
-          יצירת דוח AI חדש
+          יצירת דוח תש"ה חדש
         </CreateReportButton>
       </HeaderBox>
 
+      {/* Filter Bar */}
+      {reports.length > 0 && (
+        <FilterBar>
+          <Grid container spacing={2} alignItems="center">
+            {/* Search */}
+            <Grid item size={{xs:12 , md:3}}>
+              <StyledTextField
+                fullWidth
+                size="small"
+                placeholder="חיפוש בדוחות..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'primary.main' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setSearchTerm('')}
+                        sx={{ mr: -1 }}
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Status Filter */}
+            <Grid item size={{xs:12,sm:6,md:2}}>
+              <FormControl fullWidth size="small">
+                <InputLabel>סטטוס</InputLabel>
+                <StyledSelect
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="סטטוס"
+                >
+                  <MenuItem value="all">הכל</MenuItem>
+                  <MenuItem value="approved">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ApprovedIcon fontSize="small" color="success" />
+                      מאושרים
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="pending">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PendingIcon fontSize="small" color="warning" />
+                      ממתינים
+                    </Box>
+                  </MenuItem>
+                </StyledSelect>
+              </FormControl>
+            </Grid>
+
+            {/* Period Filter */}
+            <Grid item size={{xs:12,sm:6,md:2}}>
+              <FormControl fullWidth size="small">
+                <InputLabel>תקופה</InputLabel>
+                <StyledSelect
+                  value={periodFilter}
+                  onChange={(e) => setPeriodFilter(e.target.value)}
+                  label="תקופה"
+                >
+                  <MenuItem value="all">כל הזמן</MenuItem>
+                  <MenuItem value="last30">30 יום אחרונים</MenuItem>
+                  <MenuItem value="last90">3 חודשים</MenuItem>
+                  <MenuItem value="last180">6 חודשים</MenuItem>
+                  <MenuItem value="lastYear">שנה אחרונה</MenuItem>
+                </StyledSelect>
+              </FormControl>
+            </Grid>
+
+            {/* Sort */}
+            <Grid item size={{xs:12,sm:6,md:2}}>
+              <FormControl fullWidth size="small">
+                <InputLabel>מיון</InputLabel>
+                <StyledSelect
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  label="מיון"
+                >
+                  <MenuItem value="date-desc">תאריך (חדש לישן)</MenuItem>
+                  <MenuItem value="date-asc">תאריך (ישן לחדש)</MenuItem>
+                  <MenuItem value="title-asc">כותרת (א-ת)</MenuItem>
+                  <MenuItem value="title-desc">כותרת (ת-א)</MenuItem>
+                  <MenuItem value="period-desc">תקופה (אחרונה)</MenuItem>
+                  <MenuItem value="period-asc">תקופה (ראשונה)</MenuItem>
+                </StyledSelect>
+              </FormControl>
+            </Grid>
+
+            {/* View Mode Toggle */}
+            <Grid item size={{xs:12,sm:6,md:2}}>
+              <StyledToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(e, newMode) => newMode && setViewMode(newMode)}
+                size="small"
+              >
+                <ToggleButton value="grid">
+                  <GridViewIcon />
+                </ToggleButton>
+                <ToggleButton value="list">
+                  <ListViewIcon />
+                </ToggleButton>
+              </StyledToggleButtonGroup>
+            </Grid>
+
+            {/* Clear Filters */}
+            <Grid item size={{xs:12,sm:6,md:1}}>
+              {hasActiveFilters && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={clearFilters}
+                  startIcon={<ClearIcon />}
+                  sx={{
+                    borderRadius: 12,
+                    borderColor: 'error.main',
+                    color: 'error.main',
+                    '&:hover': {
+                      borderColor: 'error.dark',
+                      background: 'rgba(244, 67, 54, 0.08)',
+                    }
+                  }}
+                >
+                  נקה
+                </Button>
+              )}
+            </Grid>
+          </Grid>
+
+          {/* Results Summary */}
+          {hasActiveFilters && (
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                נמצאו {filteredAndSortedReports.length} דוחות מתוך {reports.length}
+              </Typography>
+              {searchTerm && (
+                <Chip
+                  size="small"
+                  label={`חיפוש: "${searchTerm}"`}
+                  onDelete={() => setSearchTerm('')}
+                  sx={{ height: 24 }}
+                />
+              )}
+              {statusFilter !== 'all' && (
+                <Chip
+                  size="small"
+                  label={`סטטוס: ${statusFilter === 'approved' ? 'מאושרים' : 'ממתינים'}`}
+                  onDelete={() => setStatusFilter('all')}
+                  sx={{ height: 24 }}
+                />
+              )}
+              {periodFilter !== 'all' && (
+                <Chip
+                  size="small"
+                  label={`תקופה: ${
+                    periodFilter === 'last30' ? '30 יום' :
+                    periodFilter === 'last90' ? '3 חודשים' :
+                    periodFilter === 'last180' ? '6 חודשים' : 'שנה'
+                  }`}
+                  onDelete={() => setPeriodFilter('all')}
+                  sx={{ height: 24 }}
+                />
+              )}
+            </Box>
+          )}
+        </FilterBar>
+      )}
+
       {/* Reports Grid */}
-      {reports.length === 0 ? (
+      {filteredAndSortedReports.length === 0 && reports.length > 0 ? (
+        <EmptyStateBox>
+          <SearchIcon sx={{ fontSize: 60, color: 'grey.300', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            לא נמצאו דוחות תואמים
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            נסו לשנות את הסינון או החיפוש
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={clearFilters}
+            startIcon={<ClearIcon />}
+          >
+            נקה סינונים
+          </Button>
+        </EmptyStateBox>
+      ) : reports.length === 0 ? (
         <EmptyStateBox>
           <AnimatedEmptyIcon />
           <Typography 
@@ -576,8 +945,8 @@ const KidReportsTab = ({ selectedKid }) => {
         </EmptyStateBox>
       ) : (
         <Grid container spacing={3}>
-          {reports.map((report) => (
-            <Grid item xs={12} lg={6} key={report.reportId}>
+          {filteredAndSortedReports.map((report) => (
+            <Grid item size={{xs:12, lg:viewMode === 'list' ? 12 : 6}} key={report.reportId}>
               <StyledCard>
                 <CardContent sx={{ flex: 1, p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -684,6 +1053,7 @@ const KidReportsTab = ({ selectedKid }) => {
                       </ActionIconButton>
                     </Tooltip>
 
+                   
                   </Box>
                   
                   {/* Admin action buttons */}

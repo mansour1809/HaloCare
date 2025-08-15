@@ -303,7 +303,22 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey={timeRange === 'week' ? 'day' : 'date'} axisLine={false} />
             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} />
-            <Tooltip PopperProps={{ disablePortal: true }}
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -373,7 +388,22 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               fontWeight={600}
               label={{ value: 'אחוז נוכחות', angle: -90, position: 'insideLeft' }} 
             />
-            <Tooltip PopperProps={{ disablePortal: true }}
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -410,7 +440,22 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip PopperProps={{ disablePortal: true }}
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,
@@ -444,7 +489,22 @@ const AttendanceAnalytics = ({ miniVersion = false }) => {
               fontSize={12}
               fontWeight={600}
             />
-            <Tooltip PopperProps={{ disablePortal: true }}
+            <Tooltip placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
               formatter={(value) => [`${value}%`, 'נוכחות']}
               contentStyle={{
                 borderRadius: 12,

@@ -912,9 +912,22 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                 <Grid item key={kid.id}>
                                   <Zoom in timeout={1200 + kidIndex * 100}>
                                     <Tooltip 
-                                    PopperProps={{
-                disablePortal: true
-              }}
+                                    placement="top" 
+  PopperProps={{
+    disablePortal: true,
+    modifiers: [
+      {
+        name: 'flip',
+        enabled: false 
+      },
+      {
+        name: 'preventOverflow',
+        options: {
+          boundary: 'window', 
+        },
+      },
+    ],
+  }}
                                       title={
                                         <Box  sx={{ p: 1 }}>
                                           <Typography variant="body2" fontWeight="bold">
