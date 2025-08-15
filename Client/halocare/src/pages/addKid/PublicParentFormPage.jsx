@@ -1,10 +1,9 @@
-import  { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container, Box, Paper, Typography, TextField, Button, 
   CircularProgress, Alert, Stepper, Step, StepLabel,
-  Dialog, DialogTitle, DialogContent,
-  DialogActions
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import {
   Security as SecurityIcon,
@@ -20,6 +19,7 @@ import LanguageSelector from './LanguageSelector';
 
 const PublicParentFormPage = () => {
   const { token } = useParams();
+  const navigate = useNavigate();
   
   // States
   const [currentStep, setCurrentStep] = useState(0);
@@ -30,13 +30,15 @@ const PublicParentFormPage = () => {
   const [error, setError] = useState('');
   const [submitDialog, setSubmitDialog] = useState(false);
   const [multipleEntriesData, setMultipleEntriesData] = useState({});
+  
+  // Translation states
   const [currentLanguage, setCurrentLanguage] = useState('he');
   const [translatedQuestions, setTranslatedQuestions] = useState(null);
   const [translating, setTranslating] = useState(false);
 
   const steps = ['אימות זהות', 'מילוי הטופס', 'סיום'];
 
-// Function to handle complex data
+  // פונקציה לטיפול בנתונים מורכבים
   const handleMultipleEntriesChange = (questionNo, entriesData) => {
     setMultipleEntriesData(prev => ({
       ...prev,
@@ -44,9 +46,65 @@ const PublicParentFormPage = () => {
     }));
   };
 
+  // פונקציית תרגום הטופס
+  const handleLanguageChange = async (language) => {
+    console.log('שינוי שפה ל:', language);
+    
+    if (language === 'he') {
+      // חזרה לעברית - מציגים את השאלות המקוריות
+      setTranslatedQuestions(null);
+      setCurrentLanguage('he');
+      return;
+    }
 
+    setTranslating(true);
+    try {
+      // הכנת השאלות לתרגום
+      const questionsToTranslate = formData.questions.map(q => ({
+        questionNo: q.questionNo,
+        questionText: q.questionText,
+        possibleValues: q.possibleValues || '',
+        questionType: q.questionType
+      }));
 
-  // Access Validation
+      console.log('שולח לתרגום:', questionsToTranslate);
+
+      // קריאה לשרת לתרגום
+      const response = await axios.post('/Translation/translate-form', {
+        questions: questionsToTranslate,
+        targetLanguage: language,
+        sourceLanguage: 'he'
+      });
+
+      console.log('תשובה מהשרת:', response.data);
+
+      if (response.data.success) {
+        // מיזוג התרגומים עם השאלות המקוריות
+        const translated = formData.questions.map(original => {
+          const translation = response.data.translatedQuestions.find(
+            t => t.questionNo === original.questionNo
+          );
+          
+          return {
+            ...original,
+            questionText: translation?.questionText || original.questionText,
+            possibleValues: translation?.possibleValues || original.possibleValues
+          };
+        });
+
+        console.log('שאלות מתורגמות:', translated);
+        setTranslatedQuestions(translated);
+        setCurrentLanguage(language);
+      }
+    } catch (error) {
+      console.error('שגיאה בתרגום:', error);
+      alert('שגיאה בתרגום הטופס. אנא נסה שוב.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  // אימות גישה
   const handleValidation = async () => {
     if (!kidIdNumber.trim()) {
       setError('נא להזין תעודת זהות');
@@ -57,20 +115,20 @@ const PublicParentFormPage = () => {
     setError('');
 
     try {
-      // Token and ID validation
+      // אימות טוקן ותעודת זהות
       const validateResponse = await axios.post('/ParentForm/validate', {
         token,
         kidIdNumber: kidIdNumber.trim()
       });
 
       if (validateResponse.data.success) {
-        // Loading form data
+        // טעינת נתוני הטופס
         const formResponse = await axios.get(`/ParentForm/form/${token}`);
         
         if (formResponse.data) {
           setFormData(formResponse.data);
           
-            // Loading existing answers
+          // טעינת תשובות קיימות
           const existingAnswers = {};
           formResponse.data.existingAnswers?.forEach(answer => {
             existingAnswers[answer.questionNo] = {
@@ -95,7 +153,7 @@ const PublicParentFormPage = () => {
     }
   };
 
-  // Answer update
+  // עדכון תשובה
   const handleAnswerChange = (questionNo, answer, other = '') => {
     setAnswers(prev => ({
       ...prev,
@@ -103,91 +161,91 @@ const PublicParentFormPage = () => {
     }));
   };
 
+  // שליחת הטופס עם תרגום חזרה
   const handleSubmit = async () => {
-  setLoading(true);
-  
-  try {
-    let finalAnswers = answers;
+    setLoading(true);
+    
+    try {
+      let finalAnswers = answers;
 
-    // אם הטופס מולא בשפה אחרת, נתרגם חזרה לעברית
-    if (currentLanguage !== 'he') {
-      const answersToTranslate = Object.entries(answers).map(([questionNo, answerData]) => ({
-        questionNo: parseInt(questionNo),
-        answer: answerData.answer || '',
-        other: answerData.other || ''
-      }));
+      // אם הטופס מולא בשפה אחרת, נתרגם חזרה לעברית
+      if (currentLanguage !== 'he') {
+        const answersToTranslate = Object.entries(answers).map(([questionNo, answerData]) => ({
+          questionNo: parseInt(questionNo),
+          answer: answerData.answer || '',
+          other: answerData.other || ''
+        }));
 
-      try {
-        const translateResponse = await axios.post('/api/Translation/translate-answers', {
-          answers: answersToTranslate,
-          sourceLanguage: currentLanguage
-        });
-
-        if (translateResponse.data.success) {
-          // המרת התשובות המתורגמות לפורמט הנדרש
-          const translatedAnswersMap = {};
-          translateResponse.data.translatedAnswers.forEach(item => {
-            translatedAnswersMap[item.questionNo] = {
-              answer: item.answer,
-              other: item.other
-            };
+        try {
+          const translateResponse = await axios.post('/Translation/translate-answers', {
+            answers: answersToTranslate,
+            sourceLanguage: currentLanguage
           });
-          finalAnswers = translatedAnswersMap;
+
+          if (translateResponse.data.success) {
+            // המרת התשובות המתורגמות לפורמט הנדרש
+            const translatedAnswersMap = {};
+            translateResponse.data.translatedAnswers.forEach(item => {
+              translatedAnswersMap[item.questionNo] = {
+                answer: item.answer,
+                other: item.other
+              };
+            });
+            finalAnswers = translatedAnswersMap;
+          }
+        } catch (translateError) {
+          console.error('שגיאה בתרגום התשובות:', translateError);
+          // ממשיכים עם התשובות המקוריות
         }
-      } catch (translateError) {
-        console.error('שגיאה בתרגום התשובות:', translateError);
-        // ממשיכים עם התשובות המקוריות
       }
-    }
 
-    // המרת התשובות לפורמט הנדרש
-    const formattedAnswers = Object.entries(finalAnswers).map(([questionNo, answerData]) => {
-      const question = formData.questions.find(q => q.questionNo === parseInt(questionNo));
-      
-      let answerObject = {
-        questionNo: parseInt(questionNo),
-        answer: answerData.answer || '',
-        other: answerData.other || ''
-      };
+      // המרת התשובות לפורמט הנדרש
+      const formattedAnswers = Object.entries(finalAnswers).map(([questionNo, answerData]) => {
+        const question = formData.questions.find(q => q.questionNo === parseInt(questionNo));
+        
+        let answerObject = {
+          questionNo: parseInt(questionNo),
+          answer: answerData.answer || '',
+          other: answerData.other || ''
+        };
 
-      // הוספת נתונים מורכבים אם קיימים
-      if (question?.requiresMultipleEntries && answerData.answer === 'כן') {
-        const entriesData = multipleEntriesData[questionNo];
-        if (entriesData && entriesData.length > 0) {
-          const validEntries = entriesData.filter(entry => 
-            Object.values(entry).some(val => val && val.toString().trim())
-          );
-          if (validEntries.length > 0) {
-            answerObject.multipleEntries = validEntries;
+        // הוספת נתונים מורכבים אם קיימים
+        if (question?.requiresMultipleEntries && answerData.answer === 'כן') {
+          const entriesData = multipleEntriesData[questionNo];
+          if (entriesData && entriesData.length > 0) {
+            const validEntries = entriesData.filter(entry => 
+              Object.values(entry).some(val => val && val.toString().trim())
+            );
+            if (validEntries.length > 0) {
+              answerObject.multipleEntries = validEntries;
+            }
           }
         }
+
+        return answerObject;
+      });
+
+      const payload = {
+        token: token,
+        answers: formattedAnswers
+      };
+
+      const response = await axios.post('/ParentForm/submit', payload);
+      
+      if (response.data.success) {
+        setCurrentStep(2);
+      } else {
+        setError(response.data.message || 'שגיאה בשמירת הטופס');
       }
-
-      return answerObject;
-    });
-
-    const payload = {
-      token: token,
-      answers: formattedAnswers
-    };
-
-    const response = await axios.post('/api/ParentForm/submit', payload);
-    
-    if (response.data.success) {
-      setCurrentStep(2);
-    } else {
-      setError(response.data.message || 'שגיאה בשמירת הטופס');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError('שגיאה בשליחת הטופס. אנא נסה שוב.');
+    } finally {
+      setLoading(false);
+      setSubmitDialog(false);
     }
-  } catch (error) {
-    console.error('Error submitting form:', error);
-    setError('שגיאה בשליחת הטופס. אנא נסה שוב.');
-  } finally {
-    setLoading(false);
-    setSubmitDialog(false);
-  }
-};
-
-
+  };
+       
   const calculateProgress = () => {
     if (!formData?.questions?.length) return 0;
     
@@ -209,56 +267,11 @@ const PublicParentFormPage = () => {
       other: answer?.other || ''
     };
   };
-  
-  const handleLanguageChange = async (language) => {
-  if (language === 'he') {
-    // Switch back to Hebrew - show the original questions
-    setTranslatedQuestions(null);
-    setCurrentLanguage('he');
-    return;
-  }
 
-  setTranslating(true);
-  try {
-    // Prepare questions for translation
-    const questionsToTranslate = formData.questions.map(q => ({
-      questionNo: q.questionNo,
-      questionText: q.questionText,
-      possibleValues: q.possibleValues || '',
-      questionType: q.questionType
-    }));
-
-    // Call server for translation
-    const response = await axios.post('/api/Translation/translate-form', {
-      questions: questionsToTranslate,
-      targetLanguage: language,
-      sourceLanguage: 'he'
-    });
-
-    if (response.data.success) {
-      // Merge translations with original questions
-      const translated = formData.questions.map(original => {
-        const translation = response.data.translatedQuestions.find(
-          t => t.questionNo === original.questionNo
-        );
-        
-        return {
-          ...original,
-          questionText: translation?.questionText || original.questionText,
-          possibleValues: translation?.possibleValues || original.possibleValues
-        };
-      });
-
-      setTranslatedQuestions(translated);
-      setCurrentLanguage(language);
-    }
-  } catch (error) {
-    console.error('שגיאה בתרגום:', error);
-    alert('שגיאה בתרגום הטופס. ננסה שוב.');
-  } finally {
-    setTranslating(false);
-  }
-};
+  // פונקציה לקבלת השאלות הנוכחיות (מקוריות או מתורגמות)
+  const getCurrentQuestions = () => {
+    return translatedQuestions || formData?.questions || [];
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -305,14 +318,14 @@ const PublicParentFormPage = () => {
         ))}
       </Stepper>
 
-      {/* Errors */}
+      {/* שגיאות */}
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
           {error}
         </Alert>
       )}
 
-      {/* Content by step */}
+      {/* תוכן לפי שלב */}
       <Paper sx={{ p: 4, borderRadius: 3 }}>
         {currentStep === 0 && (
           <Box sx={{ textAlign: 'center' }}>
@@ -352,10 +365,12 @@ const PublicParentFormPage = () => {
 
         {currentStep === 1 && formData && (
           <Box>
-              <LanguageSelector 
-      onLanguageChange={handleLanguageChange}
-      loading={translating}
-    />    
+            {/* בורר השפה */}
+            <LanguageSelector 
+              onLanguageChange={handleLanguageChange}
+              loading={translating}
+            />
+
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography variant="h5" gutterBottom>
                 {formData.form.formName}
@@ -393,10 +408,10 @@ const PublicParentFormPage = () => {
               </Box>
             </Box>
 
-            {/* Form questions */}
+            {/* שאלות הטופס - משתמשים בפונקציה החדשה */}
             <Box sx={{ mb: 4 }}>
-              {(translatedQuestions || formData.questions).map((question) => {
-        const { answer, other } = getAnswerValue(question.questionNo);
+              {getCurrentQuestions().map((question) => {
+                const { answer, other } = getAnswerValue(question.questionNo);
                 
                 return (
                   <Box key={question.questionNo} sx={{ mb: 3 }}>
@@ -414,7 +429,7 @@ const PublicParentFormPage = () => {
                       readOnly={false}
                     />
 
-                    {/* Adding complex data component */}
+                    {/* נתונים מורכבים */}
                     {question.requiresMultipleEntries &&
                       answer === "כן" && (
                         <Box sx={{ mt: 2 }}>
@@ -442,13 +457,13 @@ const PublicParentFormPage = () => {
               })}
             </Box>
 
-            {/* Save button */}
+            {/* כפתור שמירה */}
             <Box sx={{ textAlign: 'center' }}>
               <Button
                 variant="contained"
                 size="large"
                 onClick={() => setSubmitDialog(true)}
-                disabled={loading || calculateProgress() < 100}
+                disabled={loading || calculateProgress() < 100 || translating}
                 sx={{ minWidth: 200 }}
               >
                 שלח טופס
@@ -479,7 +494,7 @@ const PublicParentFormPage = () => {
         )}
       </Paper>
 
-      {/* Submission Confirmation Dialog */}
+      {/* Submit confirmation dialog */}
       <Dialog open={submitDialog} onClose={() => setSubmitDialog(false)}>
         <DialogTitle>אישור שליחת טופס</DialogTitle>
         <DialogContent>
@@ -489,6 +504,11 @@ const PublicParentFormPage = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             לאחר השליחה לא ניתן יהיה לערוך את התשובות.
           </Typography>
+          {currentLanguage !== 'he' && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              התשובות שלך יתורגמו אוטומטית לעברית לפני השמירה במערכת
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSubmitDialog(false)}>ביטול</Button>

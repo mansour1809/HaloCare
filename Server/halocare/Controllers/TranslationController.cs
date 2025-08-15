@@ -1,144 +1,110 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using halocare.BL.Services;
-using halocare.DAL.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using halocare.BL.Services;
 
 namespace halocare.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-
-    public class TreatmentTypesController : ControllerBase
+    [Route("api/[controller]")]
+    public class TranslationController : ControllerBase
     {
-        private readonly TreatmentTypeService _treatmentTypeService;
+        private readonly GeminiService _geminiService;
 
-        public TreatmentTypesController(IConfiguration configuration)
+        public TranslationController(GeminiService geminiService)
         {
-            _treatmentTypeService = new TreatmentTypeService(configuration);
+            _geminiService = geminiService;
         }
 
-        // GET: api/TreatmentTypes
-        [HttpGet]
-        public ActionResult<IEnumerable<TreatmentType>> GetTreatmentTypes()
-        {
-            try
-            {
-                return Ok(_treatmentTypeService.GetAllTreatmentTypes());
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה בשליפת סוגי הטיפולים: {ex.Message}");
-            }
-        }
-
-        // GET: api/TreatmentTypes/{name}
-        [HttpGet("{typeId}")]
-        public ActionResult<TreatmentType> GetTreatmentType(int typeId)
+        // תרגום טופס שלם לשפה מבוקשת
+        [HttpPost("translate-form")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TranslateForm([FromBody] TranslateFormRequest request)
         {
             try
             {
-                var treatmentType = _treatmentTypeService.GetTreatmentTypeById(typeId);
+                var translatedData = await _geminiService.TranslateFormAsync(
+                    request.Questions,
+                    request.TargetLanguage,
+                    request.SourceLanguage ?? "he"
+                );
 
-                if (treatmentType == null)
+                return Ok(new
                 {
-                    return NotFound($"סוג הטיפול '{typeId}' לא נמצא");
-                }
-
-                return Ok(treatmentType);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
+                    success = true,
+                    translatedQuestions = translatedData
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה בשליפת סוג הטיפול: {ex.Message}");
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "שגיאה בתרגום הטופס",
+                    error = ex.Message
+                });
             }
         }
 
-        // POST: api/TreatmentTypes
-        [HttpPost]
-        public ActionResult<TreatmentType> PostTreatmentType(TreatmentType treatmentType)
+        // תרגום תשובות חזרה לעברית
+        [HttpPost("translate-answers")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TranslateAnswers([FromBody] TranslateAnswersRequest request)
         {
             try
             {
-                bool success = _treatmentTypeService.AddTreatmentType(treatmentType);
+                var translatedAnswers = await _geminiService.TranslateAnswersAsync(
+                    request.Answers,
+                    request.SourceLanguage,
+                    "he" // תמיד מתרגמים חזרה לעברית
+                );
 
-                if (success)
+                return Ok(new
                 {
-                    return CreatedAtAction(nameof(GetTreatmentType), new { name = treatmentType.TreatmentTypeName }, treatmentType);
-                }
-                else
-                {
-                    return StatusCode(500, "לא ניתן להוסיף את סוג הטיפול");
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
+                    success = true,
+                    translatedAnswers = translatedAnswers
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה בהוספת סוג הטיפול: {ex.Message}");
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "שגיאה בתרגום התשובות",
+                    error = ex.Message
+                });
             }
         }
+    }
 
-        // PUT: api/TreatmentTypes/{oldName}
-        [HttpPut("{oldName}")]
-        public IActionResult PutTreatmentType(int typeId, [FromBody] string newName)
-        {
-            try
-            {
-                bool success = _treatmentTypeService.UpdateTreatmentType(typeId, newName);
+    // Request Models
+    public class TranslateFormRequest
+    {
+        public List<QuestionTranslationDto> Questions { get; set; }
+        public string TargetLanguage { get; set; }
+        public string SourceLanguage { get; set; }
+    }
 
-                if (success)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return StatusCode(500, "לא ניתן לעדכן את סוג הטיפול");
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה בעדכון סוג הטיפול: {ex.Message}");
-            }
-        }
+    public class TranslateAnswersRequest
+    {
+        public List<AnswerTranslationDto> Answers { get; set; }
+        public string SourceLanguage { get; set; }
+    }
 
-        // DELETE: api/TreatmentTypes/{name}
-        [HttpDelete("{typeId}")]
-        public IActionResult DeleteTreatmentType(int typeId)
-        {
-            try
-            {
-                bool success = _treatmentTypeService.DeleteTreatmentType(typeId);
+    // DTOs
+    public class QuestionTranslationDto
+    {
+        public int QuestionNo { get; set; }
+        public string QuestionText { get; set; }
+        public string PossibleValues { get; set; } // comma separated values
+        public string QuestionType { get; set; }
+    }
 
-                if (success)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return StatusCode(500, "לא ניתן למחוק את סוג הטיפול");
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה במחיקת סוג הטיפול: {ex.Message}");
-            }
-        }
+    public class AnswerTranslationDto
+    {
+        public int QuestionNo { get; set; }
+        public string Answer { get; set; }
+        public string Other { get; set; }
     }
 }

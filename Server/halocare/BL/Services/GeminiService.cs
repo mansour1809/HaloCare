@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using halocare.DAL.Models;
 using Microsoft.Extensions.Configuration;
+using halocare.Controllers;
 
 namespace halocare.BL.Services
 {
@@ -26,7 +27,319 @@ namespace halocare.BL.Services
                 throw new ArgumentException("Gemini API Key חסר בהגדרות");
             }
         }
+        public async Task<List<QuestionTranslationDto>> TranslateFormAsync(
+    List<QuestionTranslationDto> questions,
+    string targetLanguage,
+    string sourceLanguage = "he")
+        {
+            try
+            {
+                Console.WriteLine($"=== התחלת תרגום ===");
+                Console.WriteLine($"שפת מקור: {sourceLanguage}, שפת יעד: {targetLanguage}");
+                Console.WriteLine($"מספר שאלות: {questions.Count}");
 
+                // אם השפות זהות - מחזירים כמו שזה
+                if (sourceLanguage == targetLanguage)
+                {
+                    Console.WriteLine("שפת מקור ויעד זהות - מחזירים ללא תרגום");
+                    return questions;
+                }
+
+                // בניית הפרומפט לתרגום
+                var prompt = BuildTranslationPrompt(questions, targetLanguage, sourceLanguage);
+                Console.WriteLine($"Prompt length: {prompt.Length}");
+                Console.WriteLine($"First 500 chars of prompt: {prompt.Substring(0, Math.Min(500, prompt.Length))}");
+
+                // יצירת הבקשה ל-Gemini
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = prompt }
+                    }
+                }
+            },
+                    generationConfig = new
+                    {
+                        temperature = 0.1,
+                        topK = 1,
+                        topP = 0.95,
+                        maxOutputTokens = 4096,
+                    },
+                    safetySettings = new[]
+                    {
+                new { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_HATE_SPEECH", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
+            }
+                };
+
+                string json = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                Console.WriteLine($"שולח בקשה ל-Gemini API...");
+
+                // שליחת הבקשה
+                var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
+
+                Console.WriteLine($"Status Code: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseJson = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Response length: {responseJson.Length}");
+
+                    var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
+
+                    if (geminiResponse?.candidates?.Length > 0)
+                    {
+                        string translatedJson = geminiResponse.candidates[0].content.parts[0].text;
+                        Console.WriteLine($"Translated JSON (first 500 chars): {translatedJson.Substring(0, Math.Min(500, translatedJson.Length))}");
+
+                        // נסיון לנקות את ה-JSON אם יש טקסט נוסף
+                        translatedJson = CleanJsonResponse(translatedJson);
+
+                        var translated = JsonSerializer.Deserialize<List<QuestionTranslationDto>>(translatedJson);
+                        Console.WriteLine($"תורגמו בהצלחה {translated.Count} שאלות");
+
+                        return translated;
+                    }
+                    else
+                    {
+                        Console.WriteLine("אין candidates בתשובה מ-Gemini");
+                    }
+                }
+                else
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error from Gemini: {errorContent}");
+                }
+
+                throw new Exception($"שגיאה בתרגום הטופס - Status: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Translation error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                // במקרה של שגיאה, מחזירים את השאלות המקוריות
+                return questions;
+            }
+        }
+
+        public async Task<List<AnswerTranslationDto>> TranslateAnswersAsync(
+    List<AnswerTranslationDto> answers,
+    string sourceLanguage,
+    string targetLanguage = "he")
+        {
+            try
+            {
+                Console.WriteLine($"=== תרגום תשובות ===");
+                Console.WriteLine($"מ-{sourceLanguage} ל-{targetLanguage}");
+
+                var prompt = BuildAnswerTranslationPrompt(answers, sourceLanguage, targetLanguage);
+
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = prompt }
+                    }
+                }
+            },
+                    generationConfig = new
+                    {
+                        temperature = 0.1,
+                        topK = 1,
+                        topP = 0.95,
+                        maxOutputTokens = 2048,
+                    },
+                    safetySettings = new[]
+                    {
+                new { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_HATE_SPEECH", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
+                new { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
+            }
+                };
+
+                string json = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseJson = await response.Content.ReadAsStringAsync();
+                    var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
+
+                    if (geminiResponse?.candidates?.Length > 0)
+                    {
+                        string translatedJson = geminiResponse.candidates[0].content.parts[0].text;
+                        translatedJson = CleanJsonResponse(translatedJson);
+
+                        var translated = JsonSerializer.Deserialize<List<AnswerTranslationDto>>(translatedJson);
+                        Console.WriteLine($"תורגמו {translated.Count} תשובות");
+
+                        return translated;
+                    }
+                }
+
+                Console.WriteLine("נכשל תרגום התשובות - מחזיר מקור");
+                return answers;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error translating answers: {ex.Message}");
+                return answers;
+            }
+        }
+        private string BuildTranslationPrompt(List<QuestionTranslationDto> questions, string targetLanguage, string sourceLanguage)
+        {
+            var languageNames = new Dictionary<string, string>
+            {
+                ["he"] = "Hebrew",
+                ["ar"] = "Arabic",
+                ["ru"] = "Russian",
+                ["en"] = "English",
+                ["am"] = "Amharic",
+                ["fr"] = "French",
+                ["es"] = "Spanish"
+            };
+
+            var prompt = new StringBuilder();
+
+            // הוראות ברורות וחד משמעיות
+            prompt.AppendLine("You are a professional translator for a daycare center's parent forms.");
+            prompt.AppendLine($"Translate these daycare/childcare form questions from {languageNames[sourceLanguage]} to {languageNames[targetLanguage]}.");
+            prompt.AppendLine();
+            prompt.AppendLine("CONTEXT: These are questions from forms about:");
+            prompt.AppendLine("- Child development and health");
+            prompt.AppendLine("- Pregnancy and birth history");
+            prompt.AppendLine("- Family background");
+            prompt.AppendLine("- Child behavior and habits");
+            prompt.AppendLine("- Medical history");
+            prompt.AppendLine();
+            prompt.AppendLine("CRITICAL TRANSLATION RULES:");
+            prompt.AppendLine("1. Translate ACCURATELY - maintain the exact medical/developmental meaning");
+            prompt.AppendLine("2. For 'possibleValues' field: translate each comma-separated option");
+            prompt.AppendLine("3. Keep numbers, 'questionNo' and 'questionType' UNCHANGED");
+            prompt.AppendLine("4. Return ONLY a valid JSON array, no additional text");
+            prompt.AppendLine("5. Common Hebrew terms in this context:");
+            prompt.AppendLine("   - היריון = pregnancy");
+            prompt.AppendLine("   - לידה = birth/delivery");
+            prompt.AppendLine("   - התפתחות = development");
+            prompt.AppendLine("   - רצוי = desired/wanted");
+            prompt.AppendLine("   - מתוכנן = planned");
+            prompt.AppendLine("   - כן = yes");
+            prompt.AppendLine("   - לא = no");
+            prompt.AppendLine();
+
+            // דוגמאות ספציפיות
+            if (targetLanguage == "en")
+            {
+                prompt.AppendLine("Translation examples:");
+                prompt.AppendLine("'האם ההיריון היה מתוכנן?' -> 'Was the pregnancy planned?'");
+                prompt.AppendLine("'האם ההיריון היה רצוי?' -> 'Was the pregnancy wanted/desired?'");
+                prompt.AppendLine("'מהלך ההיריון' -> 'Course of pregnancy' or 'Pregnancy progression'");
+                prompt.AppendLine("'כן,לא' -> 'Yes,No'");
+            }
+            else if (targetLanguage == "ar")
+            {
+                prompt.AppendLine("Translation examples:");
+                prompt.AppendLine("'האם ההיריון היה מתוכנן?' -> 'هل كان الحمل مخططًا؟'");
+                prompt.AppendLine("'האם ההיריון היה רצוי?' -> 'هل كان الحمل مرغوبًا؟'");
+                prompt.AppendLine("'מהלך ההיריון' -> 'سير الحمل'");
+                prompt.AppendLine("'כן,לא' -> 'نعم,لا'");
+            }
+            else if (targetLanguage == "ru")
+            {
+                prompt.AppendLine("Translation examples:");
+                prompt.AppendLine("'האם ההיריון היה מתוכנן?' -> 'Была ли беременность запланированной?'");
+                prompt.AppendLine("'האם ההיריון היה רצוי?' -> 'Была ли беременность желанной?'");
+                prompt.AppendLine("'מהלך ההיריון' -> 'Течение беременности'");
+                prompt.AppendLine("'כן,לא' -> 'Да,Нет'");
+            }
+
+            prompt.AppendLine();
+            prompt.AppendLine("JSON to translate:");
+            prompt.AppendLine(JsonSerializer.Serialize(questions, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            }));
+
+            prompt.AppendLine();
+            prompt.AppendLine("Remember: Return ONLY the translated JSON array, nothing else!");
+
+            return prompt.ToString();
+        }
+        private string BuildAnswerTranslationPrompt(List<AnswerTranslationDto> answers, string sourceLanguage, string targetLanguage)
+        {
+            var languageNames = new Dictionary<string, string>
+            {
+                ["he"] = "Hebrew",
+                ["ar"] = "Arabic",
+                ["ru"] = "Russian",
+                ["en"] = "English",
+                ["am"] = "Amharic"
+            };
+
+            var prompt = new StringBuilder();
+            prompt.AppendLine("You are translating parent's answers from a daycare form.");
+            prompt.AppendLine($"Translate from {languageNames[sourceLanguage]} to {languageNames[targetLanguage]}.");
+            prompt.AppendLine();
+            prompt.AppendLine("INSTRUCTIONS:");
+            prompt.AppendLine("1. Translate ONLY the 'answer' and 'other' fields");
+            prompt.AppendLine("2. Keep 'questionNo' unchanged");
+            prompt.AppendLine("3. Maintain the meaning accurately");
+            prompt.AppendLine("4. Common answers to translate:");
+
+            if (sourceLanguage == "en" && targetLanguage == "he")
+            {
+                prompt.AppendLine("   - 'Yes' -> 'כן'");
+                prompt.AppendLine("   - 'No' -> 'לא'");
+                prompt.AppendLine("   - 'Sometimes' -> 'לפעמים'");
+                prompt.AppendLine("   - 'Always' -> 'תמיד'");
+                prompt.AppendLine("   - 'Never' -> 'אף פעם'");
+            }
+            else if (sourceLanguage == "ar" && targetLanguage == "he")
+            {
+                prompt.AppendLine("   - 'نعم' -> 'כן'");
+                prompt.AppendLine("   - 'لا' -> 'לא'");
+                prompt.AppendLine("   - 'أحيانا' -> 'לפעמים'");
+                prompt.AppendLine("   - 'دائما' -> 'תמיד'");
+                prompt.AppendLine("   - 'أبدا' -> 'אף פעם'");
+            }
+            else if (sourceLanguage == "ru" && targetLanguage == "he")
+            {
+                prompt.AppendLine("   - 'Да' -> 'כן'");
+                prompt.AppendLine("   - 'Нет' -> 'לא'");
+                prompt.AppendLine("   - 'Иногда' -> 'לפעמים'");
+                prompt.AppendLine("   - 'Всегда' -> 'תמיד'");
+                prompt.AppendLine("   - 'Никогда' -> 'אף פעם'");
+            }
+
+            prompt.AppendLine();
+            prompt.AppendLine("5. Return ONLY valid JSON array");
+            prompt.AppendLine();
+            prompt.AppendLine("JSON to translate:");
+            prompt.AppendLine(JsonSerializer.Serialize(answers, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            }));
+
+            return prompt.ToString();
+        }
         public async Task<string> GenerateTasheReportAsync(List<TreatmentForTashe> treatments, string kidName, DateTime startDate, DateTime endDate)
         {
             int maxRetries = 3;
@@ -112,7 +425,25 @@ namespace halocare.BL.Services
 
             throw new Exception("שירות הבינה המלאכותית לא זמין כרגע, נסו שוב בעוד כמה דקות");
         }
+        private string CleanJsonResponse(string response)
+        {
+            // מנסים למצוא את תחילת וסוף ה-JSON
+            int startIndex = response.IndexOf('[');
+            int endIndex = response.LastIndexOf(']');
 
+            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex)
+            {
+                return response.Substring(startIndex, endIndex - startIndex + 1);
+            }
+
+            // אם זה כבר נראה כמו JSON תקין
+            if (response.TrimStart().StartsWith("[") || response.TrimStart().StartsWith("{"))
+            {
+                return response.Trim();
+            }
+
+            return response;
+        }
         private string BuildProfessionalTashePrompt(List<TreatmentForTashe> treatments, string kidName, DateTime startDate, DateTime endDate)
         {
             StringBuilder prompt = new StringBuilder();
