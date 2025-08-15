@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using halocare.BL.Services;
@@ -12,59 +12,133 @@ namespace halocare.Controllers
     [ApiController]
     [Authorize]
 
-    public class TranslationController : ControllerBase
+    public class TreatmentTypesController : ControllerBase
     {
-        private readonly TranslationService _translationService;
+        private readonly TreatmentTypeService _treatmentTypeService;
 
-        public TranslationController(IConfiguration configuration)
+        public TreatmentTypesController(IConfiguration configuration)
         {
-            _translationService = new TranslationService(configuration);
+            _treatmentTypeService = new TreatmentTypeService(configuration);
         }
 
-        // POST: api/Translation/translate
-        [HttpPost("translate")]
-        public async Task<ActionResult<string>> TranslateText([FromBody] TranslationRequest request)
-        {
-            try
-            {
-                string translatedText = await _translationService.TranslateTextAsync(
-                    request.Text,
-                    request.SourceLanguage,
-                    request.TargetLanguage);
-
-                return Ok(new { TranslatedText = translatedText });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה בתרגום: {ex.Message}");
-            }
-        }
-
-        // POST: api/Translation/detect
-        [HttpPost("detect")]
-        public async Task<ActionResult<string>> DetectLanguage([FromBody] DetectionRequest request)
+        // GET: api/TreatmentTypes
+        [HttpGet]
+        public ActionResult<IEnumerable<TreatmentType>> GetTreatmentTypes()
         {
             try
             {
-                string detectedLanguage = await _translationService.DetectLanguageAsync(request.Text);
-                return Ok(new { Language = detectedLanguage });
+                return Ok(_treatmentTypeService.GetAllTreatmentTypes());
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"שגיאה בזיהוי שפה: {ex.Message}");
+                return StatusCode(500, $"שגיאה בשליפת סוגי הטיפולים: {ex.Message}");
             }
         }
-    }
 
-    public class TranslationRequest
-    {
-        public string Text { get; set; }
-        public string SourceLanguage { get; set; }
-        public string TargetLanguage { get; set; }
-    }
+        // GET: api/TreatmentTypes/{name}
+        [HttpGet("{typeId}")]
+        public ActionResult<TreatmentType> GetTreatmentType(int typeId)
+        {
+            try
+            {
+                var treatmentType = _treatmentTypeService.GetTreatmentTypeById(typeId);
 
-    public class DetectionRequest
-    {
-        public string Text { get; set; }
+                if (treatmentType == null)
+                {
+                    return NotFound($"סוג הטיפול '{typeId}' לא נמצא");
+                }
+
+                return Ok(treatmentType);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בשליפת סוג הטיפול: {ex.Message}");
+            }
+        }
+
+        // POST: api/TreatmentTypes
+        [HttpPost]
+        public ActionResult<TreatmentType> PostTreatmentType(TreatmentType treatmentType)
+        {
+            try
+            {
+                bool success = _treatmentTypeService.AddTreatmentType(treatmentType);
+
+                if (success)
+                {
+                    return CreatedAtAction(nameof(GetTreatmentType), new { name = treatmentType.TreatmentTypeName }, treatmentType);
+                }
+                else
+                {
+                    return StatusCode(500, "לא ניתן להוסיף את סוג הטיפול");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בהוספת סוג הטיפול: {ex.Message}");
+            }
+        }
+
+        // PUT: api/TreatmentTypes/{oldName}
+        [HttpPut("{oldName}")]
+        public IActionResult PutTreatmentType(int typeId, [FromBody] string newName)
+        {
+            try
+            {
+                bool success = _treatmentTypeService.UpdateTreatmentType(typeId, newName);
+
+                if (success)
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return StatusCode(500, "לא ניתן לעדכן את סוג הטיפול");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה בעדכון סוג הטיפול: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/TreatmentTypes/{name}
+        [HttpDelete("{typeId}")]
+        public IActionResult DeleteTreatmentType(int typeId)
+        {
+            try
+            {
+                bool success = _treatmentTypeService.DeleteTreatmentType(typeId);
+
+                if (success)
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return StatusCode(500, "לא ניתן למחוק את סוג הטיפול");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"שגיאה במחיקת סוג הטיפול: {ex.Message}");
+            }
+        }
     }
 }

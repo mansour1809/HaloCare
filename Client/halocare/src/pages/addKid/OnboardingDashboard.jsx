@@ -133,7 +133,7 @@ const StatsCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-// PRESERVED - All original props and functionality
+// All original props and functionality
 const OnboardingDashboard = ({ 
   onboardingData, 
   selectedKid, 
@@ -151,7 +151,7 @@ const OnboardingDashboard = ({
   const [sendingToParent, setSendingToParent] = useState(false);
   const [loadingParentEmail, setLoadingParentEmail] = useState(false);
 
-  // PRESERVED - Parent sending functions (existing code)
+  // Parent sending functions 
   const handleSendToParentInternal = async (form) => {
     try {
       setLoadingParentEmail(true);
@@ -174,7 +174,7 @@ const OnboardingDashboard = ({
     }
   };
 
-  // PRESERVED - original function
+  // original function
   const confirmSendToParent = async () => {
     if (!sendDialog.form || !parentEmail.trim()) {
       return;
@@ -216,26 +216,9 @@ const OnboardingDashboard = ({
     }
   };
 
-  // PRESERVED - Reset form to start
-  const handleResetForm = async (form) => {
-    try {
-      await dispatch(updateFormStatus({
-        kidId: selectedKid.id,
-        formId: form.formId,
-        newStatus: 'NotStarted',
-        notes: `אופס בתאריך ${new Date().toLocaleDateString('he-IL')}`
-      })).unwrap();
 
-      setTimeout(() => {
-        onRefresh && onRefresh();
-      }, 1000);
 
-    } catch (error) {
-      console.error('שגיאה באיפוס הטופס:', error);
-    }
-  };
-
-  // PRESERVED - Permission checks
+  // Permission checks
   const canEditForm = (form) => {
     return ['NotStarted', 'InProgress'].includes(form.status);
   };
@@ -244,7 +227,7 @@ const OnboardingDashboard = ({
     return ['NotStarted', 'InProgress', 'Completed'].includes(form.status);
   };
 
-  // PRESERVED - original condition check
+  // original condition check
   if (!onboardingData || !onboardingData.forms) {
     return (
       <Alert severity="info" sx={{ 
@@ -363,7 +346,7 @@ const OnboardingDashboard = ({
       </SectionHeader>
       
       <Grid container spacing={3}>
-        {/* PRESERVED - original forms mapping logic */}
+        {/* original forms mapping logic */}
         {onboardingData.forms.map((form) => {
           const progress = form.totalQuestions > 0 
             ? Math.round((form.answeredQuestions / form.totalQuestions) * 100) 
@@ -438,7 +421,7 @@ const OnboardingDashboard = ({
                     />
                   </Box>
 
-                  {/* PRESERVED - Original dates section */}
+                  {/* Original dates section */}
                   <Box sx={{ mt: 'auto' }}>
                     {form.startDate && (
                       <Typography variant="caption" color="text.secondary" display="block">
@@ -461,7 +444,7 @@ const OnboardingDashboard = ({
                   borderTop: `1px solid ${alpha('#4cb5c3', 0.1)}`
                 }}>
                   <Box>
-                    {/* PRESERVED - Original button logic with exact conditions */}
+                    {/* Original button logic with exact conditions */}
                     {(canEditForm(form) && !form.formName.includes('אישור'))  ? (
                       <Button
                         startIcon={<EditIcon />}
@@ -480,7 +463,7 @@ const OnboardingDashboard = ({
                       </Button>
                     ) : (
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        {/* PRESERVED - Original view button condition */}
+                        {/* Original view button condition */}
                         {(form.formId != '1002' || !form.formName.includes('אישי')) && (
                           <Button
                             startIcon={<ViewIcon />}
@@ -500,7 +483,7 @@ const OnboardingDashboard = ({
                           </Button>
                         )}
                         
-                        {/* PRESERVED - Original edit button condition */}
+                        {/* Original edit button condition */}
                         {!form.formName.includes('אישור') && (
                           <Button
                             startIcon={<EditIcon />}
@@ -524,7 +507,7 @@ const OnboardingDashboard = ({
                   </Box>
                   
                   <Box>
-                    {/* PRESERVED - Original send to parent logic */}
+                    {/* Original send to parent logic */}
                     {canSendToParent(form) && form.formId != '1002' && (
                         <Tooltip placement="top" 
   PopperProps={{

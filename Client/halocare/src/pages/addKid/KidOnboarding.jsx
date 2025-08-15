@@ -199,7 +199,7 @@ const EnhancedHeaderBox = styled(Box)(({ theme }) => ({
   borderBottom: '1px solid rgba(76, 181, 195, 0.1)'
 }));
 
-// ORIGINAL FUNCTIONALITY PRESERVED EXACTLY - only visual wrapper added
+// ORIGINAL FUNCTIONALITY  only visual wrapper added
 const KidOnboarding = () => {
   const { kidId } = useParams(); // PRESERVED EXACTLY
   const navigate = useNavigate(); // PRESERVED EXACTLY
@@ -219,10 +219,10 @@ const KidOnboarding = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
-  // PRESERVED EXACTLY - original logic
+  //  original logic
   const isNewKid = kidId === undefined;
 
-  // PRESERVED EXACTLY - original useEffect with cleanup
+  //  original useEffect with cleanup
   useEffect(() => {
     initializeOnboarding();
     
@@ -232,7 +232,7 @@ const KidOnboarding = () => {
     };
   }, [kidId]);
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const initializeOnboarding = async () => {
     try {
       setLoading(true);
@@ -255,7 +255,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleRefresh = async () => {
     if (!kidId || isNewKid) return;
     
@@ -270,7 +270,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleKidCreated = async (newKidData) => {
     try {
       showNotification('ילד נוצר בהצלחה! מעביר לתהליך קליטה...', 'success');
@@ -284,7 +284,7 @@ const KidOnboarding = () => {
     }
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleFormClick = (form, mode = 'auto') => {
     if (form.formId === 1002) {
       setSelectedForm({ ...form, buttonText: mode === 'view' ? 'צפייה' : 'עריכה' });
@@ -319,7 +319,7 @@ const KidOnboarding = () => {
     setViewMode('form');
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleFormComplete = async (formId) => {
     showNotification('הטופס נשמר בהצלחה!', 'success');
     setViewMode('dashboard');
@@ -331,36 +331,36 @@ const KidOnboarding = () => {
     }, 500);
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleBackToDashboard = () => {
     setViewMode('dashboard');
     setSelectedForm(null);
     setFormReadOnly(false);
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const switchToEditMode = () => {
     setFormReadOnly(false);
     setSelectedForm(prev => ({ ...prev, buttonText: 'עריכה' }));
     showNotification('עברת למצב עריכה', 'info');
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const handleSendToParent = (form) => {
     console.log('שליחה להורים:', form);
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const showNotification = (message, severity = 'success') => {
     setNotification({ open: true, message, severity });
   };
 
-  // PRESERVED EXACTLY - original function
+  //  original function
   const closeNotification = () => {
     setNotification({ ...notification, open: false });
   };
 
-  // PRESERVED EXACTLY - original loading logic with enhanced container
+  //  original loading logic with enhanced container
   if (loading) {
     return (
       <ThemeProvider theme={rtlTheme}>
@@ -457,7 +457,7 @@ const KidOnboarding = () => {
                 </EnhancedPaper>
               )}
 
-              {/* PRESERVED EXACTLY - personalInfo mode */}
+              {/*  personalInfo mode */}
               {viewMode === 'personalInfo' && selectedForm && !isNewKid && (
                 <EnhancedPaper sx={{ mb: 3 }}>
                   <EnhancedHeaderBox sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -564,7 +564,7 @@ const KidOnboarding = () => {
                     </Box>
                     
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      {/* PRESERVED EXACTLY - Switch to edit mode */}
+                      {/*  Switch to edit mode */}
                       {formReadOnly && !selectedForm.formName.includes('אישור') && (
                         <Button
                           variant="outlined"
