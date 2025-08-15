@@ -13,10 +13,14 @@ import 'react-datepicker/dist/react-datepicker.css';
 registerLocale('he', he);
 
 // Custom CSS עם styled-components לעיצוב מותאם
-const DatePickerWrapper = styled('div')(({ theme }) => ({
+const DatePickerWrapper = styled('div')(({ theme , showTimeSelect  }) => ({
   '& .react-datepicker-wrapper': {
     width: '100%',
     position: 'relative',
+
+  },
+  '& .react-datepicker-popper': {
+    zIndex: 9999,
   },
   '& .react-datepicker__input-container': {
     width: '100%',
@@ -106,13 +110,14 @@ const DatePickerWrapper = styled('div')(({ theme }) => ({
     top: theme.spacing(3.5),
   },
   '& .react-datepicker__navigation--previous': {
-    left: theme.spacing(6),
+    left: !showTimeSelect ? theme.spacing(6) : theme.spacing(16),
     borderRightColor: 'white',
     '&:hover': {
       borderRightColor: 'white',
     },
   },
   '& .react-datepicker__navigation--next': {
+     
     right: theme.spacing(6),
     borderLeftColor: 'white',
     '&:hover': {
@@ -210,7 +215,6 @@ const HebrewReactDatePicker = ({
   timeFormat = "HH:mm",
   ...otherProps
 }) => {
-  
   // המרה מ-dayjs ל-Date אם צריך
   const dateValue = value ? (value.toDate ? value.toDate() : value instanceof Date ? value : new Date(value)) : null;
   const minDateValue = minDate ? (minDate.toDate ? minDate.toDate() : minDate instanceof Date ? minDate : new Date(minDate)) : undefined;
@@ -228,7 +232,7 @@ const HebrewReactDatePicker = ({
   };
 
   return (
-    <DatePickerWrapper>
+    <DatePickerWrapper showTimeSelect={showTimeSelect}>
       <DatePicker
         selected={dateValue}
         onChange={handleChange}
@@ -247,6 +251,7 @@ const HebrewReactDatePicker = ({
         yearDropdownItemNumber={20}
         scrollableYearDropdown
         customInput={
+          
           <CustomInput
             withPortal={false}
             inline
@@ -268,7 +273,7 @@ const HebrewReactDatePicker = ({
             }}
           />
         }
-        // popperPlacement="bottom"
+        popperPlacement="left"
         // popperModifiers={[
         //   {
         //     name: 'offset',

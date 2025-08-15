@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -33,7 +33,6 @@ import {
   CheckCircle as CheckIcon,
   Timeline as TimelineIcon
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -43,7 +42,6 @@ import { useAuth } from '../../components/login/AuthContext';
 import Swal from 'sweetalert2';
 import FullscreenAILoader from './FullscreenAILoader';
 import HebrewReactDatePicker  from '../../components/common/HebrewReactDatePicker';
-import { h } from '@fullcalendar/core/preact.js';
 
 // Animation keyframes
 const pulse = keyframes`
@@ -82,7 +80,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     border: '1px solid rgba(255, 255, 255, 0.2)',
     boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
     overflow: 'hidden',
-    height: '100%',
+     height: '80%',
   }
 }));
 
@@ -103,8 +101,8 @@ const AnimatedBrainIcon = styled(BrainIcon)(({ theme }) => ({
 }));
 
 const StyledStepper = styled(Stepper)(({ theme }) => ({
-      height: '100%',
-
+  // height: '20%',
+  marginTop: theme.spacing(4),
   marginBottom: theme.spacing(4),
   '& .MuiStepIcon-root': {
     color: 'rgba(200, 200, 200, 0.5)',
@@ -161,7 +159,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 }));
 
 const InfoPaper = styled(StyledPaper)(({ theme, severity }) => ({
-  marginTop: theme.spacing(3),
+  marginTop: theme.spacing(5),
   borderColor: theme.palette[severity]?.light || theme.palette.primary.light,
   backgroundColor: alpha(theme.palette[severity]?.main || theme.palette.primary.main, 0.03),
   '&::before': {
@@ -536,7 +534,7 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
     switch (activeStep) {
       case 0:
         return (
-          <Box sx={{ py: 3 }} dir="rtl">
+          <Box sx={{ py: 3 }} dir="rtl" >
             <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
               <CalendarIcon sx={{ mr: 1, color: 'primary.main', animation: `${pulse} 2s infinite` }} />
               בחירת תקופת הדוח
@@ -571,8 +569,8 @@ const TasheReportGenerator = ({ open, onClose, selectedKid, onSuccess }) => {
             </Grid>
 
             {formData.startDate && formData.endDate && (
-              <InfoPaper severity="primary">
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <InfoPaper severity="primary" >
+                <Typography variant="body2" sx={{ fontWeight: 600}}>
                   <strong>תקופת הדוח:</strong> {formData.endDate.diff(formData.startDate, 'day')} ימים
                   ({formData.startDate.format('DD/MM/YYYY')} - {formData.endDate.format('DD/MM/YYYY')})
                 </Typography>

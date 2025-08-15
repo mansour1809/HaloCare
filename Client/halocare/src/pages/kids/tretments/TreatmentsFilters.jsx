@@ -40,6 +40,7 @@ import {
 } from '@mui/icons-material';
 import { useTreatmentContext } from './TreatmentContext';
 import { useSelector } from 'react-redux';
+import HebrewReactDatePicker from '../../../components/common/HebrewReactDatePicker';
 
 // Enhanced Styled Components with modern design
 const FilterContainer = styled(Paper)(({ theme }) => ({
@@ -490,7 +491,9 @@ const TreatmentsFilters = () => {
                     </Typography>
                     <Grid container spacing={2}>
                       <Grid item size={{ xs: 6}}>
-                        <DatePicker
+                        <HebrewReactDatePicker
+                        maxDate={new Date()}
+                        minDate={new Date('2000-01-01')}
                           label="מתאריך"
                           value={dateFrom}
                           onChange={(newValue) => {
@@ -512,7 +515,9 @@ const TreatmentsFilters = () => {
                         />
                       </Grid>
                       <Grid item size={{ xs: 6}}>
-                        <DatePicker
+                        <HebrewReactDatePicker
+                          maxDate={new Date()}
+                          minDate={dateFrom}
                           label="עד תאריך"
                           value={dateTo}
                           onChange={(newValue) => {

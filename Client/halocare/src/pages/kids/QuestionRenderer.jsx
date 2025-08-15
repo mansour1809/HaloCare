@@ -13,6 +13,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { styled } from '@mui/material/styles';
 import DigitalSignature from '../addKid/DigitalSignature';
+import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
 
 // classic paper style question renderer
 const QuestionRow = styled(Box)(({ theme }) => ({
@@ -166,7 +167,8 @@ const QuestionRenderer = ({
   // render Date Field
   const renderDateField = () => (
     <AnswerField>
-      <DatePicker
+      <HebrewReactDatePicker
+      
         value={value ? new Date(value) : null}
         onChange={(newDate) => handleValueChange(newDate?.toISOString())}
         disabled={readOnly}

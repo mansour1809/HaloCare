@@ -36,6 +36,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGri
 import { fetchAttendanceByKidId } from "../../Redux/features/attendanceSlice";
 import { useDispatch } from "react-redux";
 import Swal from 'sweetalert2';
+import HebrewReactDatePicker from "../../components/common/HebrewReactDatePicker";
 
 // Amazing theme for reports
 const reportsTheme = createTheme({
@@ -973,7 +974,9 @@ const AttendanceReports = () => {
                   {rangeType === "custom" && (
                     <>
                       <Grid item size={{xs:12, sm:6, md:3}}>
-                        <DatePicker
+                        <HebrewReactDatePicker
+                          maxDate={new Date()}
+                          minDate={new Date('2020-01-01')}
                           label="מתאריך"
                           value={startDate}
                           onChange={(date) => {
@@ -997,7 +1000,9 @@ const AttendanceReports = () => {
                         />
                       </Grid>
                       <Grid item size={{xs:12, sm:6, md:3}}>
-                        <DatePicker
+                        <HebrewReactDatePicker
+                          maxDate={new Date()}
+                          minDate={startDate}
                           label="עד תאריך"
                           value={endDate}
                           onChange={(date) => {

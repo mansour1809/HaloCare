@@ -48,6 +48,7 @@ import { he } from 'date-fns/locale';
 import { useTreatmentContext } from './TreatmentContext';
 import { useAuth } from '../../../components/login/AuthContext';
 import Swal from 'sweetalert2';
+import HebrewReactDatePicker from '../../../components/common/HebrewReactDatePicker';
 
 // Enhanced Styled Components
 const StyledDialog = styled(Dialog)(({ theme }) => ({
@@ -504,7 +505,8 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
                     </Typography>
                   </Box>
                   <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-                    <DatePicker
+                    <HebrewReactDatePicker
+                      maxDate={new Date()}
                       label="בחר תאריך"
                       value={formData.treatmentDate}
                       onChange={handleDateChange}

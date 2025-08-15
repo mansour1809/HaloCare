@@ -33,7 +33,6 @@ import {
   LocationOn as LocationOnIcon,
   Description as DescriptionIcon,
   Title as TitleIcon,
-  AccessTime as AccessTimeIcon,
   Category as CategoryIcon,
   Person as PersonIcon,
   ChildCare as ChildCareIcon,
@@ -48,6 +47,7 @@ import { styled } from '@mui/material/styles';
 import { useCalendar } from './CalendarContext';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../components/login/AuthContext';
+import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
 
 
 const SlideTransition = React.forwardRef(function Transition(props, ref) {
@@ -56,8 +56,10 @@ const SlideTransition = React.forwardRef(function Transition(props, ref) {
 
 // Styled dialog with effects
 const StyledDialog = styled(Dialog)(() => ({
+  height: '100%',
+  
   '& .MuiDialog-paper': {
-    borderRadius: 24,
+    borderRadius: 14,
     boxShadow: '0 24px 48px rgba(0,0,0,0.15)',
     backdropFilter: 'blur(20px)',
     background: 'rgba(255, 255, 255, 0.98)',
@@ -66,19 +68,21 @@ const StyledDialog = styled(Dialog)(() => ({
     position: 'relative',
     '&::before': {
       content: '""',
-      position: 'absolute',
+      position: 'relative',
       top: 0,
       left: 0,
       right: 0,
+      width: '100%',
       height: '6px',
       background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea)',
-      borderRadius: '24px 24px 0 0',
+      // borderRadius: '24px 24px 0 0',
     }
   }
 }));
 
 // Styled dialog title
 const StyledDialogTitle = styled(DialogTitle)(({ eventColor }) => ({
+// borderRadius: '24px 24px 0 0',
   background: `linear-gradient(135deg, ${eventColor} 0%, ${alpha(eventColor, 0.8)} 100%)`,
   color: '#ffffff',
   padding: '24px',
@@ -119,6 +123,7 @@ const StyledTextField = styled(TextField)(() => ({
 
 // FormControl
 const StyledFormControl = styled(FormControl)(({e }) => ({
+
   '& .MuiOutlinedInput-root': {
     borderRadius: 16,
     transition: 'all 0.3s ease',
@@ -334,7 +339,7 @@ const EventDialog = () => {
       <DialogContent sx={{ p: 4, mt: 2 }}>
         <Grid container spacing={3}>
           {/* Title and Event Type */}
-          <Grid item size={{ xs: 12, md: 7 }}>
+          <Grid item size={{ xs: 12, md: 7 }} sx={{ mt: 1 }}>
             <StyledTextField
               label="כותרת האירוע"
               name="title"
@@ -354,7 +359,7 @@ const EventDialog = () => {
             />
           </Grid>
 
-          <Grid item size={{ xs: 12, md: 5 }}>
+          <Grid item size={{ xs: 12, md: 5 }} sx={{ mt: 1 }}>
             <StyledFormControl
               fullWidth
               required
@@ -383,6 +388,7 @@ const EventDialog = () => {
               >
                 {eventTypes.map((type) => (
                   <MenuItem
+                  dir="rtl"
                     key={type.eventTypeId}
                     value={type.eventTypeId}
                     sx={{
@@ -425,7 +431,8 @@ const EventDialog = () => {
 
           {/* Date and time */}
           <Grid item size={{ xs: 12, md: 6 }}>
-            <StyledTextField
+            <HebrewReactDatePicker
+            showTimeSelect="true"
               label="תאריך ושעת התחלה"
               name="start"
               type="datetime-local"
@@ -439,16 +446,13 @@ const EventDialog = () => {
                 validationErrors.start ? "יש להזין תאריך ושעת התחלה" : ""
               }
               InputLabelProps={{ shrink: true }}
-              InputProps={{
-                startAdornment: (
-                  <AccessTimeIcon sx={{ color: "success.main", mr: 1 }} />
-                ),
-              }}
+              
             />
           </Grid>
 
           <Grid item size={{ xs: 12, md: 6 }}>
-            <StyledTextField
+            <HebrewReactDatePicker
+            showTimeSelect="true"
               label="תאריך ושעת סיום"
               name="end"
               type="datetime-local"
@@ -464,11 +468,7 @@ const EventDialog = () => {
                   : ""
               }
               InputLabelProps={{ shrink: true }}
-              InputProps={{
-                startAdornment: (
-                  <AccessTimeIcon sx={{ color: "warning.main", mr: 1 }} />
-                ),
-              }}
+              
             />
           </Grid>
 
@@ -533,6 +533,7 @@ const EventDialog = () => {
                   </Box>
                 )}
                 MenuProps={{
+                  dir:'rtl',
                   PaperProps: {
                     sx: {
                       borderRadius: 3,
@@ -608,6 +609,7 @@ const EventDialog = () => {
                   </Box>
                 )}
                 MenuProps={{
+                  dir: 'rtl',
                   PaperProps: {
                     sx: {
                       borderRadius: 3,

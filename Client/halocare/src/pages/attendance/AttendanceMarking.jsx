@@ -30,6 +30,7 @@ import { useAttendance } from "../../components/context/AttendanceContext";
 import AttendanceAnalytics from "./AttendanceAnalytics";
 import Swal from "sweetalert2";
 import { baseURL } from "../../components/common/axiosConfig";
+import HebrewReactDatePicker from "../../components/common/HebrewReactDatePicker";
 
 // Styled main card
 const MainCard = styled(Card)(({ theme }) => ({
@@ -404,7 +405,9 @@ const AttendanceMarking = () => {
           בחר תאריך לסימון נוכחות
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <DatePicker
+          <HebrewReactDatePicker
+            maxDate={new Date()}
+            minDate={new Date('2010-01-01')}
             value={selectedDate}
             onChange={(newDate) => {
               setSelectedDate(newDate);

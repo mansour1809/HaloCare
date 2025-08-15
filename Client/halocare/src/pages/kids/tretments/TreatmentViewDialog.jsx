@@ -49,6 +49,7 @@ import { he } from 'date-fns/locale';
 import { useTreatmentContext } from './TreatmentContext';
 import { jsPDF } from 'jspdf';
 import Swal from 'sweetalert2';
+import HebrewReactDatePicker from '../../../components/common/HebrewReactDatePicker';
 
 // Enhanced Styled Components
 const StyledDialog = styled(Dialog)(({ theme }) => ({
@@ -499,7 +500,8 @@ const TreatmentViewDialog = () => {
                 <Grid container spacing={3}>
                   {/* Date */}
                   <Grid item size={{ xs:12,md:6}}>
-                    <DatePicker
+                    <HebrewReactDatePicker
+                      maxDate={new Date()}
                       label="תאריך טיפול"
                       value={formData.treatmentDate}
                       onChange={handleDateChange}
