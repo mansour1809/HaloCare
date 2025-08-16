@@ -1,12 +1,12 @@
 // src/pages/kids/KidsManagement.jsx
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Avatar, Chip, Button, TextField, Grid, Card,
   CircularProgress, Alert, Breadcrumbs, InputAdornment, IconButton,
-  Tooltip, Fab, MenuItem, Select, FormControl, InputLabel
+  Tooltip, Fab, MenuItem, Select, FormControl, InputLabel, Link,keyframes
 } from '@mui/material';
 import {
   Home as HomeIcon,
@@ -14,20 +14,40 @@ import {
   Add as AddIcon,
   Search as SearchIcon,
   Visibility as ViewIcon,
-  Refresh as RefreshIcon,
   Person as PersonIcon,
+  Phone as PhoneIcon,
+  Emergency as EmergencyIcon,
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled, alpha } from '@mui/material/styles';
 
-// New Redux
+// Redux imports
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { 
   fetchOnboardingStatus,
   selectOnboardingData,
-  selectOnboardingStats 
 } from '../../Redux/features/onboardingSlice';
+import { fetchParents } from '../../Redux/features/parentSlice';
 import { baseURL } from "../../components/common/axiosConfig";
 
+// Animation keyframes
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+`;
+
+// Enhanced theme matching our style
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -57,67 +77,20 @@ const rtlTheme = createTheme({
       light: '#34d399',
       dark: '#065f46',
     },
-    background: {
-      default: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#1f2937',
-      secondary: '#6b7280',
-    }
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 20,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          overflow: 'visible',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-            borderRadius: '20px 20px 0 0',
-          }
-        }
-      }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          textTransform: 'none',
-          fontWeight: 600,
-          padding: '12px 24px',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-          }
-        },
-        contained: {
-          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-          boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
-          '&:hover': {
-            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-            boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
-          }
-        }
-      }
+    error: {
+      main: '#ef4444',
+      light: '#f87171',
+      dark: '#dc2626',
     }
   }
 });
 
+// Enhanced Styled Components
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
-  animation: 'gradientShift 20s ease infinite',
+  animation: `${gradientShift} 20s ease infinite`,
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
@@ -128,53 +101,22 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
   }
 }));
 
-// Modern Header
 const ModernHeader = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.15)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: 20,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
   position: 'relative',
   zIndex: 2,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '3px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-    borderRadius: '20px 20px 0 0',
-  }
-}));
-
-// Stat Card
-const StatCard = styled(Card)(({ theme, color }) => ({
-  padding: '24px 20px',
-  textAlign: 'center',
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: '20px',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
-  height: '140px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  position: 'relative',
   overflow: 'hidden',
   '&::before': {
     content: '""',
@@ -183,8 +125,37 @@ const StatCard = styled(Card)(({ theme, color }) => ({
     left: 0,
     right: 0,
     height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    animation: `${shimmer} 3s ease infinite`,
+  }
+}));
+
+const StatCard = styled(Card)(({ theme, color }) => ({
+  padding: '24px 20px',
+  textAlign: 'center',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 20,
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  height: '140px',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px) scale(1.02)',
+    boxShadow: '0 15px 50px rgba(0,0,0,0.15)',
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
     background: `linear-gradient(90deg, ${theme.palette[color]?.main}, ${theme.palette[color]?.light})`,
-    borderRadius: '20px 20px 0 0',
   },
   '&::after': {
     content: '""',
@@ -199,7 +170,6 @@ const StatCard = styled(Card)(({ theme, color }) => ({
   }
 }));
 
-//Styled Table Container 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -220,7 +190,6 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-// Animated Button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -232,7 +201,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    transform: 'translateY(-3px)',
+    transform: 'translateY(-3px) scale(1.02)',
     boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
     background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
   },
@@ -243,7 +212,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
     transition: 'all 0.5s ease',
   },
   '&:hover::after': {
@@ -259,6 +228,7 @@ const StyledFab = styled(Fab)(({ theme }) => ({
   boxShadow: '0 8px 24px rgba(76, 181, 195, 0.4)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   zIndex: 1000,
+  animation: `${pulse} 2s infinite`,
   '&:hover': {
     transform: 'scale(1.1) rotate(15deg)',
     boxShadow: '0 12px 32px rgba(76, 181, 195, 0.6)',
@@ -266,9 +236,97 @@ const StyledFab = styled(Fab)(({ theme }) => ({
   }
 }));
 
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 10,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  }
+}));
+
+const ContactInfo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  '& .contact-item': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: '0.875rem',
+    color: theme.palette.text.secondary,
+    '& svg': {
+      fontSize: '1rem',
+      color: theme.palette.primary.main,
+    }
+  }
+}));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
+}));
+
+// Components remain the same
 const OnboardingStatusChip = ({ onboardingData }) => {
   if (!onboardingData) {
-    return <Chip label="לא התחיל" color="default" variant="outlined" size="small" />;
+    return <StyledChip label="לא התחיל" color="default" variant="outlined" size="small" />;
   }
 
   const { overallStatus, completedForms, totalForms } = onboardingData;
@@ -303,98 +361,24 @@ const OnboardingStatusChip = ({ onboardingData }) => {
         },
       },
     ],
-  }}title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
-      <Chip 
+  }} title={`${completedForms} מתוך ${totalForms} טפסים הושלמו`}>
+      <StyledChip 
         label={config.label} 
         color={config.color} 
         variant={config.variant}
         size="small" 
+        sx={{
+          background: config.variant === 'filled' ? 
+            `linear-gradient(45deg, ${config.color}.main 30%, ${config.color}.light 90%)` : 
+            'transparent'
+        }}
       />
     </Tooltip>
   );
 };
 
-const DetailedProgress = ({ onboardingData }) => {
-  if (!onboardingData) {
-    return (
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          –
-        </Typography>
-      </Box>
-    );
-  }
-
-  const { completedForms, totalForms } = onboardingData;
-  const completionPercentage = totalForms > 0 ? Math.round((completedForms / totalForms) * 100) : 0;
-
-  const statusCounts = {
-    completed: onboardingData.forms?.filter(f => ['Completed', 'CompletedByParent'].includes(f.status)).length || 0,
-    inProgress: onboardingData.forms?.filter(f => f.status === 'InProgress').length || 0,
-    sentToParent: onboardingData.forms?.filter(f => f.status === 'SentToParent').length || 0,
-  };
-
-  return (
-    <Box sx={{ minWidth: 150 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-        <Box 
-          sx={{ 
-            width: 100, 
-            height: 8, 
-            backgroundColor: 'grey.200', 
-            borderRadius: 4,
-            overflow: 'hidden'
-          }}
-        >
-          <Box
-            sx={{
-              width: `${completionPercentage}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #4cb5c3, #10b981)',
-              borderRadius: 'inherit',
-              transition: 'width 0.3s ease'
-            }}
-          />
-        </Box>
-        <Typography variant="body2" fontWeight="bold">
-          {completionPercentage}%
-        </Typography>
-      </Box>
-      
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-        {statusCounts.completed > 0 && (
-          <Chip 
-            label={`✅ ${statusCounts.completed}`} 
-            size="small" 
-            color="success" 
-            variant="outlined"
-          />
-        )}
-        {statusCounts.inProgress > 0 && (
-          <Chip 
-            label={`⚡ ${statusCounts.inProgress}`} 
-            size="small" 
-            color="primary" 
-            variant="outlined"
-          />
-        )}
-        {statusCounts.sentToParent > 0 && (
-          <Chip 
-            label={`📧 ${statusCounts.sentToParent}`} 
-            size="small" 
-            color="info" 
-            variant="outlined"
-          />
-        )}
-      </Box>
-    </Box>
-  );
-};
-
 const OnboardingActions = ({ kid, onboardingData, onAction }) => {
   const canStartOnboarding = !onboardingData;
-  const canContinue = onboardingData && onboardingData.overallStatus === 'InProgress';
-  const isCompleted = onboardingData && onboardingData.overallStatus === 'Completed';
 
   return (
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -402,7 +386,6 @@ const OnboardingActions = ({ kid, onboardingData, onAction }) => {
         <AnimatedButton
           size="small"
           variant="contained"
-          color="primary"
           onClick={() => onAction('start', kid)}
         >
           התחל קליטה
@@ -413,11 +396,20 @@ const OnboardingActions = ({ kid, onboardingData, onAction }) => {
         <AnimatedButton
           size="small"
           variant="outlined"
-          color="secondary"
           startIcon={<ViewIcon />}
           onClick={() => onAction('view', kid)}
+          sx={{
+            background: 'transparent',
+            border: '2px solid',
+            borderColor: 'secondary.main',
+            color: 'secondary.main',
+            '&:hover': {
+              background: alpha('#ff7043', 0.1),
+              borderColor: 'secondary.dark',
+            }
+          }}
         >
-          צפייה בקליטה
+         קליטה
         </AnimatedButton>
       )}
     </Box>
@@ -428,15 +420,16 @@ const KidsManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // New Redux state 
-  const { kids, status, error } = useSelector(state => state.kids);
+  // Redux state 
+  const { kids,  error } = useSelector(state => state.kids);
+  const { parents } = useSelector(state => state.parent);
   const onboardingData = useSelector(selectOnboardingData);
-  const onboardingStats = useSelector(selectOnboardingStats);
   
   // Local State
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(false);
+  const [parentsMap, setParentsMap] = useState({});
 
   useEffect(() => {
     loadData();
@@ -445,13 +438,25 @@ const KidsManagement = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Load kids
       const kidsResult = await dispatch(fetchKids()).unwrap();
       
+      // Load parents
+      const parentsResult = await dispatch(fetchParents()).unwrap();
+      
+      // Create parents map for quick lookup
+      const pMap = {};
+      parentsResult.forEach(parent => {
+        pMap[parent.parentId] = parent;
+      });
+      setParentsMap(pMap);
+      
+      // Load onboarding data
       const onboardingPromises = kidsResult.map(kid => 
         dispatch(fetchOnboardingStatus(kid.id))
           .unwrap()
           .catch(error => {
-            console.warn(`שגיאה בטעינת נתוני קליטה לילד ${kid.id}:`, error);
+            console.warn(`Error loading onboarding data for kid ${kid.id}:`, error);
             return null; 
           })
       );
@@ -459,15 +464,13 @@ const KidsManagement = () => {
       await Promise.allSettled(onboardingPromises);
       
     } catch (error) {
-      console.error('שגיאה בטעינת נתונים:', error);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRefresh = async () => {
-    await loadData();
-  };
+
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return '–';
@@ -492,8 +495,8 @@ const KidsManagement = () => {
   const filteredKids = kids.filter(kid => {
     const searchMatch = !searchTerm || 
       (kid.firstName && kid.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (kid.lastName && kid.lastName.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+      (kid.lastName && kid.lastName.toLowerCase().includes(searchTerm.toLowerCase())) || (kid.id && kid.id.toString().includes(searchTerm));
+
     const kidOnboardingData = onboardingData[kid.id];
     const overallStatus = kidOnboardingData?.overallStatus || 'NotStarted';
     const statusMatch = !statusFilter || overallStatus === statusFilter;
@@ -511,7 +514,7 @@ const KidsManagement = () => {
         navigate(`/kids/onboarding/${kid.id}`);
         break;
       default:
-        console.warn('פעולה לא מוכרת:', action);
+        console.warn('Unknown action:', action);
     }
   };
 
@@ -522,40 +525,59 @@ const KidsManagement = () => {
     notStarted: kids.length - Object.keys(onboardingData).filter(kidId => onboardingData[kidId]).length
   };
 
+  // Get parent phone number
+  const getParentPhone = (kid) => {
+    const parent1 = parentsMap[kid.parentId1];
+    const parent2 = parentsMap[kid.parentId2];
+    
+    if (parent1?.mobilePhone) return parent1.mobilePhone;
+    if (parent2?.mobilePhone) return parent2.mobilePhone;
+    if (parent1?.homePhone) return parent1.homePhone;
+    if (parent2?.homePhone) return parent2.homePhone;
+    return null;
+  };
+const getParentName = (kid) => {
+  const parent1 = parentsMap[kid.parentId1];
+  const parent2 = parentsMap[kid.parentId2];
+
+  if (parent1?.firstName) return `${parent1.firstName} ${parent1.lastName}`;
+  if (parent2?.firstName) return `${parent2.firstName} ${parent2.lastName}`;
+  return 'Unknown';
+};
+
   return (
     <ThemeProvider theme={rtlTheme}>
       <FullScreenContainer>
         <Box sx={{ p: 3, position: 'relative', zIndex: 2 }} dir="rtl">
           {/* Breadcrumbs */}
-          <Breadcrumbs sx={{ mb: 2, color: 'white' }}>
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                color: 'rgba(255,255,255,0.8)',
-                '&:hover': { color: 'white' }
-              }}
-              onClick={() => navigate('/')}
-            >
-              <HomeIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-              ראשי
-            </Box>
-            <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
-              <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-              ניהול ילדים
-            </Typography>
-          </Breadcrumbs>
-          
-          {/* Title and Actions */}
+           <EnhancedBreadcrumbs>
+                    <StyledLink
+                      underline="hover"
+                      onClick={() => navigate('/')}
+                    >
+                      <HomeIcon />
+                      ראשי
+                    </StyledLink>
+                    
+                
+                    <CurrentPage>
+                      <GroupIcon />
+                      ניהול ילדים
+                    </CurrentPage>
+                  </EnhancedBreadcrumbs>
+
+       
+          {/* Header Section */}
           <ModernHeader>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Box>
                 <Typography variant="h4" sx={{ 
                   fontWeight: '700', 
-                  color: 'white', 
-                  mb: 1,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1
                 }}>
                  👦 ניהול ילדים
                 </Typography>
@@ -565,30 +587,16 @@ const KidsManagement = () => {
               </Box>
               
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="רענון נתונים">
+                {/* <Tooltip title="רענון נתונים">
                   <IconButton 
                     onClick={handleRefresh} 
                     disabled={loading}
                     sx={{
-                      background: 'rgba(3, 129, 146, 0.27)',
-                      color: 'white',
+                      background: 'rgba(76, 181, 195, 0.1)',
+                      border: '2px solid rgba(76, 181, 195, 0.3)',
+                      color: 'primary.main',
                       '&:hover': {
-                        background: 'rgba(237, 246, 247, 0.78)',
+                        background: 'rgba(76, 181, 195, 0.2)',
                         transform: 'rotate(180deg)',
                       },
                       transition: 'all 0.3s ease'
@@ -596,7 +604,7 @@ const KidsManagement = () => {
                   >
                     <RefreshIcon />
                   </IconButton>
-                </Tooltip>
+                </Tooltip> */}
                 
                 <AnimatedButton
                   variant="contained"
@@ -609,10 +617,10 @@ const KidsManagement = () => {
             </Box>
             
             {/* Filters */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
               <TextField
                 size="small"
-                placeholder="חיפוש לפי שם..."
+                placeholder="חיפוש לפי שם או תז..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 InputProps={{
@@ -623,13 +631,18 @@ const KidsManagement = () => {
                   ),
                 }}
                 sx={{ 
-                  width: 300,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    background: 'rgba(255,255,255,0.9)',
-                    backdropFilter: 'blur(10px)'
-                  }
-                }}
+                        flex: 1,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 3,
+                          '&:hover fieldset': {
+                            borderColor: '#4cb5c3',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#4cb5c3',
+                            borderWidth: 2,
+                          }
+                        }
+                      }}
               />
               
               <FormControl size="small" sx={{ width: 200 }}>
@@ -653,9 +666,9 @@ const KidsManagement = () => {
             </Box>
           </ModernHeader>
 
-          {/* Statistics */}
+          {/* Statistics Cards */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item size={{xs:12, sm:3}}>
+            <Grid item size={{xs:12,sm:3}}>
               <StatCard color="primary">
                 <Typography variant="h3" color="primary.main" fontWeight="bold">
                   {stats.total}
@@ -665,7 +678,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item size={{xs:12, sm:3}}>
+            <Grid item size={{xs:12,sm:3}}>
               <StatCard color="success">
                 <Typography variant="h3" color="success.main" fontWeight="bold">
                   {stats.completed}
@@ -675,7 +688,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item size={{xs:12, sm:3}}>
+            <Grid item size={{xs:12,sm:3}}>
               <StatCard color="secondary">
                 <Typography variant="h3" color="secondary.main" fontWeight="bold">
                   {stats.inProgress}
@@ -685,7 +698,7 @@ const KidsManagement = () => {
                 </Typography>
               </StatCard>
             </Grid>
-            <Grid item size={{xs:12, sm:3}}>
+            <Grid item size={{xs:12,sm:3}}>
               <StatCard color="info">
                 <Typography variant="h3" color="info.main" fontWeight="bold">
                   {stats.notStarted}
@@ -697,14 +710,14 @@ const KidsManagement = () => {
             </Grid>
           </Grid>
 
-          {/* Errors */}
+          {/* Error Alert */}
           {error && (
             <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
               {error}
             </Alert>
           )}
 
-          {/* Kids Table */}
+          {/* Kids Table - Optimized columns */}
           <StyledTableContainer>
             <Table>
               <TableHead>
@@ -712,30 +725,29 @@ const KidsManagement = () => {
                   backgroundColor: 'rgba(76, 181, 195, 0.1)',
                   '& .MuiTableCell-head': {
                     fontWeight: 700,
-                    color: 'primary.main'
+                    color: 'primary.main',
+                    fontSize: '0.95rem'
                   }
                 }}>
-                  <TableCell>👦 שם מלא</TableCell>
+                  <TableCell>👦 ילד</TableCell>
                   <TableCell>🎂 גיל</TableCell>
-                  <TableCell>🆔 ת"ז</TableCell>
-                  <TableCell>👤 מגדר</TableCell>
+                  <TableCell>📞 טלפון חירום</TableCell>
                   <TableCell>👪 הורה ראשי</TableCell>
                   <TableCell>🚀 סטטוס קליטה</TableCell>
-                  <TableCell>⏳ התקדמות מפורטת</TableCell>
-                  <TableCell>👁️ צפייה בקליטה</TableCell>
                   <TableCell>⚡ פעולות</TableCell>
+                  <TableCell align="center">👁️ פרופיל</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: 'primary.main' }} />
                     </TableCell>
                   </TableRow>
                 ) : filteredKids.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography color="text.secondary">
                         לא נמצאו ילדים
                       </Typography>
@@ -744,7 +756,9 @@ const KidsManagement = () => {
                 ) : (
                   filteredKids.map((kid) => {
                     const kidOnboardingData = onboardingData[kid.id];
-                    
+                    const parentPhone = getParentPhone(kid);
+                    const parentName = getParentName(kid);
+
                     return (
                       <TableRow 
                         key={kid.id} 
@@ -758,6 +772,7 @@ const KidsManagement = () => {
                           transition: 'all 0.2s ease'
                         }}
                       >
+                        {/* Child info with photo */}
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Avatar
@@ -773,6 +788,7 @@ const KidsManagement = () => {
                                 ml: 1,
                                 border: "3px solid #fff",
                                 boxShadow: "0 4px 12px rgba(76, 181, 195, 0.3)",
+                                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                                 transition: 'all 0.3s ease',
                                 '&:hover': {
                                   transform: 'scale(1.1)',
@@ -786,31 +802,64 @@ const KidsManagement = () => {
                                 </>
                               )}
                             </Avatar>
-                            <Typography fontWeight="medium">
-                              {`${kid.firstName || ''} ${kid.lastName || ''}`}
-                            </Typography>
+                            <Box>
+                              <Typography fontWeight={600} sx={{ mb: 0.5 }}>
+                                {`${kid.firstName || ''} ${kid.lastName || ''}`}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                ת.ז: {kid.id}
+                              </Typography>
+                            </Box>
                           </Box>
                         </TableCell>
-                        <TableCell>{calculateAge(kid.birthDate)}</TableCell>
-                        <TableCell>{kid.id}</TableCell>
+                        
+                        {/* Age */}
                         <TableCell>
-                          <Chip 
-                            label={kid.gender === 'זכר' ? 'זכר' : 'נקבה'} 
-                            size="small"
-                            color={kid.gender === 'זכר' ? 'primary' : 'secondary'}
-                            sx={{ 
-                              fontWeight: 600,
-                              borderRadius: 2 
-                            }}
-                          />
+                          <Typography variant="body2" fontWeight={500}>
+                            {calculateAge(kid.birthDate)}
+                          </Typography>
                         </TableCell>
-                        <TableCell>{kid.parentName1 || '–'}</TableCell>
+                        
+                        {/* Emergency Contact */}
+                        <TableCell>
+                          <ContactInfo>
+                            {kid.emergencyContact && (
+                              <Box className="contact-item">
+                                <EmergencyIcon sx={{ color: 'error.main !important' }} />
+                                <Typography variant="body2">
+                                  {kid.emergencyContact}
+                                </Typography>
+                              </Box>
+                            )}
+                            {parentPhone && !kid.emergencyContact && (
+                              <Box className="contact-item">
+                                <PhoneIcon />
+                                <Typography variant="body2">
+                                  {parentPhone}
+                                </Typography>
+                              </Box>
+                            )}
+                            {!kid.emergencyContact && !parentPhone && (
+                              <Typography variant="body2" color="text.disabled">
+                                –
+                              </Typography>
+                            )}
+                          </ContactInfo>
+                        </TableCell>
+                        
+                        {/* Parent Name */}
+                        <TableCell>
+                          <Typography variant="body2">
+                            {parentName || '–'}
+                          </Typography>
+                        </TableCell>
+                        
+                        {/* Onboarding Status */}
                         <TableCell>
                           <OnboardingStatusChip onboardingData={kidOnboardingData} />
                         </TableCell>
-                        <TableCell>
-                          <DetailedProgress onboardingData={kidOnboardingData} />
-                        </TableCell>
+                        
+                        {/* Actions */}
                         <TableCell>
                           <OnboardingActions
                             kid={kid}
@@ -818,7 +867,9 @@ const KidsManagement = () => {
                             onAction={handleAction}
                           />
                         </TableCell>
-                        <TableCell>
+                        
+                        {/* Profile Button */}
+                        <TableCell align="center">
                           <Tooltip placement="top" 
   PopperProps={{
     disablePortal: true,
@@ -834,7 +885,7 @@ const KidsManagement = () => {
         },
       },
     ],
-  }}title="פרופיל ילד">
+  }} title="פרופיל ילד">
                             <IconButton
                               sx={{
                                 width: 45,
@@ -845,7 +896,7 @@ const KidsManagement = () => {
                                 boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
                                 "&:hover": { 
                                   background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-                                  transform: 'scale(1.1)',
+                                  transform: 'scale(1.1) rotate(10deg)',
                                   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
                                 },
                               }}
@@ -863,7 +914,7 @@ const KidsManagement = () => {
             </Table>
           </StyledTableContainer>
 
-          {/* Floating Button */}
+          {/* Floating Action Button */}
           <StyledFab
             color="primary"
             onClick={() => navigate('/kids/onboarding/new')}

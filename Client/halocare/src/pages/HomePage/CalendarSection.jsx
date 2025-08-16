@@ -25,9 +25,11 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment
+  InputAdornment,
+  alpha,
+  styled,
+  keyframes
 } from '@mui/material';
-import { styled, keyframes } from '@mui/material/styles';
 import {
   CalendarToday as CalendarIcon,
   Event as EventIcon,
@@ -49,10 +51,16 @@ import { fetchEmployees } from '../../Redux/features/employeesSlice';
 import EventsCarousel from './EventsCarousel';
 import Swal from 'sweetalert2';
 
-// animations
+// Professional animations matching the style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-10px); }
 `;
 
 const pulse = keyframes`
@@ -66,31 +74,32 @@ const shimmer = keyframes`
   100% { transform: translateX(100%); }
 `;
 
-// 🎭 Styled Components
+// Professional Styled Components
 const GradientContainer = styled(Container)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
   minHeight: '100vh',
-  padding: theme.spacing(3),
+  // padding: theme.spacing(3),
   position: 'relative',
   '&::before': {
     content: '""',
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
-    height: '200px',
-    background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-    borderRadius: '0 0 30px 30px',
+    bottom: 0,
+    pointerEvents: 'none',
     zIndex: 0,
   }
 }));
 
-const MainCard = styled(Card)(() => ({
+const MainCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  borderRadius: '24px',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2)',
-  border: 'none',
+  borderRadius: 20,
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
   position: 'relative',
   zIndex: 1,
   overflow: 'hidden',
@@ -100,34 +109,53 @@ const MainCard = styled(Card)(() => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
-    background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
-    borderRadius: '24px 24px 0 0',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
   }
 }));
 
-const EventCard = styled(Card)(({  eventColor = '#667eea' }) => ({
-  background: `linear-gradient(135deg, ${eventColor}15 0%, ${eventColor}05 100%)`,
-  borderRadius: '16px',
-  border: `2px solid ${eventColor}30`,
+
+const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
+  height: '100%',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
-  cursor: 'pointer',
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 20px 40px ${eventColor}40`,
-    border: `2px solid ${eventColor}60`,
+    boxShadow: '0 15px 35px rgba(76, 181, 195, 0.25)',
   },
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '4px',
-    height: '100%',
-    background: eventColor,
-    borderRadius: '0 2px 2px 0',
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${color}, ${alpha(color, 0.6)}, ${color})`,
+    animation: `${gradientShift} 3s ease infinite`,
+  }
+}));
+
+const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+  borderRadius: 16,
+  textTransform: 'none',
+  fontWeight: 600,
+  color: 'white',
+  padding: '12px 24px',
+  position: 'relative',
+  overflow: 'hidden',
+  background: `linear-gradient(45deg, ${glowColor} 30%, ${alpha(glowColor, 0.8)} 90%)`,
+  boxShadow: `0 6px 20px ${alpha(glowColor, 0.3)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: `0 12px 35px ${alpha(glowColor, 0.4)}`,
+    background: `linear-gradient(45deg, ${alpha(glowColor, 0.9)} 30%, ${alpha(glowColor, 0.7)} 90%)`,
   },
   '&::after': {
     content: '""',
@@ -135,79 +163,97 @@ const EventCard = styled(Card)(({  eventColor = '#667eea' }) => ({
     top: 0,
     left: '-100%',
     width: '100%',
-    height: '2px',
-    background: `linear-gradient(90deg, transparent, ${eventColor}, transparent)`,
-    animation: `${shimmer} 3s infinite`,
-  }
-}));
-
-const StatsCard = styled(Card)(({  color = '#667eea' }) => ({
-  background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-  borderRadius: '20px',
-  border: `2px solid ${color}20`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 20px 40px ${color}30`,
-  }
-}));
-
-const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
-  borderRadius: '16px',
-  textTransform: 'none',
-  fontWeight: 600,
-  color: 'white',
-  padding: '12px 24px',
-  position: 'relative',
-  overflow: 'hidden',
-  background: `linear-gradient(135deg, ${glowColor} 0%, ${glowColor}dd 100%)`,
-  boxShadow: `0 8px 25px ${glowColor}40`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: `0 15px 35px ${glowColor}60`,
-    animation: `${pulse} 1.5s infinite`,
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-    transition: 'left 0.5s',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
   },
-  '&:hover::before': {
+  '&:hover::after': {
     left: '100%',
   }
 }));
 
-// Styled Chip for participants
-const ParticipantChip = styled(Chip)(() => ({
-  borderRadius: 12,
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
   fontWeight: 600,
-  margin: '2px',
+  backdropFilter: 'blur(10px)',
   transition: 'all 0.3s ease',
+  animation: `${pulse} 2s infinite`,
   '&:hover': {
     transform: 'scale(1.05)',
-    boxShadow: '0 4px 12px rgba(116, 11, 11, 0.15)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  }
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
+    },
+    '&.Mui-focused': {
+      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
+    }
+  }
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(76, 181, 195, 0.2)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+  }
+}));
+
+const NavigationButton = styled(IconButton)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(76, 181, 195, 0.2)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
+  }
+}));
+
+const DateDisplay = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2, 4),
+  borderRadius: 20,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  textAlign: 'center',
+  minWidth: 250,
+  boxShadow: '0 8px 25px rgba(0,0,0,0.08)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.15)',
   }
 }));
 
 const CalendarSection = () => {
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Redux state
+  // Redux state - PRESERVED EXACTLY
   const { events, status: eventsStatus } = useSelector(state => state.events);
   const { eventTypes, status: eventTypesStatus } = useSelector(state => state.eventTypes);
   const { kids } = useSelector(state => state.kids);
   const { employees } = useSelector(state => state.employees);
   
-  // Local state
+  // Local state - PRESERVED EXACTLY
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filters, setFilters] = useState({
     eventTypeId: '',
@@ -218,7 +264,7 @@ const navigate = useNavigate();
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
 
-  // Load data on mount
+  // Load data on mount - PRESERVED EXACTLY
   useEffect(() => {
     dispatch(fetchEvents());
     dispatch(fetchEventTypes());
@@ -226,7 +272,7 @@ const navigate = useNavigate();
     dispatch(fetchEmployees());
   }, [dispatch]);
 
-  // Helper functions
+  // Helper functions - PRESERVED EXACTLY
   const formatDate = (date) => {
     return new Intl.DateTimeFormat('he-IL').format(date);
   };
@@ -251,37 +297,35 @@ const navigate = useNavigate();
     }
     return week;
   };
-const handleCreateEvent = (isEdit=false) => {
-  Swal.fire({
-    title: isEdit ? '🗓️ עריכת אירוע ' : '🗓️ יצירת אירוע חדש',
-    html: 'ליצירה ועריכה של אירועים,<br>עבור ליומן המלא עם כל הכלים המתקדמים!',
-    icon: 'info',
-    showCancelButton: true,
-    confirmButtonText: '📅 עבור ליומן מלא',
-    cancelButtonText: 'לא משנה',
-    confirmButtonColor: '#667eea'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      navigate('/calendar/schedule');
-    }
-  });
-};
-  // Filter events - Only for selected day
+
+  const handleCreateEvent = (isEdit=false) => {
+    Swal.fire({
+      title: isEdit ? '🗓️ עריכת אירוע ' : '🗓️ יצירת אירוע חדש',
+      html: 'ליצירה ועריכה של אירועים,<br>עבור ליומן המלא עם כל הכלים המתקדמים!',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: '📅 עבור ליומן מלא',
+      cancelButtonText: 'לא משנה',
+      confirmButtonColor: '#4cb5c3'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate('/calendar/schedule');
+      }
+    });
+  };
+
+  // Filter events - PRESERVED EXACTLY
   const filteredEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
     
     return events.filter(event => {
       const eventDate = new Date(event.start);
       
-      // Only show events for selected day
       const dateMatch = eventDate.toDateString() === selectedDate.toDateString();
-      
-      // Apply filters
       const typeMatch = !filters.eventTypeId || event.extendedProps.eventTypeId === parseInt(filters.eventTypeId);
       const employeeMatch = !filters.employeeId || event.extendedProps.employeeIds?.includes(parseInt(filters.employeeId));
       const kidsMatch = !filters.kidId || event.extendedProps.kidIds?.includes(parseInt(filters.kidId));
       
-      // Search filter
       const searchMatch = !searchTerm || 
         event.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.extendedProps.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -291,7 +335,7 @@ const handleCreateEvent = (isEdit=false) => {
     }).sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [events, selectedDate, filters, searchTerm]);
 
-  // Get today's events
+  // Get today's events - PRESERVED EXACTLY
   const todaysEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
     const today = new Date();
@@ -301,7 +345,7 @@ const handleCreateEvent = (isEdit=false) => {
     }).sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [events]);
 
-  // Stats
+  // Stats - PRESERVED EXACTLY
   const stats = useMemo(() => {
     const todayCount = todaysEvents.length;
     const selectedDayCount = filteredEvents.length;
@@ -328,7 +372,8 @@ const handleCreateEvent = (isEdit=false) => {
   const clearFilters = () => {
     setFilters({
       eventTypeId: '',
-      employeeId: ''
+      employeeId: '',
+      kidId: ''
     });
     setSearchTerm('');
   };
@@ -340,11 +385,11 @@ const handleCreateEvent = (isEdit=false) => {
     <GradientContainer maxWidth="xl" dir='rtl'>
       <Fade in timeout={800}>
         <MainCard elevation={0}>
-          {/* Magic Header */}
+          {/* Professional Header */}
           <Box sx={{ 
             p: 4,
-            background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-            borderRadius: '24px 24px 0 0',
+            background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+            borderRadius: '20px 20px 0 0',
             position: 'relative',
             overflow: 'hidden'
           }}>
@@ -354,8 +399,8 @@ const handleCreateEvent = (isEdit=false) => {
                   <Avatar sx={{ 
                     width: 70, 
                     height: 70,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)',
                     animation: `${float} 3s ease-in-out infinite`
                   }}>
                     <CalendarIcon sx={{ fontSize: '2rem' }} />
@@ -364,7 +409,7 @@ const handleCreateEvent = (isEdit=false) => {
                 <Box>
                   <Typography variant="h3" sx={{ 
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     mb: 1
@@ -372,15 +417,14 @@ const handleCreateEvent = (isEdit=false) => {
                     יומן הגן
                   </Typography>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Chip 
+                    <StyledChip 
                       icon={<TodayIcon />}
                       label={formatDate(selectedDate)}
                       color="primary"
                       variant="outlined"
-                      sx={{ animation: `${pulse} 2s infinite` }}
                     />
                     {hasFilters && (
-                      <Chip 
+                      <StyledChip 
                         icon={<SearchIcon />}
                         label="מסונן"
                         color="warning"
@@ -393,28 +437,25 @@ const handleCreateEvent = (isEdit=false) => {
                 </Box>
               </Stack>
               
-              <Stack direction="row" spacing={2}>
-                
+              <Stack direction="column" spacing={2}>
                 <GlowingButton
-  startIcon={<AddIcon />}
-  onClick={() => 
-    handleCreateEvent()
-  }
-  glowColor="#10b981"
->
-  אירוע חדש
-</GlowingButton>
+                  startIcon={<AddIcon />}
+                  onClick={() => handleCreateEvent()}
+                  glowColor="#10b981"
+                >
+                  אירוע חדש
+                </GlowingButton>
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
-                  onClick={()=> navigate('/calendar/schedule')}
-                  glowColor="#f59e0b"
+                  onClick={() => navigate('/calendar/schedule')}
+                  glowColor="#ff7043"
                 >
                   יומן מלא
                 </GlowingButton>
               </Stack>
             </Stack>
 
-            {/* Amazing Stats - Simplified */}
+            {/* Professional Stats */}
             <Grid container spacing={3} mb={3}>
               <Grid item size={{xs:12,sm:4}}>
                 <Zoom in timeout={800}>
@@ -424,7 +465,8 @@ const handleCreateEvent = (isEdit=false) => {
                         <Avatar sx={{ 
                           width: 50, 
                           height: 50,
-                          background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
+                          background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                          boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)'
                         }}>
                           <TodayIcon />
                         </Avatar>
@@ -444,18 +486,19 @@ const handleCreateEvent = (isEdit=false) => {
               
               <Grid item size={{xs:12,sm:4}}>
                 <Zoom in timeout={1000}>
-                  <StatsCard color="#667eea">
+                  <StatsCard color="#4cb5c3">
                     <CardContent sx={{ textAlign: 'center', p: 2 }}>
                       <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
                         <Avatar sx={{ 
                           width: 50, 
                           height: 50,
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                          background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                          boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                         }}>
                           <WeekIcon />
                         </Avatar>
                         <Box>
-                          <Typography variant="h4" sx={{ fontWeight: 800, color: '#667eea' }}>
+                          <Typography variant="h4" sx={{ fontWeight: 800, color: '#4cb5c3' }}>
                             {stats.thisWeek}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" fontWeight={600}>
@@ -476,7 +519,8 @@ const handleCreateEvent = (isEdit=false) => {
                         <Avatar sx={{ 
                           width: 50, 
                           height: 50,
-                          background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                          boxShadow: '0 6px 20px rgba(245, 158, 11, 0.3)'
                         }}>
                           <EventIcon />
                         </Avatar>
@@ -495,46 +539,34 @@ const handleCreateEvent = (isEdit=false) => {
               </Grid>
             </Grid>
 
-            {/* Compact Filters Bar */}
-            <Paper elevation={1} sx={{ 
+            {/* Professional Filters Bar */}
+            <Paper elevation={0} sx={{ 
               p: 3, 
               mb: 3,
-              borderRadius: '16px',
-              background: 'rgba(255,255,255,0.8)',
-              backdropFilter: 'blur(10px)'
+              borderRadius: 16,
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
             }}>
               <Grid container spacing={2} alignItems="center">
                 <Grid item size={{xs:12}}>
-                  <TextField
+                  <StyledTextField
                     size="small"
                     placeholder="🔍 חיפוש אירועים..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                        </InputAdornment>
-                      )
-                    }}
-                    sx={{ 
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '12px',
-                      }
-                    }}
                   />
                 </Grid>
                 
                 <Grid item size={{xs:12,sm:3}}>
                   <FormControl fullWidth size="small">
                     <InputLabel>סוג אירוע</InputLabel>
-                    <Select
+                    <StyledSelect
                       value={filters.eventTypeId}
                       onChange={(e) => setFilters(prev => ({ ...prev, eventTypeId: e.target.value }))}
                       label="סוג אירוע"
-                      sx={{ borderRadius: '12px' }}
                     >
-
                       <MenuItem value="">כל הסוגים</MenuItem>
                       {eventTypes?.map(type => (
                         <MenuItem key={type.eventTypeId} value={type.eventTypeId}>
@@ -545,33 +577,31 @@ const handleCreateEvent = (isEdit=false) => {
                               borderRadius: '50%', 
                               background: type.color 
                             }} />
-                            {type.eventType}
+                            <span>{type.eventType}</span>
                           </Stack>
                         </MenuItem>
                       ))}
-                    </Select>
+                    </StyledSelect>
                   </FormControl>
                 </Grid>
 
                 <Grid item size={{xs:12,sm:3}}>
                   <FormControl fullWidth size="small">
                     <InputLabel>מטפל</InputLabel>
-                    <Select
+                    <StyledSelect
                       value={filters.employeeId}
                       onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value }))}
                       label="מטפל"
-                      sx={{ borderRadius: '12px' }}
                       renderValue={(selected) => {
-  const employee = employees.find(emp => emp.employeeId === selected);
-  return (
-    <ParticipantChip
-      label={employee ? `${employee.firstName} ${employee.lastName}` : selected}
-      size="small"
-      color="primary"
-    />
-  );
-}}
-
+                        const employee = employees.find(emp => emp.employeeId === selected);
+                        return (
+                          <StyledChip
+                            label={employee ? `${employee.firstName} ${employee.lastName}` : selected}
+                            size="small"
+                            color="primary"
+                          />
+                        );
+                      }}
                     >
                       <MenuItem value="">כל המטפלים</MenuItem>
                       {employees?.filter(emp => emp.isActive).map(employee => (
@@ -579,39 +609,35 @@ const handleCreateEvent = (isEdit=false) => {
                           {employee.firstName} {employee.lastName}
                         </MenuItem>
                       ))}
-                    </Select>
+                    </StyledSelect>
                   </FormControl>
                 </Grid>
 
                 <Grid item size={{xs:12,sm:3}}>
                   <FormControl fullWidth size="small">
                     <InputLabel>ילד</InputLabel>
-                    <Select
+                    <StyledSelect
                       value={filters.kidId}
                       onChange={(e) => setFilters(prev => ({ ...prev, kidId: e.target.value }))}
                       label="ילד"
-                      sx={{ borderRadius: '12px' }}
-                       renderValue={(selected) => {
-  const kid = kids.find(k => k.id === selected);
-  return (
-    <ParticipantChip
-      label={kid ? `${kid.firstName} ${kid.lastName}` : selected}
-      size="small"
-      color="primary"
-    />
-  );
-}}
+                      renderValue={(selected) => {
+                        const kid = kids.find(k => k.id === selected);
+                        return (
+                          <StyledChip
+                            label={kid ? `${kid.firstName} ${kid.lastName}` : selected}
+                            size="small"
+                            color="primary"
+                          />
+                        );
+                      }}
                     >
-                      <MenuItem value="">כל המטפלים</MenuItem>
+                      <MenuItem value="">כל הילדים</MenuItem>
                       {kids?.filter(kid => kid.isActive).map(kid => (
                         <MenuItem key={kid.id} value={kid.id}>
                           {kid.firstName} {kid.lastName}
                         </MenuItem>
-                        
                       ))}
-                      
-                    </Select>
-                    
+                    </StyledSelect>
                   </FormControl>
                 </Grid>
 
@@ -627,37 +653,23 @@ const handleCreateEvent = (isEdit=false) => {
                         נקה
                       </GlowingButton>
                     )}
-                  
                   </Stack>
                 </Grid>
               </Grid>
             </Paper>
 
-            {/* Simple Navigation */}
+            {/* Professional Navigation */}
             <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} mb={3}>
-              <IconButton 
-                onClick={() => handleDateNavigation(1)} 
-                sx={{ 
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
-                }}
-              >
-                                <NextIcon />
-              </IconButton>
+              <NavigationButton onClick={() => handleDateNavigation(1)}>
+                <NextIcon />
+              </NavigationButton>
               
-              <Paper sx={{ 
-                px: 4, 
-                py: 2, 
-                borderRadius: '20px',
-                background: 'rgba(255,255,255,0.9)',
-                backdropFilter: 'blur(20px)',
-                textAlign: 'center',
-                minWidth: 250
-              }}>
+              <DateDisplay>
                 <Typography variant="h5" sx={{ 
                   fontWeight: 700,
-                  color: '#667eea',
+                  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                   mb: 0.5
                 }}>
                   {formatDate(selectedDate)}
@@ -665,18 +677,11 @@ const handleCreateEvent = (isEdit=false) => {
                 <Typography variant="body2" color="text.secondary">
                   {selectedDate.toLocaleDateString('he-IL', { weekday: 'long' })}
                 </Typography>
-              </Paper>
+              </DateDisplay>
               
-              <IconButton 
-                onClick={() => handleDateNavigation(-1)} 
-                sx={{ 
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': { background: 'rgba(255,255,255,0.3)' }
-                }}
-              >
+              <NavigationButton onClick={() => handleDateNavigation(-1)}>
                 <PrevIcon />
-              </IconButton>
+              </NavigationButton>
               
               <GlowingButton
                 size="small"
@@ -689,41 +694,45 @@ const handleCreateEvent = (isEdit=false) => {
             </Stack>
           </Box>
 
-          {/* Main Content - Simplified */}
+          {/* Main Content */}
           <CardContent sx={{ p: 4 }}>
             <Fade in timeout={1000}>
               <Box>
                 <Typography variant="h5" gutterBottom sx={{ 
                   fontWeight: 700,
-                  color: '#667eea',
+                  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                   mb: 3,
                   textAlign: 'center'
                 }}>
+                  
                   📅 אירועי {formatDate(selectedDate)}
                 </Typography>
                 
                 {filteredEvents.length > 0 ? (
-
                   <EventsCarousel
-    events={filteredEvents}
-    eventTypes={eventTypes}
-    onEventClick={handleEventClick}
-    formatTime={formatTime}
-    maxVisible={3}
-    showExpand={true}
-  />
+                    events={filteredEvents}
+                    eventTypes={eventTypes}
+                    onEventClick={handleEventClick}
+                    formatTime={formatTime}
+                    maxVisible={3}
+                    showExpand={true}
+                  />
                 ) : (
                   <Paper sx={{ 
                     p: 6, 
                     textAlign: 'center',
-                    background: 'linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%)',
-                    borderRadius: '20px'
+                    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+                    borderRadius: 20,
+                    border: '1px solid rgba(76, 181, 195, 0.1)'
                   }}>
                     <Avatar sx={{ 
                       width: 80, 
                       height: 80, 
                       margin: '0 auto 16px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                      boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)'
                     }}>
                       <CalendarIcon sx={{ fontSize: '2.5rem' }} />
                     </Avatar>
@@ -751,30 +760,36 @@ const handleCreateEvent = (isEdit=false) => {
         </MainCard>
       </Fade>
 
-      {/* Event Details Dialog - Simplified */}
+      {/* Professional Event Details Dialog */}
       <Dialog 
-      dir='rtl'
+        dir='rtl'
         open={eventDetailsDialog} 
         onClose={() => setEventDetailsDialog(false)}
         maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '24px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+            borderRadius: 20,
+            background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.3)'
+            border: '1px solid rgba(255, 255, 255, 0.2)'
           }
         }}
       >
         {selectedEvent && (
           <>
-            <DialogTitle sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
+            <DialogTitle sx={{ 
+              textAlign: 'center', 
+              pb: 1, 
+              pt: 4,
+              background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)'
+            }}>
               <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
                 <Avatar sx={{ 
                   width: 60, 
                   height: 60,
-                  background: eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.color || '#667eea'
+                  background: eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.color || '#4cb5c3',
+                  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                 }}>
                   <EventIcon sx={{ fontSize: '2rem' }} />
                 </Avatar>
@@ -782,7 +797,7 @@ const handleCreateEvent = (isEdit=false) => {
                   <Typography variant="h5" fontWeight="bold">
                     {selectedEvent.title}
                   </Typography>
-                  <Chip 
+                  <StyledChip 
                     label={eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.eventType}
                     sx={{ 
                       background: eventTypes?.find(type => type.eventTypeId === selectedEvent.extendedProps.eventTypeId)?.color,
@@ -797,10 +812,11 @@ const handleCreateEvent = (isEdit=false) => {
             
             <DialogContent sx={{ p: 3 }}>
               <Stack spacing={2}>
-                <Paper elevation={1} sx={{ 
+                <Paper elevation={0} sx={{ 
                   p: 2, 
-                  borderRadius: '12px',
-                    background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)'
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(76, 181, 195, 0.05) 100%)',
+                  border: '1px solid rgba(76, 181, 195, 0.2)'
                 }}>
                   <Stack direction="row" spacing={2} alignItems="center">
                     <TimeIcon color="primary" />
@@ -816,10 +832,11 @@ const handleCreateEvent = (isEdit=false) => {
                 </Paper>
                 
                 {selectedEvent.extendedProps.location && (
-                  <Paper elevation={1} sx={{ 
+                  <Paper elevation={0} sx={{ 
                     p: 2, 
-                    borderRadius: '12px',
-                      background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%)'
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                    border: '1px solid rgba(16, 185, 129, 0.2)'
                   }}>
                     <Stack direction="row" spacing={2} alignItems="center">
                       <LocationIcon sx={{ color: '#10b981' }} />
@@ -831,10 +848,11 @@ const handleCreateEvent = (isEdit=false) => {
                 )}
                 
                 {selectedEvent.extendedProps.description && (
-                  <Paper elevation={1} sx={{ 
+                  <Paper elevation={0} sx={{ 
                     p: 2, 
-                    borderRadius: '12px',
-                      background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%)'
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+                    border: '1px solid rgba(245, 158, 11, 0.2)'
                   }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       📝 תיאור:
@@ -846,10 +864,11 @@ const handleCreateEvent = (isEdit=false) => {
                 )}
                 
                 {(selectedEvent.extendedProps.kidIds?.length > 0 || selectedEvent.extendedProps.employeeIds?.length > 0) && (
-                  <Paper elevation={1} sx={{ 
+                  <Paper elevation={0} sx={{ 
                     p: 2, 
-                    borderRadius: '12px',
-                      background: 'linear-gradient(135deg, rgba(139,69,19,0.1) 0%, rgba(139,69,19,0.05) 100%)'
+                    borderRadius: 12,
+                    background: 'linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(139, 69, 19, 0.05) 100%)',
+                    border: '1px solid rgba(139, 69, 19, 0.2)'
                   }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={600}>
                       👥 משתתפים:
@@ -864,7 +883,7 @@ const handleCreateEvent = (isEdit=false) => {
                             {selectedEvent.extendedProps.kidIds.map(kidId => {
                               const kid = kids?.find(k => k.id === kidId);
                               return kid ? (
-                                <Chip 
+                                <StyledChip 
                                   key={kidId}
                                   label={`${kid.firstName} ${kid.lastName}`}
                                   size="small"
@@ -886,7 +905,7 @@ const handleCreateEvent = (isEdit=false) => {
                             {selectedEvent.extendedProps.employeeIds.map(employeeId => {
                               const employee = employees?.find(e => e.employeeId === employeeId);
                               return employee ? (
-                                <Chip 
+                                <StyledChip 
                                   key={employeeId}
                                   label={`${employee.firstName} ${employee.lastName}`}
                                   size="small"
@@ -911,23 +930,19 @@ const handleCreateEvent = (isEdit=false) => {
               >
                 ❌ סגור
               </GlowingButton>
-             <GlowingButton
-  onClick={() => {
-    setEventDetailsDialog(false)
-  handleCreateEvent(true)
-  }
-    
-  }
-  glowColor="#667eea"
->
-  ✏️ ערוך אירוע
-</GlowingButton>
+              <GlowingButton
+                onClick={() => {
+                  setEventDetailsDialog(false);
+                  handleCreateEvent(true);
+                }}
+                glowColor="#4cb5c3"
+              >
+                ✏️ ערוך אירוע
+              </GlowingButton>
             </DialogActions>
           </>
         )}
       </Dialog>
-
-
     </GradientContainer>
   );
 };

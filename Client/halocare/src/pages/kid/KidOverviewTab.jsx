@@ -1,5 +1,5 @@
-// src/components/kids/tabs/KidOverviewTab.jsx - Professional styled version with ALL functionality preserved
-import React, { useEffect, useState } from 'react';
+// src/components/kids/tabs/KidOverviewTab.jsx 
+import  { useEffect, useState } from 'react';
 import {
   Box,
   Grid,
@@ -9,22 +9,10 @@ import {
   Chip,
   Stack,
   Divider,
-  Card,
-  CardContent,
-  Button,
   Alert,
   Collapse,
   IconButton,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
   CircularProgress,
-  TableHead,
   styled,
   alpha,
   keyframes
@@ -34,21 +22,20 @@ import {
   Cake as CakeIcon,
   Home as HomeIcon,
   Phone as PhoneIcon,
-  LocalHospital as MedicalIcon,
   School as SchoolIcon,
-  TrendingUp as ProgressIcon,
   Warning as WarningIcon,
   Medication as MedicationIcon,
   Emergency as EmergencyIcon,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  CheckCircle as CheckCircleIcon,
-  Assignment as AssignmentIcon
+  Smartphone as MobileIcon,
+  LocationCity as CityIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
 import SimpleFlowerProfile from './SimpleFlowerProfile';
 import { fetchCriticalMedicalInfo } from '../../Redux/features/answersSlice';
+import { fetchParentById } from '../../Redux/features/parentSlice';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 // Animation keyframes
 const pulse = keyframes`
@@ -57,13 +44,8 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-const shimmer = keyframes`
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-`;
-
 // Enhanced styled components
-const EnhancedPaper = styled(Paper)(({ theme }) => ({
+const EnhancedPaper = styled(Paper)(() => ({
   borderRadius: 20,
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -93,7 +75,7 @@ const CriticalPaper = styled(Paper)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   borderRadius: 20,
   background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(244, 67, 54, 0.05) 100%)',
-  backdropFilter: 'blur(20px)',
+  // backdropFilter: 'blur(20px)',
   border: '2px solid',
   borderImage: 'linear-gradient(135deg, #ff9800, #f44336) 1',
   boxShadow: '0 10px 40px rgba(255, 152, 0, 0.2)',
@@ -106,8 +88,8 @@ const CriticalPaper = styled(Paper)(({ theme }) => ({
     left: '50%',
     width: '200%',
     height: '200%',
-    background: 'radial-gradient(circle, rgba(255, 152, 0, 0.1) 0%, transparent 70%)',
-    transform: 'translate(-50%, -50%)',
+    // background: 'radial-gradient(circle, rgba(255, 152, 0, 0.1) 0%, transparent 70%)',
+    // transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }
 }));
@@ -118,7 +100,7 @@ const StyledAlert = styled(Alert)(({ theme, severity }) => ({
   borderColor: theme.palette[severity]?.main,
   borderRadius: 16,
   background: `linear-gradient(135deg, ${alpha(theme.palette[severity]?.main, 0.05)} 0%, ${alpha(theme.palette[severity]?.dark, 0.05)} 100%)`,
-  backdropFilter: 'blur(10px)',
+  // backdropFilter: 'blur(10px)',
   position: 'relative',
   overflow: 'hidden',
   '& .MuiAlert-icon': { 
@@ -140,17 +122,17 @@ const InfoItemPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   marginBottom: theme.spacing(1),
   backgroundColor: 'rgba(255,255,255,0.95)',
-  backdropFilter: 'blur(10px)',
+  // backdropFilter: 'blur(10px)',
   borderRadius: 12,
   border: '1px solid rgba(255, 255, 255, 0.3)',
   transition: 'all 0.3s ease',
   '&:hover': {
-    transform: 'scale(1.02)',
+    // transform: 'scale(1.02)',
     boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
   }
 }));
 
-const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
+const StyledAvatar = styled(Avatar)(({bgcolor }) => ({
   width: 32,
   height: 32,
   background: bgcolor || 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
@@ -160,7 +142,7 @@ const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
   }
 }));
 
-const PersonalInfoAvatar = styled(Avatar)(({ theme }) => ({
+const PersonalInfoAvatar = styled(Avatar)(() => ({
   width: 28,
   height: 28,
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
@@ -206,7 +188,7 @@ const FlowerContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at center, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
+    // background: 'radial-gradient(circle at center, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
     pointerEvents: 'none',
   }
 }));
@@ -223,27 +205,6 @@ const LoadingBox = styled(Box)(({ theme }) => ({
   }
 }));
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: 12,
-  overflow: 'hidden',
-  '& .MuiTable-root': {
-    '& .MuiTableHead-root': {
-      '& .MuiTableCell-root': {
-        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
-        fontWeight: 700,
-        borderBottom: '2px solid rgba(76, 181, 195, 0.2)',
-      }
-    },
-    '& .MuiTableBody-root': {
-      '& .MuiTableRow-root': {
-        transition: 'all 0.2s ease',
-        '&:hover': {
-          backgroundColor: 'rgba(76, 181, 195, 0.05)',
-        }
-      }
-    }
-  }
-}));
 
 // Critical Info Card Component - Enhanced styling only
 const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => {
@@ -256,21 +217,46 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
   };
 
   return (
-    <StyledAlert severity={color}>
+    <StyledAlert 
+      severity={color}
+      sx={{ 
+        height: expanded ? 'auto' : 'auto',
+        minHeight: '80px',
+        display: 'flex',
+        flexDirection: 'column',
+        '& .MuiAlert-message': {
+          width: '100%',
+          padding: 0
+        }
+      }}
+    >
       <Box sx={{ width: '100%' }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          minHeight: '48px'
         }} onClick={handleToggle}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <StyledAvatar bgcolor={`${color}.main`}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <StyledAvatar 
+              bgcolor={`${color}.main`}
+              sx={{ 
+                width: 36, 
+                height: 36,
+                boxShadow: theme => `0 4px 12px ${alpha(theme.palette[color].main, 0.3)}`
+              }}
+            >
               {icon}
             </StyledAvatar>
-            <Typography variant="h6" fontWeight="bold">
-              {title} ({data.length})
-            </Typography>
+            <Box>
+              <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+                {title}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {data.length} {data.length === 1 ? 'פריט' : 'פריטים'}
+              </Typography>
+            </Box>
           </Box>
           <IconButton 
             size="small" 
@@ -285,72 +271,184 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
         </Box>
         
         <Collapse in={expanded}>
-          <Box sx={{ mt: 2 }}>
+          <Divider sx={{ my: 1.5, opacity: 0.3 }} />
+          <Box sx={{ mt: 2, maxHeight: '400px', overflowY: 'auto' }}>
             {data.map((item, index) => (
-              <InfoItemPaper key={index}>
+              <InfoItemPaper 
+                key={index}
+                sx={{ 
+                  mb: index < data.length - 1 ? 1.5 : 0,
+                  // animation: `${slideIn} 0.3s ease-out ${index * 0.1}s`
+                }}
+              >
                 {title === 'תרופות' && (
-                  <StyledTableContainer>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell><strong>שם התרופה:</strong></TableCell>
-                          <TableCell><strong>מינון:</strong></TableCell>
-                          <TableCell><strong>זמנים:</strong></TableCell>
-                          <TableCell><strong>הערות:</strong></TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell>{item.medicationName}</TableCell>
-                          <TableCell>{item.dosage}</TableCell>
-                          <TableCell>{item.times}</TableCell>
-                          <TableCell>{item.notes}</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </StyledTableContainer>
+                  <Box sx={{ p: 2 }}>
+                    <Grid container spacing={2}>
+                      <Grid item size={{xs:12 , sm:3}} >
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            שם התרופה
+                          </Typography>
+                          <Typography variant="body2" fontWeight={600} color="primary.main">
+                            {item.medicationName}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item size={{xs:12 , sm:3}}>
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            מינון
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.dosage}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item size={{xs:12 , sm:3}}>
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            זמני נטילה
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.times}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      {item.notes && (
+                        <Grid item size={{xs:12 , sm:3}}>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              הערות
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                              {item.notes}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Box>
                 )}
                 
                 {title === 'רגישויות ואלרגיות' && (
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item size={{xs:3}}>
-                      <Typography variant="subtitle2" color="text.secondary">חומר</Typography>
-                      <Typography fontWeight="bold">{item.allergen}</Typography>
+                  <Box sx={{ p: 2 }}>
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item size={{xs:12 , sm:3}}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            חומר אלרגני
+                          </Typography>
+                          <Typography variant="body2" fontWeight={600} color="error.main">
+                            {item.allergen}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item size={{xs:12 , sm:3}}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            חומרה
+                          </Typography>
+                          <Box sx={{ mt: 0.5 }}>
+                            <StyledChip 
+                              label={item.severity} 
+                              color={item.severity === 'חמורה' ? 'error' : 'warning'}
+                              size="small"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          </Box>
+                        </Box>
+                      </Grid>
+                      <Grid item size={{xs:12 , sm:3}}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            תגובה
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.reaction}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      {item.notes && (
+                        <Grid item size={{xs:12 , sm:3}}>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              הערות נוספות
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                              {item.notes}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
                     </Grid>
-                    <Grid item size={{xs:3}}>
-                      <Typography variant="subtitle2" color="text.secondary">חומרה</Typography>
-                      <StyledChip 
-                        label={item.severity} 
-                        color={item.severity === 'חמורה' ? 'error' : 'warning'}
-                        size="small"
-                      />
-                    </Grid>
-                    <Grid item size={{xs:6}}>
-                      <Typography variant="subtitle2" color="text.secondary">תגובה</Typography>
-                      <Typography>{item.reaction}</Typography>
-                    </Grid>
-                  </Grid>
+                  </Box>
                 )}
                 
                 {title === 'התקפים' && (
-                  <StyledTableContainer>
-                    <Table size="small">
-                      <TableBody>
-                        <TableRow>
-                          <TableCell><strong>סוג:</strong></TableCell>
-                          <TableCell>{item.seizureType}</TableCell>
-                          <TableCell><strong>תדירות:</strong></TableCell>
-                          <TableCell>{item.frequency}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell><strong>טריגרים:</strong></TableCell>
-                          <TableCell>{item.triggers}</TableCell>
-                          <TableCell><strong>הערות:</strong></TableCell>
-                          <TableCell>{item.notes}</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </StyledTableContainer>
+                  <Box sx={{ p: 2 }}>
+                    <Grid container spacing={2}>
+                      <Grid item size={{xs:12 , sm:4}}>
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            סוג התקף
+                          </Typography>
+                          <Typography variant="body2" fontWeight={600} color="error.main">
+                            {item.seizureType}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item size={{xs:12 , sm:4}}>
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                            תדירות
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.frequency}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      {item.triggers && (
+                        <Grid item size={{xs:12 , sm:4}}>
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              טריגרים
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {item.triggers}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                      {item.medications && (
+                        <Grid item xs={12}>
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              תרופות רלוונטיות
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {item.medications}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                      {item.notes && (
+                        <Grid item xs={12}>
+                          <Box sx={{ 
+                            pt: 1, 
+                            borderTop: '1px solid',
+                            borderColor: 'divider'
+                          }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              הערות נוספות
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                              {item.notes}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Box>
                 )}
               </InfoItemPaper>
             ))}
@@ -362,7 +460,6 @@ const CriticalInfoCard = ({ title, icon, data, color = "warning", bgColor }) => 
 };
 
 const KidOverviewTab = ({ selectedKid }) => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { kidId } = useParams();
   
@@ -374,11 +471,17 @@ const KidOverviewTab = ({ selectedKid }) => {
   });
   const [loadingCritical, setLoadingCritical] = useState(false);
   const [criticalError, setCriticalError] = useState(null);
-
+ const [parentsData, setParentsData] = useState({
+    parent1: null,
+    parent2: null,
+    loading: false,
+    error: null
+  });
   // Fetch critical data on component load 
   useEffect(() => {
     if (kidId) {
       fetchCriticalInfo();
+      fetchParentsInfo();
     }
   }, [kidId]);
 
@@ -480,7 +583,7 @@ const KidOverviewTab = ({ selectedKid }) => {
     {
       icon: <SchoolIcon />,
       label: 'כיתה',
-      value: selectedKid.className || 'לא משויך'
+      value: selectedKid.classId || 'לא משויך'
     },
     {
       icon: <HomeIcon />,
@@ -489,18 +592,62 @@ const KidOverviewTab = ({ selectedKid }) => {
         `${selectedKid.address}${selectedKid.cityName ? `, ${selectedKid.cityName}` : ''}` : '–'
     },
   ];
-
-  // Parents Info 
-  const parentsInfo = [
-    {
-      label: 'הורה ראשי',
-      value: selectedKid.parentName1 || '–'
-    },
-    {
-      label: 'הורה שני', 
-      value: selectedKid.parentName2 || '–'
+const fetchParentsInfo = async () => {
+    setParentsData(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const promises = [];
+      
+      // Fetch first parent if exists
+      if (selectedKid.parentId1) {
+        promises.push(dispatch(fetchParentById(selectedKid.parentId1)).unwrap());
+      }
+      
+      // Fetch second parent if exists
+      if (selectedKid.parentId2) {
+        promises.push(dispatch(fetchParentById(selectedKid.parentId2)).unwrap());
+      }
+      
+      const results = await Promise.all(promises);
+      
+      setParentsData({
+        parent1: results[0] || null,
+        parent2: results[1] || null,
+        loading: false,
+        error: null
+      });
+    } catch (error) {
+      console.error('Error fetching parents data:', error);
+      setParentsData(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Failed to load parents information'
+      }));
     }
-  ];
+  };
+  // Parents Info 
+   const getParentInfo = (parent, label) => {
+    if (!parent) {
+      return {
+        label,
+        name: selectedKid[`parentName${label === 'הורה ראשי' ? '1' : '2'}`] || 'לא מצוין',
+        details: []
+      };
+    }
+
+    return {
+      label,
+      name: `${parent.firstName || ''} ${parent.lastName || ''}`.trim() || 'לא מצוין',
+      details: [
+        parent.mobilePhone && { icon: <MobileIcon />, value: parent.mobilePhone, label: 'נייד' },
+        parent.homePhone && { icon: <PhoneIcon />, value: parent.homePhone, label: 'בית' },
+        parent.email && { icon: <EmailIcon />, value: parent.email, label: 'מייל' },
+        parent.address && { icon: <HomeIcon />, value: parent.address, label: 'כתובת' },
+        parent.cityName && { icon: <CityIcon />, value: parent.cityName, label: 'עיר' }
+      ].filter(Boolean)
+    };
+  };
+
 
   return (
     <Box dir="rtl" sx={{ 
@@ -542,30 +689,47 @@ const KidOverviewTab = ({ selectedKid }) => {
           )}
           
           {!loadingCritical && hasCriticalInfo && (
-            <>
-              <CriticalInfoCard
-                title="תרופות"
-                icon={<MedicationIcon />}
-                data={criticalInfo.medications}
-                color="warning"
-                bgColor="rgba(255, 152, 0, 0.1)"
-              />
-              <CriticalInfoCard
-                title="רגישויות ואלרגיות"
-                icon={<WarningIcon />}
-                data={criticalInfo.allergies}
-                color="error"
-                bgColor="rgba(244, 67, 54, 0.1)"
-              />
-              <CriticalInfoCard
-                title="התקפים"
-                icon={<EmergencyIcon />}
-                data={criticalInfo.seizures}
-                color="error"
-                bgColor="rgba(156, 39, 176, 0.1)"
-              />
-            </>
-          )}
+  <Grid container spacing={2}>
+    {/* תרופות */}
+    {criticalInfo.medications.length > 0 && (
+      <Grid item size={{xs:12}}>
+        <CriticalInfoCard
+          title="תרופות"
+          icon={<MedicationIcon />}
+          data={criticalInfo.medications}
+          color="warning"
+          bgColor="rgba(255, 152, 0, 0.1)"
+        />
+      </Grid>
+    )}
+    
+    {/* רגישויות ואלרגיות */}
+    {criticalInfo.allergies.length > 0 && (
+      <Grid item size={{xs:12}}>
+        <CriticalInfoCard
+          title="רגישויות ואלרגיות"
+          icon={<WarningIcon />}
+          data={criticalInfo.allergies}
+          color="error"
+          bgColor="rgba(244, 67, 54, 0.1)"
+        />
+      </Grid>
+    )}
+    
+    {/* התקפים */}
+    {criticalInfo.seizures.length > 0 && (
+      <Grid item size={{xs:12}}>
+        <CriticalInfoCard
+          title="התקפים"
+          icon={<EmergencyIcon />}
+          data={criticalInfo.seizures}
+          color="error"
+          bgColor="rgba(156, 39, 176, 0.1)"
+        />
+      </Grid>
+    )}
+  </Grid>
+)}
           
           {!loadingCritical && !hasCriticalInfo && !criticalError && (
             <StyledAlert severity="success">
@@ -705,33 +869,205 @@ const KidOverviewTab = ({ selectedKid }) => {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
                 }}
               >
-               פרטי הורים
+                👨‍👩‍👧‍👦 פרטי הורים
+                {parentsData.loading && (
+                  <CircularProgress size={16} sx={{ ml: 1 }} />
+                )}
               </Typography>
               
-              <Stack spacing={1.5}>
-                {parentsInfo.map((parent, index) => (
+              <Stack spacing={2}>
+                {/* Parent 1 */}
+                {(() => {
+                  const parent1Info = getParentInfo(parentsData.parent1, 'הורה ראשי');
+                  return (
+                    <Box 
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        background: 'linear-gradient(135deg, rgba(255, 112, 67, 0.05) 0%, rgba(255, 151, 117, 0.05) 100%)',
+                        border: '1px solid rgba(255, 112, 67, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateX(-4px)',
+                          boxShadow: '0 4px 12px rgba(255, 112, 67, 0.15)',
+                        }
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle2" 
+                        color="text.secondary" 
+                        fontWeight={600}
+                        sx={{ mb: 0.5 }}
+                      >
+                        {parent1Info.label}
+                      </Typography>
+                      <Typography 
+                        variant="body1" 
+                        fontWeight={700}
+                        sx={{ 
+                          mb: parent1Info.details.length > 0 ? 1 : 0,
+                          color: 'primary.main'
+                        }}
+                      >
+                        {parent1Info.name}
+                      </Typography>
+                      
+                      {parent1Info.details.length > 0 && (
+                        <Stack spacing={0.5}>
+                          {parent1Info.details.map((detail, idx) => (
+                            <Box 
+                              key={idx}
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1,
+                                py: 0.25
+                              }}
+                            >
+                              <Box sx={{ 
+                                color: 'primary.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                '& svg': { fontSize: 16 }
+                              }}>
+                                {detail.icon}
+                              </Box>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: 'text.secondary',
+                                  fontSize: '0.875rem'
+                                }}
+                              >
+                                {detail.value}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Stack>
+                      )}
+                    </Box>
+                  );
+                })()}
+
+                {/* Parent 2 */}
+                {selectedKid.parentId2 && (() => {
+                  const parent2Info = getParentInfo(parentsData.parent2, 'הורה משני');
+                  return (
+                    <Box 
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(42, 138, 149, 0.05) 100%)',
+                        border: '1px solid rgba(76, 181, 195, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateX(-4px)',
+                          boxShadow: '0 4px 12px rgba(76, 181, 195, 0.15)',
+                        }
+                      }}
+                    >
+                      <Typography 
+                        variant="subtitle2" 
+                        color="text.secondary" 
+                        fontWeight={600}
+                        sx={{ mb: 0.5 }}
+                      >
+                        {parent2Info.label}
+                      </Typography>
+                      <Typography 
+                        variant="body1" 
+                        fontWeight={700}
+                        sx={{ 
+                          mb: parent2Info.details.length > 0 ? 1 : 0,
+                          color: 'secondary.main'
+                        }}
+                      >
+                        {parent2Info.name}
+                      </Typography>
+                      
+                      {parent2Info.details.length > 0 && (
+                        <Stack spacing={0.5}>
+                          {parent2Info.details.map((detail, idx) => (
+                            <Box 
+                              key={idx}
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1,
+                                py: 0.25
+                              }}
+                            >
+                              <Box sx={{ 
+                                color: 'secondary.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                '& svg': { fontSize: 16 }
+                              }}>
+                                {detail.icon}
+                              </Box>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: 'text.secondary',
+                                  fontSize: '0.875rem'
+                                }}
+                              >
+                                {detail.value}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Stack>
+                      )}
+                    </Box>
+                  );
+                })()}
+
+                {/* Emergency contact if different from parents */}
+                {selectedKid.emergencyContact && 
+                 selectedKid.emergencyContact !== parentsData.parent1?.mobilePhone &&
+                 selectedKid.emergencyContact !== parentsData.parent2?.mobilePhone && (
                   <Box 
-                    key={index}
-                    sx={{
-                      p: 1,
+                    sx={{ 
+                      p: 1.5, 
                       borderRadius: 2,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        background: 'rgba(255, 112, 67, 0.05)',
-                        transform: 'translateX(-4px)',
-                      }
+                      background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.05) 0%, rgba(239, 83, 80, 0.05) 100%)',
+                      border: '1px solid rgba(244, 67, 54, 0.2)',
                     }}
                   >
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                      {parent.label}
+                    <Typography 
+                      variant="caption" 
+                      color="error.main" 
+                      fontWeight={600}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      <PhoneIcon sx={{ fontSize: 14 }} />
+                      איש קשר חירום נוסף
                     </Typography>
-                    <Typography variant="body1" fontWeight={600}>
-                      {parent.value}
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedKid.emergencyContact}
                     </Typography>
                   </Box>
-                ))}
+                )}
+
+                {/* Error message if failed to load */}
+                {parentsData.error && (
+                  <Alert 
+                    severity="warning" 
+                    sx={{ 
+                      borderRadius: 2,
+                      '& .MuiAlert-icon': { fontSize: 20 }
+                    }}
+                  >
+                    <Typography variant="caption">
+                      לא ניתן לטעון את כל פרטי ההורים
+                    </Typography>
+                  </Alert>
+                )}
               </Stack>
             </EnhancedPaper>
           </Stack>

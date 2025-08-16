@@ -238,7 +238,7 @@ const AnswerBox = styled(Box)(({ theme }) => ({
     left: '50%',
     width: '100%',
     height: '100%',
-    background: 'radial-gradient(circle, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
+    // background: 'radial-gradient(circle, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
     transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }

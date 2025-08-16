@@ -147,7 +147,7 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 70%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 70%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 70%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 70%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
     pointerEvents: 'none',
     zIndex: 1,
   }

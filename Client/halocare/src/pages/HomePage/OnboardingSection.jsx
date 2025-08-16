@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -16,11 +16,12 @@ import {
   Fade,
   Zoom,
   IconButton,
-
   Paper,
-  Tooltip
+  Tooltip,
+  alpha,
+  styled,
+  keyframes
 } from '@mui/material';
-import { styled, keyframes } from '@mui/material/styles';
 import {
   Assignment as AssignmentIcon,
   PersonAdd as PersonAddIcon,
@@ -28,7 +29,6 @@ import {
   Schedule as ScheduleIcon,
   Send as SendIcon,
   Warning as WarningIcon,
-
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
   Visibility as VisibilityIcon,
@@ -38,15 +38,21 @@ import { fetchOnboardingStatus, selectOnboardingData } from '../../Redux/feature
 import { fetchKids } from '../../Redux/features/kidsSlice';
 import { baseURL } from '../../components/common/axiosConfig';
 
-// 🎨 Same animations as classrooms
+// Professional animations matching the style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
 const shimmer = keyframes`
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 `;
 
 const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4); }
+  0%, 100% { box-shadow: 0 0 20px rgba(76, 181, 195, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(76, 181, 195, 0.6), 0 0 40px rgba(76, 181, 195, 0.4); }
 `;
 
 const float = keyframes`
@@ -60,13 +66,13 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-// Same styled components as classrooms
-const MainCard = styled(Card)(( ) => ({
+// Professional styled components
+const MainCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  borderRadius: '24px',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2)',
-  border: 'none',
+  borderRadius: 20,
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
   position: 'relative',
   overflow: 'hidden',
   '&::before': {
@@ -75,92 +81,146 @@ const MainCard = styled(Card)(( ) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
-    background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
-    borderRadius: '24px 24px 0 0',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
   }
 }));
 
-const StatsCard = styled(Card)(({  color = '#667eea' }) => ({
-  background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-  borderRadius: '20px',
-  border: `2px solid ${color}20`,
+const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 20px 40px ${color}30`,
+    boxShadow: '0 15px 35px rgba(76, 181, 195, 0.25)',
     animation: `${glow} 2s infinite`,
   },
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '2px',
-    background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-    animation: `${shimmer} 3s infinite`,
-  }
-}));
-
-const GlowingButton = styled(Button)(({  glowColor = '#667eea' }) => ({
-  borderRadius: '16px',
-  textTransform: 'none',
-  fontWeight: 600,
-  color: 'white',
-  padding: '12px 24px',
-  position: 'relative',
-  overflow: 'hidden',
-  background: `linear-gradient(135deg, ${glowColor} 0%, ${glowColor}dd 100%)`,
-  boxShadow: `0 8px 25px ${glowColor}40`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: `0 15px 35px ${glowColor}60`,
-    animation: `${pulse} 1.5s infinite`,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${color}, ${alpha(color, 0.6)}, ${color})`,
+    animation: `${gradientShift} 3s ease infinite`,
   },
-  '&::before': {
+  '&::after': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-    transition: 'left 0.5s',
+    background: `linear-gradient(90deg, transparent, ${alpha(color, 0.1)}, transparent)`,
+    animation: `${shimmer} 3s infinite`,
+  }
+}));
+
+const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+  borderRadius: 16,
+  textTransform: 'none',
+  fontWeight: 600,
+  color: 'white',
+  padding: '12px 24px',
+  position: 'relative',
+  overflow: 'hidden',
+  background: `linear-gradient(45deg, ${glowColor} 30%, ${alpha(glowColor, 0.8)} 90%)`,
+  boxShadow: `0 6px 20px ${alpha(glowColor, 0.3)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: `0 12px 35px ${alpha(glowColor, 0.4)}`,
+    background: `linear-gradient(45deg, ${alpha(glowColor, 0.9)} 30%, ${alpha(glowColor, 0.7)} 90%)`,
   },
-  '&:hover::before': {
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
     left: '100%',
   }
 }));
 
-const AnimatedChip = styled(Chip)(() => ({
-  borderRadius: '12px',
+const AnimatedChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
   fontWeight: 600,
+  backdropFilter: 'blur(10px)',
   transition: 'all 0.3s ease',
   animation: `${pulse} 2s infinite`,
   '&:hover': {
-    transform: 'scale(1.1)',
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
   }
 }));
 
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'scale(1.1) rotate(5deg)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+  }
+}));
+
+const KidRowContainer = styled(Box)(({ theme }) => ({
+  borderBottom: '1px solid rgba(0,0,0,0.05)',
+  '&:hover': {
+    backgroundColor: 'rgba(76, 181, 195, 0.05)',
+    transform: 'translateX(-4px)',
+  },
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  '&:last-child': {
+    borderBottom: 'none',
+  }
+}));
+
+const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
+  height: 6,
+  borderRadius: 3,
+  backgroundColor: 'rgba(76, 181, 195, 0.1)',
+  '& .MuiLinearProgress-bar': {
+    borderRadius: 3,
+    background: 'linear-gradient(90deg, #4cb5c3, #2a8a95, #ff7043)',
+  }
+}));
+
+const StatusChip = styled(Chip)(({ theme, statusColor }) => ({
+  borderRadius: 8,
+  fontWeight: 600,
+  backgroundColor: alpha(statusColor || '#4cb5c3', 0.1),
+  color: statusColor || '#4cb5c3',
+  border: `1px solid ${alpha(statusColor || '#4cb5c3', 0.3)}`,
+  '& .MuiChip-icon': {
+    color: statusColor || '#4cb5c3',
+  }
+}));
 
 const OnboardingSection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Redux state
+  // Redux state - PRESERVED EXACTLY
   const onboardingData = useSelector(selectOnboardingData);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   
-  // Local state
+  // Local state - PRESERVED EXACTLY
   const [loading, setLoading] = useState(true);
   const [showExpanded, setShowExpanded] = useState(false);
   const [selectedKid, setSelectedKid] = useState(null);
 
-  // Load data on mount
+  // Load data on mount - PRESERVED EXACTLY
   useEffect(() => {
     loadOnboardingData();
   }, [dispatch]);
@@ -168,20 +228,15 @@ const OnboardingSection = () => {
   const loadOnboardingData = async () => {
     setLoading(true);
     try {
-      // Load kids first
       await dispatch(fetchKids()).unwrap();
       
-      // Get active kids that might have onboarding processes
       const activeKids = kids.filter(kid => kid.isActive === true);
-      
-      // Load onboarding status for recent kids (limit to avoid overload)
-      const recentKids = activeKids.slice(0, 20); // Last 20 active kids
+      const recentKids = activeKids.slice(0, 20);
       
       for (const kid of recentKids) {
         try {
           await dispatch(fetchOnboardingStatus(kid.id));
         } catch (error) {
-          // Kid might not have onboarding process yet - that's ok
           console.log(`No onboarding process for kid ${kid.id}`);
         }
       }
@@ -191,7 +246,8 @@ const OnboardingSection = () => {
       setLoading(false);
     }
   };
-const getStatusText = (status) => {
+
+  const getStatusText = (status) => {
     switch (status) {
       case 'Completed': return 'הושלם';
       case 'InProgress': return 'בתהליך';
@@ -201,32 +257,27 @@ const getStatusText = (status) => {
     }
   };
 
-
-
-  // Process data for display
+  // Process data for display - PRESERVED EXACTLY
   const processOnboardingData = () => {
     const activeKids = kids.filter(kid => kid.isActive === true);
     
-    // Get kids with onboarding data
     const kidsWithOnboarding = activeKids
       .map(kid => ({
         ...kid,
         onboarding: onboardingData[kid.id]
       }))
-      .filter(kid => kid.onboarding) // Only kids with onboarding processes
+      .filter(kid => kid.onboarding)
       .sort((a, b) => {
-        // Sort by completion status (incomplete first) and last updated
         const aProgress = a.onboarding?.overallProgress || 0;
         const bProgress = b.onboarding?.overallProgress || 0;
         
         if (aProgress !== bProgress) {
-          return aProgress - bProgress; // Show incomplete first
+          return aProgress - bProgress;
         }
         
         return new Date(b.onboarding?.lastUpdated || 0) - new Date(a.onboarding?.lastUpdated || 0);
       });
 
-    // Calculate overall stats
     const totalForms = kidsWithOnboarding.reduce((sum, kid) => sum + (kid.onboarding?.totalForms || 0), 0);
     const completedForms = kidsWithOnboarding.reduce((sum, kid) => sum + (kid.onboarding?.completedForms || 0), 0);
     const inProgressForms = kidsWithOnboarding.reduce((sum, kid) => {
@@ -252,19 +303,15 @@ const getStatusText = (status) => {
   const getCurrentForm = (forms) => {
     if (!forms?.length) return null;
     
-    // חפש טופס בתהליך
     const inProgress = forms.find(f => f.status === 'InProgress');
     if (inProgress) return inProgress;
     
-    // חפש טופס שנשלח להורים  
     const sentToParent = forms.find(f => f.status === 'SentToParent');
     if (sentToParent) return sentToParent;
     
-    // חפש טופס שלא התחיל
     const notStarted = forms.find(f => f.status === 'NotStarted');
     if (notStarted) return notStarted;
     
-    // אחרת קח את האחרון שעודכן
     return forms.reduce((latest, current) => {
       const latestDate = new Date(latest.lastUpdated || latest.startDate || 0);
       const currentDate = new Date(current.lastUpdated || current.startDate || 0);
@@ -283,7 +330,7 @@ const getStatusText = (status) => {
       case 'InProgress': return '#f59e0b';
       case 'SentToParent': return '#3b82f6';
       case 'NotStarted': return '#6b7280';
-      default: return '#667eea';
+      default: return '#4cb5c3';
     }
   };
 
@@ -300,7 +347,6 @@ const getStatusText = (status) => {
   const { kidsWithOnboarding, stats } = processOnboardingData();
   const isLoading = loading || kidsStatus === 'loading';
   
-  // Show only top kids initially
   const displayKids = showExpanded ? kidsWithOnboarding : kidsWithOnboarding.slice(0, 5);
 
   if (isLoading) {
@@ -311,7 +357,7 @@ const getStatusText = (status) => {
             width: 60, 
             height: 60, 
             margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
             animation: `${float} 3s ease-in-out infinite`
           }}>
             <AssignmentIcon sx={{ fontSize: '2rem' }} />
@@ -326,23 +372,14 @@ const getStatusText = (status) => {
 
   return (
     <MainCard elevation={0} dir="rtl">
-      {/* Header */}
+      {/* Professional Header */}
       <Box sx={{ 
         p: 4,
-        background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-        borderRadius: '24px 24px 0 0',
+        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+        borderRadius: '20px 20px 0 0',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><defs><pattern id=\'grain\' width=\'100\' height=\'100\' patternUnits=\'userSpaceOnUse\'><circle cx=\'50\' cy=\'50\' r=\'1\' fill=\'%23667eea\' opacity=\'0.1\'/></pattern></defs><rect width=\'100\' height=\'100\' fill=\'url(%23grain)\'/></svg>")',
-          opacity: 0.3
-        }} />
         
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} sx={{ position: 'relative', zIndex: 1 }}>
           <Stack direction="row" spacing={2} alignItems="center">
@@ -350,8 +387,8 @@ const getStatusText = (status) => {
               <Avatar sx={{ 
                 width: 70, 
                 height: 70,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)',
                 animation: `${float} 3s ease-in-out infinite`
               }}>
                 <AssignmentIcon sx={{ fontSize: '2rem' }} />
@@ -360,7 +397,7 @@ const getStatusText = (status) => {
             <Box>
               <Typography variant="h3" sx={{ 
                 fontWeight: 800,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 mb: 1
@@ -384,20 +421,18 @@ const getStatusText = (status) => {
             </Box>
           </Stack>
           
-          
-           <Box sx={{ textAlign: 'center', mt: 3 }}>
-              <GlowingButton
-                startIcon={<PersonAddIcon />}
-                onClick={() => navigate('kids/onboarding/new')}
-                glowColor="#10b981"
-              >
-                הוסף ילד חדש
-              </GlowingButton>
-            </Box>
-
+          <Box sx={{ textAlign: 'center' }}>
+            <GlowingButton
+              startIcon={<PersonAddIcon />}
+              onClick={() => navigate('kids/onboarding/new')}
+              glowColor="#10b981"
+            >
+              הוסף ילד חדש
+            </GlowingButton>
+          </Box>
         </Stack>
 
-        {/* Stats Overview */}
+        {/* Professional Stats Overview */}
         {stats.totalForms > 0 && (
           <Grid container spacing={3}>
             <Grid item size={{xs:12,sm:3}}>
@@ -409,6 +444,7 @@ const getStatusText = (status) => {
                       height: 60, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                      boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)',
                       animation: `${glow} 2s infinite`
                     }}>
                       <CheckCircleIcon sx={{ fontSize: '2rem' }} />
@@ -433,6 +469,7 @@ const getStatusText = (status) => {
                       height: 60, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                      boxShadow: '0 6px 20px rgba(245, 158, 11, 0.3)',
                       animation: stats.inProgressForms > 0 ? `${pulse} 1s infinite` : 'none'
                     }}>
                       <ScheduleIcon sx={{ fontSize: '2rem' }} />
@@ -456,7 +493,8 @@ const getStatusText = (status) => {
                       width: 60, 
                       height: 60, 
                       margin: '0 auto 16px',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+                      boxShadow: '0 6px 20px rgba(59, 130, 246, 0.3)'
                     }}>
                       <SendIcon sx={{ fontSize: '2rem' }} />
                     </Avatar>
@@ -473,17 +511,18 @@ const getStatusText = (status) => {
             
             <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1400}>
-                <StatsCard color="#667eea">
+                <StatsCard color="#4cb5c3">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <Avatar sx={{ 
                       width: 60, 
                       height: 60, 
                       margin: '0 auto 16px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                     }}>
                       <AssignmentIcon sx={{ fontSize: '2rem' }} />
                     </Avatar>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#667eea', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#4cb5c3', mb: 1 }}>
                       {stats.totalForms}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" fontWeight={600}>
@@ -497,40 +536,46 @@ const getStatusText = (status) => {
         )}
       </Box>
 
-      {/* Kids List - Table Format */}
+      {/* Professional Kids List - Table Format */}
       <CardContent sx={{ p: 4 }}>
         {kidsWithOnboarding.length > 0 ? (
           <>
-            <Paper elevation={1} sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+            <Paper elevation={0} sx={{ 
+              borderRadius: 16, 
+              overflow: 'hidden',
+              background: 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
               {/* Table Header */}
               <Box sx={{ 
                 p: 2, 
-                background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-                borderBottom: '1px solid rgba(0,0,0,0.08)'
+                background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+                borderBottom: '1px solid rgba(76, 181, 195, 0.1)'
               }}>
                 <Grid container spacing={2} alignItems="center">
                   <Grid item size={{xs:3}}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    <Typography variant="body2" fontWeight={700} sx={{ color: '#2a8a95' }}>
                       ילד
                     </Typography>
                   </Grid>
                   <Grid item size={{xs:2}}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    <Typography variant="body2" fontWeight={700} sx={{ color: '#2a8a95' }}>
                       התקדמות
                     </Typography>
                   </Grid>
                   <Grid item size={{xs:3}}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    <Typography variant="body2" fontWeight={700} sx={{ color: '#2a8a95' }}>
                       מצב נוכחי
                     </Typography>
                   </Grid>
                   <Grid item size={{xs:2}}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    <Typography variant="body2" fontWeight={700} sx={{ color: '#2a8a95' }}>
                       טפסים
                     </Typography>
                   </Grid>
                   <Grid item size={{xs:2}}>
-                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                    <Typography variant="body2" fontWeight={700} sx={{ color: '#2a8a95' }}>
                       פעולות
                     </Typography>
                   </Grid>
@@ -540,15 +585,7 @@ const getStatusText = (status) => {
               {/* Kids Rows */}
               {displayKids.map((kid, index) => (
                 <Fade in timeout={300 + index * 50} key={kid.id}>
-                  <Box sx={{ 
-                    borderBottom: index < displayKids.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
-                    '&:hover': {
-                      backgroundColor: 'rgba(102,126,234,0.05)',
-                      transform: 'translateX(-4px)',
-                    },
-                    transition: 'all 0.2s ease',
-                    cursor: 'pointer'
-                  }}>
+                  <KidRowContainer>
                     <Box sx={{ p: 2 }}>
                       <Grid container spacing={2} alignItems="center">
                         {/* Kid Info */}
@@ -563,7 +600,9 @@ const getStatusText = (status) => {
                               sx={{ 
                                 width: 40, 
                                 height: 40,
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                                border: '2px solid rgba(255, 255, 255, 0.9)',
+                                boxShadow: '0 4px 12px rgba(76, 181, 195, 0.2)'
                               }}
                             >
                               {!kid.photoPath && `${kid.firstName?.charAt(0) || ''}${kid.lastName?.charAt(0) || ''}`}
@@ -583,22 +622,17 @@ const getStatusText = (status) => {
                         <Grid item size={{xs:2}}>
                           <Box>
                             <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
-                              <Typography variant="body2" fontWeight={600} color="primary.main">
+                              <Typography variant="body2" fontWeight={700} sx={{ 
+                                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }}>
                                 {calculateProgress(kid.onboarding)}%
                               </Typography>
                             </Stack>
-                            <LinearProgress 
+                            <StyledLinearProgress 
                               variant="determinate" 
                               value={calculateProgress(kid.onboarding)}
-                              sx={{ 
-                                height: 6,
-                                borderRadius: 3,
-                                backgroundColor: 'primary.main20',
-                                '& .MuiLinearProgress-bar': {
-                                  borderRadius: 3,
-                                  background: 'linear-gradient(90deg, #667eea, #764ba2)',
-                                }
-                              }}
                             />
                           </Box>
                         </Grid>
@@ -608,15 +642,11 @@ const getStatusText = (status) => {
                           {(() => {
                             const currentForm = getCurrentForm(kid.onboarding?.forms);
                             return currentForm ? (
-                              <Chip
+                              <StatusChip
                                 icon={getStatusIcon(currentForm.status)}
                                 label={getStatusText(currentForm.status)}
                                 size="small"
-                                sx={{ 
-                                  bgcolor: `${getStatusColor(currentForm.status)}15`,
-                                  color: getStatusColor(currentForm.status),
-                                  border: `1px solid ${getStatusColor(currentForm.status)}30`
-                                }}
+                                statusColor={getStatusColor(currentForm.status)}
                               />
                             ) : (
                               <Typography variant="caption" color="text.secondary">
@@ -634,82 +664,83 @@ const getStatusText = (status) => {
                         </Grid>
 
                         {/* Actions */}
-                        {/* Actions - 2 Direct Buttons */}
-<Grid item size={{xs:2}}>
-  <Stack direction="row" spacing={1}>
-    <Tooltip title="דף קליטה" placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
-      <IconButton 
-        size="small"
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedKid(kid);
-          navigate(`/kids/onboarding/${selectedKid.id}`);
-        }}
-        sx={{ 
-          background: 'rgba(102, 126, 234, 0.1)',
-          '&:hover': { 
-            background: 'rgba(102, 126, 234, 0.2)',
-            transform: 'scale(1.1)'
-          }
-        }}
-      >
-        <AssignmentIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
-    
-    <Tooltip title="פרופיל ילד"  placement="top" PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}>
-      <IconButton 
-        size="small"
-        onClick={(e) => {
-          console.log("sadsfsdfsdf",kid)
-          e.stopPropagation();
-          setSelectedKid(kid);
-          navigate(`/kids/${kid.id}`);
-        }}
-        sx={{ 
-          background: 'rgba(16, 185, 129, 0.1)',
-          '&:hover': { 
-            background: 'rgba(16, 185, 129, 0.2)',
-            transform: 'scale(1.1)'
-          }
-        }}
-      >
-        <VisibilityIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
-  </Stack>
-</Grid>
+                        <Grid item size={{xs:2}}>
+                          <Stack direction="row" spacing={1}>
+                            <Tooltip title="דף קליטה" placement="top" 
+                              PopperProps={{
+                                disablePortal: true,
+                                modifiers: [
+                                  {
+                                    name: 'flip',
+                                    enabled: false 
+                                  },
+                                  {
+                                    name: 'preventOverflow',
+                                    options: {
+                                      boundary: 'window', 
+                                    },
+                                  },
+                                ],
+                              }}
+                            >
+                              <StyledIconButton 
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedKid(kid);
+                                  navigate(`/kids/onboarding/${kid.id}`);
+                                }}
+                                sx={{ 
+                                  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(76, 181, 195, 0.05) 100%)',
+                                  '&:hover': { 
+                                    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.2) 0%, rgba(76, 181, 195, 0.1) 100%)',
+                                  }
+                                }}
+                              >
+                                <AssignmentIcon fontSize="small" sx={{ color: '#4cb5c3' }} />
+                              </StyledIconButton>
+                            </Tooltip>
+                            
+                            <Tooltip title="פרופיל ילד" placement="top"
+                              PopperProps={{
+                                disablePortal: true,
+                                modifiers: [
+                                  {
+                                    name: 'flip',
+                                    enabled: false 
+                                  },
+                                  {
+                                    name: 'preventOverflow',
+                                    options: {
+                                      boundary: 'window', 
+                                    },
+                                  },
+                                ],
+                              }}
+                            >
+                              <StyledIconButton 
+                                size="small"
+                                onClick={(e) => {
+                                  console.log("sadsfsdfsdf",kid);
+                                  e.stopPropagation();
+                                  setSelectedKid(kid);
+                                  navigate(`/kids/${kid.id}`);
+                                }}
+                                sx={{ 
+                                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                                  '&:hover': { 
+                                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                                  }
+                                }}
+                              >
+                                <VisibilityIcon fontSize="small" sx={{ color: '#10b981' }} />
+                              </StyledIconButton>
+                            </Tooltip>
+                          </Stack>
+                        </Grid>
                       </Grid>
                     </Box>
-                  </Box>
+                  </KidRowContainer>
                 </Fade>
               ))}
             </Paper>
@@ -720,7 +751,7 @@ const getStatusText = (status) => {
                 <GlowingButton
                   onClick={() => setShowExpanded(!showExpanded)}
                   startIcon={showExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                  glowColor="#667eea"
+                  glowColor="#4cb5c3"
                 >
                   {showExpanded ? 'הצג פחות' : `הצג עוד ${kidsWithOnboarding.length - 5} ילדים`}
                 </GlowingButton>
@@ -729,40 +760,16 @@ const getStatusText = (status) => {
 
           </>
         ) : (
-          <Alert severity="info" sx={{ borderRadius: '20px' }}>
+          <Alert severity="info" sx={{ 
+            borderRadius: 16,
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(76, 181, 195, 0.2)'
+          }}>
             אין תהליכי קליטה פעילים כרגע
           </Alert>
         )}
       </CardContent>
-
-      {/* Kid Actions Menu
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          sx: { borderRadius: '12px', minWidth: 200 }
-        }}
-      >
-        <MenuItem onClick={() => {
-          navigate(`/kids/onboarding/${selectedKid?.id}`);
-          handleMenuClose();
-        }}>
-          <ListItemIcon>
-            <AssignmentIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText primary="דף קליטה" />
-        </MenuItem>
-        <MenuItem onClick={() => {
-          navigate(`/kids/${selectedKid?.id}`);
-          handleMenuClose();
-        }}>
-          <ListItemIcon>
-            <VisibilityIcon color="secondary" />
-          </ListItemIcon>
-          <ListItemText primary="פרופיל ילד" />
-        </MenuItem>
-      </Menu> */}
     </MainCard>
   );
 };

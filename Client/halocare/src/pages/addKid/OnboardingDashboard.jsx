@@ -407,7 +407,7 @@ const OnboardingDashboard = ({
                   {/* Status Chip - PRESERVED functionality, updated styling */}
                   <Box sx={{ mb: 2 }}>
                     <Chip
-                      label={form.status === 'Completed' || form.status === 'CompletedByParent' ? 'הושלם' : 
+                      label={form.status === 'Completed'  ? 'הושלם' : form.status === 'CompletedByParent' ? 'הושלם ע"י הורים' :
                              form.status === 'InProgress' ? 'בתהליך' : 'לא התחיל'}
                       color={form.status === 'Completed' || form.status === 'CompletedByParent' ? 'success' : 
                              form.status === 'InProgress' ? 'warning' : 'default'}

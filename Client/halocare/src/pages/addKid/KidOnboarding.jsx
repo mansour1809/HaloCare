@@ -5,13 +5,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Container, Box, Paper, Typography, CircularProgress, Breadcrumbs,
-  Button, Alert, AlertTitle, Fade, Snackbar, Chip
+  Button, Alert, AlertTitle, Fade, Snackbar, Link,Chip
 } from '@mui/material';
 import {
   Home as HomeIcon,
   Group as GroupIcon,
   Edit as EditIcon,
-  Visibility as ViewIcon
+  Visibility as ViewIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 
@@ -189,6 +190,65 @@ const EnhancedPaper = styled(Paper)(({ theme }) => ({
     height: '4px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
     borderRadius: '20px 20px 0 0',
+  }
+}));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
   }
 }));
 
@@ -379,7 +439,29 @@ const KidOnboarding = () => {
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <FullScreenContainer dir="rtl" maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
           {/* Breadcrumbs  with enhanced styling */}
-          <Breadcrumbs sx={{ 
+            <EnhancedBreadcrumbs>
+                    <StyledLink
+                      underline="hover"
+                      onClick={() => navigate('/')}
+                    >
+                      <HomeIcon />
+                      ראשי
+                    </StyledLink>
+                    
+                    <StyledLink
+                      underline="hover"
+                      onClick={() => navigate('/kids/list')}
+                    >
+                      <GroupIcon />
+                      רשימת ילדים
+                    </StyledLink>
+                    
+                    <CurrentPage>
+                      <PersonIcon />
+                      {isNewKid ? 'קליטת ילד חדש' : `קליטה - ${selectedKid?.firstName} ${selectedKid?.lastName}`}
+                    </CurrentPage>
+                  </EnhancedBreadcrumbs>
+          {/* <Breadcrumbs sx={{ 
             mb: 3,
             '& .MuiBreadcrumbs-separator': { color: 'rgba(255, 255, 255, 0.7)' }
           }}>
@@ -412,7 +494,7 @@ const KidOnboarding = () => {
             <Typography color="white" sx={{ fontWeight: 600 }}>
               {isNewKid ? 'קליטת ילד חדש' : `קליטה - ${selectedKid?.firstName} ${selectedKid?.lastName}`}
             </Typography>
-          </Breadcrumbs>
+          </Breadcrumbs> */}
 
           {/* Errors  */}
           {onboardingError && (

@@ -190,43 +190,7 @@ const HomePageHeader = ({ onRefresh }) => {
                 </Typography>
               </Box>
             </Stack>
-            
-            {/* Right side - Refresh button */}
-            <Stack direction="row" spacing={2}>
-              <Tooltip 
-                placement="top" 
-                PopperProps={{
-                  disablePortal: true,
-                  modifiers: [
-                    {
-                      name: 'flip',
-                      enabled: false 
-                    },
-                    {
-                      name: 'preventOverflow',
-                      options: {
-                        boundary: 'window', 
-                      },
-                    },
-                  ],
-                }}
-                title="רענון נתונים"
-                arrow
-              >
-                <GlowingButton
-                  onClick={onRefresh}
-                  glowColor="#4cb5c3"
-                  sx={{
-                    animation: `${glow} 3s ease-in-out infinite`,
-                    '&:hover': {
-                      animation: `${glow} 1s ease-in-out infinite, ${pulse} 1.5s infinite`,
-                    }
-                  }}
-                >
-                  <RefreshIcon sx={{ fontSize: '1.5rem' }} />
-                </GlowingButton>
-              </Tooltip>
-            </Stack>
+          
           </Stack>
 
           {/* Shimmer effect overlay */}

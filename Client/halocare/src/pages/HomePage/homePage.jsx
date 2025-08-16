@@ -1,11 +1,13 @@
-
-import  { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Container,
   Grid,
   Typography,
   Paper,
+  styled,
+  alpha,
+  keyframes
 } from '@mui/material';
 import {
   Refresh as RefreshIcon,
@@ -15,13 +17,111 @@ import ClassroomsSection from './ClassroomsSection'
 import CalendarSection from './CalendarSection'
 import HomePageHeader from './HomePageHeader'
 
+// Professional animations
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const fadeIn = keyframes`
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+// Styled Components
+const GradientContainer = styled(Container)(({ theme }) => ({
+  paddingTop: theme.spacing(2),
+  paddingBottom: theme.spacing(2),
+  direction: 'rtl',
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    pointerEvents: 'none',
+    zIndex: 0,
+  }
+}));
+
+const StyledGrid = styled(Grid)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 1,
+  animation: `${fadeIn} 0.8s ease-out`,
+}));
+
+const LoadingOverlay = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  backdropFilter: 'blur(10px)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 9999,
+}));
+
+const LoadingCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: 'center',
+  borderRadius: 20,
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+  animation: `${pulse} 1.5s ease-in-out infinite`,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
+    animation: `${gradientShift} 3s ease infinite`,
+  }
+}));
+
+const StyledRefreshIcon = styled(RefreshIcon)(({ theme }) => ({
+  fontSize: 48,
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  marginBottom: theme.spacing(2),
+  animation: `${pulse} 1.5s ease-in-out infinite`,
+}));
+
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  // פונקציות ניתוב
+  // Navigation functions - PRESERVED EXACTLY
   const handleRefresh = async () => {
     setIsLoading(true);
-    // סימולציה של רענון נתונים
+    // Simulation of data refresh
     setTimeout(() => {
       setIsLoading(false);
       console.log('Data refreshed');
@@ -30,7 +130,7 @@ const HomePage = () => {
 
   const handleKidClick = (kidId) => {
     console.log(`Navigate to kid profile: ${kidId}`);
-    // כאן יהיה ניתוב אמיתי
+    // Real navigation will be here
   };
 
   const handleViewAllKids = () => {
@@ -54,13 +154,12 @@ const HomePage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, direction: 'rtl', minHeight: '100vh',  // ← הוסיפי את זה
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <GradientContainer maxWidth="xl">
       {/* Header */}
       <HomePageHeader onRefresh={handleRefresh} />
 
-      {/* לייאוט ראשי */}
-      <Grid container spacing={3}>
+      {/* Main Layout - PRESERVED EXACTLY */}
+      <StyledGrid container spacing={3}>
         {/* ClassroomsSection */}
         <Grid item size={{sx:12 , lg:12}}>
           <ClassroomsSection 
@@ -69,7 +168,7 @@ const HomePage = () => {
           />
         </Grid>
 
-        {/*CalendarSection */}
+        {/* CalendarSection */}
         <Grid item size={{sx:12 , lg:6}}>
           <CalendarSection 
             onViewFullCalendar={handleViewFullCalendar}
@@ -84,29 +183,28 @@ const HomePage = () => {
             onKidOnboardingClick={handleKidOnboardingClick}
           />
         </Grid>
-      </Grid>
+      </StyledGrid>
 
-      {/* אינדיקטור טעינה */}
+      {/* Loading Indicator - Enhanced styling */}
       {isLoading && (
-        <Box
-          position="fixed"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bgcolor="rgba(0,0,0,0.5)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          zIndex={9999}
-        >
-          <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-            <RefreshIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h6">מרענן נתונים...</Typography>
-          </Paper>
-        </Box>
+        <LoadingOverlay>
+          <LoadingCard elevation={0}>
+            <StyledRefreshIcon />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              מרענן נתונים...
+            </Typography>
+          </LoadingCard>
+        </LoadingOverlay>
       )}
-    </Container>
+    </GradientContainer>
   );
 };
 

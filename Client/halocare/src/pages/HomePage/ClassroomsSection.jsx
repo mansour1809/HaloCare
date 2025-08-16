@@ -34,7 +34,9 @@ import {
   Fade,
   Zoom,
   Slide,
-  Container
+  Container,
+  alpha,
+  CircularProgress
 } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
 import {
@@ -64,17 +66,21 @@ import { fetchAttendanceByDate, addAttendanceRecord, updateAttendanceRecord } fr
 import { baseURL } from '../../components/common/axiosConfig';
 import Swal from 'sweetalert2';
 
+// 🎨 Professional animations matching the style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
 
-
-// 🎨 Stunning animations and styled components
 const shimmer = keyframes`
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 `;
 
 const glow = keyframes`
-  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.4); }
+  0%, 100% { box-shadow: 0 0 20px rgba(76, 181, 195, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(76, 181, 195, 0.6), 0 0 40px rgba(76, 181, 195, 0.4); }
 `;
 
 const float = keyframes`
@@ -89,19 +95,21 @@ const pulse = keyframes`
 `;
 
 const GradientContainer = styled(Container)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
   minHeight: '100vh',
-  padding: theme.spacing(3),
+  padding: theme.spacing(1),
   position: 'relative',
   '&::before': {
     content: '""',
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
-    height: '300px',
-    background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-    borderRadius: '0 0 50px 50px',
+    bottom: 0,
+    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
+    pointerEvents: 'none',
     zIndex: 0,
   }
 }));
@@ -109,9 +117,9 @@ const GradientContainer = styled(Container)(({ theme }) => ({
 const MainCard = styled(Card)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  borderRadius: '24px',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2)',
-  border: 'none',
+  borderRadius: 20,
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
   position: 'relative',
   zIndex: 1,
   overflow: 'hidden',
@@ -121,51 +129,74 @@ const MainCard = styled(Card)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
-    background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
-    borderRadius: '24px 24px 0 0',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
   }
 }));
 
-const StatsCard = styled(Card)(({ theme, color = '#667eea' }) => ({
-  background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-  borderRadius: '20px',
-  border: `2px solid ${color}20`,
+const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: `0 20px 40px ${color}30`,
+    boxShadow: '0 15px 35px rgba(76, 181, 195, 0.25)',
     animation: `${glow} 2s infinite`,
   },
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${color}, ${alpha(color, 0.6)}, ${color})`,
+    animation: `${gradientShift} 3s ease infinite`,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
     left: '-100%',
     width: '100%',
-    height: '2px',
-    background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha(color, 0.1)}, transparent)`,
     animation: `${shimmer} 3s infinite`,
   }
 }));
 
 const ClassCard = styled(Card)(({ theme, hasChanges, hasAbsent }) => ({
-  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
-  borderRadius: '20px',
-  border: hasAbsent ? '2px solid #ef4444' : hasChanges ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.3)',
-  backdropFilter: 'blur(10px)',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 20,
+  border: hasAbsent ? '2px solid #ef4444' : hasChanges ? '2px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.3)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-12px)',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
+    boxShadow: '0 20px 50px rgba(76, 181, 195, 0.2)',
     '& .class-header': {
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
       color: 'white',
     }
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '4px',
+    background: hasAbsent ? 'linear-gradient(90deg, #ef4444, #dc2626, #ef4444)' : 
+                hasChanges ? 'linear-gradient(90deg, #f59e0b, #d97706, #f59e0b)' : 
+                'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
   },
   '&::after': hasChanges ? {
     content: '""',
@@ -193,66 +224,108 @@ const FloatingAvatar = styled(Avatar)(({ theme, status }) => {
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     cursor: 'pointer',
     background: `linear-gradient(135deg, ${getStatusColor()} 0%, ${getStatusColor()}dd 100%)`,
-    border: '3px solid rgba(255,255,255,0.8)',
-    boxShadow: `0 8px 25px ${getStatusColor()}40`,
+    border: '3px solid rgba(255,255,255,0.9)',
+    boxShadow: `0 6px 20px ${getStatusColor()}40`,
     '&:hover': {
       transform: 'scale(1.2) rotate(5deg)',
       animation: `${float} 2s ease-in-out infinite`,
-      boxShadow: `0 15px 35px ${getStatusColor()}60`,
+      boxShadow: `0 12px 30px ${getStatusColor()}60`,
     },
-    '&::before': {
+    '&::after': {
       content: '""',
       position: 'absolute',
-      top: '-2px',
-      left: '-2px',
-      right: '-2px',
-      bottom: '-2px',
+      top: '50%',
+      left: '50%',
+      width: '120%',
+      height: '120%',
+      transform: 'translate(-50%, -50%)',
       borderRadius: '50%',
-      background: `conic-gradient(${getStatusColor()}, transparent, ${getStatusColor()})`,
-      animation: `${shimmer} 3s linear infinite`,
-      zIndex: -1,
+      background: `radial-gradient(circle, ${alpha(getStatusColor(), 0.2)} 0%, transparent 70%)`,
+      pointerEvents: 'none',
     }
   };
 });
 
-const GlowingButton = styled(Button)(({ glowColor = 'black' }) => ({
-  borderRadius: '16px',
+const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+  borderRadius: 16,
   textTransform: 'none',
   fontWeight: 600,
   padding: '12px 24px',
   position: 'relative',
   overflow: 'hidden',
   color: 'white',
-  background: `linear-gradient(135deg, ${glowColor} 0%, ${glowColor}dd 100%)`,
-  boxShadow: `0 8px 25px ${glowColor}40`,
+  background: `linear-gradient(45deg, ${glowColor} 30%, ${alpha(glowColor, 0.8)} 90%)`,
+  boxShadow: `0 6px 20px ${alpha(glowColor, 0.3)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'translateY(-3px)',
-    boxShadow: `0 15px 35px ${glowColor}60`,
-    animation: `${pulse} 1.5s infinite`,
+    boxShadow: `0 12px 35px ${alpha(glowColor, 0.4)}`,
+    background: `linear-gradient(45deg, ${alpha(glowColor, 0.9)} 30%, ${alpha(glowColor, 0.7)} 90%)`,
   },
-  '&::before': {
+  '&::after': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-    transition: 'left 0.5s',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
   },
-  '&:hover::before': {
+  '&:hover::after': {
     left: '100%',
   }
 }));
 
-const AnimatedChip = styled(Chip)(({ theme, color = 'primary' }) => ({
-  borderRadius: '12px',
+const AnimatedChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
   fontWeight: 600,
+  backdropFilter: 'blur(10px)',
   transition: 'all 0.3s ease',
-  animation: `${pulse} 2s infinite`,
   '&:hover': {
-    transform: 'scale(1.1)',
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  }
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 16,
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
+    },
+    '&.Mui-focused': {
+      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
+    }
+  }
+}));
+
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: 16,
+  padding: 4,
+  '& .MuiToggleButton-root': {
+    border: 'none',
+    borderRadius: 12,
+    margin: '0 4px',
+    fontWeight: 600,
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: 'rgba(76, 181, 195, 0.1)',
+    },
+    '&.Mui-selected': {
+      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+      color: 'white',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+      '&:hover': {
+        background: 'linear-gradient(135deg, #3da1af 0%, #1a6b75 100%)',
+      }
+    }
   }
 }));
 
@@ -261,13 +334,13 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const navigate = useNavigate();
   const {currentUser} = useAuth();
   
-  // Redux state
+  // Redux state - PRESERVED EXACTLY
   const { classes, status: classesStatus } = useSelector(state => state.classes);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   const { todayRecords, status: attendanceStatus } = useSelector(state => state.attendance);
   const { employees } = useSelector(state => state.employees);
 
-  // Local state
+  // Local state - PRESERVED EXACTLY
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterMode, setFilterMode] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -279,7 +352,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // Load data on mount
+  // Load data on mount - PRESERVED EXACTLY
   useEffect(() => {
     dispatch(fetchClasses());
     dispatch(fetchKids());
@@ -287,7 +360,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     dispatch(fetchEmployees())
   }, [dispatch, selectedDate]);
 
-  // Auto refresh every 5 minutes
+  // Auto refresh every 5 minutes - PRESERVED EXACTLY
   useEffect(() => {
     if (!autoRefresh) return;
     
@@ -298,7 +371,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     return () => clearInterval(interval);
   }, [autoRefresh, selectedDate, dispatch]);
 
-  // Process data with active kids only
+  // Process data with active kids only - PRESERVED EXACTLY
   const getActiveKidsWithAttendance = () => {
     if (!kids.length) return [];
     
@@ -465,7 +538,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
       setSavingAttendance(true);
     }
 
-
     
     try {
       const updates = Object.entries(attendanceUpdates);
@@ -533,8 +605,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     setKidDetailsDialog({ open: true, kid });
   };
 
- 
-
   const classesData = getClassData();
   const isLoading = classesStatus === 'loading' || kidsStatus === 'loading' || attendanceStatus === 'loading';
   const hasUnsavedChanges = Object.keys(attendanceUpdates).length > 0;
@@ -550,23 +620,14 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     <GradientContainer maxWidth="xl" >
       <Fade in timeout={800}>
         <MainCard elevation={0}>
-          {/* Magical Header */}
+          {/* Professional Header */}
           <Box dir='rtl' sx={{ 
             p: 4,
-            background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
-            borderRadius: '24px 24px 0 0',
+            background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
+            borderRadius: '20px 20px 0 0',
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><defs><pattern id=\'grain\' width=\'100\' height=\'100\' patternUnits=\'userSpaceOnUse\'><circle cx=\'50\' cy=\'50\' r=\'1\' fill=\'%23667eea\' opacity=\'0.1\'/></pattern></defs><rect width=\'100\' height=\'100\' fill=\'url(%23grain)\'/></svg>")',
-              opacity: 0.3
-            }} />
             
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3} sx={{ position: 'relative', zIndex: 1 }}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -574,8 +635,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                   <Avatar sx={{ 
                     width: 70, 
                     height: 70,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)',
                     animation: `${float} 3s ease-in-out infinite`
                   }}>
                     <SchoolIcon sx={{ fontSize: '2rem' }} />
@@ -584,7 +645,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 <Box>
                   <Typography variant="h3" sx={{ 
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     mb: 1
@@ -614,7 +675,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 <GlowingButton
                   startIcon={<AnalyticsIcon />}
                   onClick={() => navigate('/reports/attendance')}
-                  glowColor="#f59e0b"
+                  glowColor="#ff7043"
                   size="large"
                 >
                   מסך נוכחות מלא
@@ -622,7 +683,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               </Stack>
             </Stack>
 
-            {/* Amazing Stats Overview */}
+            {/* Professional Stats Overview */}
             <Grid container spacing={3} mb={3}>
               <Grid item size={{xs:12 , sm:3}} >
                 <Zoom in timeout={800}>
@@ -633,6 +694,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                         height: 60, 
                         margin: '0 auto 16px',
                         background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                        boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)',
                         animation: `${glow} 2s infinite`
                       }}>
                         <PresentIcon sx={{ fontSize: '2rem' }} />
@@ -657,6 +719,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                         height: 60, 
                         margin: '0 auto 16px',
                         background: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+                        boxShadow: '0 6px 20px rgba(239, 68, 68, 0.3)',
                         animation: totalStats.absent > 0 ? `${pulse} 1s infinite` : 'none'
                       }}>
                         <AbsentIcon sx={{ fontSize: '2rem' }} />
@@ -680,7 +743,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                         width: 60, 
                         height: 60, 
                         margin: '0 auto 16px',
-                        background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                        boxShadow: '0 6px 20px rgba(245, 158, 11, 0.3)'
                       }}>
                         <UnknownIcon sx={{ fontSize: '2rem' }} />
                       </Avatar>
@@ -697,17 +761,18 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               
               <Grid item size={{xs:12,sm:3}}>
                 <Zoom in timeout={1400}>
-                  <StatsCard color="#667eea">
+                  <StatsCard color="#4cb5c3">
                     <CardContent sx={{ textAlign: 'center', p: 3 }}>
                       <Avatar sx={{ 
                         width: 60, 
                         height: 60, 
                         margin: '0 auto 16px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                        boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                       }}>
                         <GroupsIcon sx={{ fontSize: '2rem' }} />
                       </Avatar>
-                      <Typography variant="h3" sx={{ fontWeight: 800, color: '#667eea', mb: 1 }}>
+                      <Typography variant="h3" sx={{ fontWeight: 800, color: '#4cb5c3', mb: 1 }}>
                         {totalStats.total}
                       </Typography>
                       <Typography variant="body1" color="text.secondary" fontWeight={600}>
@@ -719,50 +784,26 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               </Grid>
             </Grid>
 
-            {/* Advanced Filters */}
+            {/* Professional Filters */}
             <Stack direction="row" spacing={3} alignItems="center">
-              <TextField
+              <StyledTextField
                 size="medium"
                 placeholder="🔍 חיפוש ילד..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                    </InputAdornment>
-                  )
-                }}
-                sx={{ 
-                  minWidth: 300,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '20px',
-                    background: 'rgba(255,255,255,0.8)',
-                    backdropFilter: 'blur(10px)',
-                  }
-                }}
+                sx={{ minWidth: 300 }}
               />
               
-              <ToggleButtonGroup
+              <StyledToggleButtonGroup
                 value={filterMode}
                 exclusive
                 onChange={(e, newValue) => newValue && setFilterMode(newValue)}
-                sx={{
-                  '& .MuiToggleButton-root': {
-                    borderRadius: '12px',
-                    margin: '0 4px',
-                    fontWeight: 600,
-                    '&.Mui-selected': {
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white',
-                    }
-                  }
-                }}
               >
                 <ToggleButton value="all">🌟 הכל</ToggleButton>
                 <ToggleButton value="present">✅ נוכחים</ToggleButton>
                 <ToggleButton value="absent">❌ נעדרים</ToggleButton>
                 <ToggleButton value="unknown">❓ לא סומן</ToggleButton>
-              </ToggleButtonGroup>
+              </StyledToggleButtonGroup>
             </Stack>
 
             {/* Save Changes Button */}
@@ -771,10 +812,10 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                 <Box sx={{ mt: 3, textAlign: 'center' }}>
                   <GlowingButton
                     size="large"
-                    startIcon={savingAttendance ? <LinearProgress size={24} /> : <SaveIcon />}
+                    startIcon={savingAttendance ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
                     onClick={saveAllAttendanceChanges}
                     disabled={savingAttendance}
-                    glowColor="#ef4444"
+                    glowColor="#10b981"
                     sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
                   >
                     {savingAttendance ? "שומר נתונים..." : `שמור ${Object.keys(attendanceUpdates).length} שינויים`}
@@ -789,7 +830,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             <LinearProgress 
               sx={{ 
                 height: 4,
-                background: 'linear-gradient(90deg, #667eea, #764ba2)',
+                background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
                 '& .MuiLinearProgress-bar': {
                   background: 'linear-gradient(90deg, #10b981, #34d399)'
                 }
@@ -818,7 +859,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                               mx: -3, 
                               mt: -3, 
                               mb: 3,
-                              background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%)',
+                              background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
                               borderRadius: '20px 20px 0 0',
                               transition: 'all 0.3s ease'
                             }}
@@ -828,8 +869,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                 width: 60, 
                                 height: 60,
                                 fontSize: '2rem',
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                                background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                                boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                               }}>
                                 {classData.icon || '🎓'}
                               </Avatar>
@@ -838,12 +879,12 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                   {classData.className}
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary">
-                                  {/* 👩‍🏫 גננת: {classData.teacherName || 'לא מוגדר'} */}
+                                  {/* Teacher name display - PRESERVED EXACTLY */}
                                   {console.log(employees)}
                                   {console.log(classData)}
-{employees.find(emp => emp.employeeId === classData.teacherId) 
-  ? `${employees.find(emp => emp.employeeId === classData.teacherId).firstName} ${employees.find(emp => emp.employeeId === classData.teacherId).lastName}`
-  : 'לא מוגדר'}
+                                  {employees.find(emp => emp.employeeId === classData.teacherId) 
+                                    ? `${employees.find(emp => emp.employeeId === classData.teacherId).firstName} ${employees.find(emp => emp.employeeId === classData.teacherId).lastName}`
+                                    : 'לא מוגדר'}
                                 </Typography>
                               </Box>
                               
@@ -905,29 +946,29 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                             </Grid>
                           </Box>
 
-                          {/* Magical Kids Grid */}
+                          {/* Professional Kids Grid */}
                           {classData.kids.length > 0 ? (
                             <Grid container spacing={2} mb={3}>
                               {classData.kids.map((kid, kidIndex) => (
                                 <Grid item key={kid.id}>
                                   <Zoom in timeout={1200 + kidIndex * 100}>
                                     <Tooltip 
-                                    placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}
+                                      placement="top" 
+                                      PopperProps={{
+                                        disablePortal: true,
+                                        modifiers: [
+                                          {
+                                            name: 'flip',
+                                            enabled: false 
+                                          },
+                                          {
+                                            name: 'preventOverflow',
+                                            options: {
+                                              boundary: 'window', 
+                                            },
+                                          },
+                                        ],
+                                      }}
                                       title={
                                         <Box  sx={{ p: 1 }}>
                                           <Typography variant="body2" fontWeight="bold">
@@ -956,7 +997,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                           width: 50,
                                           height: 50,
                                           fontSize: '1rem',
-                                          border: kid.hasLocalChanges ? '3px solid #f59e0b' : '3px solid rgba(255,255,255,0.8)',
+                                          border: kid.hasLocalChanges ? '3px solid #f59e0b' : '3px solid rgba(255,255,255,0.9)',
                                         }}
                                         src={
                                           kid.photoPath
@@ -981,8 +1022,10 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                               severity="info" 
                               sx={{ 
                                 mb: 3,
-                                borderRadius: '16px',
-                                background: 'linear-gradient(135deg, rgba(33,150,243,0.1) 0%, rgba(33,150,243,0.05) 100%)'
+                                borderRadius: 16,
+                                background: 'rgba(255, 255, 255, 0.9)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(76, 181, 195, 0.2)'
                               }}
                             >
                               🔍 אין ילדים פעילים בכיתה זו או שהמסנן לא מציג תוצאות
@@ -997,12 +1040,10 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                 ...prev,
                                 [classData.classId]: !prev[classData.classId]
                               }))}
-                              glowColor="#667eea"
+                              glowColor="#4cb5c3"
                             >
                               {showClassDetails[classData.classId] ? '🔼 הסתר פרטים' : '🔽 הצג פרטים'}
                             </GlowingButton>
-                            
-                           
                           </Stack>
 
                           {/* Expanded Details */}
@@ -1012,25 +1053,89 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                               {classData.allKids.map(kid => (
                                 <Fade in timeout={500} key={kid.id}>
                                   <ListItem 
+                                  dir="rtl"
                                     sx={{
-                                      borderRadius: '12px',
+                                      borderRadius: 12,
                                       mb: 1,
-                                      background: kid.hasLocalChanges ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
-                                      border: kid.hasLocalChanges ? '1px solid #f59e0b' : 'none'
+                                      background: kid.hasLocalChanges ? 'rgba(245, 158, 11, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+                                      backdropFilter: 'blur(10px)',
+                                      border: kid.hasLocalChanges ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.3)',
+                                      transition: 'all 0.3s ease',
+                                      '&:hover': {
+                                        background: 'rgba(76, 181, 195, 0.05)',
+                                        transform: 'translateX(-8px)',
+                                      }
                                     }}
                                     secondaryAction={
-                                      <Switch
-                                        checked={kid.isPresent === true}
-                                        onChange={() => handleQuickAttendanceToggle(kid.id, kid.isPresent)}
-                                        color="success"
-                                        size="medium"
-                                      />
+                                      <Stack direction="row" spacing={1}>
+                                        <Button
+                                          size="small"
+                                          variant={kid.isPresent === true ? "contained" : "outlined"}
+                                          color="success"
+                                          onClick={() => {
+                                            setAttendanceUpdates(prev => ({
+                                              ...prev,
+                                              [kid.id]: true
+                                            }));
+                                            setSnackbar({
+                                              open: true,
+                                              message: `הנוכחות עודכנה זמנית. לחץ על "שמור שינויים" לשמירה סופית.`,
+                                              severity: 'info'
+                                            });
+                                          }}
+                                          sx={{
+                                            minWidth: '80px',
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            transition: 'all 0.3s ease',
+                                            ...(kid.isPresent === true && {
+                                              background: 'linear-gradient(45deg, #10b981 30%, #34d399 90%)',
+                                              boxShadow: '0 3px 10px rgba(16, 185, 129, 0.3)',
+                                            })
+                                          }}
+                                        >
+                                          נוכח
+                                        </Button>
+                                        <Button
+                                          size="small"
+                                          variant={kid.isPresent === false ? "contained" : "outlined"}
+                                          color="error"
+                                          onClick={() => {
+                                            setAttendanceUpdates(prev => ({
+                                              ...prev,
+                                              [kid.id]: false
+                                            }));
+                                            setSnackbar({
+                                              open: true,
+                                              message: `הנוכחות עודכנה זמנית. לחץ על "שמור שינויים" לשמירה סופית.`,
+                                              severity: 'info'
+                                            });
+                                          }}
+                                          sx={{
+                                            minWidth: '80px',
+                                            borderRadius: 2,
+                                            fontWeight: 600,
+                                            transition: 'all 0.3s ease',
+                                            ...(kid.isPresent === false && {
+                                              background: 'linear-gradient(45deg, #ef4444 30%, #f87171 90%)',
+                                              boxShadow: '0 3px 10px rgba(239, 68, 68, 0.3)',
+                                            })
+                                          }}
+                                        >
+                                          נעדר
+                                        </Button>
+                                      </Stack>
                                     }
                                   >
-                                    <ListItemAvatar>
+                                    <ListItemAvatar sx={{ minWidth: 'auto', mr: 2 }}>
                                       <FloatingAvatar 
                                         status={kid.isPresent}
-                                        sx={{ width: 40, height: 40 }}
+                                        sx={{ 
+                                          width: 40, 
+                                          height: 40,
+                                          cursor: 'pointer'
+                                        }}
+                                        onClick={() => handleKidClick(kid)}
                                         src={
                                           kid.photoPath
                                             ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}`
@@ -1047,9 +1152,11 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                     </ListItemAvatar>
                                     <ListItemText
                                       primary={
-                                        <Typography variant="body1" fontWeight={600}>
-                                          {kid.firstName} {kid.lastName}
-                                        </Typography>
+                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                          <Typography variant="body1" fontWeight={600}>
+                                            {kid.firstName} {kid.lastName}
+                                          </Typography>
+                                        </Stack>
                                       }
                                       secondary={
                                         <Stack>
@@ -1080,9 +1187,10 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               <Alert 
                 severity="info"
                 sx={{
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, rgba(33,150,243,0.1) 0%, rgba(33,150,243,0.05) 100%)',
-                  border: '1px solid rgba(33,150,243,0.2)'
+                  borderRadius: 16,
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(76, 181, 195, 0.2)'
                 }}
               >
                 🔍 לא נמצאו כיתות או שהמסנן לא מציג תוצאות
@@ -1092,29 +1200,34 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
         </MainCard>
       </Fade>
 
-      {/* Magical Kid Details Dialog */}
+      {/* Professional Kid Details Dialog */}
       <Dialog 
-      dir="rtl"
+        dir="rtl"
         open={kidDetailsDialog.open} 
         onClose={() => setKidDetailsDialog({ open: false, kid: null })}
         maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '24px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+            borderRadius: 20,
+            background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.3)'
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            overflow: 'hidden'
           }
         }}
       >
-        <DialogTitle sx={{ textAlign: 'center', pb: 1, pt: 4 }}>
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          pb: 1, 
+          pt: 4,
+          background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)'
+        }}>
           <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
             {console.log(kidDetailsDialog.kid)}
             <FloatingAvatar
               status={kidDetailsDialog.kid?.isPresent}
               sx={{ width: 80, height: 80, fontSize: '2rem' }}
-
               src={
                 kidDetailsDialog.kid?.photoPath
                   ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kidDetailsDialog.kid?.photoPath)}`
@@ -1143,15 +1256,15 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
           <Stack spacing={3}>
             {/* Contact Information */}
             <Paper 
-              elevation={2} 
+              elevation={0} 
               sx={{ 
                 p: 3, 
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(102,126,234,0.05) 100%)',
-                border: '1px solid rgba(102,126,234,0.2)'
+                borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(76, 181, 195, 0.05) 100%)',
+                border: '1px solid rgba(76, 181, 195, 0.2)'
               }}
             >
-              <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#667eea' }}>
+              <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#4cb5c3' }}>
                 📞 פרטי קשר חירום - {kidDetailsDialog.kid?.emergencyContactName}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -1164,12 +1277,12 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             
             {/* Class Information */}
             <Paper 
-              elevation={2} 
+              elevation={0} 
               sx={{ 
                 p: 3, 
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%)',
-                border: '1px solid rgba(16,185,129,0.2)'
+                borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
               }}
             >
               <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#10b981' }}>
@@ -1182,12 +1295,12 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
             
             {/* Attendance Status */}
             <Paper 
-              elevation={2} 
+              elevation={0} 
               sx={{ 
                 p: 3, 
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%)',
-                border: '1px solid rgba(245,158,11,0.2)'
+                borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+                border: '1px solid rgba(245, 158, 11, 0.2)'
               }}
             >
               <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ color: '#f59e0b' }}>
@@ -1227,14 +1340,14 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
               setKidDetailsDialog({ open: false, kid: null });
               navigate(`/kids/${kidDetailsDialog.kid.id}`);
             }}
-            glowColor="#667eea"
+            glowColor="#4cb5c3"
           >
             👤 עבור לתיק הילד
           </GlowingButton>
         </DialogActions>
       </Dialog>
 
-      {/* Magical Snackbar */}
+      {/* Professional Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -1243,10 +1356,11 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{
           '& .MuiSnackbarContent-root': {
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 16,
+            background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
             color: 'white',
             fontWeight: 600,
+            boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
           }
         }}
       />
