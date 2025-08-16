@@ -132,75 +132,201 @@ namespace halocare.BL.Services
         }
 
         public async Task<List<AnswerTranslationDto>> TranslateAnswersAsync(
-    List<AnswerTranslationDto> answers,
-    string sourceLanguage,
-    string targetLanguage = "he")
+     List<AnswerTranslationDto> answers,
+     string sourceLanguage,
+     string targetLanguage = "he")
         {
             try
             {
                 Console.WriteLine($"=== תרגום תשובות ===");
                 Console.WriteLine($"מ-{sourceLanguage} ל-{targetLanguage}");
 
-                var prompt = BuildAnswerTranslationPrompt(answers, sourceLanguage, targetLanguage);
-
-                var requestBody = new
+                if (sourceLanguage == targetLanguage)
                 {
-                    contents = new[]
-                    {
-                new
-                {
-                    parts = new[]
-                    {
-                        new { text = prompt }
-                    }
+                    return answers;
                 }
-            },
-                    generationConfig = new
-                    {
-                        temperature = 0.1,
-                        topK = 1,
-                        topP = 0.95,
-                        maxOutputTokens = 2048,
-                    },
-                    safetySettings = new[]
-                    {
-                new { category = "HARM_CATEGORY_HARASSMENT", threshold = "BLOCK_NONE" },
-                new { category = "HARM_CATEGORY_HATE_SPEECH", threshold = "BLOCK_NONE" },
-                new { category = "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold = "BLOCK_NONE" },
-                new { category = "HARM_CATEGORY_DANGEROUS_CONTENT", threshold = "BLOCK_NONE" }
-            }
-                };
 
-                string json = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                // מילון תרגומים קבועים - לא צריך Gemini
+                var fixedTranslations = GetFixedTranslations(sourceLanguage, targetLanguage);
 
-                var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
+                // הפרדה בין תשובות שצריך לתרגם לאלו שלא
+                var answersToTranslate = new List<AnswerTranslationDto>();
+                var translatedAnswers = new List<AnswerTranslationDto>();
 
-                if (response.IsSuccessStatusCode)
+                foreach (var answer in answers)
                 {
-                    string responseJson = await response.Content.ReadAsStringAsync();
-                    var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
-
-                    if (geminiResponse?.candidates?.Length > 0)
+                    // בדיקה אם זו תשובה קבועה
+                    if (fixedTranslations.ContainsKey(answer.Answer))
                     {
-                        string translatedJson = geminiResponse.candidates[0].content.parts[0].text;
-                        translatedJson = CleanJsonResponse(translatedJson);
-
-                        var translated = JsonSerializer.Deserialize<List<AnswerTranslationDto>>(translatedJson);
-                        Console.WriteLine($"תורגמו {translated.Count} תשובות");
-
-                        return translated;
+                        Console.WriteLine($"תרגום קבוע: '{answer.Answer}' → '{fixedTranslations[answer.Answer]}'");
+                        translatedAnswers.Add(new AnswerTranslationDto
+                        {
+                            QuestionNo = answer.QuestionNo,
+                            Answer = fixedTranslations[answer.Answer],
+                            Other = answer.Other
+                        });
+                    }
+                    // בדיקה אם זו חתימה דיגיטלית
+                    else if (answer.Answer.StartsWith("data:image/"))
+                    {
+                        Console.WriteLine($"חתימה דיגיטלית - לא מתרגמים");
+                        translatedAnswers.Add(answer);
+                    }
+                    // בדיקה אם זה מספר או תאריך
+                    else if (IsNumericOrDate(answer.Answer))
+                    {
+                        Console.WriteLine($"מספר/תאריך - לא מתרגמים: {answer.Answer}");
+                        translatedAnswers.Add(answer);
+                    }
+                    else
+                    {
+                        // צריך תרגום עם Gemini
+                        answersToTranslate.Add(answer);
                     }
                 }
 
-                Console.WriteLine("נכשל תרגום התשובות - מחזיר מקור");
-                return answers;
+                // אם יש תשובות שצריך לתרגם עם Gemini
+                if (answersToTranslate.Count > 0)
+                {
+                    Console.WriteLine($"שולח {answersToTranslate.Count} תשובות ל-Gemini");
+
+                    var prompt = BuildAnswerTranslationPrompt(answersToTranslate, sourceLanguage, targetLanguage);
+
+                    var requestBody = new
+                    {
+                        contents = new[]
+                        {
+                    new
+                    {
+                        parts = new[]
+                        {
+                            new { text = prompt }
+                        }
+                    }
+                },
+                        generationConfig = new
+                        {
+                            temperature = 0.1,
+                            topK = 1,
+                            topP = 0.95,
+                            maxOutputTokens = 4096,
+                        }
+                    };
+
+                    string json = JsonSerializer.Serialize(requestBody);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseJson = await response.Content.ReadAsStringAsync();
+                        var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
+
+                        if (geminiResponse?.candidates?.Length > 0)
+                        {
+                            string translatedJson = geminiResponse.candidates[0].content.parts[0].text;
+                            translatedJson = CleanJsonResponse(translatedJson);
+
+                            try
+                            {
+                                var geminiTranslated = JsonSerializer.Deserialize<List<AnswerTranslationDto>>(translatedJson);
+                                translatedAnswers.AddRange(geminiTranslated);
+                            }
+                            catch (JsonException)
+                            {
+                                Console.WriteLine("שגיאה בפענוח JSON - מחזירים ללא תרגום");
+                                translatedAnswers.AddRange(answersToTranslate);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Gemini נכשל - מחזירים ללא תרגום");
+                        translatedAnswers.AddRange(answersToTranslate);
+                    }
+                }
+
+                // מיון לפי מספר שאלה
+                return translatedAnswers.OrderBy(a => a.QuestionNo).ToList();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error translating answers: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
                 return answers;
             }
+        }
+
+        private Dictionary<string, string> GetFixedTranslations(string sourceLang, string targetLang)
+        {
+            var translations = new Dictionary<string, Dictionary<string, string>>
+            {
+                ["ar_he"] = new Dictionary<string, string>
+                {
+                    ["نعم"] = "כן",
+                    ["لا"] = "לא",
+                    ["أوافق"] = "מאשר/ת",
+                    ["أوافق/أوافق"] = "מאשר/ת",
+                    ["لا أوافق"] = "לא מאשר/ת"
+                },
+                ["en_he"] = new Dictionary<string, string>
+                {
+                    ["Yes"] = "כן",
+                    ["No"] = "לא",
+                    ["Authorize"] = "מאשר/ת",
+                    ["I authorize"] = "מאשר/ת",
+                    ["Do not authorize"] = "לא מאשר/ת",
+                    ["I do not authorize"] = "לא מאשר/ת"
+                },
+                ["ru_he"] = new Dictionary<string, string>
+                {
+                    ["Да"] = "כן",
+                    ["Нет"] = "לא",
+                    ["Разрешаю"] = "מאשר/ת",
+                    ["Разрешаю/ю"] = "מאשר/ת",
+                    ["Не разрешаю"] = "לא מאשר/ת",
+                    ["Не разрешаю/ю"] = "לא מאשר/ת"
+                }
+            };
+
+            var key = $"{sourceLang}_{targetLang}";
+            return translations.ContainsKey(key) ? translations[key] : new Dictionary<string, string>();
+        }
+
+        private bool IsNumericOrDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+
+            // בדיקה אם זה מספר
+            if (double.TryParse(value, out _)) return true;
+
+            // בדיקה אם זה תאריך
+            if (DateTime.TryParse(value, out _)) return true;
+
+            // בדיקה אם זה נראה כמו תאריך בפורמטים נפוצים
+            var datePatterns = new[] { @"\d{1,2}/\d{1,2}/\d{4}", @"\d{1,2}-\d{1,2}-\d{4}" };
+            foreach (var pattern in datePatterns)
+            {
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, pattern))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private string GetLanguageName(string code)
+        {
+            return code switch
+            {
+                "he" => "Hebrew",
+                "ar" => "Arabic",
+                "en" => "English",
+                "ru" => "Russian",
+                "am" => "Amharic",
+                "fr" => "French",
+                "es" => "Spanish",
+                _ => code
+            };
         }
         private string BuildTranslationPrompt(List<QuestionTranslationDto> questions, string targetLanguage, string sourceLanguage)
         {
@@ -294,42 +420,13 @@ namespace halocare.BL.Services
             };
 
             var prompt = new StringBuilder();
-            prompt.AppendLine("You are translating parent's answers from a daycare form.");
-            prompt.AppendLine($"Translate from {languageNames[sourceLanguage]} to {languageNames[targetLanguage]}.");
+            prompt.AppendLine($"Translate parent form answers from {languageNames[sourceLanguage]} to {languageNames[targetLanguage]}.");
             prompt.AppendLine();
-            prompt.AppendLine("INSTRUCTIONS:");
-            prompt.AppendLine("1. Translate ONLY the 'answer' and 'other' fields");
+            prompt.AppendLine("IMPORTANT:");
+            prompt.AppendLine("1. Translate the 'answer' and 'other' fields");
             prompt.AppendLine("2. Keep 'questionNo' unchanged");
-            prompt.AppendLine("3. Maintain the meaning accurately");
-            prompt.AppendLine("4. Common answers to translate:");
-
-            if (sourceLanguage == "en" && targetLanguage == "he")
-            {
-                prompt.AppendLine("   - 'Yes' -> 'כן'");
-                prompt.AppendLine("   - 'No' -> 'לא'");
-                prompt.AppendLine("   - 'Sometimes' -> 'לפעמים'");
-                prompt.AppendLine("   - 'Always' -> 'תמיד'");
-                prompt.AppendLine("   - 'Never' -> 'אף פעם'");
-            }
-            else if (sourceLanguage == "ar" && targetLanguage == "he")
-            {
-                prompt.AppendLine("   - 'نعم' -> 'כן'");
-                prompt.AppendLine("   - 'لا' -> 'לא'");
-                prompt.AppendLine("   - 'أحيانا' -> 'לפעמים'");
-                prompt.AppendLine("   - 'دائما' -> 'תמיד'");
-                prompt.AppendLine("   - 'أبدا' -> 'אף פעם'");
-            }
-            else if (sourceLanguage == "ru" && targetLanguage == "he")
-            {
-                prompt.AppendLine("   - 'Да' -> 'כן'");
-                prompt.AppendLine("   - 'Нет' -> 'לא'");
-                prompt.AppendLine("   - 'Иногда' -> 'לפעמים'");
-                prompt.AppendLine("   - 'Всегда' -> 'תמיד'");
-                prompt.AppendLine("   - 'Никогда' -> 'אף פעם'");
-            }
-
-            prompt.AppendLine();
-            prompt.AppendLine("5. Return ONLY valid JSON array");
+            prompt.AppendLine("3. If answer contains base64 image data (starts with 'data:image'), keep it unchanged");
+            prompt.AppendLine("4. Return ONLY valid JSON array");
             prompt.AppendLine();
             prompt.AppendLine("JSON to translate:");
             prompt.AppendLine(JsonSerializer.Serialize(answers, new JsonSerializerOptions
@@ -427,20 +524,57 @@ namespace halocare.BL.Services
         }
         private string CleanJsonResponse(string response)
         {
-            // מנסים למצוא את תחילת וסוף ה-JSON
+            if (string.IsNullOrWhiteSpace(response))
+            {
+                Console.WriteLine("Response is empty");
+                return "[]";
+            }
+
+            Console.WriteLine($"Raw response (first 200 chars): {response.Substring(0, Math.Min(200, response.Length))}");
+
+            // הסרת markdown code blocks
+            if (response.Contains("```json"))
+            {
+                response = response.Replace("```json", "").Replace("```", "");
+            }
+
+            // הסרת backticks בודדים
+            response = response.Replace("`", "");
+
+            // חיפוש תחילת וסוף ה-JSON
             int startIndex = response.IndexOf('[');
             int endIndex = response.LastIndexOf(']');
 
-            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex)
+            if (startIndex == -1)
             {
-                return response.Substring(startIndex, endIndex - startIndex + 1);
+                // אם אין מערך, נחפש אובייקט
+                startIndex = response.IndexOf('{');
+                endIndex = response.LastIndexOf('}');
             }
 
-            // אם זה כבר נראה כמו JSON תקין
-            if (response.TrimStart().StartsWith("[") || response.TrimStart().StartsWith("{"))
+            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex)
             {
-                return response.Trim();
+                string jsonPart = response.Substring(startIndex, endIndex - startIndex + 1);
+                Console.WriteLine($"Extracted JSON (first 200 chars): {jsonPart.Substring(0, Math.Min(200, jsonPart.Length))}");
+                return jsonPart.Trim();
             }
+
+            // ניסיון אחרון - ניקוי כללי
+            response = response.Trim();
+
+            // הסרת תווים לא חוקיים מההתחלה
+            while (response.Length > 0 && !response.StartsWith("[") && !response.StartsWith("{"))
+            {
+                response = response.Substring(1);
+            }
+
+            // הסרת תווים לא חוקיים מהסוף
+            while (response.Length > 0 && !response.EndsWith("]") && !response.EndsWith("}"))
+            {
+                response = response.Substring(0, response.Length - 1);
+            }
+
+            Console.WriteLine($"Final cleaned JSON (first 200 chars): {response.Substring(0, Math.Min(200, response.Length))}");
 
             return response;
         }
