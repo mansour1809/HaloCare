@@ -874,7 +874,7 @@ const fetchParentsInfo = async () => {
                   gap: 1
                 }}
               >
-                👨‍👩‍👧‍👦 פרטי הורים
+                פרטי הורים
                 {parentsData.loading && (
                   <CircularProgress size={16} sx={{ ml: 1 }} />
                 )}

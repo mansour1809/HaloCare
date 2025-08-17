@@ -579,7 +579,7 @@ const getParentName = (kid) => {
                   WebkitTextFillColor: 'transparent',
                   mb: 1
                 }}>
-                 👦 ניהול ילדים
+                  ניהול ילדים
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   מעקב אחר תהליכי קליטה וניהול פרטי ילדים במערכת
@@ -729,7 +729,7 @@ const getParentName = (kid) => {
                     fontSize: '0.95rem'
                   }
                 }}>
-                  <TableCell>👦 ילד</TableCell>
+                  <TableCell align="center">👦 ילד</TableCell>
                   <TableCell>🎂 גיל</TableCell>
                   <TableCell>📞 טלפון חירום</TableCell>
                   <TableCell>👪 הורה ראשי</TableCell>
