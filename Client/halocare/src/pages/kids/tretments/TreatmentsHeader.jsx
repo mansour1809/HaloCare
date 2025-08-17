@@ -150,6 +150,66 @@ const GlowingChip = styled(Chip)(({ theme }) => ({
     boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
   }
 }));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
+}));
+
 
 const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
   const navigate = useNavigate();
@@ -190,81 +250,37 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     <Box dir="rtl" sx={{ mb: 4 }}>
       {/* Enhanced Breadcrumbs */}
       <Fade in timeout={600}>
-        <Breadcrumbs 
-          separator="›" 
-          sx={{ 
-            mb: 3,
-            '& .MuiBreadcrumbs-separator': { color: 'rgba(255, 255, 255, 0.7)' }
-          }}
-        >
-          <Link 
-            color="inherit" 
-            href="/" 
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/');
-            }}
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1,
-              color: '#fff',
-              textDecoration: 'none !important',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                color: '#fff',
-                transform: 'scale(1.02)'
-              }
-            }}
-          >
-            <HomeIcon fontSize="small" />
-            דף הבית
-          </Link>
 
-           <Link
-           color="inherit" 
-            href="/kids/list" 
-                     sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: 1,
-              color: '#fff',
-              textDecoration: 'none !important',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                color: '#fff',
-                transform: 'scale(1.02)'
-              }
-            }}
-                      onClick={() => navigate('/kids/list')}
-                    >
-                      <GroupIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-                      רשימת ילדים
-                    </Link>
-          <Link 
-            color="inherit" 
-            href={`/kids/${kidId}`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(`/kids/${kidId}`);
-            }}
-            sx={{ 
-              textDecoration: 'none !important',
-              transition: 'all 0.2s ease',
-              color: '#fff',
-              '&:hover': {
-                color: '#fff',
-                transform: 'scale(1.02)'
-              }
-            }}
-          >
-            {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
-          </Link>
-          <Typography color="white" sx={{ display: 'flex', alignItems: 'center' }}>
-            <AssessmentIcon sx={{ mr: 0.5, fontSize: 'small' }} />
-              סיכומי טיפולים
-            </Typography>
-        </Breadcrumbs>
+          <EnhancedBreadcrumbs dir="rtl" >
+                                      <StyledLink
+                                        underline="hover"
+                                        onClick={() => navigate('/')}
+                                      >
+                                        <HomeIcon />
+                                        ראשי
+                                      </StyledLink>
+                                      <StyledLink
+                                        underline="hover"
+                                        onClick={() => navigate('/kids/list')}
+                                      >
+                                        <HomeIcon />
+                                        רשימת ילדים
+                                      </StyledLink>
+                                      <StyledLink
+                                        underline="hover"
+                                        onClick={() => navigate(`/kids/${kidId}`)}
+                                      >
+                                        <PersonIcon />
+                                        {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
+                                      </StyledLink>
+                                      
+                                  
+                                      <CurrentPage>
+                                        <AssessmentIcon />
+                                        סיכומי טיפולים
+                                      </CurrentPage>
+                                    </EnhancedBreadcrumbs>
+       
       </Fade>
       
       {/* Modern Header */}

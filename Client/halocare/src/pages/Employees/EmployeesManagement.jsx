@@ -5,14 +5,15 @@ import {
   TextField, Box, FormControl, InputLabel, Select, MenuItem,
   Typography, IconButton, CircularProgress, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Avatar,
-  Chip, Tooltip, Container, Fade, Zoom, Stack
+  Chip, Tooltip, Container, Fade, Zoom, Stack ,  Breadcrumbs
 } from "@mui/material";
 import {
   Person as PersonIcon,
   FilterList as FilterIcon,
   Group as GroupIcon,
   AutoAwesome as AutoAwesomeIcon,
-  Celebration as CelebrationIcon
+  Celebration as CelebrationIcon,
+  Home as HomeIcon
 } from '@mui/icons-material';
 import { Link } from "react-router-dom";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -23,11 +24,10 @@ import { useNavigate } from 'react-router-dom';
 
 // Context and hooks
 import { useEmployees } from './EmployeesContext';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearDocuments} from '../../Redux/features/documentsSlice';
 import EmployeeForm from "./EmployeeForm";
 import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
 import { baseURL } from "../../components/common/axiosConfig";
+import { useDispatch } from "react-redux";
 
 const rtlTheme = createTheme({
   direction: 'rtl',
@@ -143,7 +143,7 @@ const rtlTheme = createTheme({
 });
 
 // Full Screen Container
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
@@ -244,6 +244,66 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
     left: '100%',
   }
 }));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
+}));
+
 
 const EmployeesManagement = () => {
   const dispatch = useDispatch();
@@ -264,12 +324,7 @@ const EmployeesManagement = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const [searchText, setSearchText] = useState('');
   const [localError, setLocalError] = useState("");
-  const [activeTab, setActiveTab] = useState(0);
-  const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false);
-  const [selectedEmployeeForDocuments, setSelectedEmployeeForDocuments] = useState(null);
-  
-  const documentsStatus = useSelector(state => state.documents.status);
-  
+
   useEffect(() => {
     refreshEmployees();
   }, []);
@@ -286,14 +341,6 @@ const EmployeesManagement = () => {
     setOpen(false);
     setSelectedEmployee(null);
     setLocalError("");
-  };
-
-  // closing documents dialog
-  const handleCloseDocuments = () => {
-    setActiveTab(0);
-    dispatch(clearDocuments());
-    setDocumentsDialogOpen(false);
-    setSelectedEmployeeForDocuments(null);
   };
 
   // date formatting
@@ -385,9 +432,27 @@ const EmployeesManagement = () => {
   return (
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-        <Box dir="rtl" sx={{ direction: 'rtl' }}>
-          <FullScreenContainer dir='rtl'>
-            <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
+                            <FullScreenContainer >
+
+        <Box dir="rtl" sx={{p: 3, position: 'relative', zIndex: 2 ,direction: 'rtl' }}>
+
+             <EnhancedBreadcrumbs dir="rtl" sx={{ mb: -2 }}>
+                              <StyledLink
+                                underline="hover"
+                                onClick={() => navigate('/')}
+                              >
+                                <HomeIcon />
+                                ראשי
+                              </StyledLink>
+                              
+                          
+                              <CurrentPage>
+                                <GroupIcon />
+                                ניהול עובדים
+                              </CurrentPage>
+                            </EnhancedBreadcrumbs>
+          
+            <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }} dir="rtl">
               
               {/* Modern headline */}
               <Fade in timeout={800}>
@@ -466,7 +531,7 @@ const EmployeesManagement = () => {
 
               {/* Searchbar and filters */}
               <Zoom in timeout={1000}>
-                <Paper sx={{ 
+                <Paper dir="rtl" sx={{ 
                   p: 3, 
                   mb: 3,
                   borderRadius: 4,
@@ -487,7 +552,7 @@ const EmployeesManagement = () => {
                     borderRadius: '4px 4px 0 0',
                   }
                 }}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="center">
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="center" >
                     <TextField
                       variant="outlined"
                       size="medium"
@@ -815,8 +880,9 @@ const EmployeesManagement = () => {
                 </DialogContent>
               </Dialog>
             </Container>
-          </FullScreenContainer>
         </Box>
+                  </FullScreenContainer>
+
       </LocalizationProvider>
     </ThemeProvider>
   );

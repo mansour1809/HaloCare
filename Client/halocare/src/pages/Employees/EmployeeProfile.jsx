@@ -5,7 +5,8 @@ import {
   Avatar, Chip, Tabs, Tab, Card, CardContent, 
   CircularProgress, Alert, Breadcrumbs, IconButton,
   Fade, Zoom, Stack, TextField, InputAdornment,
-  Tooltip
+  Tooltip,
+  Link
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -19,7 +20,10 @@ import {
   Password as PasswordIcon,
   Save as SaveIcon,
   Lock as LockIcon,
-  Email as EmailIcon
+  Email as EmailIcon,
+  Home as HomeIcon,
+  Group as GroupIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -32,8 +36,6 @@ import EmployeeForm from './EmployeeForm';
 import EmployeeDocumentManager from './EmployeeDocumentManager';
 import { baseURL } from '../../components/common/axiosConfig';
 import { useAuth } from '../../components/login/AuthContext';
-import SharedCalendarWidget from './SharedCalendarWidget';
-import { useDispatch } from 'react-redux';
 
 
 const profileTheme = createTheme({
@@ -43,6 +45,7 @@ const profileTheme = createTheme({
     h1: {
       fontWeight: 800,
       fontSize: '3.5rem',
+      
     },
     h4: { 
       fontWeight: 700, 
@@ -161,7 +164,6 @@ const FullScreenContainer = styled(Box)(() => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
   },
@@ -239,7 +241,7 @@ const SectionHeader = styled(Box)(({ theme }) => ({
 const HeroProfileCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   marginBottom: theme.spacing(4),
-  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  background: 'linear-gradient(135deg, #90d2daff 0%, #2a8a95 100%)',
   color: 'white',
   borderRadius: 24,
   position: 'relative',
@@ -268,6 +270,66 @@ const HeroProfileCard = styled(Paper)(({ theme }) => ({
     transform: 'translate(-50px, 50px)',
   }
 }));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
+}));
+
 
 // method for updating email/password
 const LoginDetailsUpdateForm = ({ employee, onSuccess }) => {
@@ -937,34 +999,29 @@ const EmployeeProfile = () => {
           <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
             {/* Breadcrumbs */}
             <Fade in timeout={600}>
-              <Breadcrumbs sx={{ 
-                mb: 3,
-                '& .MuiBreadcrumbs-ol': {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 2,
-                  padding: '8px 16px',
-                  border: '1px solid rgba(255, 255, 255, 0.2)'
-                }
-              }}>
-                <Button
-                  startIcon={<ArrowBackIcon />}
-                  onClick={() => navigate('/employees/list')}
-                  sx={{ 
-                    p: 0, 
-                    minWidth: 'auto',
-                    color: 'white',
-                    '&:hover': {
-                      color: 'rgba(255,255,255,0.8)'
-                    }
-                  }}
-                >
-                  רשימת עובדים
-                </Button>
-                <Typography color="rgba(255,255,255,0.9)" fontWeight={600}>
-                  פרופיל עובד
-                </Typography>
-              </Breadcrumbs>
+               <EnhancedBreadcrumbs dir="rtl">
+                                            <StyledLink
+                                              underline="hover"
+                                              onClick={() => navigate('/')}
+                                            >
+                                              <HomeIcon />
+                                              ראשי
+                                            </StyledLink>
+                                            <StyledLink
+                                              underline="hover"
+                                              onClick={() => navigate('/employees/list')}
+                                            >
+                                              <GroupIcon />
+                                              רשימת עובדים
+                                            </StyledLink>
+                                            
+                                        
+                                            <CurrentPage>
+                                              <PersonIcon />
+                                              פרופיל עובד
+                                            </CurrentPage>
+                                          </EnhancedBreadcrumbs>
+             
             </Fade>
 
             {/* Hero Profile Card */}

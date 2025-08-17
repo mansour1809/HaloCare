@@ -87,7 +87,7 @@ const MainCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
+const StatsCard = styled(Card)(({  color = '#4cb5c3' }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: 16,
@@ -122,7 +122,7 @@ const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
   }
 }));
 
-const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+const GlowingButton = styled(Button)(({  glowColor = '#4cb5c3' }) => ({
   borderRadius: 16,
   textTransform: 'none',
   fontWeight: 600,
@@ -153,7 +153,7 @@ const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
   }
 }));
 
-const AnimatedChip = styled(Chip)(({ theme }) => ({
+const AnimatedChip = styled(Chip)(() => ({
   borderRadius: 8,
   fontWeight: 600,
   backdropFilter: 'blur(10px)',
@@ -165,7 +165,7 @@ const AnimatedChip = styled(Chip)(({ theme }) => ({
   }
 }));
 
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
+const StyledIconButton = styled(IconButton)(() => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'scale(1.1) rotate(5deg)',
@@ -186,7 +186,7 @@ const KidRowContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
+const StyledLinearProgress = styled(LinearProgress)(() => ({
   height: 6,
   borderRadius: 3,
   backgroundColor: 'rgba(76, 181, 195, 0.1)',
@@ -196,7 +196,7 @@ const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
   }
 }));
 
-const StatusChip = styled(Chip)(({ theme, statusColor }) => ({
+const StatusChip = styled(Chip)(({  statusColor }) => ({
   borderRadius: 8,
   fontWeight: 600,
   backgroundColor: alpha(statusColor || '#4cb5c3', 0.1),
@@ -228,9 +228,11 @@ const OnboardingSection = () => {
   const loadOnboardingData = async () => {
     setLoading(true);
     try {
-      await dispatch(fetchKids()).unwrap();
+      // Get the kids directly from the dispatch result
+      const kidsResult = await dispatch(fetchKids()).unwrap();
       
-      const activeKids = kids.filter(kid => kid.isActive === true);
+      // Use the result directly instead of relying on state
+      const activeKids = kidsResult.filter(kid => kid.isActive === true);
       const recentKids = activeKids.slice(0, 20);
       
       for (const kid of recentKids) {
@@ -437,11 +439,11 @@ const OnboardingSection = () => {
           <Grid container spacing={3}>
             <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={800}>
-                <StatsCard color="#10b981">
+                <StatsCard color="#10b981" height="100%">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <Avatar sx={{ 
-                      width: 60, 
-                      height: 60, 
+                      width: 40, 
+                      height: 40, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
                       boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)',
@@ -462,11 +464,11 @@ const OnboardingSection = () => {
             
             <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1000}>
-                <StatsCard color="#f59e0b">
+                <StatsCard color="#f59e0b" height="100%">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <Avatar sx={{ 
-                      width: 60, 
-                      height: 60, 
+                      width: 40, 
+                      height: 40, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
                       boxShadow: '0 6px 20px rgba(245, 158, 11, 0.3)',
@@ -487,11 +489,11 @@ const OnboardingSection = () => {
             
             <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1200}>
-                <StatsCard color="#3b82f6">
+                <StatsCard color="#3b82f6" height="100%">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <Avatar sx={{ 
-                      width: 60, 
-                      height: 60, 
+                      width: 40, 
+                      height: 40, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
                       boxShadow: '0 6px 20px rgba(59, 130, 246, 0.3)'
@@ -511,11 +513,11 @@ const OnboardingSection = () => {
             
             <Grid item size={{xs:12,sm:3}}>
               <Zoom in timeout={1400}>
-                <StatsCard color="#4cb5c3">
+                <StatsCard color="#4cb5c3" height="100%">
                   <CardContent sx={{ textAlign: 'center', p: 3 }}>
                     <Avatar sx={{ 
-                      width: 60, 
-                      height: 60, 
+                      width: 40, 
+                      height: 40, 
                       margin: '0 auto 16px',
                       background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
                       boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'

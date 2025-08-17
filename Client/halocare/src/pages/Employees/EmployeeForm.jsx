@@ -1,12 +1,12 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { 
-  Container,  Typography, Button, Grid, Box, 
+  Container, Typography, Button, Grid, Box, 
   TextField, FormControl, InputLabel, Select, MenuItem, 
   FormControlLabel, Switch, CircularProgress,
-  InputAdornment, IconButton,  Alert,
+  InputAdornment, IconButton, Alert,
   Breadcrumbs, Card, CardContent, Chip, Fade, Zoom,
-  Avatar, Stack, useTheme, alpha, Tooltip
+  Avatar, Stack, useTheme, alpha, Tooltip,
+  styled, keyframes
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -21,7 +21,7 @@ import {
   Password as PasswordIcon, AutoAwesome as AutoAwesomeIcon,
   Edit as EditIcon, Close as CloseIcon, LocationOn as LocationIcon
 } from '@mui/icons-material';
-import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
 import { useDispatch } from 'react-redux';
@@ -30,9 +30,32 @@ import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
 import { baseURL } from '../../components/common/axiosConfig';
 import { useAuth } from '../../components/login/AuthContext';
-import HebrewReactDatePicker  from '../../components/common/HebrewReactDatePicker';
+import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
 
-// Enhanced theme design
+// Professional animations matching the style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+// Professional theme
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -47,18 +70,23 @@ const rtlTheme = createTheme({
   },
   palette: {
     primary: {
-      main: '#667eea',
-      light: '#818cf8',
-      dark: '#4338ca',
+      main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#f093fb',
-      light: '#fbbf24',
-      dark: '#c2410c',
+      main: '#ff7043',
+      light: '#ff9575',
+      dark: '#c63f17',
+    },
+    success: {
+      main: '#10b981',
+      light: '#34d399',
+      dark: '#059669',
     },
     background: {
-      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      default: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
       paper: '#ffffff',
     },
     text: {
@@ -73,11 +101,14 @@ const rtlTheme = createTheme({
           '& .MuiOutlinedInput-root': {
             borderRadius: 12,
             transition: 'all 0.3s ease',
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
             '&:hover': {
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)',
+              boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
+              transform: 'translateY(-2px)',
             },
             '&.Mui-focused': {
-              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.25)',
+              boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
               transform: 'translateY(-2px)',
             }
           }
@@ -98,9 +129,9 @@ const rtlTheme = createTheme({
           }
         },
         contained: {
-          background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
           '&:hover': {
-            background: 'linear-gradient(45deg, #5a67d8 30%, #6b46c1 90%)',
+            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
           }
         }
       }
@@ -112,6 +143,9 @@ const rtlTheme = createTheme({
           boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
           overflow: 'visible',
           position: 'relative',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -119,7 +153,7 @@ const rtlTheme = createTheme({
             left: 0,
             right: 0,
             height: '4px',
-            background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)',
+            background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
             borderRadius: '20px 20px 0 0',
           }
         }
@@ -128,51 +162,68 @@ const rtlTheme = createTheme({
   }
 });
 
-// Styled component for avatar with effects
+// Professional styled components
 const StyledAvatar = styled(Avatar)(({ theme }) => ({
   width: 120,
   height: 120,
   border: `4px solid ${theme.palette.background.paper}`,
-  boxShadow: `0 8px 24px rgba(102, 126, 234, 0.3)`,
+  boxShadow: `0 8px 24px rgba(76, 181, 195, 0.3)`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   cursor: 'pointer',
+  animation: `${float} 3s ease-in-out infinite`,
   '&:hover': {
     transform: 'scale(1.05) rotate(5deg)',
-    boxShadow: `0 12px 32px rgba(102, 126, 234, 0.4)`,
+    boxShadow: `0 12px 32px rgba(76, 181, 195, 0.4)`,
   }
 }));
 
-// Styled component for section header
 const SectionHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   marginBottom: theme.spacing(3),
   padding: theme.spacing(2),
-  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+  background: `linear-gradient(135deg, ${alpha('#4cb5c3', 0.05)} 0%, ${alpha('#ff7043', 0.05)} 100%)`,
   borderRadius: 16,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-}));
-
-// Styled component for the form container
-const FormContainer = styled(Container)(({ theme }) => ({
-  minHeight: '100vh',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-  paddingTop: theme.spacing(4),
-  paddingBottom: theme.spacing(4),
-}));
-
-// Styled component for the main card
-const MainCard = styled(Card)(({ theme }) => ({
-  backdropFilter: 'blur(20px)',
-  background: 'rgba(255, 255, 255, 0.95)',
-  border: `1px solid ${alpha('#ffffff', 0.2)}`,
-  '&::before': {
-    background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #667eea)',
-    height: '6px',
+  border: `1px solid ${alpha('#4cb5c3', 0.2)}`,
+  position: 'relative',
+  overflow: 'hidden',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha('#4cb5c3', 0.1)}, transparent)`,
+    animation: `${shimmer} 3s infinite`,
   }
 }));
 
-// Styled loading effect
+const FormContainer = styled(Container)(({ theme }) => ({
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
+  paddingTop: theme.spacing(4),
+  paddingBottom: theme.spacing(4),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+    zIndex: 0,
+  }
+}));
+
+const MainCard = styled(Card)(() => ({
+  position: 'relative',
+  zIndex: 1,
+}));
+
 const LoadingOverlay = styled(Box)({
   position: 'absolute',
   top: 0,
@@ -182,13 +233,71 @@ const LoadingOverlay = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(255, 255, 255, 0.8)',
-  backdropFilter: 'blur(4px)',
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
   borderRadius: 20,
   zIndex: 1000,
 });
 
-// Initial values for the form
+const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-ol': {
+    justifyContent: 'center'
+  },
+  '& a, & .MuiTypography-root': {
+    color: theme.palette.primary.main,
+    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+    fontWeight: 600,
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      color: theme.palette.primary.dark,
+      transform: 'translateY(-2px)',
+    }
+  }
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease',
+  animation: `${pulse} 2s infinite`,
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  }
+}));
+
+const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+  borderRadius: 16,
+  textTransform: 'none',
+  fontWeight: 600,
+  padding: '12px 24px',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+// Initial values for the form - PRESERVED EXACTLY
 const initialFormData = {
   firstName: '',
   lastName: '',
@@ -205,22 +314,18 @@ const initialFormData = {
   isActive: true
 };
 
-const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) => {
+const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
   
-  const {currentUser} = useAuth();
-  const {employees} =useEmployees();
   const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
   const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
   
- 
   const cityInputRef = useRef(null);
   const autocompleteCity = useRef(null);
   
-  //use employees context
   const { 
     addEmployee, 
     updateEmployee,
@@ -231,7 +336,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     cities,
   } = useEmployees();
   
-  // check if in edit mode
+  // Form state - PRESERVED EXACTLY
   const [formData, setFormData] = useState(
     isEditMode ? {
       employeeId: existingEmployee.employeeId,
@@ -262,17 +367,15 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const [documents, setDocuments] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
 
-  // Google Places Autocomplete functionality
+  // Google Places Autocomplete functionality - PRESERVED EXACTLY
   const initializeGooglePlaces = () => {
-    // Check if Google Maps API is available
     if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.places) {
       console.warn('Google Maps API לא נטען עדיין או Places API חסר');
       return false;
     }
 
     try {
-// Initialize for the city field   
-   if (cityInputRef.current && !autocompleteCity.current) {
+      if (cityInputRef.current && !autocompleteCity.current) {
         autocompleteCity.current = new window.google.maps.places.Autocomplete(
           cityInputRef.current,
           {
@@ -282,7 +385,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
           }
         );
 
-        // Listens for city selection
         autocompleteCity.current.addListener('place_changed', handleCitySelect);
         console.log('City autocomplete initialized successfully');
       }
@@ -294,7 +396,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
 
-  // Handling city selection
   const handleCitySelect = () => {
     try {
       if (!autocompleteCity.current) return;
@@ -314,7 +415,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
 
-  // Initialize Google Places when the component loads
+  // Initialize Google Places - PRESERVED EXACTLY
   useEffect(() => {
     let retryCount = 0;
     const maxRetries = 10;
@@ -330,16 +431,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         console.log('Google Places initialized successfully');
       } else {
         console.error('Failed to initialize Google Places after maximum retries');
-        //If Google Places doesn't work, we'll leave the fields as usual
       }
     };
 
-    
     const timer = setTimeout(tryInitialize, 100);
 
     return () => {
       clearTimeout(timer);
-      //Cleaning up listeners when the component closes
       try {
         if (autocompleteCity.current && window.google?.maps?.event) {
           window.google.maps.event.clearInstanceListeners(autocompleteCity.current);
@@ -350,6 +448,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     };
   }, []);
   
+  // All handler functions - PRESERVED EXACTLY
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -366,7 +465,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     validateField(name, date);
   };
   
-  //handle changing profile pic
   const handleProfilePhotoChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -381,7 +479,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         return;
       }
       
-      // checking file size - max 5MB
       if (file.size > 5 * 1024 * 1024) {
         Swal.fire({
           icon: 'error',
@@ -394,7 +491,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
       
       setProfilePhoto(file);
       
-      // Creating a preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfilePreview(e.target.result);
@@ -405,11 +501,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   
   const handleDocumentsChange = (e) => {
     if (e.target.files) {
-      
-      //5 documents only
       const newFiles = Array.from(e.target.files).slice(0, 5);
       
-      // checking file size - max 5MB
       const validFiles = newFiles.filter(file => {
         if (file.size > 5 * 1024 * 1024) {
           Swal.fire({
@@ -434,21 +527,19 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
-  // generate password
   const handleGeneratePassword = () => {
     const newPassword = generateRandomPassword();
     setFormData(prev => ({ ...prev, password: newPassword }));
     validateField('password', newPassword);
   };
   
-  // upload files after adding the employee
+  // Upload files function - PRESERVED EXACTLY
   const uploadFiles = async (employeeId) => {
     if (!profilePhoto && !documents.length) return true;
     
     try {
       setUploadingFiles(true);
       
-      // Handling profile picture
       if (profilePhoto) {
         try {
           const existingDocs = await dispatch(fetchDocumentsByEmployeeId(employeeId)).unwrap();
@@ -480,7 +571,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
           
           console.log('תמונת פרופיל הועלתה:', uploadResult);
 
-            // Update the image path in the employee profile
           if (uploadResult && uploadResult.docPath) {
             const updateData = {
               employeeId: employeeId,
@@ -503,7 +593,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         }
       }
       
-      // Handling additional documents
       if (documents.length > 0) {
         console.log(`מעלה ${documents.length} מסמכים נוספים`);
         
@@ -538,7 +627,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
   
-  // Validation functions
+  // Validation functions - PRESERVED EXACTLY
   const validateField = (name, value) => {
     const extraParams = {
       required: ['firstName', 'lastName', 'password', 'roleName',"classId","cityName"].includes(name)
@@ -556,31 +645,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
   const validateForm = () => {
     const fieldsToValidate = 
     isEditMode ?
-    ['firstName', 
-      'lastName', 
-      'mobilePhone', 
-      'roleName']
+    ['firstName', 'lastName', 'mobilePhone', 'roleName']
     :
-    ['firstName', 
-      'lastName', 
-      'email', 
-      'mobilePhone', 
-      'password', 
-      'roleName'];
+    ['firstName', 'lastName', 'email', 'mobilePhone', 'password', 'roleName'];
+    
     let isValid = true;
     const newErrors = {};
-    
 
     for (const field of fieldsToValidate) {
-      const extraParams =isEditMode?
-       {
-        required: ['firstName', 'lastName', 'roleName'].includes(field)
-      }
-      :
-      {
-        required: ['firstName', 'lastName', 'password', 'roleName'].includes(field)
-      };
-      
+      const extraParams = isEditMode ?
+        { required: ['firstName', 'lastName', 'roleName'].includes(field) }
+        : { required: ['firstName', 'lastName', 'password', 'roleName'].includes(field) };
 
       const error = Validations(field, formData[field], extraParams);
       
@@ -599,6 +674,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     return isValid;
   };
   
+  // Submit function - PRESERVED EXACTLY
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -629,11 +705,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         throw new Error(result.error);
       }
       
-      console.log('עובד נשמר בהצלחה:', result);
       
       const employeeId = isEditMode ? formData.employeeId : result.data.employeeId;
       
-      // Sending email (only in new addition mode)
       if (!isEditMode && sendEmail && formData.email) {
         try {
           console.log('שולח אימייל ברוכים הבאים');
@@ -693,7 +767,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
     }
   };
 
-  // Helper functions for displaying errors
   const getFieldError = (fieldName) => errors[fieldName] || '';
   const hasFieldError = (fieldName) => Boolean(errors[fieldName]);
 
@@ -703,20 +776,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
         <FormContainer maxWidth="lg" dir="rtl">
           {!isEditMode && (
             <Fade in timeout={800}>
-              <Breadcrumbs 
-                aria-label="breadcrumb" 
-                sx={{ 
-                  mb: 3,
-                  '& .MuiBreadcrumbs-ol': {
-                    justifyContent: 'center'
-                  },
-                  '& a, & .MuiTypography-root': {
-                    color: 'white',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                    fontWeight: 600,
-                  }
-                }}
-              >
+              <StyledBreadcrumbs aria-label="breadcrumb">
                 <Link
                   underline="hover"
                   onClick={(e) => {
@@ -730,7 +790,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                 <Typography>
                   פרטי עובד
                 </Typography>
-              </Breadcrumbs>
+              </StyledBreadcrumbs>
             </Fade>
           )}
 
@@ -739,7 +799,14 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
               {(submitting || uploadingFiles) && (
                 <LoadingOverlay>
                   <Box textAlign="center">
-                    <CircularProgress size={60} thickness={4} />
+                    <CircularProgress 
+                      size={60} 
+                      thickness={4} 
+                      sx={{ 
+                        color: '#4cb5c3',
+                        animation: `${pulse} 1.5s ease-in-out infinite`
+                      }} 
+                    />
                     <Typography variant="h6" sx={{ mt: 2, color: 'primary.main' }}>
                       {uploadingFiles ? 'מעלה קבצים...' : 'שומר נתונים...'}
                     </Typography>
@@ -748,18 +815,19 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
               )}
 
               <CardContent sx={{ p: 4 }}>
-                {/* Styled Main Header */}
+                {/* Professional Main Header */}
                 <Box textAlign="center" mb={4}>
                   <Typography
                     variant="h4"
                     component="h1"
                     sx={{
-                      background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                      background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
                       backgroundClip: 'text',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       mb: 1,
                       textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      fontWeight: 800,
                     }}
                   >
                     {pageTitle}
@@ -768,9 +836,10 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     sx={{
                       width: 80,
                       height: 4,
-                      background: 'linear-gradient(90deg, #667eea, #764ba2)',
+                      background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
                       margin: '0 auto',
                       borderRadius: 2,
+                      animation: `${shimmer} 3s infinite`,
                     }}
                   />
                 </Box>
@@ -782,6 +851,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       sx={{ 
                         mb: 3,
                         borderRadius: 3,
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(10px)',
                         '& .MuiAlert-icon': {
                           fontSize: '2rem'
                         }
@@ -794,7 +865,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                  {/* Main profil picture*/}
+                  {/* Profile Picture */}
                   <Box textAlign="center" mb={4}>
                     <input
                       type="file"
@@ -811,7 +882,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         sx={{ 
                           margin: '0 auto',
                           background: profilePreview || formData.photo ? 'transparent' : 
-                            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                            'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)'
                         }}
                       >
                         {!profilePreview && !formData.photo && <PhotoCameraIcon sx={{ fontSize: 40 }} />}
@@ -821,7 +892,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       לחץ להעלאת תמונת פרופיל
                     </Typography>
                     {profilePhoto && (
-                      <Chip 
+                      <StyledChip 
                         label={`${profilePhoto.name} (${Math.round(profilePhoto.size / 1024)} KB)`}
                         color="primary"
                         size="small"
@@ -830,13 +901,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     )}
                   </Box>
 
-                  {/* Personal info*/}
+                  {/* Personal Info Section */}
                   <Fade in timeout={1200}>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                          👥 פרטים אישיים
+                            👥 פרטים אישיים
                           </Typography>
                         </SectionHeader>
 
@@ -852,12 +923,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               required
                               error={hasFieldError("firstName")}
                               helperText={getFieldError("firstName")}
-                              InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                )
-                              }}
                             />
                           </Grid>
 
@@ -872,18 +937,10 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               required
                               error={hasFieldError("lastName")}
                               helperText={getFieldError("lastName")}
-                              InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                )
-                              }}
                             />
                           </Grid>
 
                           <Grid item size={{xs:12 , md:6}}>
-                                                        
-
                             <HebrewReactDatePicker
                               label="📅 תאריך לידה"
                               value={formData.birthDate}
@@ -894,12 +951,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                   variant: "outlined",
                                   error: hasFieldError("birthDate"),
                                   helperText: getFieldError("birthDate"),
-                                  InputProps: {
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                      </InputAdornment>
-                                    )
-                                  }
                                 },
                               }}
                             />
@@ -916,20 +967,12 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               variant="outlined"
                               error={hasFieldError("mobilePhone")}
                               helperText={getFieldError("mobilePhone")}
-                              InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                )
-                              }}
                             />
                           </Grid>
 
-                          {/* שדה עיר עם Google Places */}
                           <Grid item size={{xs:12 , md:6}}>
                             <TextField
                               fullWidth
-                              placement="top"
                               label="🏙️ עיר"
                               name="cityName"
                               value={formData.cityName}
@@ -947,7 +990,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 )
                               }}
                               onFocus={() => {
-                                
                                 if (!autocompleteCity.current && window.google?.maps?.places) {
                                   setTimeout(() => initializeGooglePlaces(), 100);
                                 }
@@ -959,13 +1001,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                     </Card>
                   </Fade>
 
-                  {/* Work info*/}
+                  {/* Work Info Section */}
                   <Fade in timeout={1400}>
                     <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main' }}>
-                          💼 פרטי העסקה
+                            💼 פרטי העסקה
                           </Typography>
                         </SectionHeader>
 
@@ -977,31 +1019,25 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               required
                               error={hasFieldError("roleName")}
                               sx={{
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 3 
-    },
-    "& .MuiSelect-outlined": {
-      borderRadius: 3
-    }
-  }}
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 3,
+                                  background: 'rgba(255, 255, 255, 0.9)',
+                                  backdropFilter: 'blur(10px)',
+                                }
+                              }}
                             >
                               <InputLabel>🎯 תפקיד</InputLabel>
                               <Select
-                              dir="rtl"
+                                dir="rtl"
                                 name="roleName"
                                 value={formData.roleName}
                                 onChange={handleChange}
                                 label="תפקיד"
                                 MenuProps={{
-  anchorOrigin: { vertical: "bottom", horizontal: "left" },
-  transformOrigin: { vertical: "top", horizontal: "left" },
-  getContentAnchorEl: null,    
- 
-  }}
-                                startAdornment={
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                }
+                                  anchorOrigin: { vertical: "bottom", horizontal: "left" },
+                                  transformOrigin: { vertical: "top", horizontal: "left" },
+                                  getContentAnchorEl: null,    
+                                }}
                               >
                                 {!roles.length ? (
                                   <MenuItem disabled>טוען תפקידים...</MenuItem>
@@ -1031,12 +1067,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               variant="outlined"
                               error={hasFieldError("licenseNum")}
                               helperText={getFieldError("licenseNum")}
-                              InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                )
-                              }}
                             />
                           </Grid>
 
@@ -1049,19 +1079,24 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 textField: {
                                   fullWidth: true,
                                   variant: "outlined",
-                                  InputProps: {
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                      </InputAdornment>
-                                    )
-                                  }
                                 },
                               }}
                             />
                           </Grid>
 
                           <Grid item size={{xs:12 , md:6}}>
-                            <FormControl required fullWidth variant="outlined">
+                            <FormControl 
+                              required 
+                              fullWidth 
+                              variant="outlined"
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 3,
+                                  background: 'rgba(255, 255, 255, 0.9)',
+                                  backdropFilter: 'blur(10px)',
+                                }
+                              }}
+                            >
                               <InputLabel>🏫 שיוך לכיתה</InputLabel>
                               <Select
                                 name="classId"
@@ -1069,21 +1104,11 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 onChange={handleChange}
                                 label="שיוך לכיתה"
                                 MenuProps={{
-    anchorOrigin: {
-      vertical: "bottom",
-      horizontal: "left"
-    },
-    transformOrigin: {
-      vertical: "top",
-      horizontal: "left"
-    },
-    getContentAnchorEl: null, // חשוב! מונע מרווח מיותר
-    style: { marginTop: 0 }   // מבטל את הרווח
-  }}
-                                startAdornment={
-                                  <InputAdornment position="start">
-                                  </InputAdornment>
-                                }
+                                  anchorOrigin: { vertical: "bottom", horizontal: "left" },
+                                  transformOrigin: { vertical: "top", horizontal: "left" },
+                                  getContentAnchorEl: null,
+                                  style: { marginTop: 0 }
+                                }}
                               >
                                 {!classes.length ? (
                                   <MenuItem disabled>טוען כיתות...</MenuItem>
@@ -1104,8 +1129,8 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                               alignItems: 'center',
                               p: 2,
                               borderRadius: 2,
-                              bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                              bgcolor: alpha('#10b981', 0.05),
+                              border: `1px solid ${alpha('#10b981', 0.2)}`
                             }}>
                               <FormControlLabel
                                 control={
@@ -1113,7 +1138,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                     name="isActive"
                                     checked={formData.isActive}
                                     onChange={handleSwitchChange}
-                                    color="primary"
+                                    color="success"
                                   />
                                 }
                                 label="עובד פעיל"
@@ -1135,9 +1160,12 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 borderWidth: 2,
                                 borderRadius: 3,
                                 fontSize: '1.1rem',
+                                borderColor: alpha('#4cb5c3', 0.3),
+                                color: '#4cb5c3',
                                 '&:hover': {
                                   borderStyle: 'dashed',
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                                  backgroundColor: alpha('#4cb5c3', 0.08),
+                                  borderColor: '#4cb5c3',
                                 }
                               }}
                             >
@@ -1154,7 +1182,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                             {documents.length > 0 && (
                               <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
                                 {documents.map((doc, index) => (
-                                  <Chip
+                                  <StyledChip
                                     key={index}
                                     label={`${doc.name} (${Math.round(doc.size / 1024)} KB)`}
                                     onDelete={() => removeDocument(index)}
@@ -1169,15 +1197,15 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       </CardContent>
                     </Card>
                   </Fade>
-                  {/* Login info*/}
-                                    {!isEditMode && (
 
+                  {/* Login Info Section */}
+                  {!isEditMode && (
                     <Fade in timeout={1600}>
                       <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
                         <CardContent sx={{ p: 3 }}>
                           <SectionHeader>
-                            <Typography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
-                            🛡️ פרטי כניסה למערכת
+                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#ef4444' }}>
+                              🛡️ פרטי כניסה למערכת
                             </Typography>
                           </SectionHeader>
 
@@ -1194,12 +1222,6 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 variant="outlined"
                                 error={hasFieldError("email")}
                                 helperText={getFieldError("email")}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                    </InputAdornment>
-                                  )
-                                }}
                               />
                             </Grid>
 
@@ -1216,28 +1238,26 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 error={hasFieldError("password")}
                                 helperText={getFieldError("password")}
                                 InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                    </InputAdornment>
-                                  ),
                                   endAdornment: (
                                     <InputAdornment position="end">
                                       <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}>
+                                        PopperProps={{
+                                          disablePortal: true,
+                                          modifiers: [
+                                            {
+                                              name: 'flip',
+                                              enabled: false 
+                                            },
+                                            {
+                                              name: 'preventOverflow',
+                                              options: {
+                                                boundary: 'window', 
+                                              },
+                                            },
+                                          ],
+                                        }}
+                                        title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                                      >
                                         <IconButton
                                           onClick={() => setShowPassword(!showPassword)}
                                           edge="end"
@@ -1246,21 +1266,23 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                         </IconButton>
                                       </Tooltip>
                                       <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="העתק סיסמה">
+                                        PopperProps={{
+                                          disablePortal: true,
+                                          modifiers: [
+                                            {
+                                              name: 'flip',
+                                              enabled: false 
+                                            },
+                                            {
+                                              name: 'preventOverflow',
+                                              options: {
+                                                boundary: 'window', 
+                                              },
+                                            },
+                                          ],
+                                        }} 
+                                        title="העתק סיסמה"
+                                      >
                                         <IconButton
                                           disabled={!formData.password}
                                           edge="end"
@@ -1274,21 +1296,30 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                                 }}
                               />
 
-                              <Button
+                              <GlowingButton
                                 onClick={handleGeneratePassword}
                                 variant="outlined"
-                                sx={{ mt: 2, borderRadius: 3 }}
+                                sx={{ 
+                                  mt: 2, 
+                                  borderRadius: 3,
+                                  borderColor: '#4cb5c3',
+                                  color: '#4cb5c3',
+                                  '&:hover': {
+                                    borderColor: '#2a8a95',
+                                    background: alpha('#4cb5c3', 0.08),
+                                  }
+                                }}
                               >
-                               ✨ ייצר סיסמה אקראית
-                              </Button>
+                                ✨ ייצר סיסמה אקראית
+                              </GlowingButton>
                             </Grid>
 
                             <Grid item size={{xs:12}}>
                               <Box sx={{ 
                                 p: 2,
                                 borderRadius: 2,
-                                bgcolor: alpha(theme.palette.success.main, 0.1),
-                                border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                                bgcolor: alpha('#10b981', 0.05),
+                                border: `1px solid ${alpha('#10b981', 0.2)}`
                               }}>
                                 <FormControlLabel
                                   control={
@@ -1318,9 +1349,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         </CardContent>
                       </Card>
                     </Fade>
-                    )}
+                  )}
                      
-                  {/* Action buttons */}
+                  {/* Action Buttons */}
                   <Fade in timeout={1800}>
                     <Box sx={{ 
                       display: "flex", 
@@ -1328,7 +1359,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                       mt: 4,
                       gap: 2
                     }}>
-                      <Button
+                      <GlowingButton
                         variant="outlined"
                         onClick={() => isEditMode ? onClose() : navigate("/employees/list")}
                         disabled={submitting || uploadingFiles}
@@ -1338,15 +1369,19 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           py: 1.5,
                           fontSize: '1.1rem',
                           borderWidth: 2,
+                          borderColor: '#6b7280',
+                          color: '#6b7280',
                           '&:hover': {
                             borderWidth: 2,
+                            borderColor: '#4b5563',
+                            background: alpha('#6b7280', 0.08),
                           }
                         }}
                       >
                         {isEditMode ? 'סגור' : '→ חזרה לרשימה'}
-                      </Button>
+                      </GlowingButton>
                       
-                      <Button
+                      <GlowingButton
                         type="submit"
                         variant="contained"
                         color="primary"
@@ -1357,9 +1392,11 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                           fontSize: '1.1rem',
                           borderRadius: 3,
                           minWidth: 200,
-                          boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)',
+                          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                          boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
                           '&:hover': {
-                            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+                            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+                            boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
                           }
                         }}
                       >
@@ -1368,7 +1405,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess , onClose }) =>
                         ) : (
                           submitButtonText
                         )}
-                      </Button>
+                      </GlowingButton>
                     </Box>
                   </Fade>
                 </form>

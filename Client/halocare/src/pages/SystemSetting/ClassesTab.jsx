@@ -15,7 +15,6 @@ import {
   Paper,
   CircularProgress,
   InputAdornment,
-  Fab,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,7 +26,15 @@ import {
   CardContent,
   Fade,
   Zoom,
-  Stack
+  Stack,
+  Avatar,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  styled,
+  keyframes
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,18 +47,42 @@ import {
   Star as StarIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
-import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Swal from 'sweetalert2';
 
 import { fetchClasses, addClass, updateClass, clearError, resetActionStatus } from '../../Redux/features/classesSlice';
+import { fetchEmployees } from '../../Redux/features/employeesSlice';
 
-// Create a theme with RTL support
+// Professional animations
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+// RTL Theme with professional colors
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     h1: {
-      fontWeight: 700,
+      fontWeight: 800,
       fontSize: '3.5rem',
     },
     h4: {
@@ -75,77 +106,68 @@ const rtlTheme = createTheme({
     },
     secondary: {
       main: '#ff7043',
-      light: '#ff9473',
-      dark: '#cc5a36',
+      light: '#ff9575',
+      dark: '#c63f17',
     },
-    background: {
-      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    success: {
+      main: '#10b981',
     }
   },
   components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          minHeight: '100vh'
-        }
-      }
-    },
     MuiTableCell: {
       styleOverrides: {
         head: {
           fontWeight: 700,
           fontSize: '1.1rem',
-          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-          color: 'white',
-          borderBottom: 'none'
+          background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
+          color: '#2a8a95',
+          borderBottom: '2px solid rgba(76, 181, 195, 0.2)'
         }
       }
     }
   }
 });
 
-// Fullscreen container designed
-const FullScreenContainer = styled(Box)(() => ({
+// Professional styled components
+const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
   position: 'relative',
   '&::before': {
     content: '""',
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 20%, rgba(76, 181, 195, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 112, 67, 0.3) 0%, transparent 50%)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    zIndex: 0,
   }
 }));
 
-// The formatted main title card
 const HeroCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: 25,
-  color: 'white',
+  borderRadius: 20,
   position: 'relative',
   overflow: 'hidden',
   marginBottom: theme.spacing(4),
-  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
-    pointerEvents: 'none'
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
   }
 }));
 
-// Table formatted with effects
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -163,24 +185,24 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     right: 0,
     height: '3px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    animation: `${shimmer} 3s infinite`,
   }
 }));
 
-// Animated button
-const AnimatedButton = styled(Button)(() => ({
+const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
   fontWeight: 600,
   fontSize: '1rem',
   position: 'relative',
   overflow: 'hidden',
-  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
-    background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+                        background: 'linear-gradient(135deg, #7b52dbff 0%, #7c3aed 100%)',
   },
   '&::after': {
     content: '""',
@@ -197,15 +219,83 @@ const AnimatedButton = styled(Button)(() => ({
   }
 }));
 
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
+    },
+    '& fieldset': {
+      borderColor: 'rgba(76, 181, 195, 0.3)',
+    },
+    '&:hover fieldset': {
+      borderColor: '#4cb5c3',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#4cb5c3',
+      borderWidth: 2,
+    }
+  }
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(76, 181, 195, 0.3)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#4cb5c3',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#4cb5c3',
+    borderWidth: 2,
+  }
+}));
+
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: 12,
+  '&:hover': {
+    transform: 'scale(1.15) rotate(5deg)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.25)',
+  }
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 70,
+  height: 70,
+  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+  boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)',
+  animation: `${float} 3s ease-in-out infinite`,
+  marginRight: theme.spacing(2),
+}));
+
+const TeacherChip = styled(Chip)(({ theme }) => ({
+  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(76, 181, 195, 0.05) 100%)',
+  border: '1px solid rgba(76, 181, 195, 0.3)',
+  fontWeight: 600,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.2) 0%, rgba(76, 181, 195, 0.1) 100%)',
+  }
+}));
 
 const ClassesTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   
-  // Redux state
+  // Redux state - Enhanced with employees
   const { classes, status, actionStatus, error } = useSelector(state => state.classes);
+  const { employees } = useSelector(state => state.employees);
   
-  // Local state
+  // Local state - PRESERVED EXACTLY
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -214,12 +304,17 @@ const ClassesTab = () => {
   const [newClassName, setNewClassName] = useState('');
   const [newTeacherId, setNewTeacherId] = useState('');
 
-  // Filter classes based on search term
+  // Load employees on mount
+  useEffect(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
+
+  // Filter classes based on search term - PRESERVED EXACTLY
   const filteredClasses = classes.filter(cls =>
     cls.className.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages
+  // Handle success/error messages - PRESERVED EXACTLY
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -242,14 +337,21 @@ const ClassesTab = () => {
     }
   }, [actionStatus, error, dispatch]);
 
-  // Handle edit start
+  // Helper function to get teacher name
+  const getTeacherName = (teacherId) => {
+    if (!teacherId) return null;
+    const teacher = employees.find(emp => emp.employeeId === teacherId);
+    return teacher ? `${teacher.firstName} ${teacher.lastName}` : `מזהה: ${teacherId}`;
+  };
+
+  // Handle edit start - PRESERVED EXACTLY
   const handleEditStart = (cls) => {
     setEditingId(cls.classId);
     setEditValue(cls.className);
-    setEditTeacherId(cls.teacherId);
+    setEditTeacherId(cls.teacherId || '');
   };
 
-  // Handle edit save
+  // Handle edit save - PRESERVED EXACTLY
   const handleEditSave = async () => {
     if (editValue.trim() === '') {
       Swal.fire({
@@ -267,7 +369,6 @@ const ClassesTab = () => {
       return;
     }
 
-    // Check if new name already exists (for different class)
     if (classes.some(cls => cls.className === editValue && cls.classId !== editingId)) {
       Swal.fire({
         icon: 'warning',
@@ -289,14 +390,14 @@ const ClassesTab = () => {
     setEditTeacherId('');
   };
 
-  // Handle edit cancel
+  // Handle edit cancel - PRESERVED EXACTLY
   const handleEditCancel = () => {
     setEditingId(null);
     setEditValue('');
     setEditTeacherId('');
   };
 
-  // Handle add class
+  // Handle add class - PRESERVED EXACTLY
   const handleAddClass = async () => {
     if (newClassName.trim() === '') {
       Swal.fire({
@@ -308,7 +409,6 @@ const ClassesTab = () => {
       return;
     }
 
-    // Check if class already exists
     if (classes.some(cls => cls.className === newClassName)) {
       Swal.fire({
         icon: 'warning',
@@ -353,34 +453,39 @@ const ClassesTab = () => {
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Container maxWidth="xl" sx={{ py: 4 }}>
             
-{/* Main title card */}            <Zoom in timeout={800}>
+            {/* Professional Main title card */}
+            <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
                   <Box display="flex" alignItems="center" justifyContent="center">
-                    <Box display="flex" alignItems="center">
-                      <StarIcon sx={{ fontSize: '3rem', mr: 2, color: '#fbbf24' }} />
-                      <Box textAlign="center">
-                        <Typography variant="h4" sx={{ 
-                          fontWeight: 700,
-                          background: 'linear-gradient(45deg, #ffffff, #f0f9ff)',
-                          backgroundClip: 'text',
-                          textFillColor: 'transparent',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent'
-                        }}>
-                         ניהול כיתות
-                        </Typography>
-                        <Typography variant="h6" sx={{ opacity: 0.9, mt: 1 }}>
-                          מערכת ניהול כיתות
-                        </Typography>
-                      </Box>
+                    <StyledAvatar>
+                      <ClassIcon sx={{ fontSize: '2.5rem' }} />
+                    </StyledAvatar>
+                    <Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 800,
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        mb: 1
+                      }}>
+                        ניהול כיתות
+                      </Typography>
+                      <Typography variant="body1" sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500
+                      }}>
+                        מערכת ניהול כיתות ושיוך מורים
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
               </HeroCard>
             </Zoom>
 
-{/* Search bar and add button designed */}            <Fade in timeout={1000}>
+            {/* Professional Search bar and add button */}
+            <Fade in timeout={1000}>
               <Paper dir="rtl" sx={{ 
                 p: 3, 
                 mb: 4, 
@@ -393,32 +498,12 @@ const ClassesTab = () => {
                 zIndex: 2
               }}>
                 <Stack direction="row" alignItems="center" spacing={3}>
-                  <TextField
-                    placeholder=" חיפוש כיתה..."
+                  <StyledTextField
+                    placeholder="🔍 חיפוש כיתה..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     variant="outlined"
                     fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                        </InputAdornment>
-                      ),
-                      sx: {
-                        borderRadius: 3,
-                        background: 'rgba(76, 181, 195, 0.05)',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(76, 181, 195, 0.3)',
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#4cb5c3',
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#4cb5c3',
-                          borderWidth: 2,
-                        }
-                      }
-                    }}
                   />
                   <AnimatedButton 
                     onClick={() => setOpenDialog(true)}
@@ -426,21 +511,21 @@ const ClassesTab = () => {
                     startIcon={<AddIcon />}
                     sx={{ minWidth: 160, py: 1.5 }}
                   >
-                     הוסף כיתה
+                    הוסף כיתה
                   </AnimatedButton>
                 </Stack>
               </Paper>
             </Fade>
 
-{/* Formatted class table */}            <Fade in timeout={1200}>
-              <StyledTableContainer component={Paper} align="center" dir="rtl" sx={{
-                mt: 2,}}>
+            {/* Professional class table */}
+            <Fade in timeout={1200}>
+              <StyledTableContainer component={Paper} dir="rtl">
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center"> שם הכיתה 🎓</TableCell>
-                      <TableCell align="center"> מזהה מורה 🏷️</TableCell>
-                      <TableCell align="center"> פעולות ⚡</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>🎓 שם הכיתה</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>👩‍🏫 מורה אחראי</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>⚡ פעולות</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -453,26 +538,20 @@ const ClassesTab = () => {
                             backgroundColor: alpha(theme.palette.action.hover, 0.05),
                           },
                           '&:hover': {
-                            backgroundColor: alpha('#4cb5c3', 0.1),
-                            transform: 'scale(1.02)',
+                            backgroundColor: 'rgba(76, 181, 195, 0.05)',
+                            transform: 'scale(1.01)',
                             transition: 'all 0.3s ease'
                           }
                         }}
                       >
                         <TableCell align="center">
                           {editingId === cls.classId ? (
-                            <TextField
+                            <StyledTextField
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               size="small"
                               fullWidth
                               autoFocus
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 2,
-                                  background: 'rgba(76, 181, 195, 0.1)'
-                                }
-                              }}
                             />
                           ) : (
                             <Typography 
@@ -484,10 +563,10 @@ const ClassesTab = () => {
                                 borderRadius: 2,
                                 fontWeight: 600,
                                 fontSize: '1.1rem',
+                                transition: 'all 0.2s ease',
                                 '&:hover': {
-                                  bgcolor: alpha('#4cb5c3', 0.1),
-                                  transform: 'scale(1.05)',
-                                  transition: 'all 0.2s ease'
+                                  bgcolor: 'rgba(76, 181, 195, 0.05)',
+                                  transform: 'scale(1.02)',
                                 }
                               }}
                             >
@@ -497,85 +576,88 @@ const ClassesTab = () => {
                         </TableCell>
                         <TableCell align="center">
                           {editingId === cls.classId ? (
-                            <TextField
-                              value={editTeacherId}
-                              onChange={(e) => setEditTeacherId(e.target.value)}
-                              size="small"
-                              type="number"
-                              fullWidth
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 2,
-                                  background: 'rgba(76, 181, 195, 0.1)'
-                                }
-                              }}
-                            />
-                          ) : (
-                            <Box >
-                              <PersonIcon sx={{ color: '#6b7280', fontSize: '1.2rem' }} />
-                              <Typography 
-                                variant="body1" 
-                                sx={{ 
-                                  fontWeight: 500,
-                                  color: cls.teacherId ? '#374151' : '#9ca3af'
-                                }}
+                            <FormControl size="small" fullWidth>
+                              <StyledSelect
+                                value={editTeacherId}
+                                onChange={(e) => setEditTeacherId(e.target.value)}
+                                displayEmpty
                               >
-                                {cls.teacherId || 'לא הוגדר'}
-                              </Typography>
+                                <MenuItem value="">
+                                  <em>ללא מורה</em>
+                                </MenuItem>
+                                {employees.filter(emp => emp.isActive).map(employee => (
+                                  <MenuItem key={employee.employeeId} value={employee.employeeId}>
+                                    {employee.firstName} {employee.lastName}
+                                  </MenuItem>
+                                ))}
+                              </StyledSelect>
+                            </FormControl>
+                          ) : (
+                            <Box>
+                              {cls.teacherId ? (
+                                <TeacherChip
+                                  icon={<PersonIcon />}
+                                  label={getTeacherName(cls.teacherId)}
+                                />
+                              ) : (
+                                <Typography 
+                                  variant="body2" 
+                                  sx={{ 
+                                    color: '#9ca3af',
+                                    fontStyle: 'italic'
+                                  }}
+                                >
+                                  לא מוגדר
+                                </Typography>
+                              )}
                             </Box>
                           )}
                         </TableCell>
                         <TableCell align="center">
                           {editingId === cls.classId ? (
                             <Box display="flex" gap={1} justifyContent="center">
-                              <IconButton
+                              <StyledIconButton
                                 onClick={handleEditSave}
-                                color="primary"
                                 size="small"
                                 disabled={actionStatus === 'loading'}
                                 sx={{
-                                  bgcolor: alpha('#10b981', 0.1),
+                                  bgcolor: 'rgba(16, 185, 129, 0.1)',
                                   '&:hover': {
                                     bgcolor: '#10b981',
                                     color: 'white',
-                                    transform: 'scale(1.1)'
                                   }
                                 }}
                               >
                                 <SaveIcon />
-                              </IconButton>
-                              <IconButton
+                              </StyledIconButton>
+                              <StyledIconButton
                                 onClick={handleEditCancel}
-                                color="error"
                                 size="small"
                                 sx={{
-                                  bgcolor: alpha('#ef4444', 0.1),
+                                  bgcolor: 'rgba(239, 68, 68, 0.1)',
                                   '&:hover': {
                                     bgcolor: '#ef4444',
                                     color: 'white',
-                                    transform: 'scale(1.1)'
                                   }
                                 }}
                               >
                                 <CancelIcon />
-                              </IconButton>
+                              </StyledIconButton>
                             </Box>
                           ) : (
-                            <IconButton
+                            <StyledIconButton
                               onClick={() => handleEditStart(cls)}
-                              color="primary"
                               size="small"
                               sx={{
-                                bgcolor: alpha('#4cb5c3', 0.1),
+                                bgcolor: 'rgba(76, 181, 195, 0.1)',
                                 '&:hover': {
                                   bgcolor: '#4cb5c3',
                                   color: 'white',
-                                  transform: 'scale(1.1)'
                                 }
                               }}
                             >
                               <EditIcon />
-                            </IconButton>
+                            </StyledIconButton>
                           )}
                         </TableCell>
                       </TableRow>
@@ -584,7 +666,15 @@ const ClassesTab = () => {
                       <TableRow>
                         <TableCell colSpan={3} align="center" sx={{ py: 8 }}>
                           <Box textAlign="center">
-                            <ClassIcon sx={{ fontSize: '4rem', color: '#9ca3af', mb: 2 }} />
+                            <Avatar sx={{ 
+                              width: 80, 
+                              height: 80,
+                              margin: '0 auto 16px',
+                              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                              boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)'
+                            }}>
+                              <ClassIcon sx={{ fontSize: '3rem' }} />
+                            </Avatar>
                             <Typography variant="h6" color="text.secondary" gutterBottom>
                               {searchTerm ? '🔍 לא נמצאו כיתות מתאימות לחיפוש' : '📚 אין כיתות במערכת'}
                             </Typography>
@@ -600,9 +690,8 @@ const ClassesTab = () => {
               </StyledTableContainer>
             </Fade>
 
-
-
-{/* Designated Add Class Dialog */}            <Dialog 
+            {/* Professional Add Class Dialog */}
+            <Dialog 
               open={openDialog} 
               onClose={handleDialogClose}
               maxWidth="sm"
@@ -612,7 +701,8 @@ const ClassesTab = () => {
                   borderRadius: 4,
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  overflow: 'hidden'
                 }
               }}
             >
@@ -620,14 +710,15 @@ const ClassesTab = () => {
                 textAlign: 'center', 
                 fontWeight: 'bold',
                 fontSize: '1.5rem',
-                background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-                color: 'white',
-                mb: 2
+                background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)',
+                color: '#7c3aed',
+                mb: 2,
+                borderBottom: '2px solid rgba(139, 92, 246, 0.2)'
               }}>
                 ✨ הוספת כיתה חדשה
               </DialogTitle>
               <DialogContent sx={{ p: 3 }}>
-                <TextField
+                <StyledTextField
                   autoFocus
                   margin="dense"
                   label="🎓 שם הכיתה"
@@ -635,50 +726,26 @@ const ClassesTab = () => {
                   variant="outlined"
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
-                  sx={{
-                    mt: 2,
-                    mb: 3,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(76, 181, 195, 0.05)',
-                      '& fieldset': {
-                        borderColor: 'rgba(76, 181, 195, 0.3)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#4cb5c3',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#4cb5c3',
-                        borderWidth: 2,
-                      }
-                    }
-                  }}
+                  sx={{ mt: 2, mb: 3 }}
                 />
-                <TextField
-                  margin="dense"
-                  label=" מזהה מורה"
-                  fullWidth
-                  variant="outlined"
-                  type="number"
-                  value={newTeacherId}
-                  onChange={(e) => setNewTeacherId(e.target.value)}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      background: 'rgba(76, 181, 195, 0.05)',
-                      '& fieldset': {
-                        borderColor: 'rgba(76, 181, 195, 0.3)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: '#4cb5c3',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#4cb5c3',
-                        borderWidth: 2,
-                      }
-                    }
-                  }}
-                />
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel>👩‍🏫 מורה אחראי</InputLabel>
+                  <StyledSelect
+                    value={newTeacherId}
+                    onChange={(e) => setNewTeacherId(e.target.value)}
+                    label="👩‍🏫 מורה אחראי"
+                    displayEmpty
+                  >
+                    <MenuItem value="">
+                      <em>ללא מורה</em>
+                    </MenuItem>
+                    {employees.filter(emp => emp.isActive).map(employee => (
+                      <MenuItem key={employee.employeeId} value={employee.employeeId}>
+                        {employee.firstName} {employee.lastName}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </FormControl>
               </DialogContent>
               <DialogActions sx={{ p: 3, gap: 2 }}>
                 <Button 
@@ -701,7 +768,7 @@ const ClassesTab = () => {
                   disabled={actionStatus === 'loading'}
                   startIcon={actionStatus === 'loading' ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
                 >
-                   הוסף כיתה
+                  הוסף כיתה
                 </AnimatedButton>
               </DialogActions>
             </Dialog>

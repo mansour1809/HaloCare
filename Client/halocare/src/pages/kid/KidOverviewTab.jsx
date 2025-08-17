@@ -100,7 +100,6 @@ const StyledAlert = styled(Alert)(({ theme, severity }) => ({
   borderColor: theme.palette[severity]?.main,
   borderRadius: 16,
   background: `linear-gradient(135deg, ${alpha(theme.palette[severity]?.main, 0.05)} 0%, ${alpha(theme.palette[severity]?.dark, 0.05)} 100%)`,
-  // backdropFilter: 'blur(10px)',
   position: 'relative',
   overflow: 'hidden',
   '& .MuiAlert-icon': { 

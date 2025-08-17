@@ -233,7 +233,7 @@ const Navbar = () => {
           {/* Left side - Logo */}
           <LogoContainer>
             <img 
-              src={'./logo-noLett.png'} 
+              src={'./logo.png'} 
               alt="HALO CARE" 
               style={{ 
                 height: '45px', 

@@ -86,7 +86,7 @@ const rtlTheme = createTheme({
 });
 
 // Enhanced Styled Components
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
@@ -101,7 +101,6 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
   }
@@ -170,7 +169,7 @@ const StatCard = styled(Card)(({ theme, color }) => ({
   }
 }));
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+const StyledTableContainer = styled(TableContainer)(() => ({
   borderRadius: 20,
   overflow: 'hidden',
   background: 'rgba(255, 255, 255, 0.95)',
@@ -190,7 +189,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-const AnimatedButton = styled(Button)(({ theme }) => ({
+const AnimatedButton = styled(Button)(() => ({
   borderRadius: 16,
   padding: '12px 24px',
   fontWeight: 600,
@@ -220,7 +219,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-const StyledFab = styled(Fab)(({ theme }) => ({
+const StyledFab = styled(Fab)(() => ({
   position: 'fixed',
   bottom: 24,
   left: 24,
@@ -236,7 +235,7 @@ const StyledFab = styled(Fab)(({ theme }) => ({
   }
 }));
 
-const StyledChip = styled(Chip)(({ theme }) => ({
+const StyledChip = styled(Chip)(() => ({
   borderRadius: 10,
   fontWeight: 600,
   backdropFilter: 'blur(10px)',
@@ -587,25 +586,6 @@ const getParentName = (kid) => {
               </Box>
               
               <Box sx={{ display: 'flex', gap: 2 }}>
-                {/* <Tooltip title="רענון נתונים">
-                  <IconButton 
-                    onClick={handleRefresh} 
-                    disabled={loading}
-                    sx={{
-                      background: 'rgba(76, 181, 195, 0.1)',
-                      border: '2px solid rgba(76, 181, 195, 0.3)',
-                      color: 'primary.main',
-                      '&:hover': {
-                        background: 'rgba(76, 181, 195, 0.2)',
-                        transform: 'rotate(180deg)',
-                      },
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    <RefreshIcon />
-                  </IconButton>
-                </Tooltip> */}
-                
                 <AnimatedButton
                   variant="contained"
                   startIcon={<AddIcon />}

@@ -25,7 +25,6 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment,
   alpha,
   styled,
   keyframes
@@ -69,13 +68,9 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-const shimmer = keyframes`
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-`;
 
 // Professional Styled Components
-const GradientContainer = styled(Container)(({ theme }) => ({
+const GradientContainer = styled(Container)(() => ({
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
   animation: `${gradientShift} 20s ease infinite`,
@@ -94,7 +89,7 @@ const GradientContainer = styled(Container)(({ theme }) => ({
   }
 }));
 
-const MainCard = styled(Card)(({ theme }) => ({
+const MainCard = styled(Card)(() => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: 20,
@@ -116,7 +111,7 @@ const MainCard = styled(Card)(({ theme }) => ({
 }));
 
 
-const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
+const StatsCard = styled(Card)(({  color = '#4cb5c3' }) => ({
   height: '100%',
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
@@ -141,7 +136,7 @@ const StatsCard = styled(Card)(({ theme, color = '#4cb5c3' }) => ({
   }
 }));
 
-const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
+const GlowingButton = styled(Button)(({  glowColor = '#4cb5c3' }) => ({
   borderRadius: 16,
   textTransform: 'none',
   fontWeight: 600,
@@ -172,7 +167,7 @@ const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
   }
 }));
 
-const StyledChip = styled(Chip)(({ theme }) => ({
+const StyledChip = styled(Chip)(() => ({
   borderRadius: 8,
   fontWeight: 600,
   backdropFilter: 'blur(10px)',
@@ -184,7 +179,7 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   }
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const StyledTextField = styled(TextField)(() => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 12,
     background: 'rgba(255, 255, 255, 0.9)',
@@ -215,7 +210,7 @@ const StyledSelect = styled(Select)(({ theme }) => ({
   }
 }));
 
-const NavigationButton = styled(IconButton)(({ theme }) => ({
+const NavigationButton = styled(IconButton)(() => ({
   background: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(10px)',
   border: '1px solid rgba(76, 181, 195, 0.2)',

@@ -12,7 +12,12 @@ import {
   Fade,
   Zoom,
   Stack,
-  Chip
+  Chip,
+  Avatar,
+  styled,
+  keyframes,
+  Breadcrumbs,
+  Link
 } from '@mui/material';
 import {
   LocationCity as CityIcon,
@@ -20,10 +25,13 @@ import {
   LocalHospital as HealthIcon,
   MedicalServices as TreatmentIcon,
   Event as EventIcon,
-  AutoAwesome as AutoAwesomeIcon
+  AutoAwesome as AutoAwesomeIcon,
+  Home as HomeIcon,
+  Group as GroupIcon
 } from '@mui/icons-material';
-import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 // Import components
 import CitiesTab from "./CitiesTab"
@@ -39,13 +47,36 @@ import { fetchHealthInsurances } from '../../Redux/features/healthinsurancesSlic
 import { fetchTreatmentTypes } from '../../Redux/features/treatmentTypesSlice';
 import { fetchEventTypes } from '../../Redux/features/eventTypesSlice';
 
-// Create a theme with RTL support
+// Professional animations matching the style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+// RTL Theme with professional colors
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
     fontFamily: 'Rubik, "Heebo", Arial, sans-serif',
     h1: {
-      fontWeight: 700,
+      fontWeight: 800,
       fontSize: '3.5rem',
     },
     h4: {
@@ -66,80 +97,196 @@ const rtlTheme = createTheme({
       main: '#4cb5c3',
       light: '#7ec8d3',
       dark: '#2a8a95',
+      contrastText: '#ffffff',
     },
     secondary: {
       main: '#ff7043',
-      light: '#ff9473',
-      dark: '#cc5a36',
+      light: '#ff9575',
+      dark: '#c63f17',
     },
-    background: {
-      default: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    }
-  },
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          minHeight: '100vh'
-        }
-      }
+    success: {
+      main: '#10b981',
     }
   }
 });
 
-// Fullscreen container designed
+// Professional styled components
 const FullScreenContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
+  backgroundSize: '400% 400%',
+  animation: `${gradientShift} 20s ease infinite`,
   position: 'relative',
   '&::before': {
     content: '""',
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 20%, rgba(76, 181, 195, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255, 112, 67, 0.3) 0%, transparent 50%)',
-    pointerEvents: 'none'
+    pointerEvents: 'none',
+    zIndex: 0,
   }
 }));
 
-// The formatted main title card
 const HeroCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 100%)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: 25,
-  color: 'white',
+  borderRadius: 20,
   position: 'relative',
   overflow: 'hidden',
   marginBottom: theme.spacing(4),
-  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
-    pointerEvents: 'none'
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    borderRadius: '20px 20px 0 0',
   }
 }));
 
-// Styled tabs - no longer used
+const TabsContainer = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: 0,
+  borderRadius: '20px 20px 0 0',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  borderBottom: 'none',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    animation: `${shimmer} 3s infinite`,
+  }
+}));
 
-// Tab content
-const TabContent = styled(Box)(({ theme }) => ({
+const TabContent = styled(Box)(() => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   borderTop: 'none',
-  borderRadius: '0 0 25px 25px',
+  borderRadius: '0 0 20px 20px',
   minHeight: '70vh',
   position: 'relative',
   overflow: 'hidden'
+}));
+
+const CategoryChip = styled(Chip)(({ theme, active, chipcolor }) => ({
+  backgroundColor: active ? chipcolor : alpha(chipcolor, 0.15),
+  color: active ? 'white' : chipcolor,
+  fontWeight: 700,
+  fontSize: '1rem',
+  padding: theme.spacing(2.5, 3),
+  height: 'auto',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: 16,
+  border: `2px solid ${active ? chipcolor : alpha(chipcolor, 0.3)}`,
+  boxShadow: active ? `0 6px 20px ${alpha(chipcolor, 0.4)}` : 'none',
+  '&:hover': {
+    backgroundColor: chipcolor,
+    color: 'white',
+    transform: 'translateY(-3px) scale(1.05)',
+    boxShadow: `0 12px 30px ${alpha(chipcolor, 0.4)}`,
+    borderColor: chipcolor,
+  },
+  '& .MuiChip-icon': {
+    fontSize: '1.8rem',
+    color: active ? 'white' : chipcolor,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+    transition: 'all 0.5s ease',
+  },
+  '&:hover::after': {
+    left: '100%',
+  }
+}));
+
+const StyledAvatar = styled(Avatar)(({ theme }) => ({
+  width: 80,
+  height: 80,
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)',
+  animation: `${float} 3s ease-in-out infinite`,
+  marginLeft: theme.spacing(3),
+}));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
+
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
 }));
 
 function TabPanel({ children, value, index, ...other }) {
@@ -159,20 +306,14 @@ function TabPanel({ children, value, index, ...other }) {
     </div>
   );
 }
-
 const SystemSettings = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
 
-  // Redux state selectors
-  const citiesStatus = useSelector(state => state.cities?.status);
-  const classesStatus = useSelector(state => state.classes?.status);
-  const healthInsuranceStatus = useSelector(state => state.healthInsurances?.status);
-  const treatmentTypesStatus = useSelector(state => state.treatmentTypes?.status);
-  const eventTypesStatus = useSelector(state => state.eventTypes?.status);
 
-  // Load all reference data on component mount
+  // Load all reference data on component mount - PRESERVED EXACTLY
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -236,80 +377,88 @@ const SystemSettings = () => {
   return (
     <ThemeProvider theme={rtlTheme}>
       <FullScreenContainer>
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Box dir="rtl" sx={{p: 3, position: 'relative', zIndex: 2 ,direction: 'rtl' }}>
+             <EnhancedBreadcrumbs dir="rtl" sx={{ mb: -2 }}>
+                    <StyledLink
+                      underline="hover"
+                      onClick={() => navigate('/')}
+                    >
+                      <HomeIcon />
+                      ראשי
+                    </StyledLink>
+                    
+                
+                    <CurrentPage>
+                      <GroupIcon />
+                      ניהול רשימות
+                    
+                    </CurrentPage>
+                  </EnhancedBreadcrumbs>
+
           <Container maxWidth="xl" sx={{ py: 4 }}>
             
-{/* Main title card */}            <Zoom in timeout={800}>
+            {/* Professional Main title card */}
+            <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
                   <Box display="flex" alignItems="center" justifyContent="center">
-                  <AutoAwesomeIcon sx={{ fontSize: '3.5rem', ml: 3, color: '#fbbf24' }} />
-                    <Box display="flex" alignItems="center">                      
-                      <Box textAlign="center">
-                        <Typography variant="h4" sx={{ 
-                          fontWeight: 700,
-                          background: 'linear-gradient(45deg, #ffffff, #f0f9ff)',
-                          backgroundClip: 'text',
-                          textFillColor: 'transparent',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          mb: 1
-                        }}>
-                         הגדרות מערכת
-                        </Typography>                        
-                      </Box>
+                    <StyledAvatar>
+                      <AutoAwesomeIcon sx={{ fontSize: '3rem' }} />
+                    </StyledAvatar>
+                    <Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 800,
+                        background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        mb: 1
+                      }}>
+                        הגדרות מערכת
+                      </Typography>
+                      <Typography variant="body1" sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500
+                      }}>
+                        ניהול נתוני בסיס ורשימות קבועות במערכת
+                      </Typography>
                     </Box>
                   </Box>
                 </CardContent>
               </HeroCard>
             </Zoom>
 
-
-
-{/* The designed tab system */}            <Fade in timeout={1200}>
+            {/* Professional Tab system */}
+            <Fade in timeout={1200}>
               <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden' }}>
                 
-{/* Button-style Navigation Tabs */}                <Paper sx={{ 
-                  p: 3, 
-                  mb: 0, 
-                  borderRadius: '25px 25px 0 0',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderBottom: 'none',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
-                }}>
-                  <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, textAlign: 'center' }}>
+                {/* Professional Navigation Tabs */}
+                <TabsContainer>
+                  <Typography variant="h6" sx={{ 
+                    mb: 3, 
+                    fontWeight: 700, 
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}>
                     📊 קטגוריות המערכת
                   </Typography>
                   <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" useFlexGap>
                     {tabs.map((tab, index) => (
-                      <Chip
+                      <CategoryChip
                         key={index}
                         icon={tab.icon}
                         label={tab.label}
                         onClick={() => setActiveTab(index)}
-                        sx={{
-                          backgroundColor: activeTab === index ? tab.color : alpha(tab.color, 0.2),
-                          color: activeTab === index ? 'white' : tab.color,
-                          fontWeight: 700,
-                          fontSize: '1rem',
-                          px: 3,
-                          py: 2,
-                          height: 'auto',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          borderRadius: 4,
-                          '&:hover': {
-                            backgroundColor: tab.color,
-                            color: 'white',
-                            transform: 'scale(1.05)'
-                          }
-                        }}
+                        active={activeTab === index ? 1 : 0}
+                        chipcolor={tab.color}
+                        sx={{ animation: `${pulse} 2s infinite` }}
                       />
                     ))}
                   </Stack>
-                </Paper>
+                </TabsContainer>
 
                 {/* Tab Content */}
                 <TabContent>
