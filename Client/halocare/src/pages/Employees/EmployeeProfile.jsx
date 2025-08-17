@@ -860,7 +860,6 @@ const EmployeeProfile = () => {
   // Local State
   const [employee, setEmployee] = useState(null);
   const [currentTab, setCurrentTab] = useState(0);
-  const [editMode, setEditMode] = useState(false);
   const [loadingEmployee, setLoadingEmployee] = useState(true);
   
   useEffect(() => {
@@ -916,7 +915,6 @@ const EmployeeProfile = () => {
 
   const handleEmployeeUpdate = (updatedEmployee) => {
     setEmployee(updatedEmployee);
-    setEditMode(false);
   };
 
   // cheking if the user can edit
@@ -1101,7 +1099,7 @@ const EmployeeProfile = () => {
                       <Button
                         variant="contained"
                         
-                        onClick={() => setEditMode(true)}
+  onClick={() => navigate(`/employees/edit/${employee.employeeId}`)}
                         sx={{
                           backgroundColor: 'rgba(255,255,255,0.2)',
                           color: 'white',
@@ -1350,165 +1348,7 @@ const EmployeeProfile = () => {
               </Paper>
             </Fade>
 
-            {/* Edit Mode Dialog */}
-            {editMode && (
-              <Paper
-                sx={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.85)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  p: 2,
-                  zIndex: 9999,
-                  backdropFilter: 'blur(15px)',
-                  animation: 'fadeIn 0.3s ease-out',
-                  '@keyframes fadeIn': {
-                    '0%': { opacity: 0 },
-                    '100%': { opacity: 1 },
-                  }
-                }}
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) {
-                    setEditMode(false);
-                  }
-                }}
-              >
-                <Zoom in={editMode} timeout={500}>
-                  <Box
-                    sx={{
-                      maxWidth: 'md',
-                      width: '100%',
-                      maxHeight: '90%',
-                      overflow: 'auto',
-                      backgroundColor: 'background.paper',
-                      borderRadius: 6,
-                      boxShadow: '0 25px 80px rgba(0,0,0,0.4)',
-                      border: '3px solid rgba(76, 181, 195, 0.4)',
-                      position: 'relative',
-                      background: 'rgba(255, 255, 255, 0.98)',
-                      backdropFilter: 'blur(20px)',
-                      transform: 'scale(1)',
-                      transition: 'all 0.3s ease',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '6px',
-                        background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-                        borderRadius: '6px 6px 0 0',
-                        animation: 'shimmer 2s infinite',
-                      },
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: -2,
-                        left: -2,
-                        right: -2,
-                        bottom: -2,
-                        background: 'linear-gradient(45deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-                        borderRadius: 8,
-                        zIndex: -1,
-                        opacity: 0.3,
-                        animation: 'glow 3s ease-in-out infinite alternate',
-                      },
-                      '@keyframes shimmer': {
-                        '0%': { backgroundPosition: '0% 50%' },
-                        '50%': { backgroundPosition: '100% 50%' },
-                        '100%': { backgroundPosition: '0% 50%' },
-                      },
-                      '@keyframes glow': {
-                        '0%': { opacity: 0.3 },
-                        '100%': { opacity: 0.6 },
-                      }
-                    }}
-                  >
-                    {/* Dialog Title */}
-                    <Box sx={{
-                      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
-                      color: 'white',
-                      p: 3,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderRadius: '6px 6px 0 0',
-                      position: 'relative',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, #ff7043, #10b981, #4cb5c3)',
-                      }
-                    }}>
-                      <Typography variant="h5" sx={{ 
-                        fontWeight: 800,
-                        display: 'flex',
-                        alignItems: 'center',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                      }}>
-                        ✏️ עריכת פרטי עובד
-                      </Typography>
-                      
-                      <IconButton
-                        onClick={() => setEditMode(false)}
-                        sx={{
-                          color: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            transform: 'scale(1.1)',
-                          },
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        <Typography sx={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
-                          ×
-                        </Typography>
-                      </IconButton>
-                    </Box>
-
-                   {/* Dialog content */}
-                    <Box sx={{ p: 3 }}>
-                      <Alert 
-                        severity="info" 
-                        sx={{ 
-                          mb: 3,
-                          borderRadius: 3,
-                          background: 'rgba(76, 181, 195, 0.1)',
-                          border: '1px solid rgba(76, 181, 195, 0.3)',
-                          '& .MuiAlert-icon': {
-                            fontSize: '1.5rem'
-                          }
-                        }}
-                        icon={<AutoAwesomeIcon />}
-                      >
-                        <Typography variant="body1" fontWeight={600}>
-                          💡 עריכת פרטי העובד - {employee.firstName} {employee.lastName}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          ניתן לעדכן את כל הפרטים האישיים והמקצועיים של העובד
-                        </Typography>
-                      </Alert>
-
-                      <EmployeeForm
-                        existingEmployee={employee}
-                        onSubmitSuccess={handleEmployeeUpdate}
-                        onClose={() => setEditMode(false)}
-                      />
-                    </Box>
-                  </Box>
-                </Zoom>
-              </Paper>
-            )}
+    
           </Container>
         </FullScreenContainer>
       </Box>

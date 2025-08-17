@@ -55,27 +55,27 @@ export const EmployeesProvider = ({ children }) => {
 
       setLoading(false);
       
-      await Swal.fire({
-        icon: 'success',
-        title: '🎉 העובד נוסף בהצלחה!',
-        text: 'העובד החדש נוסף למערכת בהצלחה',
-        confirmButtonText: '👍 מעולה!',
-        confirmButtonColor: '#4cb5c3',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        customClass: {
-          popup: 'rtl-popup',
-          title: 'swal-title-success',
-          content: 'swal-content-success'
-        },
-        showClass: {
-          popup: 'animate__animated animate__fadeInDown'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-        },
-        timer: 3000,
-        timerProgressBar: true
-      });
+      // await Swal.fire({
+      //   icon: 'success',
+      //   title: '🎉 העובד נוסף בהצלחה!',
+      //   text: 'העובד החדש נוסף למערכת בהצלחה',
+      //   confirmButtonText: '👍 מעולה!',
+      //   confirmButtonColor: '#4cb5c3',
+      //   background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      //   customClass: {
+      //     popup: 'rtl-popup',
+      //     title: 'swal-title-success',
+      //     content: 'swal-content-success'
+      //   },
+      //   showClass: {
+      //     popup: 'animate__animated animate__fadeInDown'
+      //   },
+      //   hideClass: {
+      //     popup: 'animate__animated animate__fadeOutUp'
+      //   },
+      //   timer: 3000,
+      //   timerProgressBar: true
+      // });
       
       return { success: true, data: response.data };
     } catch (err) {
@@ -282,7 +282,7 @@ export const EmployeesProvider = ({ children }) => {
       // Success email message
       await Swal.fire({
         icon: 'success',
-        title: '📧 המייל נשלח בהצלחה!',
+        title: '🎉 העובד נוסף בהצלחה!',
         html: `
           <div style="text-align: center; font-family: 'Rubik', 'Heebo', Arial, sans-serif;">
             <p style="font-size: 1.1rem; margin-bottom: 15px;">
@@ -313,7 +313,7 @@ export const EmployeesProvider = ({ children }) => {
         showClass: {
           popup: 'animate__animated animate__bounceIn'
         },
-        timer: 4000,
+        timer: 5000,
         timerProgressBar: true
       });
 

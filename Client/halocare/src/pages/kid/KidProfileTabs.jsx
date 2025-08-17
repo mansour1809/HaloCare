@@ -440,7 +440,7 @@ const KidProfileTabs = ({ selectedKid }) => {
           
           {/* Quick access buttons - Enhanced styling only */}
           <Stack direction="row" spacing={1}>
-            <Tooltip placement="top" 
+            <Tooltip placement="bottom" 
               PopperProps={{
                 disablePortal: true,
                 modifiers: [
@@ -456,41 +456,17 @@ const KidProfileTabs = ({ selectedKid }) => {
                   },
                 ],
               }}
-              title="יומן כללי"
+              title="מצב טפסי קליטה"
             >
               <AnimatedQuickActionButton
-                startIcon={<CalendarIcon />}
-                onClick={() => navigate('/calendar/schedule')}
+
+                onClick={() => navigate(`/kids/onboarding/${selectedKid.id}`)}
               >
-                יומן
+                קליטה  👁️
               </AnimatedQuickActionButton>
             </Tooltip>
             
-            <Tooltip placement="top" 
-              PopperProps={{
-                disablePortal: true,
-                modifiers: [
-                  {
-                    name: 'flip',
-                    enabled: false 
-                  },
-                  {
-                    name: 'preventOverflow',
-                    options: {
-                      boundary: 'window', 
-                    },
-                  },
-                ],
-              }}
-              title="נוכחות היום"
-            >
-              <AnimatedQuickActionButton
-                startIcon={<AttendanceIcon />}
-                onClick={() => navigate('/reports/attendance')}
-              >
-                נוכחות
-              </AnimatedQuickActionButton>
-            </Tooltip>
+            
             
            
            

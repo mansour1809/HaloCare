@@ -6,30 +6,27 @@ import {
   InputAdornment, IconButton, Alert,
   Breadcrumbs, Card, CardContent, Chip, Fade, Zoom,
   Avatar, Stack, useTheme, alpha, Tooltip,
-  styled, keyframes
+  styled, Link,keyframes
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { 
   Visibility, VisibilityOff, ContentCopy, CloudUpload,
-  Person as PersonIcon, Email as EmailIcon, Phone as PhoneIcon,
-  LocationCity as CityIcon, Work as WorkIcon, Badge as BadgeIcon,
-  Security as SecurityIcon, PhotoCamera as PhotoCameraIcon,
-  Save as SaveIcon, ArrowBack as ArrowBackIcon,
-  Password as PasswordIcon, AutoAwesome as AutoAwesomeIcon,
-  Edit as EditIcon, Close as CloseIcon, LocationOn as LocationIcon
+  LocationCity as CityIcon,
+  PhotoCamera as PhotoCameraIcon,
+  Person as PersonIcon,
+  Group as GroupIcon,
+  Home as HomeIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate, useParams } from 'react-router-dom';
 import { useEmployees } from './EmployeesContext';
 import { useDispatch } from 'react-redux';
 import { deleteDocument, fetchDocumentsByEmployeeId, uploadDocument } from '../../Redux/features/documentsSlice';
 import Validations from '../../utils/employeeValidations';
 import Swal from 'sweetalert2';
 import { baseURL } from '../../components/common/axiosConfig';
-import { useAuth } from '../../components/login/AuthContext';
 import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
 
 // Professional animations matching the style
@@ -239,28 +236,28 @@ const LoadingOverlay = styled(Box)({
   zIndex: 1000,
 });
 
-const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  padding: theme.spacing(2),
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  borderRadius: 16,
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-  '& .MuiBreadcrumbs-ol': {
-    justifyContent: 'center'
-  },
-  '& a, & .MuiTypography-root': {
-    color: theme.palette.primary.main,
-    textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-    fontWeight: 600,
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      color: theme.palette.primary.dark,
-      transform: 'translateY(-2px)',
-    }
-  }
-}));
+// const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+//   marginBottom: theme.spacing(3),
+//   padding: theme.spacing(2),
+//   background: 'rgba(255, 255, 255, 0.95)',
+//   backdropFilter: 'blur(20px)',
+//   borderRadius: 16,
+//   border: '1px solid rgba(255, 255, 255, 0.2)',
+//   boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+//   '& .MuiBreadcrumbs-ol': {
+//     justifyContent: 'center'
+//   },
+//   '& a, & .MuiTypography-root': {
+//     color: theme.palette.primary.main,
+//     textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+//     fontWeight: 600,
+//     transition: 'all 0.3s ease',
+//     '&:hover': {
+//       color: theme.palette.primary.dark,
+//       transform: 'translateY(-2px)',
+//     }
+//   }
+// }));
 
 const StyledChip = styled(Chip)(({ theme }) => ({
   borderRadius: 8,
@@ -296,8 +293,67 @@ const GlowingButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
     left: '100%',
   }
 }));
+const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  padding: theme.spacing(2),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 16,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  '& .MuiBreadcrumbs-separator': {
+    color: theme.palette.primary.main,
+  },
+  '& .MuiBreadcrumbs-li': {
+    '& a': {
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: '4px 8px',
+      borderRadius: 8,
+      '&:hover': {
+        background: 'rgba(76, 181, 195, 0.1)',
+        transform: 'translateY(-2px)',
+      }
+    }
+  }
+}));
 
-// Initial values for the form - PRESERVED EXACTLY
+const StyledLink = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  color: theme.palette.text.secondary,
+  textDecoration: 'none',
+  fontWeight: 500,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+    '& svg': {
+      transform: 'scale(1.2) rotate(10deg)',
+    }
+  },
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    transition: 'transform 0.3s ease',
+  }
+}));
+
+const CurrentPage = styled(Typography)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  fontWeight: 700,
+  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  backgroundClip: 'text',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  '& svg': {
+    marginRight: theme.spacing(0.5),
+    fontSize: 'small',
+    color: theme.palette.primary.main,
+  }
+}));
+
+// Initial values for the form 
 const initialFormData = {
   firstName: '',
   lastName: '',
@@ -314,12 +370,15 @@ const initialFormData = {
   isActive: true
 };
 
-const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => {
+const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-  
-  const isEditMode = Boolean(existingEmployee);
+  const { employeeId } = useParams();
+
+
+
+  // const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
   const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
   
@@ -333,10 +392,11 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     generateRandomPassword,
     roles, 
     classes, 
-    cities,
+    employees,
   } = useEmployees();
   
-  // Form state - PRESERVED EXACTLY
+  const existingEmployee = employees.find(emp => emp.employeeId === parseInt(employeeId));
+  // Form state 
   const [formData, setFormData] = useState(
     isEditMode ? {
       employeeId: existingEmployee.employeeId,
@@ -367,7 +427,16 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
   const [documents, setDocuments] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
 
-  // Google Places Autocomplete functionality - PRESERVED EXACTLY
+
+//   useEffect(() => {
+//   if (employeeId && employees.length > 0) {
+//     const employee = employees.find(emp => emp.employeeId === parseInt(employeeId));
+//     if (employee) {
+//       setFormData({...employee});
+//     }
+//   }
+// }, [employeeId, employees]);
+  // Google Places Autocomplete functionality 
   const initializeGooglePlaces = () => {
     if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.places) {
       console.warn('Google Maps API לא נטען עדיין או Places API חסר');
@@ -415,7 +484,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     }
   };
 
-  // Initialize Google Places - PRESERVED EXACTLY
+  // Initialize Google Places 
   useEffect(() => {
     let retryCount = 0;
     const maxRetries = 10;
@@ -448,7 +517,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     };
   }, []);
   
-  // All handler functions - PRESERVED EXACTLY
+  // All handler functions 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -533,7 +602,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     validateField('password', newPassword);
   };
   
-  // Upload files function - PRESERVED EXACTLY
+  // Upload files function 
   const uploadFiles = async (employeeId) => {
     if (!profilePhoto && !documents.length) return true;
     
@@ -627,7 +696,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     }
   };
   
-  // Validation functions - PRESERVED EXACTLY
+  // Validation functions 
   const validateField = (name, value) => {
     const extraParams = {
       required: ['firstName', 'lastName', 'password', 'roleName',"classId","cityName"].includes(name)
@@ -674,7 +743,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     return isValid;
   };
   
-  // Submit function - PRESERVED EXACTLY
+  // Submit function 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -737,31 +806,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
           confirmButtonText: 'אישור'
         });
       }
-      
-      Swal.fire({
-        title: isEditMode ? 'העובד עודכן בהצלחה!' : 'העובד נוסף בהצלחה!',
-        text: isEditMode ? 'פרטי העובד עודכנו במערכת' : 'העובד נוסף למערכת בהצלחה',
-        icon: 'success',
-        confirmButtonText: 'אישור'
-      }).then(() => {
+        
         if (onSubmitSuccess) {
           onSubmitSuccess(result.data);
-        } else if (onClose) {
-          onClose();
         } else {
           navigate("/employees/list");
         }
-      });
+      
       
     } catch (error) {
       console.error('שגיאה בשמירת העובד:', error);
-      
-      Swal.fire({
-        title: 'שגיאה!',
-        text: error.message || 'אירעה שגיאה בשמירת העובד. אנא נסה שוב.',
-        icon: 'error',
-        confirmButtonText: 'אישור'
-      });
+     
     } finally {
       setSubmitting(false);
     }
@@ -774,7 +829,35 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
         <FormContainer maxWidth="lg" dir="rtl">
-          {!isEditMode && (
+          <EnhancedBreadcrumbs dir="rtl">
+            <StyledLink underline="hover" onClick={() => navigate("/")}>
+              <HomeIcon />
+              ראשי
+            </StyledLink>
+
+            <StyledLink
+              underline="hover"
+              onClick={() => navigate("/employees/list")}
+            >
+              <GroupIcon />
+              ניהול עובדים
+            </StyledLink>
+            {isEditMode && (
+              <StyledLink
+                underline="hover"
+                onClick={() => navigate(`/employees/profile/${existingEmployee.employeeId}`)}
+              >
+                <PersonIcon />
+                פרופיל עובד
+            </StyledLink>
+            )}
+            <CurrentPage>
+              <PersonIcon />
+              {isEditMode ? "עריכת עובד" : "קליטת עובד חדש"}
+            </CurrentPage>
+          </EnhancedBreadcrumbs>
+
+          {/* {!isEditMode && (
             <Fade in timeout={800}>
               <StyledBreadcrumbs aria-label="breadcrumb">
                 <Link
@@ -792,23 +875,26 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                 </Typography>
               </StyledBreadcrumbs>
             </Fade>
-          )}
+          )} */}
 
           <Zoom in timeout={1000}>
             <MainCard>
               {(submitting || uploadingFiles) && (
                 <LoadingOverlay>
                   <Box textAlign="center">
-                    <CircularProgress 
-                      size={60} 
-                      thickness={4} 
-                      sx={{ 
-                        color: '#4cb5c3',
-                        animation: `${pulse} 1.5s ease-in-out infinite`
-                      }} 
+                    <CircularProgress
+                      size={60}
+                      thickness={4}
+                      sx={{
+                        color: "#4cb5c3",
+                        animation: `${pulse} 1.5s ease-in-out infinite`,
+                      }}
                     />
-                    <Typography variant="h6" sx={{ mt: 2, color: 'primary.main' }}>
-                      {uploadingFiles ? 'מעלה קבצים...' : 'שומר נתונים...'}
+                    <Typography
+                      variant="h6"
+                      sx={{ mt: 2, color: "primary.main" }}
+                    >
+                      {uploadingFiles ? "מעלה קבצים..." : "שומר נתונים..."}
                     </Typography>
                   </Box>
                 </LoadingOverlay>
@@ -821,12 +907,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                     variant="h4"
                     component="h1"
                     sx={{
-                      background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+                      background:
+                        "linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)",
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
                       mb: 1,
-                      textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)",
                       fontWeight: 800,
                     }}
                   >
@@ -836,8 +923,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                     sx={{
                       width: 80,
                       height: 4,
-                      background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
-                      margin: '0 auto',
+                      background:
+                        "linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)",
+                      margin: "0 auto",
                       borderRadius: 2,
                       animation: `${shimmer} 3s infinite`,
                     }}
@@ -848,14 +936,14 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                   <Fade in>
                     <Alert
                       severity="success"
-                      sx={{ 
+                      sx={{
                         mb: 3,
                         borderRadius: 3,
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(10px)',
-                        '& .MuiAlert-icon': {
-                          fontSize: '2rem'
-                        }
+                        background: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        "& .MuiAlert-icon": {
+                          fontSize: "2rem",
+                        },
                       }}
                       onClose={() => setSuccessMessage("")}
                     >
@@ -876,24 +964,39 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                     />
                     <label htmlFor="profile-upload">
                       <StyledAvatar
-                        src={profilePreview || (isEditMode && formData.photo ? 
-                          `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(formData.photo)}` : 
-                          undefined)}
-                        sx={{ 
-                          margin: '0 auto',
-                          background: profilePreview || formData.photo ? 'transparent' : 
-                            'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)'
+                        src={
+                          profilePreview ||
+                          (isEditMode && formData.photo
+                            ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(
+                                formData.photo
+                              )}`
+                            : undefined)
+                        }
+                        sx={{
+                          margin: "0 auto",
+                          background:
+                            profilePreview || formData.photo
+                              ? "transparent"
+                              : "linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)",
                         }}
                       >
-                        {!profilePreview && !formData.photo && <PhotoCameraIcon sx={{ fontSize: 40 }} />}
+                        {!profilePreview && !formData.photo && (
+                          <PhotoCameraIcon sx={{ fontSize: 40 }} />
+                        )}
                       </StyledAvatar>
                     </label>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 1 }}
+                    >
                       לחץ להעלאת תמונת פרופיל
                     </Typography>
                     {profilePhoto && (
-                      <StyledChip 
-                        label={`${profilePhoto.name} (${Math.round(profilePhoto.size / 1024)} KB)`}
+                      <StyledChip
+                        label={`${profilePhoto.name} (${Math.round(
+                          profilePhoto.size / 1024
+                        )} KB)`}
                         color="primary"
                         size="small"
                         sx={{ mt: 1 }}
@@ -903,16 +1006,19 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
 
                   {/* Personal Info Section */}
                   <Fade in timeout={1200}>
-                    <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
+                    <Card sx={{ mb: 4, borderRadius: 4, overflow: "visible" }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
-                          <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, color: "primary.main" }}
+                          >
                             👥 פרטים אישיים
                           </Typography>
                         </SectionHeader>
 
                         <Grid container spacing={3}>
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="👨‍💼 שם פרטי"
@@ -926,7 +1032,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="👨‍💼 שם משפחה"
@@ -940,11 +1046,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <HebrewReactDatePicker
                               label="📅 תאריך לידה"
                               value={formData.birthDate}
-                              onChange={(date) => handleDateChange("birthDate", date)}
+                              onChange={(date) =>
+                                handleDateChange("birthDate", date)
+                              }
                               slotProps={{
                                 textField: {
                                   fullWidth: true,
@@ -956,7 +1064,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="📱 טלפון נייד"
@@ -970,7 +1078,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="🏙️ עיר"
@@ -980,18 +1088,27 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                               variant="outlined"
                               required
                               error={hasFieldError("cityName")}
-                              helperText={getFieldError("cityName") || "התחל להקליד והמערכת תציע ערים"}
+                              helperText={
+                                getFieldError("cityName") ||
+                                "התחל להקליד והמערכת תציע ערים"
+                              }
                               inputRef={cityInputRef}
                               InputProps={{
                                 startAdornment: (
                                   <InputAdornment position="start">
                                     <CityIcon />
                                   </InputAdornment>
-                                )
+                                ),
                               }}
                               onFocus={() => {
-                                if (!autocompleteCity.current && window.google?.maps?.places) {
-                                  setTimeout(() => initializeGooglePlaces(), 100);
+                                if (
+                                  !autocompleteCity.current &&
+                                  window.google?.maps?.places
+                                ) {
+                                  setTimeout(
+                                    () => initializeGooglePlaces(),
+                                    100
+                                  );
                                 }
                               }}
                             />
@@ -1003,16 +1120,19 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
 
                   {/* Work Info Section */}
                   <Fade in timeout={1400}>
-                    <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
+                    <Card sx={{ mb: 4, borderRadius: 4, overflow: "visible" }}>
                       <CardContent sx={{ p: 3 }}>
                         <SectionHeader>
-                          <Typography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main' }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, color: "secondary.main" }}
+                          >
                             💼 פרטי העסקה
                           </Typography>
                         </SectionHeader>
 
                         <Grid container spacing={3}>
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <FormControl
                               fullWidth
                               variant="outlined"
@@ -1021,9 +1141,9 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                               sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 3,
-                                  background: 'rgba(255, 255, 255, 0.9)',
-                                  backdropFilter: 'blur(10px)',
-                                }
+                                  background: "rgba(255, 255, 255, 0.9)",
+                                  backdropFilter: "blur(10px)",
+                                },
                               }}
                             >
                               <InputLabel>🎯 תפקיד</InputLabel>
@@ -1034,16 +1154,26 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                                 onChange={handleChange}
                                 label="תפקיד"
                                 MenuProps={{
-                                  anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                                  transformOrigin: { vertical: "top", horizontal: "left" },
-                                  getContentAnchorEl: null,    
+                                  anchorOrigin: {
+                                    vertical: "bottom",
+                                    horizontal: "left",
+                                  },
+                                  transformOrigin: {
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  },
+                                  getContentAnchorEl: null,
                                 }}
                               >
                                 {!roles.length ? (
                                   <MenuItem disabled>טוען תפקידים...</MenuItem>
                                 ) : (
                                   roles.map((role) => (
-                                    <MenuItem dir="rtl" key={role.roleName} value={role.roleName}>
+                                    <MenuItem
+                                      dir="rtl"
+                                      key={role.roleName}
+                                      value={role.roleName}
+                                    >
                                       {role.roleName}
                                     </MenuItem>
                                   ))
@@ -1057,7 +1187,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             </FormControl>
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="📄 מספר רישיון"
@@ -1070,11 +1200,13 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <HebrewReactDatePicker
                               label="📅 תאריך תחילת עבודה"
                               value={formData.startDate}
-                              onChange={(date) => handleDateChange("startDate", date)}
+                              onChange={(date) =>
+                                handleDateChange("startDate", date)
+                              }
                               slotProps={{
                                 textField: {
                                   fullWidth: true,
@@ -1084,17 +1216,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             />
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
-                            <FormControl 
-                              required 
-                              fullWidth 
+                          <Grid item size={{ xs: 12, md: 6 }}>
+                            <FormControl
+                              required
+                              fullWidth
                               variant="outlined"
                               sx={{
                                 "& .MuiOutlinedInput-root": {
                                   borderRadius: 3,
-                                  background: 'rgba(255, 255, 255, 0.9)',
-                                  backdropFilter: 'blur(10px)',
-                                }
+                                  background: "rgba(255, 255, 255, 0.9)",
+                                  backdropFilter: "blur(10px)",
+                                },
                               }}
                             >
                               <InputLabel>🏫 שיוך לכיתה</InputLabel>
@@ -1104,17 +1236,27 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                                 onChange={handleChange}
                                 label="שיוך לכיתה"
                                 MenuProps={{
-                                  anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                                  transformOrigin: { vertical: "top", horizontal: "left" },
+                                  anchorOrigin: {
+                                    vertical: "bottom",
+                                    horizontal: "left",
+                                  },
+                                  transformOrigin: {
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  },
                                   getContentAnchorEl: null,
-                                  style: { marginTop: 0 }
+                                  style: { marginTop: 0 },
                                 }}
                               >
                                 {!classes.length ? (
                                   <MenuItem disabled>טוען כיתות...</MenuItem>
                                 ) : (
                                   classes.map((cls) => (
-                                    <MenuItem dir="rtl" key={cls.classId} value={cls.classId}>
+                                    <MenuItem
+                                      dir="rtl"
+                                      key={cls.classId}
+                                      value={cls.classId}
+                                    >
                                       {cls.className}
                                     </MenuItem>
                                   ))
@@ -1123,15 +1265,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             </FormControl>
                           </Grid>
 
-                          <Grid item size={{xs:12 , md:6}}>
-                            <Box sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center',
-                              p: 2,
-                              borderRadius: 2,
-                              bgcolor: alpha('#10b981', 0.05),
-                              border: `1px solid ${alpha('#10b981', 0.2)}`
-                            }}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: alpha("#10b981", 0.05),
+                                border: `1px solid ${alpha("#10b981", 0.2)}`,
+                              }}
+                            >
                               <FormControlLabel
                                 control={
                                   <Switch
@@ -1147,26 +1291,26 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                             </Box>
                           </Grid>
 
-                          <Grid item size={{xs:12}}>
+                          <Grid item size={{ xs: 12 }}>
                             <Button
                               variant="outlined"
                               component="label"
                               disabled={isEditMode}
                               startIcon={<CloudUpload />}
                               fullWidth
-                              sx={{ 
+                              sx={{
                                 height: 64,
-                                borderStyle: 'dashed',
+                                borderStyle: "dashed",
                                 borderWidth: 2,
                                 borderRadius: 3,
-                                fontSize: '1.1rem',
-                                borderColor: alpha('#4cb5c3', 0.3),
-                                color: '#4cb5c3',
-                                '&:hover': {
-                                  borderStyle: 'dashed',
-                                  backgroundColor: alpha('#4cb5c3', 0.08),
-                                  borderColor: '#4cb5c3',
-                                }
+                                fontSize: "1.1rem",
+                                borderColor: alpha("#4cb5c3", 0.3),
+                                color: "#4cb5c3",
+                                "&:hover": {
+                                  borderStyle: "dashed",
+                                  backgroundColor: alpha("#4cb5c3", 0.08),
+                                  borderColor: "#4cb5c3",
+                                },
                               }}
                             >
                               {documents.length > 0
@@ -1180,11 +1324,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                               />
                             </Button>
                             {documents.length > 0 && (
-                              <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}
+                              >
                                 {documents.map((doc, index) => (
                                   <StyledChip
                                     key={index}
-                                    label={`${doc.name} (${Math.round(doc.size / 1024)} KB)`}
+                                    label={`${doc.name} (${Math.round(
+                                      doc.size / 1024
+                                    )} KB)`}
                                     onDelete={() => removeDocument(index)}
                                     color="primary"
                                     variant="outlined"
@@ -1201,16 +1351,21 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                   {/* Login Info Section */}
                   {!isEditMode && (
                     <Fade in timeout={1600}>
-                      <Card sx={{ mb: 4, borderRadius: 4, overflow: 'visible' }}>
+                      <Card
+                        sx={{ mb: 4, borderRadius: 4, overflow: "visible" }}
+                      >
                         <CardContent sx={{ p: 3 }}>
                           <SectionHeader>
-                            <Typography variant="h6" sx={{ fontWeight: 600, color: '#ef4444' }}>
+                            <Typography
+                              variant="h6"
+                              sx={{ fontWeight: 600, color: "#ef4444" }}
+                            >
                               🛡️ פרטי כניסה למערכת
                             </Typography>
                           </SectionHeader>
 
                           <Grid container spacing={3}>
-                            <Grid item size={{xs:12}}>
+                            <Grid item size={{ xs: 12 }}>
                               <TextField
                                 fullWidth
                                 label="📧 דוא״ל"
@@ -1225,7 +1380,7 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                               />
                             </Grid>
 
-                            <Grid item size={{xs:12}}>
+                            <Grid item size={{ xs: 12 }}>
                               <TextField
                                 fullWidth
                                 label="🔐 סיסמה ראשונית"
@@ -1240,53 +1395,69 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                                 InputProps={{
                                   endAdornment: (
                                     <InputAdornment position="end">
-                                      <Tooltip placement="top" 
+                                      <Tooltip
+                                        placement="top"
                                         PopperProps={{
                                           disablePortal: true,
                                           modifiers: [
                                             {
-                                              name: 'flip',
-                                              enabled: false 
+                                              name: "flip",
+                                              enabled: false,
                                             },
                                             {
-                                              name: 'preventOverflow',
+                                              name: "preventOverflow",
                                               options: {
-                                                boundary: 'window', 
+                                                boundary: "window",
                                               },
                                             },
                                           ],
                                         }}
-                                        title={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                                        title={
+                                          showPassword
+                                            ? "הסתר סיסמה"
+                                            : "הצג סיסמה"
+                                        }
                                       >
                                         <IconButton
-                                          onClick={() => setShowPassword(!showPassword)}
+                                          onClick={() =>
+                                            setShowPassword(!showPassword)
+                                          }
                                           edge="end"
                                         >
-                                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                                          {showPassword ? (
+                                            <VisibilityOff />
+                                          ) : (
+                                            <Visibility />
+                                          )}
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip placement="top" 
+                                      <Tooltip
+                                        placement="top"
                                         PopperProps={{
                                           disablePortal: true,
                                           modifiers: [
                                             {
-                                              name: 'flip',
-                                              enabled: false 
+                                              name: "flip",
+                                              enabled: false,
                                             },
                                             {
-                                              name: 'preventOverflow',
+                                              name: "preventOverflow",
                                               options: {
-                                                boundary: 'window', 
+                                                boundary: "window",
                                               },
                                             },
                                           ],
-                                        }} 
+                                        }}
                                         title="העתק סיסמה"
                                       >
                                         <IconButton
                                           disabled={!formData.password}
                                           edge="end"
-                                          onClick={() => navigator.clipboard.writeText(formData.password)}
+                                          onClick={() =>
+                                            navigator.clipboard.writeText(
+                                              formData.password
+                                            )
+                                          }
                                         >
                                           <ContentCopy />
                                         </IconButton>
@@ -1299,33 +1470,37 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                               <GlowingButton
                                 onClick={handleGeneratePassword}
                                 variant="outlined"
-                                sx={{ 
-                                  mt: 2, 
+                                sx={{
+                                  mt: 2,
                                   borderRadius: 3,
-                                  borderColor: '#4cb5c3',
-                                  color: '#4cb5c3',
-                                  '&:hover': {
-                                    borderColor: '#2a8a95',
-                                    background: alpha('#4cb5c3', 0.08),
-                                  }
+                                  borderColor: "#4cb5c3",
+                                  color: "#4cb5c3",
+                                  "&:hover": {
+                                    borderColor: "#2a8a95",
+                                    background: alpha("#4cb5c3", 0.08),
+                                  },
                                 }}
                               >
                                 ✨ ייצר סיסמה אקראית
                               </GlowingButton>
                             </Grid>
 
-                            <Grid item size={{xs:12}}>
-                              <Box sx={{ 
-                                p: 2,
-                                borderRadius: 2,
-                                bgcolor: alpha('#10b981', 0.05),
-                                border: `1px solid ${alpha('#10b981', 0.2)}`
-                              }}>
+                            <Grid item size={{ xs: 12 }}>
+                              <Box
+                                sx={{
+                                  p: 2,
+                                  borderRadius: 2,
+                                  bgcolor: alpha("#10b981", 0.05),
+                                  border: `1px solid ${alpha("#10b981", 0.2)}`,
+                                }}
+                              >
                                 <FormControlLabel
                                   control={
                                     <Switch
                                       checked={sendEmail}
-                                      onChange={(e) => setSendEmail(e.target.checked)}
+                                      onChange={(e) =>
+                                        setSendEmail(e.target.checked)
+                                      }
                                       color="success"
                                       disabled={!formData.email}
                                     />
@@ -1350,37 +1525,41 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                       </Card>
                     </Fade>
                   )}
-                     
+
                   {/* Action Buttons */}
                   <Fade in timeout={1800}>
-                    <Box sx={{ 
-                      display: "flex", 
-                      justifyContent: "space-between",
-                      mt: 4,
-                      gap: 2
-                    }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 4,
+                        gap: 2,
+                      }}
+                    >
                       <GlowingButton
                         variant="outlined"
-                        onClick={() => isEditMode ? onClose() : navigate("/employees/list")}
+                        onClick={() =>
+                          isEditMode ? onClose() : navigate("/employees/list")
+                        }
                         disabled={submitting || uploadingFiles}
-                        sx={{ 
+                        sx={{
                           borderRadius: 3,
                           px: 4,
                           py: 1.5,
-                          fontSize: '1.1rem',
+                          fontSize: "1.1rem",
                           borderWidth: 2,
-                          borderColor: '#6b7280',
-                          color: '#6b7280',
-                          '&:hover': {
+                          borderColor: "#6b7280",
+                          color: "#6b7280",
+                          "&:hover": {
                             borderWidth: 2,
-                            borderColor: '#4b5563',
-                            background: alpha('#6b7280', 0.08),
-                          }
+                            borderColor: "#4b5563",
+                            background: alpha("#6b7280", 0.08),
+                          },
                         }}
                       >
-                        {isEditMode ? 'סגור' : '→ חזרה לרשימה'}
+                        {isEditMode ? "סגור" : "→ חזרה לרשימה"}
                       </GlowingButton>
-                      
+
                       <GlowingButton
                         type="submit"
                         variant="contained"
@@ -1389,15 +1568,17 @@ const EmployeeForm = ({ existingEmployee = null, onSubmitSuccess, onClose }) => 
                         sx={{
                           px: 4,
                           py: 1.5,
-                          fontSize: '1.1rem',
+                          fontSize: "1.1rem",
                           borderRadius: 3,
                           minWidth: 200,
-                          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-                          boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
-                          '&:hover': {
-                            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-                            boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
-                          }
+                          background:
+                            "linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)",
+                          boxShadow: "0 6px 20px rgba(76, 181, 195, 0.3)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)",
+                            boxShadow: "0 8px 25px rgba(76, 181, 195, 0.4)",
+                          },
                         }}
                       >
                         {submitting || uploadingFiles ? (

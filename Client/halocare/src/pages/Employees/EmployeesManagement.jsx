@@ -1,11 +1,13 @@
-// src/components/EmployeesManagement.jsx 
+// src/components/EmployeesManagement.jsx - Fixed and Styled Version
 import { useState, useEffect } from "react";
 import { 
   Paper, Button, Switch, Dialog, DialogTitle, DialogContent, 
   TextField, Box, FormControl, InputLabel, Select, MenuItem,
   Typography, IconButton, CircularProgress, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Avatar,
-  Chip, Tooltip, Container, Fade, Zoom, Stack ,  Breadcrumbs
+  Chip, Tooltip, Container, Fade, Zoom, Stack, Breadcrumbs,
+  alpha, styled, keyframes,
+  Link
 } from "@mui/material";
 import {
   Person as PersonIcon,
@@ -13,22 +15,43 @@ import {
   Group as GroupIcon,
   AutoAwesome as AutoAwesomeIcon,
   Celebration as CelebrationIcon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
-import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { Alert } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 // Context and hooks
 import { useEmployees } from './EmployeesContext';
 import EmployeeForm from "./EmployeeForm";
-import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
 import { baseURL } from "../../components/common/axiosConfig";
 import { useDispatch } from "react-redux";
 
+// Professional animations
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const shimmer = keyframes`
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+`;
+
+
+// Theme
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -92,62 +115,23 @@ const rtlTheme = createTheme({
           padding: '16px 12px'
         },
         head: {
-          backgroundColor: 'rgba(76, 181, 195, 0.1)',
+          backgroundColor: 'rgba(76, 181, 195, 0.05)',
           fontWeight: 700,
           fontSize: '1.1rem',
           color: '#2a8a95',
-          borderBottom: '2px solid rgba(76, 181, 195, 0.3)'
+          borderBottom: '2px solid rgba(76, 181, 195, 0.2)'
         }
       },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 20,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          backdropFilter: 'blur(20px)',
-          background: 'rgba(255, 255, 255, 0.95)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          overflow: 'visible',
-          position: 'relative',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: 'translateY(-8px)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-          }
-        }
-      }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          textTransform: 'none',
-          fontWeight: 600,
-          padding: '12px 24px',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-          }
-        },
-        contained: {
-          background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-          '&:hover': {
-            background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-          }
-        }
-      }
     }
   }
 });
 
-// Full Screen Container
+// Styled Components
 const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
-  animation: 'gradientShift 20s ease infinite',
+  animation: `${gradientShift} 20s ease infinite`,
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
@@ -158,42 +142,33 @@ const FullScreenContainer = styled(Box)(() => ({
     left: 0,
     right: 0,
     bottom: 0,
-    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
   }
 }));
 
-// Modern Header
 const ModernHeader = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.15)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   borderRadius: 20,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
   position: 'relative',
   zIndex: 2,
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '3px',
+    height: '4px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-    borderRadius: '20px 20px 0 0',
+    animation: `${shimmer} 3s ease infinite`,
   }
 }));
-
-
-// Styled Table Container
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: 20,
   overflow: 'hidden',
@@ -214,7 +189,6 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-// Animated Button
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 24px',
@@ -223,6 +197,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+  color: 'white',
   boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
@@ -244,6 +219,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
     left: '100%',
   }
 }));
+
 const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   marginBottom: theme.spacing(4),
   padding: theme.spacing(2),
@@ -305,6 +281,54 @@ const CurrentPage = styled(Typography)(({ theme }) => ({
 }));
 
 
+const StyledChip = styled(Chip)(({ theme }) => ({
+  borderRadius: 8,
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  }
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
+    },
+    '&:hover fieldset': {
+      borderColor: '#4cb5c3',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#4cb5c3',
+      borderWidth: 2,
+    }
+  }
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 12,
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(10px)',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(76, 181, 195, 0.3)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#4cb5c3',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#4cb5c3',
+    borderWidth: 2,
+  }
+}));
+
+
 const EmployeesManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -329,7 +353,6 @@ const EmployeesManagement = () => {
     refreshEmployees();
   }, []);
 
-  
   const handleToggleActive = async (id, currentStatus) => {
     const result = await toggleEmployeeStatus(id, currentStatus);
     if (!result.success) {
@@ -343,7 +366,6 @@ const EmployeesManagement = () => {
     setLocalError("");
   };
 
-  // date formatting
   const formatDate = (dateString) => {
     if (!dateString || dateString === 'NULL') return '';
     try {
@@ -355,13 +377,9 @@ const EmployeesManagement = () => {
     }
   };
 
-  // search color of role in roles 
   const getRoleColor = (roleName) => {
     if (!roleName) return "#9e9e9e"; 
-    console.log(roleName)
-    console.log(roles)
     const role = roles.find(r => r.roleName === roleName);
-    console.log(role)
     return role?.description || "#9e9e9e"; 
   };
 
@@ -381,14 +399,12 @@ const EmployeesManagement = () => {
     );
   });
 
-  // getting class name by classId
   const getClassName = (classId) => {
     if (!classId) return '–';
     const foundClass = classes.find(c => c.classId === classId);
     return foundClass ? foundClass.className : classId.toString();
   };
 
-  // Statistics calculation
   const getStats = () => {
     return {
       total: employees.length,
@@ -432,27 +448,28 @@ const EmployeesManagement = () => {
   return (
     <ThemeProvider theme={rtlTheme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-                            <FullScreenContainer >
+            <FullScreenContainer>
+              <Box sx={{ p: 3, position: 'relative', zIndex: 2 }} dir="rtl">
+            
+            {/* Fixed Breadcrumbs */}
+               <EnhancedBreadcrumbs> 
+                                <StyledLink
+                                  underline="hover"
+                                  onClick={() => navigate('/')}
+                                >
+                                  <HomeIcon />
+                                  ראשי
+                                </StyledLink>
+                                
+                            
+                                <CurrentPage>
+                                  <GroupIcon />
+                                  ניהול עובדים
+                                </CurrentPage>
+                              </EnhancedBreadcrumbs>
 
-        <Box dir="rtl" sx={{p: 3, position: 'relative', zIndex: 2 ,direction: 'rtl' }}>
-
-             <EnhancedBreadcrumbs dir="rtl" sx={{ mb: -2 }}>
-                              <StyledLink
-                                underline="hover"
-                                onClick={() => navigate('/')}
-                              >
-                                <HomeIcon />
-                                ראשי
-                              </StyledLink>
-                              
-                          
-                              <CurrentPage>
-                                <GroupIcon />
-                                ניהול עובדים
-                              </CurrentPage>
-                            </EnhancedBreadcrumbs>
           
-            <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }} dir="rtl">
+            {/* <Container maxWidth="xl" sx={{ py: 4, position: 'relative', zIndex: 2 }} dir="rtl"> */}
               
               {/* Modern headline */}
               <Fade in timeout={800}>
@@ -460,47 +477,34 @@ const EmployeesManagement = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h4" sx={{ 
                       fontWeight: 700,
-                      color: 'white',
-                      textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                      background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
                       display: 'flex',
                       alignItems: 'center'
                     }}>
-                      👥 ניהול עובדים
+                      <GroupIcon sx={{ mr: 2, fontSize: '2.5rem', color: '#4cb5c3' }} />
+                      ניהול עובדים
                     </Typography>
 
-                    <Stack direction="row" spacing={2}>
-                      <AnimatedButton
-                        variant="contained"
-                        component={Link}
-                        to="/employees/add"
-                        sx={{
-                          background: 'rgba(255,255,255,0.2)',
-                          backdropFilter: 'blur(10px)',
-                          color: 'white',
-                          border: '1px solid rgba(255,255,255,0.3)',
-                          '&:hover': {
-                            background: 'rgba(255,255,255,0.3)',
-                          }
-                        }}
-                      >
-                        ➕ הוספת עובד חדש
-                      </AnimatedButton>
-                      
-                      
-                    </Stack>
+                    <AnimatedButton
+                      variant="contained"
+                      onClick={() => navigate('/employees/add')}
+                      startIcon={<AddIcon />}
+                    >
+                      הוספת עובד חדש
+                    </AnimatedButton>
                   </Box>
 
                   {/* Statistics */}
                   <Stack direction="row" spacing={3} sx={{ mt: 3 }}>
-                    <Chip
+                    <StyledChip
                       icon={<GroupIcon />}
                       label={`${stats.total} אנשי צוות`}
                       sx={{
-                        background: 'rgba(255, 255, 255, 0.34)',
-                        backdropFilter: 'blur(10px)',
-                        color: 'white',
-                        border: '1px solid rgba(255,255,255,0.3)',
-                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.15) 0%, rgba(76, 181, 195, 0.05) 100%)',
+                        color: '#2a8a95',
+                        border: '1px solid rgba(76, 181, 195, 0.3)',
                         fontSize: '1rem',
                         px: 2,
                         py: 1,
@@ -508,15 +512,13 @@ const EmployeesManagement = () => {
                       }}
                       size="medium"
                     />
-                    <Chip
+                    <StyledChip
                       icon={<CelebrationIcon />}
                       label={`${stats.active} פעילים`}
                       sx={{
-                        background: 'rgba(16, 185, 129, 0.46)',
-                        backdropFilter: 'blur(10px)',
-                        color: 'white',
-                        border: '1px solid rgba(16, 185, 129, 0.52)',
-                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                        color: '#059669',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
                         fontSize: '1rem',
                         px: 2,
                         py: 1,
@@ -524,7 +526,6 @@ const EmployeesManagement = () => {
                       }}
                       size="medium"
                     />
-                   
                   </Stack>
                 </ModernHeader>
               </Fade>
@@ -552,27 +553,15 @@ const EmployeesManagement = () => {
                     borderRadius: '4px 4px 0 0',
                   }
                 }}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="center" >
-                    <TextField
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="center">
+                    <StyledTextField
                       variant="outlined"
                       size="medium"
                       placeholder="🔍 חיפוש חופשי בשם, מייל או טלפון..."
                       value={searchText}
                       onChange={(event) => setSearchText(event.target.value)}
-                     
-                      sx={{ 
-                        flex: 1,
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 3,
-                          '&:hover fieldset': {
-                            borderColor: '#4cb5c3',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#4cb5c3',
-                            borderWidth: 2,
-                          }
-                        }
-                      }}
+                      sx={{ flex: 1 }}
+                      fullWidth
                     />
 
                     <FormControl sx={{ minWidth: 250 }}>
@@ -580,23 +569,10 @@ const EmployeesManagement = () => {
                         <FilterIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
                         סינון לפי תפקיד
                       </InputLabel>
-                      <Select
+                      <StyledSelect
                         value={selectedRole}
                         onChange={(e) => setSelectedRole(e.target.value)}
                         label="סינון לפי תפקיד"
-                        sx={{
-                          borderRadius: 3,
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(76, 181, 195, 0.3)',
-                          },
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#4cb5c3',
-                          },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: '#4cb5c3',
-                            borderWidth: 2,
-                          }
-                        }}
                       >
                         <MenuItem value="">🌟 הכל</MenuItem>
                         {roles.map((role) => (
@@ -604,7 +580,7 @@ const EmployeesManagement = () => {
                             {role.roleName}
                           </MenuItem>
                         ))}
-                      </Select>
+                      </StyledSelect>
                     </FormControl>
                   </Stack>
                 </Paper>
@@ -653,7 +629,7 @@ const EmployeesManagement = () => {
                             sx={{
                               "&:hover": { 
                                 backgroundColor: "rgba(76, 181, 195, 0.05)",
-                                transform: 'scale(1.02)',
+                                transform: 'scale(1.01)',
                                 transition: 'all 0.3s ease'
                               },
                               borderBottom: "1px solid rgba(76, 181, 195, 0.1)",
@@ -661,7 +637,7 @@ const EmployeesManagement = () => {
                             }}
                           >
                             <TableCell>
-                              <Box sx={{ display: "flex-start", alignItems: "center", justifyContent: "right"  }}>
+                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
                                 <Avatar
                                   src={
                                     employee.photo
@@ -702,7 +678,7 @@ const EmployeesManagement = () => {
 
                             <TableCell>
                               {employee.roleName ? (
-                                <Chip
+                                <StyledChip
                                   label={employee.roleName}
                                   sx={{
                                     backgroundColor: getRoleColor(employee.roleName),
@@ -710,11 +686,6 @@ const EmployeesManagement = () => {
                                     fontWeight: 700,
                                     fontSize: '0.9rem',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                      transform: 'scale(1.05)',
-                                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                                    }
                                   }}
                                   size="medium"
                                 />
@@ -772,6 +743,24 @@ const EmployeesManagement = () => {
                             </TableCell>
                             
                             <TableCell>
+                              <Tooltip placement="top" 
+                                PopperProps={{
+                                  disablePortal: true,
+                                  modifiers: [
+                                    {
+                                      name: 'flip',
+                                      enabled: false 
+                                    },
+                                    {
+                                      name: 'preventOverflow',
+                                      options: {
+                                        boundary: 'window', 
+                                      },
+                                    },
+                                  ],
+                                }}
+                                title="פרופיל עובד"
+                              >
                                 <IconButton
                                   sx={{
                                     width: 45,
@@ -782,33 +771,15 @@ const EmployeesManagement = () => {
                                     boxShadow: '0 4px 12px rgba(76, 181, 195, 0.3)',
                                     "&:hover": { 
                                       background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-                                      transform: 'scale(1.1)',
+                                      transform: 'scale(1.1) rotate(10deg)',
                                       boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
                                     },
                                   }}
                                   onClick={() => navigate(`/employees/profile/${employee.employeeId}`)}
                                 >
-                                                                <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="פרופיל עובד">
-
                                   <PersonIcon sx={{ fontSize: 20 }} />
+                                </IconButton>
                               </Tooltip>
-                                                              </IconButton>
-
                             </TableCell>
                           </TableRow>
                         ))}
@@ -879,10 +850,9 @@ const EmployeesManagement = () => {
                   )}
                 </DialogContent>
               </Dialog>
-            </Container>
-        </Box>
-                  </FullScreenContainer>
-
+            {/* </Container> */}
+          </Box>
+        </FullScreenContainer>
       </LocalizationProvider>
     </ThemeProvider>
   );

@@ -192,7 +192,6 @@ const AppContent = () => {
                 element={
                   <PrivateRoute>
                     <KidOnboarding  />
-                    {/* <PersonalInfoForm/> */}
                   </PrivateRoute>
                 }
               />
@@ -221,7 +220,25 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
+              <Route
+  path="/employees/edit/:employeeId"
+  element={
+    <PrivateRoute>
+      <EmployeeForm isEditMode = {true} />
+    </PrivateRoute>
+  }
+/>
 
+
+              <Route
+                path="/employees/profile/:employeeId"
+                element={
+                  <PrivateRoute>
+                      <EmployeeProfile />
+                  </PrivateRoute>
+                }
+              />
+              
 {/* Calendar */}              <Route
                 path="/calendar/schedule"
                 element={
@@ -257,14 +274,6 @@ const AppContent = () => {
                 }
               />
 
-              <Route
-                path="/employees/profile/:employeeId"
-                element={
-                  <PrivateRoute>
-                      <EmployeeProfile />
-                  </PrivateRoute>
-                }
-              />
 
               {/* 404 */}
               <Route path="*" element={<Navigate to="/" />} />
