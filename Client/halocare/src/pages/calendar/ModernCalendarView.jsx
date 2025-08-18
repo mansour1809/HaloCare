@@ -1,17 +1,10 @@
-// ============================================
-// תחילה צריך להתקין:
-// npm install react-big-calendar moment moment-timezone
-// npm install date-fns date-fns-tz
-// ============================================
 
-// CalendarView.jsx - יומן מודרני עם React Big Calendar
-import React, { useMemo, useCallback, useState } from 'react';
+import  { useMemo, useCallback, useState } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/he';
 import { 
   Box, 
-  Paper,
   Typography, 
   Chip,
   Avatar,
@@ -22,15 +15,11 @@ import {
   CircularProgress,
   Fade,
   useTheme,
-  alpha,
   styled
 } from '@mui/material';
 import { 
   Event as EventIcon,
-  AccessTime as TimeIcon,
   LocationOn as LocationIcon,
-  Person as PersonIcon,
-  ChildCare as ChildIcon,
   Circle as CircleIcon
 } from '@mui/icons-material';
 
@@ -59,7 +48,7 @@ moment.updateLocale('he', {
 moment.locale('he');
 const localizer = momentLocalizer(moment);
 
-// Messages בעברית
+// Messages 
 const messages = {
   allDay: 'כל היום',
   previous: 'הקודם',
@@ -85,7 +74,7 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
   
-  // עיצוב כללי ליומן
+  
   '& .rbc-calendar': {
     fontFamily: 'Rubik, Heebo, sans-serif',
     background: 'transparent',
@@ -94,7 +83,7 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
   },
   
-  // Toolbar - כפתורים וכותרת
+  // Toolbar
   '& .rbc-toolbar': {
     padding: '16px 20px',
     marginBottom: '20px',
@@ -162,7 +151,7 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     }
   },
   
-  // Headers - ימים/שעות
+  // Headers 
   '& .rbc-header': {
     padding: '12px',
     background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.08) 0%, rgba(255, 112, 67, 0.08) 100%)',
@@ -174,7 +163,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     letterSpacing: '0.5px',
   },
   
-  // תאים ביומן
   '& .rbc-month-view, & .rbc-time-view': {
     background: 'white',
     borderRadius: '0 0 16px 16px',
@@ -214,7 +202,6 @@ const CalendarContainer = styled(Box)(({ theme }) => ({
     height: '2px',
   },
   
-  // אירועים
   '& .rbc-event': {
     borderRadius: 8,
     border: 'none',

@@ -87,8 +87,14 @@ export const CalendarProvider = ({ children }) => {
   // Get default values for new event
   const getDefaultEventValues = useCallback((start, end) => {
     const defaultStart = start ? toISOStringWithoutTimezone(new Date(start)) : toISOStringWithoutTimezone(new Date());
-    const defaultEnd = end ? toISOStringWithoutTimezone(new Date(end)) : toISOStringWithoutTimezone(new Date(new Date().getTime() + 60 * 60 * 1000));
-    
+    let defaultEnd;
+  if (end) {
+    defaultEnd = toISOStringWithoutTimezone(new Date(end));
+  } else {
+    const endDate = new Date(start || new Date());
+    endDate.setHours(endDate.getHours() + 1);
+    defaultEnd = toISOStringWithoutTimezone(endDate);
+  }
     return {
       title: '',
       start: defaultStart,
@@ -125,7 +131,6 @@ export const CalendarProvider = ({ children }) => {
   // Adding a new event
   const addEvent = useCallback(async (eventData) => {
     const serverEventData = prepareEventData(eventData);
-    console.log(serverEventData);
     const response = await axios.post('/Events', serverEventData);
     dispatch(fetchEvents());
     return response.data;
@@ -188,7 +193,6 @@ export const CalendarProvider = ({ children }) => {
     }));
   }, []);
 
-  // FIXED: Handle event change for both regular inputs and date picker
   const handleEventChange = useCallback((eventOrTarget) => {
     // Check if it's a synthetic event or a custom object
     if (eventOrTarget && eventOrTarget.target) {
@@ -240,7 +244,6 @@ export const CalendarProvider = ({ children }) => {
 
   const handleEventClick = useCallback((info) => {
     const event = info.event || info; // Support both FullCalendar and BigCalendar formats
-    {console.log(info)}
     const startStr = toISOStringWithoutTimezone(new Date(event.start));
     const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
     

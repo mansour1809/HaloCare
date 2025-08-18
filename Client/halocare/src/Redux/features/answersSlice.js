@@ -66,7 +66,6 @@ export const saveAnswerWithStatusCheck = createAsyncThunk(
 export const updateAnswer = createAsyncThunk(
   'answers/updateAnswer',
   async ({ answerId, answerData }, { rejectWithValue }) => {
-    console.log('Updating answer:', answerId, answerData);
     try {
       const response = await axios.put(`/Forms/answers/${answerId}`, answerData);
       return response.data;
@@ -211,7 +210,6 @@ export const fetchCriticalMedicalInfo = createAsyncThunk(
   async (kidId, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/Forms/critical-medical-info/${kidId}`);
-      console.log('Fetched critical medical info:', response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'שגיאה בטעינת מידע רפואי קריטי');

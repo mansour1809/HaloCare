@@ -49,7 +49,6 @@ const PublicParentFormPage = () => {
 
   // Form translation function
  const handleLanguageChange = async (language) => {
-  console.log('שינוי שפה ל:', language);
   
   if (language === 'he') {
     setTranslatedQuestions(null);
@@ -97,7 +96,6 @@ const PublicParentFormPage = () => {
         }
       });
       
-      console.log('מיפוי אופציות:', newOptionsMapping);
       setOptionsMapping(newOptionsMapping);
       
       const translated = formData.questions.map(original => {
@@ -174,7 +172,6 @@ const PublicParentFormPage = () => {
 
   // Update answer
   const handleAnswerChange = (questionNo, answer, other = '') => {
-  console.log(`עדכון תשובה לשאלה ${questionNo}:`, answer);
   
   let finalAnswer = answer;
   const question = formData.questions.find(q => q.questionNo === questionNo);
@@ -206,12 +203,10 @@ const PublicParentFormPage = () => {
   // בדיקה אם זו תשובה קבועה
   if (fixedAnswers[answer]) {
     finalAnswer = fixedAnswers[answer];
-    console.log(`תרגום קבוע: "${answer}" → "${finalAnswer}"`);
   }
   // בדיקה אם זו אופציה ממופה
   else if (optionsMapping[questionNo] && optionsMapping[questionNo][answer]) {
     finalAnswer = optionsMapping[questionNo][answer];
-    console.log(`מיפוי אופציה: "${answer}" → "${finalAnswer}"`);
   }
   // עבור checkbox - טיפול במספר אופציות
   else if (question?.questionType === 'checkbox' || question?.questionType === 'multiChoice') {
@@ -228,7 +223,6 @@ const PublicParentFormPage = () => {
       return val;
     });
     finalAnswer = mappedValues.join(', ');
-    console.log(`מיפוי רב-ברירה: "${answer}" → "${finalAnswer}"`);
   }
   
   setAnswers(prev => ({
@@ -246,16 +240,11 @@ const handleSubmit = async () => {
   setLoading(true);
   
   try {
-    console.log('=== התחלת שליחת טופס ===');
-    console.log('שפה נוכחית:', currentLanguage);
-    console.log('תשובות לפני תרגום:', answers);
-    
+
     let finalAnswers = { ...answers }; // יצירת עותק
     
     // אם הטופס מולא בשפה אחרת, נתרגם חזרה לעברית
     if (currentLanguage !== 'he') {
-      console.log('צריך לתרגם תשובות חזרה לעברית');
-      
       // מסננים רק תשובות עם תוכן
       const answersToTranslate = Object.entries(answers)
         .filter(([_, answerData]) => answerData.answer || answerData.other)
@@ -265,7 +254,6 @@ const handleSubmit = async () => {
           other: answerData.other || ''
         }));
       
-      console.log('תשובות לתרגום:', answersToTranslate);
       
       if (answersToTranslate.length > 0) {
         try {
@@ -274,7 +262,6 @@ const handleSubmit = async () => {
             sourceLanguage: currentLanguage
           });
           
-          console.log('תשובה מהשרת (תרגום):', translateResponse.data);
           
           if (translateResponse.data.success && translateResponse.data.translatedAnswers) {
             // יצירת מפה חדשה של תשובות מתורגמות
@@ -287,7 +274,6 @@ const handleSubmit = async () => {
               };
             });
             
-            console.log('תשובות אחרי תרגום:', translatedAnswersMap);
             finalAnswers = translatedAnswersMap;
           } else {
             console.warn('תרגום נכשל, משתמשים בתשובות המקוריות');
@@ -309,7 +295,6 @@ const handleSubmit = async () => {
         other: answerData.other || ''
       };
       
-      console.log(`שאלה ${questionNo}: "${answerData.answer}"`);
       
       // הוספת נתונים מורכבים אם קיימים
       if (question?.requiresMultipleEntries && answerData.answer === 'כן') {
@@ -327,18 +312,15 @@ const handleSubmit = async () => {
       return answerObject;
     });
     
-    console.log('תשובות פורמט סופי:', formattedAnswers);
     
     const payload = {
       token: token,
       answers: formattedAnswers
     };
     
-    console.log('Payload לשרת:', payload);
     
     const response = await axios.post('/ParentForm/submit', payload);
     
-    console.log('תשובה מהשרת (שמירה):', response.data);
     
     if (response.data.success) {
       setCurrentStep(2);

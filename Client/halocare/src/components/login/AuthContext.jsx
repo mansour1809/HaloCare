@@ -55,7 +55,6 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`/auth/login`, { email, password });
       
       if (response.data && response.data.token) {
-        console.log(response.data)
         // Save to localStorage
         localStorage.setItem('token', response.data.token);
         const userData = {

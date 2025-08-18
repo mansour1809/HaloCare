@@ -137,9 +137,7 @@ const StatsCard = styled(Card)(({ theme }) => ({
 const OnboardingDashboard = ({ 
   onboardingData, 
   selectedKid, 
-  onKidUpdate,
   onFormClick, 
-  onSendToParent,
   onRefresh,
   readOnly = false
 }) => {

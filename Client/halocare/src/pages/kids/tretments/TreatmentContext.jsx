@@ -179,7 +179,6 @@ export const TreatmentProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      console.log(treatmentData);
       const response = await axios.post(`/Treatments`, 
         treatmentData
       );
@@ -255,9 +254,7 @@ export const TreatmentProvider = ({ children }) => {
   };
 
   const getTreatmentName = (typeId) => {
-  console.log(typeId)
     const treatmentType = treatmentTypes.find(t => t.treatmentTypeId == typeId);
-    console.log(treatmentTypes)
     return treatmentType?.treatmentTypeName || 'לא ידוע';
   };
 

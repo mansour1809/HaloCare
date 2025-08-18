@@ -723,7 +723,6 @@ const OnboardingSection = () => {
                               <StyledIconButton 
                                 size="small"
                                 onClick={(e) => {
-                                  console.log("sadsfsdfsdf",kid);
                                   e.stopPropagation();
                                   setSelectedKid(kid);
                                   navigate(`/kids/${kid.id}`);

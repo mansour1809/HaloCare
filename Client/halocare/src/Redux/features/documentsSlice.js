@@ -69,14 +69,7 @@ export const uploadDocument = createAsyncThunk(
       const docName = document.DocName || file.name;
       formData.append('Document.DocName', docName);
 
-      console.log('שליחת מסמך:', {
-        fileName: file.name,
-        fileSize: file.size,
-        docType: document.DocType,
-        entityId: document.KidId || document.EmployeeId,
-        entityType: document.KidId ? 'Kid' : 'Employee'
-      });
-
+   
       // Send the request with appropriate headers
       const response = await axios.post('/Documents/upload', formData, {
         headers: {
@@ -85,7 +78,6 @@ export const uploadDocument = createAsyncThunk(
         timeout: 30000 // 30 שניות timeout
       });
       
-      console.log('מסמך הועלה בהצלחה:', response.data);
       return response.data;
     } catch (error) {
       console.error('שגיאה בהעלאת מסמך:', error);

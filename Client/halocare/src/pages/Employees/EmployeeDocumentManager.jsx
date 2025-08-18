@@ -313,7 +313,6 @@ const EmployeeDocumentManager = ({
   };
 
   const handleUploadSuccess = (uploadedFiles) => {
-    console.log('קבצים הועלו בהצלחה:', uploadedFiles);
     setUploadDialog(false);
     setTimeout(() => {
       loadDocuments();

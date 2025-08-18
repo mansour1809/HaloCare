@@ -119,7 +119,6 @@ const useGoogleAutocomplete = () => {
         if (isCityMatch && isWithinBounds) {
           onPlaceSelect(place);
         } else {
-          console.log(`Address rejected: ${place.formatted_address} is not in ${selectedCity}`);
           // Clear the input if address is not in selected city
           inputRef.current.value = '';
           
@@ -698,7 +697,6 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
   // Function to set initial values
   const getInitialValues = () => {
     if (data && isEditMode) {
-      console.log("sdaasdasdsa",data)
       return {
         // Kid info
         id: data.id || 0,

@@ -371,65 +371,7 @@ const Calendar = () => {
                 </GlowButton>
               </Stack>
               
-              {/* View switcher & refresh */}
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Box sx={{ 
-                  display: 'flex', 
-                  gap: 0.5, 
-                  p: 0.5, 
-                  background: 'rgba(255,255,255,0.5)',
-                  borderRadius: 2,
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  <Tooltip title="תצוגת חודש">
-                    <ViewButton 
-                      active={currentView === 'month'}
-                      onClick={() => setCurrentView('month')}
-                    >
-                      <CalendarIcon />
-                    </ViewButton>
-                  </Tooltip>
-                  <Tooltip title="תצוגת שבוע">
-                    <ViewButton 
-                      active={currentView === 'week'}
-                      onClick={() => setCurrentView('week')}
-                    >
-                      <WeekIcon />
-                    </ViewButton>
-                  </Tooltip>
-                  <Tooltip title="תצוגת יום">
-                    <ViewButton 
-                      active={currentView === 'day'}
-                      onClick={() => setCurrentView('day')}
-                    >
-                      <DayIcon />
-                    </ViewButton>
-                  </Tooltip>
-                  <Tooltip title="רשימת אירועים">
-                    <ViewButton 
-                      active={currentView === 'agenda'}
-                      onClick={() => setCurrentView('agenda')}
-                    >
-                      <AgendaIcon />
-                    </ViewButton>
-                  </Tooltip>
-                </Box>
-                
-                <Divider orientation="vertical" flexItem />
-                
-                <Tooltip title="רענן יומן" arrow>
-                  <AnimatedIconButton 
-                    onClick={fetchEvents}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <CircularProgress size={24} sx={{ color: 'white' }} />
-                    ) : (
-                      <RefreshIcon />
-                    )}
-                  </AnimatedIconButton>
-                </Tooltip>
-              </Stack>
+              
             </Stack>
           </CardContent>
         </ControlCard>

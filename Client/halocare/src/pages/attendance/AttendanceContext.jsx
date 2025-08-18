@@ -10,7 +10,7 @@ import {
   updateAttendanceRecord
 } from '../../Redux/features/attendanceSlice';
 import PropTypes from 'prop-types';
-import { useAuth } from '../login/AuthContext';
+import { useAuth } from '../../components/login/AuthContext';
 
 const AttendanceContext = createContext();
 

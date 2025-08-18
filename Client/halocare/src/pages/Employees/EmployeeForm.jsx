@@ -455,7 +455,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
         );
 
         autocompleteCity.current.addListener('place_changed', handleCitySelect);
-        console.log('City autocomplete initialized successfully');
       }
       
       return true;
@@ -470,7 +469,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       if (!autocompleteCity.current) return;
       
       const place = autocompleteCity.current.getPlace();
-      console.log('City selected:', place);
       
       if (place && place.name) {
         setFormData(prev => ({ 
@@ -494,7 +492,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       
       if (!success && retryCount < maxRetries) {
         retryCount++;
-        console.log(`Retry ${retryCount}/${maxRetries} - Waiting for Google Maps API...`);
         setTimeout(tryInitialize, 500);
       } else if (success) {
         console.log('Google Places initialized successfully');
@@ -619,7 +616,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
           if (existingProfilePic) {
             try {
               await dispatch(deleteDocument(existingProfilePic.docId)).unwrap();
-              console.log('תמונת פרופיל קודמת נמחקה');
             } catch (deleteError) {
               console.warn('שגיאה במחיקת תמונה קודמת:', deleteError);
             }
@@ -634,11 +630,8 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
             file: profilePhoto,
           };
 
-          console.log('מעלה תמונת פרופיל:', profileData);
           
           const uploadResult = await dispatch(uploadDocument(profileData)).unwrap();
-          
-          console.log('תמונת פרופיל הועלתה:', uploadResult);
 
           if (uploadResult && uploadResult.docPath) {
             const updateData = {
@@ -647,11 +640,9 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
               photo: uploadResult.docPath
             };
             
-            console.log('מעדכן נתיב תמונה בפרופיל העובד:', updateData);
             
             try {
               await updateEmployee(updateData);
-              console.log('נתיב התמונה עודכן בפרופיל העובד');
             } catch (updateError) {
               console.error('שגיאה בעדכון נתיב התמונה:', updateError);
             }
@@ -663,7 +654,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       }
       
       if (documents.length > 0) {
-        console.log(`מעלה ${documents.length} מסמכים נוספים`);
         
         for (let i = 0; i < documents.length; i++) {
           const file = documents[i];
@@ -677,7 +667,6 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
               file: file
             };
             
-            console.log(`מעלה מסמך ${i + 1}/${documents.length}:`, documentData);
             
             const result = await dispatch(uploadDocument(documentData)).unwrap();
             console.log(`מסמך ${i + 1} הועלה בהצלחה:`, result);
@@ -763,10 +752,8 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       let result;
       
       if (isEditMode) {
-        console.log('עדכון עובד קיים:', formData);
         result = await updateEmployee(formData);
       } else {
-        console.log('הוספת עובד חדש:', formData);
         result = await addEmployee(formData);
       }
       
@@ -779,23 +766,19 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       
       if (!isEditMode && sendEmail && formData.email) {
         try {
-          console.log('שולח אימייל ברוכים הבאים');
           await sendWelcomeEmail(
             formData.email, 
             formData.password,
             formData.firstName,
             formData.lastName
           );
-          console.log('אימייל נשלח בהצלחה');
         } catch (emailError) {
           console.warn('שגיאה בשליחת אימייל:', emailError);
         }
       }
       
       try {
-        console.log('מתחיל העלאת קבצים לעובד:', employeeId);
         await uploadFiles(employeeId);
-        console.log('קבצים הועלו בהצלחה');
       } catch (uploadError) {
         console.error('שגיאה בהעלאת קבצים:', uploadError);
         

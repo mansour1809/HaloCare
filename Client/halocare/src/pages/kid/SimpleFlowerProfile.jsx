@@ -79,7 +79,6 @@ const SimpleFlowerProfile = ({ kid }) => {
   // handle Petal Click
   const handlePetalClick = (treatmentType) => {
     setClickedPetal(treatmentType.treatmentTypeId);
-    console.log(kid)
     // Ripple effect
     setTimeout(() => {
       navigate(`/kids/${kid.id}/treatments/${treatmentType.treatmentTypeId}`);

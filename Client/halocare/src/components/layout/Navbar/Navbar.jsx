@@ -126,7 +126,6 @@ const Navbar = () => {
   const { logout} = useAuth();
   const navigate = useNavigate();
 
-  console.log(currentUser)
   const selectedEmployeeId = currentUser?.id; 
   
   const handleOpenUserMenu = (event) => {

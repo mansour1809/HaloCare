@@ -141,7 +141,6 @@ const onboardingSlice = createSlice({
         state.initializingKids = state.initializingKids.filter(id => id !== kidId);
         
         // Success message - data will be loaded separately
-        console.log(`תהליך קליטה נוצר בהצלחה לילד ${kidId}`);
       })
       .addCase(initializeKidOnboarding.rejected, (state, action) => {
         state.status = 'failed';
@@ -182,7 +181,6 @@ const onboardingSlice = createSlice({
         const { kidId } = action.payload;
         
 // The data will be updated on the next load - or we can update locally
-        console.log(`סטטוס טופס עודכן בהצלחה לילד ${kidId}`);
       })
       .addCase(updateFormStatus.rejected, (state, action) => {
         state.status = 'failed';
@@ -198,8 +196,6 @@ const onboardingSlice = createSlice({
         const { kidId } = action.payload;
         console.log(`בדיקת השלמה בוצעה לילד ${kidId}`);
         
-        // Can reload status automatically
-// or update locally if we have the information
       })
       .addCase(checkFormCompletion.rejected, (state, action) => {
         // Error in testing - non-critical

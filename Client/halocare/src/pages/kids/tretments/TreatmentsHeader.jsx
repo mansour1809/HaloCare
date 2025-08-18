@@ -309,10 +309,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                   </AnimatedAvatar>
                   
                   סיכומי טיפולים
-                  {console.log(treatmentType)}
                   {treatmentType && (
-                    console.log(treatmentType),
-                    console.log(getTreatmentName(treatmentType)),
                     <GlowingChip 
                       label={getTreatmentName(treatmentType)}
                       sx={{ 

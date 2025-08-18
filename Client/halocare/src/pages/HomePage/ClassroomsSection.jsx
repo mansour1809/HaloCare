@@ -334,13 +334,13 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const navigate = useNavigate();
   const {currentUser} = useAuth();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { classes, status: classesStatus } = useSelector(state => state.classes);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   const { todayRecords, status: attendanceStatus } = useSelector(state => state.attendance);
   const { employees } = useSelector(state => state.employees);
 
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterMode, setFilterMode] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -352,7 +352,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // Load data on mount - PRESERVED EXACTLY
+  // Load data on mount 
   useEffect(() => {
     dispatch(fetchClasses());
     dispatch(fetchKids());
@@ -360,7 +360,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     dispatch(fetchEmployees())
   }, [dispatch, selectedDate]);
 
-  // Auto refresh every 5 minutes - PRESERVED EXACTLY
+  // Auto refresh every 5 minutes 
   useEffect(() => {
     if (!autoRefresh) return;
     
@@ -371,7 +371,7 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
     return () => clearInterval(interval);
   }, [autoRefresh, selectedDate, dispatch]);
 
-  // Process data with active kids only - PRESERVED EXACTLY
+  // Process data with active kids only 
   const getActiveKidsWithAttendance = () => {
     if (!kids.length) return [];
     
@@ -879,9 +879,8 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
                                   {classData.className}
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary">
-                                  {/* Teacher name display - PRESERVED EXACTLY */}
-                                  {console.log(employees)}
-                                  {console.log(classData)}
+                                  {/* Teacher name display  */}
+
                                   {employees.find(emp => emp.employeeId === classData.teacherId) 
                                     ? `${employees.find(emp => emp.employeeId === classData.teacherId).firstName} ${employees.find(emp => emp.employeeId === classData.teacherId).lastName}`
                                     : 'לא מוגדר'}
@@ -1224,7 +1223,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
           background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)'
         }}>
           <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
-            {console.log(kidDetailsDialog.kid)}
             <FloatingAvatar
               status={kidDetailsDialog.kid?.isPresent}
               sx={{ width: 80, height: 80, fontSize: '2rem' }}

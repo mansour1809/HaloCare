@@ -189,7 +189,6 @@ const formsSlice = createSlice({
           status: 'sent'
         };
         
-        console.log(`טופס ${formId} נשלח בהצלחה להורה של ילד ${kidId}`);
       })
       .addCase(sendFormToParent.rejected, (state, action) => {
         state.sendingToParent = false;
@@ -206,7 +205,6 @@ const formsSlice = createSlice({
           state.sentForms[key].completedDate = new Date().toISOString();
         }
         
-        console.log(`טופס ${formId} סומן כהושלם על ידי הורה של ילד ${kidId}`);
       })
       
       // Fetch form data

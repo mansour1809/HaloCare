@@ -389,8 +389,8 @@ const SystemSettings = () => {
                     
                 
                     <CurrentPage>
-                      <GroupIcon />
-                      ניהול רשימות
+                      ⚙️
+                      ניהול רשימות 
                     
                     </CurrentPage>
                   </EnhancedBreadcrumbs>
@@ -401,11 +401,11 @@ const SystemSettings = () => {
             <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
-                  <Box display="flex" alignItems="center" justifyContent="center">
+                  <Box display="flex" alignItems="center" justifyContent="center" dir="rtl">
                     <StyledAvatar>
                       <AutoAwesomeIcon sx={{ fontSize: '3rem' }} />
                     </StyledAvatar>
-                    <Box>
+                    <Box sx={{ ml: 3, textAlign: 'center' }}>
                       <Typography variant="h4" sx={{ 
                         fontWeight: 800,
                         background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
@@ -448,6 +448,7 @@ const SystemSettings = () => {
                   <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" useFlexGap>
                     {tabs.map((tab, index) => (
                       <CategoryChip
+                      dir="rtl"
                         key={index}
                         icon={tab.icon}
                         label={tab.label}

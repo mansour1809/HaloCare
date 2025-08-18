@@ -121,7 +121,6 @@ const DynamicFormRenderer = ({
 
    useEffect(() => {
     return () => {
-      console.log('Cleaning up form data'); 
       dispatch(clearCurrentFormAnswers());
     };
   }, [dispatch]);

@@ -229,11 +229,9 @@ const CalendarFilter = () => {
                     }
                   }}
                 >
-                  <MenuItem value="">
-                    <em style={{ fontStyle: 'italic', color: '#666' }}>כל הילדים</em>
-                  </MenuItem>
+
                   {kids.map(kid => (
-                    <MenuItem key={kid.id} value={kid.id}>
+                    <MenuItem key={kid.id} value={kid.id} dir="rtl">
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
                           👶
@@ -287,11 +285,9 @@ const CalendarFilter = () => {
                     }
                   }}
                 >
-                  <MenuItem value="">
-                    <em style={{ fontStyle: 'italic', color: '#666' }}>כל אנשי הצוות</em>
-                  </MenuItem>
+
                   {employees.map(employee => (
-                    <MenuItem key={employee.employeeId} value={employee.employeeId}>
+                    <MenuItem key={employee.employeeId} value={employee.employeeId} dir="rtl">
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar sx={{ 
                           width: 24, 
@@ -354,11 +350,10 @@ const CalendarFilter = () => {
                     }
                   }}
                 >
-                  <MenuItem value="">
-                    <em style={{ fontStyle: 'italic', color: '#666' }}>כל סוגי האירועים</em>
-                  </MenuItem>
+
                   {eventTypes.map(type => (
                     <MenuItem 
+                    dir="rtl"
                       key={type.eventTypeId} 
                       value={type.eventTypeId}
                       sx={{ 

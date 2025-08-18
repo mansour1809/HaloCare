@@ -123,33 +123,7 @@ const HomePage = () => {
     // Simulation of data refresh
     setTimeout(() => {
       setIsLoading(false);
-      console.log('Data refreshed');
     }, 1500);
-  };
-
-  const handleKidClick = (kidId) => {
-    console.log(`Navigate to kid profile: ${kidId}`);
-    // Real navigation will be here
-  };
-
-  const handleViewAllKids = () => {
-    console.log('Navigate to kids list');
-  };
-
-  const handleViewFullCalendar = () => {
-    console.log('Navigate to full calendar');
-  };
-
-  const handleEventClick = (eventId) => {
-    console.log(`Navigate to event details: ${eventId}`);
-  };
-
-  const handleViewFullOnboarding = () => {
-    console.log('Navigate to full onboarding management');
-  };
-
-  const handleKidOnboardingClick = (kidId) => {
-    console.log(`Navigate to kid onboarding: ${kidId}`);
   };
 
   return (
@@ -162,24 +136,18 @@ const HomePage = () => {
         {/* ClassroomsSection */}
         <Grid item size={{sx:12 , lg:12}}>
           <ClassroomsSection 
-            onKidClick={handleKidClick}
-            onViewAllKids={handleViewAllKids}
           />
         </Grid>
 
         {/* CalendarSection */}
         <Grid item size={{sx:12 , lg:6}}>
           <CalendarSection 
-            onViewFullCalendar={handleViewFullCalendar}
-            onEventClick={handleEventClick}
           />
         </Grid>
 
         {/* OnboardingSection */}
         <Grid item size={{sx:12 , lg:6}}>
           <OnboardingSection 
-            onViewFullOnboarding={handleViewFullOnboarding}
-            onKidOnboardingClick={handleKidOnboardingClick}
           />
         </Grid>
       </StyledGrid>

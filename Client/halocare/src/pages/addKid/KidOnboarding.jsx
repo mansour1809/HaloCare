@@ -405,10 +405,7 @@ const KidOnboarding = () => {
     showNotification('עברת למצב עריכה', 'info');
   };
 
-  //  original function
-  const handleSendToParent = (form) => {
-    console.log('שליחה להורים:', form);
-  };
+
 
   //  original function
   const showNotification = (message, severity = 'success') => {
@@ -609,7 +606,6 @@ const KidOnboarding = () => {
                     onboardingData={currentOnboarding}
                     selectedKid={selectedKid}
                     onFormClick={handleFormClick}
-                    onSendToParent={handleSendToParent}
                     onRefresh={handleRefresh}
                   />
                 </>

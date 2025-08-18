@@ -1,4 +1,4 @@
-// KidDocumentManager.jsx - ONLY visual styling changes, ALL original functionality preserved
+// KidDocumentManager.jsx - ONLY visual styling changes, ALL ality preserved
 
 import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -147,7 +147,7 @@ const ExpandButton = styled(IconButton)(({ expanded }) => ({
   }
 }));
 
-// PRESERVED - All original props and functionality
+// All original props and functionality
 const KidDocumentManager = ({ 
   kidId, 
   kidName = '',
@@ -169,7 +169,7 @@ const KidDocumentManager = ({
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(!compact);
 
-  // PRESERVED - original useEffect
+  // original useEffect
   useEffect(() => {
     if (kidId) {
       loadDocuments();
@@ -180,7 +180,7 @@ const KidDocumentManager = ({
     };
   }, [kidId]);
 
-  // PRESERVED - original function
+  // 
   const loadDocuments = async () => {
     try {
       await dispatch(fetchDocumentsByKidId(kidId)).unwrap();
@@ -189,30 +189,29 @@ const KidDocumentManager = ({
     }
   };
 
-  // PRESERVED - original function
+  // Handle document refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadDocuments();
     setRefreshing(false);
   };
 
-  // PRESERVED - original function
-  const handleUploadSuccess = (uploadedFiles) => {
-    console.log('קבצים הועלו בהצלחה:', uploadedFiles);
+  // Handle file upload success
+  const handleUploadSuccess = () => {
     setUploadDialog(false);
     setTimeout(() => {
       loadDocuments();
     }, 500);
   };
 
-  // PRESERVED - original function
+  // Handle document deletion success
   const handleDeleteSuccess = () => {
     setTimeout(() => {
       loadDocuments();
     }, 500);
   };
 
-  // PRESERVED - original function
+  // 
   const getDocumentStats = () => {
     if (!documents) return { total: 0, profilePics: 0, regularDocs: 0 };
     
@@ -225,7 +224,7 @@ const KidDocumentManager = ({
 
   const stats = getDocumentStats();
 
-  // PRESERVED - original compact mode logic with updated styling
+  // original compact mode logic with updated styling
   if (compact) {
     return (
       <CompactContainer 
@@ -410,7 +409,7 @@ const KidDocumentManager = ({
     );
   }
 
-  // PRESERVED - original error handling with updated styling
+  // original error handling with updated styling
   if (documentsError) {
     return (
       <ModernContainer>

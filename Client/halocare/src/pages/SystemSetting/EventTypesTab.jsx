@@ -426,7 +426,7 @@ const EventTypesTab = () => {
             <Zoom in timeout={800}>
               <HeroCard>
                 <CardContent sx={{ p: 4 }}>
-                  <Box display="flex" alignItems="center" justifyContent="center">
+                  <Box display="flex" alignItems="center" justifyContent="center" dir="rtl">
                     <StyledAvatar>
                       <CalendarIcon sx={{ fontSize: '2.5rem' }} />
                     </StyledAvatar>

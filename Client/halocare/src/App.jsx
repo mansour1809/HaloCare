@@ -1,60 +1,63 @@
 // App.jsx - revised version:
 
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { rtlCache } from './components/common/rtlCache';
-import { CacheProvider } from '@emotion/react';
-import { ProSidebarProvider } from 'react-pro-sidebar';
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Box, CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import { rtlCache } from "./components/common/rtlCache";
+import { CacheProvider } from "@emotion/react";
+import { ProSidebarProvider } from "react-pro-sidebar";
 
 // All your imports...
-import Navbar from './components/layout/Navbar/Navbar';
-import ProSidebar from './components/layout/Sidebar/ProSidebar';
-import PrivateRoute from './components/PrivateRoute';
+import Navbar from "./components/layout/Navbar/Navbar";
+import ProSidebar from "./components/layout/Sidebar/ProSidebar";
+import PrivateRoute from "./components/PrivateRoute";
 
 // Pages
-import Calendar from './pages/calendar/Calendar';
-import EmployeeForm from './pages/Employees/EmployeeForm';
-import EmployeesManagement from './pages/Employees/EmployeesManagement';
-import KidsManagment from './pages/addKid/KidsManagement';
-import { CalendarProvider } from './pages/calendar/CalendarContext';
-import HomePage from './pages/HomePage/homePage';
-import LoginPage from './components/login/login';
-// import EventsList from './pages/calendar/EventsList';
-import ResetPassword from './components/login/ResetPassword';
+import Calendar from "./pages/calendar/Calendar";
+import EmployeeForm from "./pages/Employees/EmployeeForm";
+import EmployeesManagement from "./pages/Employees/EmployeesManagement";
+import KidsManagment from "./pages/addKid/KidsManagement";
+import { CalendarProvider } from "./pages/calendar/CalendarContext";
+import HomePage from "./pages/HomePage/homePage";
+import LoginPage from "./components/login/login";
+import ResetPassword from "./components/login/ResetPassword";
 
 // Authentication
-import { useAuth, AuthProvider } from './components/login/AuthContext';
-import { EmployeesProvider } from './pages/Employees/EmployeesContext';
-import TreatmentsList from './pages/Kids/tretments/TreatmentsList';
-import {TreatmentProvider} from './pages/Kids/tretments/TreatmentContext';
-import KidProfilePage from './pages/kid/KidProfilePage';
-import { AttendanceProvider } from './components/context/AttendanceContext';
-import AttendanceDashboard from './pages/attendance/AttendanceDashboard';
-import SystemSettings from './pages/SystemSetting/SystemSettings';
-import KidOnboarding from './pages/addKid/KidOnboarding';
-import PublicParentFormPage from './pages/addKid/PublicParentFormPage';
-import EmployeeProfile from './pages/Employees/EmployeeProfile';
-
+import { useAuth, AuthProvider } from "./components/login/AuthContext";
+import { EmployeesProvider } from "./pages/Employees/EmployeesContext";
+import TreatmentsList from "./pages/Kids/tretments/TreatmentsList";
+import { TreatmentProvider } from "./pages/Kids/tretments/TreatmentContext";
+import KidProfilePage from "./pages/kid/KidProfilePage";
+import { AttendanceProvider } from "./pages/attendance/AttendanceContext";
+import AttendanceDashboard from "./pages/attendance/AttendanceDashboard";
+import SystemSettings from "./pages/SystemSetting/SystemSettings";
+import KidOnboarding from "./pages/addKid/KidOnboarding";
+import PublicParentFormPage from "./pages/addKid/PublicParentFormPage";
+import EmployeeProfile from "./pages/Employees/EmployeeProfile";
 
 // Create a theme
 const theme = createTheme({
-  direction: 'rtl',
+  direction: "rtl",
   palette: {
     primary: {
-      main: '#4fc3f7',
-      light: 'rgba(79, 195, 247, 0.1)',
-      dark: '#0095c5',
+      main: "#4fc3f7",
+      light: "rgba(79, 195, 247, 0.1)",
+      dark: "#0095c5",
     },
     secondary: {
-      main: '#f48fb1',
+      main: "#f48fb1",
     },
     background: {
-      default: '#f5f5f5',
+      default: "#f5f5f5",
     },
     text: {
-      primary: '#333333',
-      secondary: '#666666',
-    }
+      primary: "#333333",
+      secondary: "#666666",
+    },
   },
   typography: {
     fontFamily: '"Assistant", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -70,7 +73,7 @@ const theme = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
         },
       },
     },
@@ -83,77 +86,71 @@ const NAVBAR_HEIGHT = 64;
 // Function to check a public page - simple and effective
 const isCurrentPathPublic = () => {
   const hash = window.location.hash;
-  const publicPaths = [ '/reset-password', '/parent-form'];
-  return publicPaths.some(path => hash.includes(path));
+  const publicPaths = ["/reset-password", "/parent-form"];
+  return publicPaths.some((path) => hash.includes(path));
 };
 
 // Internal component that uses the authentication context
 const AppContent = () => {
   const { isAuthenticated } = useAuth();
-  
+
   // Check public page on every render
   const isPublicPath = isCurrentPathPublic();
 
   const showLayout = isAuthenticated && !isPublicPath;
-  
-  console.log('Debug:', {
-    pathname: location.pathname,
-    isPublicPath,
-    isAuthenticated,
-    showLayout
-  });
-  
 
   return (
     <Router>
       <Box sx={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-{/* Show navbar only if logged in and not on a public page */}{showLayout && <Navbar />}
+        {/* Show navbar only if logged in and not on a public page */}
+        {showLayout && <Navbar />}
         <Box
           sx={{
             display: "flex",
             flexGrow: 1,
             position: "relative",
-            pt: (isAuthenticated && !isPublicPath) ? `${NAVBAR_HEIGHT}px` : 0,
+            pt: isAuthenticated && !isPublicPath ? `${NAVBAR_HEIGHT}px` : 0,
           }}
         >
-{/* Show sidebar only if logged in and not on a public page */}          {isAuthenticated && !isPublicPath && <ProSidebar />}
-
+          {/* Show sidebar only if logged in and not on a public page */}{" "}
+          {isAuthenticated && !isPublicPath && <ProSidebar />}
           <Box
             component="main"
             sx={{
               flexGrow: 1,
               p: isPublicPath ? 0 : 3,
               backgroundColor: isPublicPath ? "#ffffff" : "#f5f5f5",
-              ml: (isAuthenticated && !isPublicPath)
-                ? `${DRAWER_WIDTH}px !important`
-                : "0 !important",
+              ml:
+                isAuthenticated && !isPublicPath
+                  ? `${DRAWER_WIDTH}px !important`
+                  : "0 !important",
               mr: "0 !important",
-              width: (isAuthenticated && !isPublicPath)
-                ? `calc(100% - ${DRAWER_WIDTH}px)`
-                : "100%",
-              minHeight: (isAuthenticated && !isPublicPath)
-                ? `calc(100vh - ${NAVBAR_HEIGHT}px)`
-                : "100vh",
-              overflow: "hidden" ,
+              width:
+                isAuthenticated && !isPublicPath
+                  ? `calc(100% - ${DRAWER_WIDTH}px)`
+                  : "100%",
+              minHeight:
+                isAuthenticated && !isPublicPath
+                  ? `calc(100vh - ${NAVBAR_HEIGHT}px)`
+                  : "100vh",
+              overflow: "hidden",
             }}
           >
             <Routes>
-{/* Public pages */}              <Route
-                path="/login"
-                element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-              />
-              
+              {/* Public pages */}{" "}
               <Route
-                path="/reset-password"
-                element={<ResetPassword />}
+                path="/login"
+                element={
+                  isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+                }
               />
-              
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route
                 path="/parent-form/:token"
                 element={<PublicParentFormPage />}
               />
-
-{/* Home page */}              <Route
+              {/* Home page */}{" "}
+              <Route
                 path="/"
                 element={
                   <PrivateRoute>
@@ -161,8 +158,8 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
-{/* Child management */}              <Route
+              {/* Child management */}{" "}
+              <Route
                 path="/kids/list"
                 element={
                   <PrivateRoute>
@@ -182,16 +179,15 @@ const AppContent = () => {
                 path="/kids/:kidId/treatments/:treatmentType"
                 element={
                   <PrivateRoute>
-                      <TreatmentsList />
+                    <TreatmentsList />
                   </PrivateRoute>
                 }
               />
-
               <Route
                 path="/kids/onboarding/new"
                 element={
                   <PrivateRoute>
-                    <KidOnboarding  />
+                    <KidOnboarding />
                   </PrivateRoute>
                 }
               />
@@ -203,12 +199,12 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
-{/* Employee Management */}              <Route
+              {/* Employee Management */}{" "}
+              <Route
                 path="/employees/list"
                 element={
                   <PrivateRoute>
-                      <EmployeesManagement />
+                    <EmployeesManagement />
                   </PrivateRoute>
                 }
               />
@@ -216,39 +212,35 @@ const AppContent = () => {
                 path="/employees/add"
                 element={
                   <PrivateRoute>
-                      <EmployeeForm />
+                    <EmployeeForm />
                   </PrivateRoute>
                 }
               />
               <Route
-  path="/employees/edit/:employeeId"
-  element={
-    <PrivateRoute>
-      <EmployeeForm isEditMode = {true} />
-    </PrivateRoute>
-  }
-/>
-
-
+                path="/employees/edit/:employeeId"
+                element={
+                  <PrivateRoute>
+                    <EmployeeForm isEditMode={true} />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 path="/employees/profile/:employeeId"
                 element={
                   <PrivateRoute>
-                      <EmployeeProfile />
+                    <EmployeeProfile />
                   </PrivateRoute>
                 }
               />
-              
-{/* Calendar */}              <Route
+              {/* Calendar */}{" "}
+              <Route
                 path="/calendar/schedule"
                 element={
                   <PrivateRoute>
-                      <Calendar />
+                    <Calendar />
                   </PrivateRoute>
                 }
               />
-              
-
               <Route
                 path="/settings"
                 element={
@@ -257,17 +249,15 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-
-{/* Reports */}              <Route
+              {/* Reports */}{" "}
+              <Route
                 path="/reports/attendance"
                 element={
                   <PrivateRoute>
-                    <AttendanceDashboard/>
+                    <AttendanceDashboard />
                   </PrivateRoute>
                 }
               />
-
-
               {/* 404 */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

@@ -361,7 +361,6 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
 
     try {
-    console.log(formData)
       await addTreatment(formData);
       
       Swal.fire({

@@ -217,20 +217,11 @@ const EventDialog = () => {
       handleEventChange(event);
     }
   };
-// const handleDateTimeChange = (name, value) => {
-//   console.log("value",value)
-//     if (value && !isNaN(value)) {
-//       // Convert to ISO string format
-//       const isoString = value.toISOString().slice(0, 19);
-//       console.log("isoString",isoString)
-//       handleEventChange({ name, value: isoString });
-//     }
-//   };
+
 
 const handleDateTimeChange = (name, value) => {
   if (value) {
     const localString = dayjs(value).format("YYYY-MM-DDTHH:mm");
-    console.log("localString", localString); // 2025-08-22T11:00
     handleEventChange({ name, value: localString });
   }
 };
@@ -528,7 +519,6 @@ const handleDateTimeChange = (name, value) => {
                 label="ילדים משתתפים"
                 renderValue={(selected) => (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                    {console.log(selected)}
                     {selected.map((value) => {
                       const kid = kids.find(
                         (k) => k.id === value && k.isActive
@@ -705,7 +695,7 @@ const handleDateTimeChange = (name, value) => {
         <Box>
           {selectedEvent && (
             <GlowButton
-              onClick={handleDeleteEvent}
+              onClick={() => { setOpenDialog(false); handleDeleteEvent(); }}
               variant="outlined"
               startIcon={<DeleteIcon />}
               glowColor="#ef4444"

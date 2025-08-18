@@ -494,7 +494,6 @@ const KidOverviewTab = ({ selectedKid }) => {
       const medications = [];
       const allergies = [];
       const seizures = [];
-      console.log('Critical info result:', result);
       result.forEach(item => {
         try {
           const multipleEntries = JSON.parse(item.multipleEntries);
