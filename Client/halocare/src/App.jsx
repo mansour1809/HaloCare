@@ -19,7 +19,7 @@ import KidsManagment from './pages/addKid/KidsManagement';
 import { CalendarProvider } from './pages/calendar/CalendarContext';
 import HomePage from './pages/HomePage/homePage';
 import LoginPage from './components/login/login';
-import EventsList from './pages/calendar/EventsList';
+// import EventsList from './pages/calendar/EventsList';
 import ResetPassword from './components/login/ResetPassword';
 
 // Authentication
@@ -247,14 +247,7 @@ const AppContent = () => {
                   </PrivateRoute>
                 }
               />
-              <Route
-                path="/calendar/meetings"
-                element={
-                  <PrivateRoute>
-                      <EventsList />
-                  </PrivateRoute>
-                }
-              />
+              
 
               <Route
                 path="/settings"
