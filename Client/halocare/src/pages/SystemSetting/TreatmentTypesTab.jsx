@@ -275,10 +275,10 @@ const TreatmentTypesTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { treatmentTypes, status, actionStatus, error } = useSelector(state => state.treatmentTypes);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -287,12 +287,12 @@ const TreatmentTypesTab = () => {
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeColor, setNewTypeColor] = useState('#4cb5c3');
 
-  // Filter treatment types based on search term - PRESERVED EXACTLY
+  // Filter treatment types based on search term 
   const filteredTreatmentTypes = treatmentTypes.filter(type =>
     type.treatmentTypeName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages - PRESERVED EXACTLY
+  // Handle success/error messages 
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -315,7 +315,7 @@ const TreatmentTypesTab = () => {
     }
   }, [actionStatus, error, dispatch]);
 
-  // All handler functions - PRESERVED EXACTLY
+  // All handler functions 
   const handleEditStart = (type) => {
     setEditingId(type.treatmentTypeId);
     setEditValue(type.treatmentTypeName);

@@ -313,7 +313,7 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState(0);
 
 
-  // Load all reference data on component mount - PRESERVED EXACTLY
+  // Load all reference data on component mount 
   useEffect(() => {
     const loadData = async () => {
       try {

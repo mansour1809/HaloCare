@@ -281,22 +281,22 @@ const HealthInsuranceTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
 
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { healthInsurances, status, actionStatus, error } = useSelector(state => state.healthInsurances || { healthInsurances: [], status: 'idle', actionStatus: 'idle', error: null });
 
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [newHealthInsuranceName, setNewHealthInsuranceName] = useState('');
 
-  // Filter health insurances based on search term - PRESERVED EXACTLY
+  // Filter health insurances based on search term 
   const filteredHealthInsurances = healthInsurances.filter(insurance =>
     insurance.hName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages - PRESERVED EXACTLY
+  // Handle success/error messages 
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -319,7 +319,7 @@ const HealthInsuranceTab = () => {
     }
   }, [actionStatus, error, dispatch]);
 
-  // All handler functions - PRESERVED EXACTLY
+  // All handler functions 
   const handleEditStart = (insurance) => {
     setEditingId(insurance.hName);
     setEditValue(insurance.hName);

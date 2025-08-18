@@ -117,7 +117,7 @@ const StyledRefreshIcon = styled(RefreshIcon)(({ theme }) => ({
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Navigation functions - PRESERVED EXACTLY
+  // Navigation functions 
   const handleRefresh = async () => {
     setIsLoading(true);
     // Simulation of data refresh
@@ -131,7 +131,7 @@ const HomePage = () => {
       {/* Header */}
       <HomePageHeader onRefresh={handleRefresh} />
 
-      {/* Main Layout - PRESERVED EXACTLY */}
+      {/* Main Layout  */}
       <StyledGrid container spacing={3}>
         {/* ClassroomsSection */}
         <Grid item size={{sx:12 , lg:12}}>

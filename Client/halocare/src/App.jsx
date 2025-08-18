@@ -11,16 +11,15 @@ import { rtlCache } from "./components/common/rtlCache";
 import { CacheProvider } from "@emotion/react";
 import { ProSidebarProvider } from "react-pro-sidebar";
 
-// All your imports...
-import Navbar from "./components/layout/Navbar/Navbar";
-import ProSidebar from "./components/layout/Sidebar/ProSidebar";
+import Navbar from "./components/layout//Navbar";
+import ProSidebar from "./components/layout//ProSidebar";
 import PrivateRoute from "./components/PrivateRoute";
 
 // Pages
 import Calendar from "./pages/calendar/Calendar";
 import EmployeeForm from "./pages/Employees/EmployeeForm";
 import EmployeesManagement from "./pages/Employees/EmployeesManagement";
-import KidsManagment from "./pages/addKid/KidsManagement";
+import KidsManagment from "./pages/kids/managment/KidsManagement";
 import { CalendarProvider } from "./pages/calendar/CalendarContext";
 import HomePage from "./pages/HomePage/homePage";
 import LoginPage from "./components/login/login";
@@ -29,14 +28,14 @@ import ResetPassword from "./components/login/ResetPassword";
 // Authentication
 import { useAuth, AuthProvider } from "./components/login/AuthContext";
 import { EmployeesProvider } from "./pages/Employees/EmployeesContext";
-import TreatmentsList from "./pages/Kids/tretments/TreatmentsList";
-import { TreatmentProvider } from "./pages/Kids/tretments/TreatmentContext";
-import KidProfilePage from "./pages/kid/KidProfilePage";
+import TreatmentsList from "./pages/kids/treatments/TreatmentsList";
+import { TreatmentProvider } from "./pages/kids/treatments/TreatmentContext";
+import KidProfilePage from "./pages/kids/profile/KidProfilePage";
 import { AttendanceProvider } from "./pages/attendance/AttendanceContext";
 import AttendanceDashboard from "./pages/attendance/AttendanceDashboard";
 import SystemSettings from "./pages/SystemSetting/SystemSettings";
-import KidOnboarding from "./pages/addKid/KidOnboarding";
-import PublicParentFormPage from "./pages/addKid/PublicParentFormPage";
+import KidOnboarding from "./pages/kids/onboarding/KidOnboarding";
+import PublicParentFormPage from "./pages/kids/forms/PublicParentFormPage";
 import EmployeeProfile from "./pages/Employees/EmployeeProfile";
 
 // Create a theme

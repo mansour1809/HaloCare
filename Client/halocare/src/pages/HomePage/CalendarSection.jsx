@@ -242,13 +242,13 @@ const CalendarSection = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { events, status: eventsStatus } = useSelector(state => state.events);
   const { eventTypes, status: eventTypesStatus } = useSelector(state => state.eventTypes);
   const { kids } = useSelector(state => state.kids);
   const { employees } = useSelector(state => state.employees);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filters, setFilters] = useState({
     eventTypeId: '',
@@ -259,7 +259,7 @@ const CalendarSection = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [eventDetailsDialog, setEventDetailsDialog] = useState(false);
 
-  // Load data on mount - PRESERVED EXACTLY
+  // Load data on mount 
   useEffect(() => {
     dispatch(fetchEvents());
     dispatch(fetchEventTypes());
@@ -267,7 +267,7 @@ const CalendarSection = () => {
     dispatch(fetchEmployees());
   }, [dispatch]);
 
-  // Helper functions - PRESERVED EXACTLY
+  // Helper functions 
   const formatDate = (date) => {
     return new Intl.DateTimeFormat('he-IL').format(date);
   };
@@ -309,7 +309,7 @@ const CalendarSection = () => {
     });
   };
 
-  // Filter events - PRESERVED EXACTLY
+  // Filter events 
   const filteredEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
     
@@ -330,7 +330,7 @@ const CalendarSection = () => {
     }).sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [events, selectedDate, filters, searchTerm]);
 
-  // Get today's events - PRESERVED EXACTLY
+  // Get today's events 
   const todaysEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
     const today = new Date();
@@ -340,7 +340,7 @@ const CalendarSection = () => {
     }).sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [events]);
 
-  // Stats - PRESERVED EXACTLY
+  // Stats 
   const stats = useMemo(() => {
     const todayCount = todaysEvents.length;
     const selectedDayCount = filteredEvents.length;

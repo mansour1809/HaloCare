@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -14,7 +14,6 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  InputAdornment,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -38,19 +37,16 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
   School as ClassIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  Star as StarIcon,
   Person as PersonIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Swal from 'sweetalert2';
 
-import { fetchClasses, addClass, updateClass, clearError, resetActionStatus } from '../../Redux/features/classesSlice';
+import {  addClass, updateClass, clearError, resetActionStatus } from '../../Redux/features/classesSlice';
 import { fetchEmployees } from '../../Redux/features/employeesSlice';
 
 // Professional animations
@@ -129,7 +125,7 @@ const rtlTheme = createTheme({
 });
 
 // Professional styled components
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
@@ -295,7 +291,7 @@ const ClassesTab = () => {
   const { classes, status, actionStatus, error } = useSelector(state => state.classes);
   const { employees } = useSelector(state => state.employees);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -309,12 +305,12 @@ const ClassesTab = () => {
     dispatch(fetchEmployees());
   }, [dispatch]);
 
-  // Filter classes based on search term - PRESERVED EXACTLY
+  // Filter classes based on search term 
   const filteredClasses = classes.filter(cls =>
     cls.className.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages - PRESERVED EXACTLY
+  // Handle success/error messages 
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -344,14 +340,14 @@ const ClassesTab = () => {
     return teacher ? `${teacher.firstName} ${teacher.lastName}` : `מזהה: ${teacherId}`;
   };
 
-  // Handle edit start - PRESERVED EXACTLY
+  // Handle edit start 
   const handleEditStart = (cls) => {
     setEditingId(cls.classId);
     setEditValue(cls.className);
     setEditTeacherId(cls.teacherId || '');
   };
 
-  // Handle edit save - PRESERVED EXACTLY
+  // Handle edit save 
   const handleEditSave = async () => {
     if (editValue.trim() === '') {
       Swal.fire({
@@ -390,14 +386,14 @@ const ClassesTab = () => {
     setEditTeacherId('');
   };
 
-  // Handle edit cancel - PRESERVED EXACTLY
+  // Handle edit cancel 
   const handleEditCancel = () => {
     setEditingId(null);
     setEditValue('');
     setEditTeacherId('');
   };
 
-  // Handle add class - PRESERVED EXACTLY
+  // Handle add class 
   const handleAddClass = async () => {
     if (newClassName.trim() === '') {
       Swal.fire({

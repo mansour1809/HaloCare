@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -33,19 +33,16 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
   LocationCity as CityIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  Star as StarIcon,
   Place as PlaceIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Swal from 'sweetalert2';
 
-import { fetchCities, addCity, updateCity, clearError, resetActionStatus } from '../../Redux/features/citiesSlice';
+import {  addCity, updateCity, clearError, resetActionStatus } from '../../Redux/features/citiesSlice';
 
 // Professional animations
 const gradientShift = keyframes`
@@ -62,12 +59,6 @@ const float = keyframes`
 const shimmer = keyframes`
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
-`;
-
-const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
 `;
 
 // RTL Theme with professional colors
@@ -123,7 +114,7 @@ const rtlTheme = createTheme({
 });
 
 // Professional styled components
-const FullScreenContainer = styled(Box)(({ theme }) => ({
+const FullScreenContainer = styled(Box)(() => ({
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
@@ -162,7 +153,7 @@ const HeroCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+const StyledTableContainer = styled(TableContainer)(() => ({
   borderRadius: 20,
   overflow: 'hidden',
   background: 'rgba(255, 255, 255, 0.95)',
@@ -183,7 +174,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
-const AnimatedButton = styled(Button)(({ theme }) => ({
+const AnimatedButton = styled(Button)(() => ({
   borderRadius: 16,
   padding: '12px 24px',
   fontWeight: 600,
@@ -213,7 +204,7 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   }
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const StyledTextField = styled(TextField)(() => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 12,
     background: 'rgba(255, 255, 255, 0.9)',
@@ -236,7 +227,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   }
 }));
 
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
+const StyledIconButton = styled(IconButton)(() => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   borderRadius: 12,
   '&:hover': {
@@ -272,22 +263,22 @@ const CitiesTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { cities, status, actionStatus, error } = useSelector(state => state.cities);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [newCityName, setNewCityName] = useState('');
 
-  // Filter cities based on search term - PRESERVED EXACTLY
+  // Filter cities based on search term 
   const filteredCities = cities.filter(city =>
     city.cityName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages - PRESERVED EXACTLY
+  // Handle success/error messages 
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -310,7 +301,7 @@ const CitiesTab = () => {
     }
   }, [actionStatus, error, dispatch]);
 
-  // All handler functions - PRESERVED EXACTLY
+  // All handler functions 
   const handleEditStart = (city) => {
     setEditingId(city.cityName);
     setEditValue(city.cityName);

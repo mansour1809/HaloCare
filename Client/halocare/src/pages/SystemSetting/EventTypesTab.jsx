@@ -276,10 +276,10 @@ const EventTypesTab = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const { eventTypes, status, actionStatus, error } = useSelector(state => state.eventTypes);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -288,12 +288,12 @@ const EventTypesTab = () => {
   const [newEventTypeName, setNewEventTypeName] = useState('');
   const [newEventColor, setNewEventColor] = useState('#4cb5c3');
 
-  // Filter event types based on search term - PRESERVED EXACTLY
+  // Filter event types based on search term 
   const filteredEventTypes = eventTypes.filter(type =>
     type.eventType.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle success/error messages - PRESERVED EXACTLY
+  // Handle success/error messages 
   useEffect(() => {
     if (actionStatus === 'succeeded') {
       Swal.fire({
@@ -316,7 +316,7 @@ const EventTypesTab = () => {
     }
   }, [actionStatus, error, dispatch]);
 
-  // All handler functions - PRESERVED EXACTLY
+  // All handler functions 
   const handleEditStart = (type) => {
     setEditingId(type.eventTypeId);
     setEditValue(type.eventType);

@@ -211,16 +211,16 @@ const OnboardingSection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Redux state - PRESERVED EXACTLY
+  // Redux state 
   const onboardingData = useSelector(selectOnboardingData);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   
-  // Local state - PRESERVED EXACTLY
+  // Local state 
   const [loading, setLoading] = useState(true);
   const [showExpanded, setShowExpanded] = useState(false);
   const [selectedKid, setSelectedKid] = useState(null);
 
-  // Load data on mount - PRESERVED EXACTLY
+  // Load data on mount 
   useEffect(() => {
     loadOnboardingData();
   }, [dispatch]);
@@ -259,7 +259,7 @@ const OnboardingSection = () => {
     }
   };
 
-  // Process data for display - PRESERVED EXACTLY
+  // Process data for display 
   const processOnboardingData = () => {
     const activeKids = kids.filter(kid => kid.isActive === true);
     
