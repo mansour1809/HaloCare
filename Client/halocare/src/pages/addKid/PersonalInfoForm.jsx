@@ -270,11 +270,11 @@ const FullScreenContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: `
-      radial-gradient(circle at 20% 80%, rgba(76, 181, 195, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 112, 67, 0.3) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.2) 0%, transparent 50%)
-    `,
+    // background: `
+    //   radial-gradient(circle at 20% 80%, rgba(76, 181, 195, 0.3) 0%, transparent 50%),
+    //   radial-gradient(circle at 80% 20%, rgba(255, 112, 67, 0.3) 0%, transparent 50%),
+    //   radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.2) 0%, transparent 50%)
+    // `,
     pointerEvents: 'none',
   }
 }));

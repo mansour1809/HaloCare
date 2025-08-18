@@ -192,9 +192,7 @@ const CustomInput = styled(TextField)(({ theme }) => ({
   }
 }));
 
-/**
- * HebrewReactDatePicker - קומפוננטת תאריך עם react-datepicker ותמיכה מלאה בעברית
- */
+
 const HebrewReactDatePicker = ({
   label,
   value,

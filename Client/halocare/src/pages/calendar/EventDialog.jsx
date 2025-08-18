@@ -48,6 +48,7 @@ import { useCalendar } from './CalendarContext';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../components/login/AuthContext';
 import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
+  import dayjs from "dayjs";
 
 
 const SlideTransition = React.forwardRef(function Transition(props, ref) {
@@ -216,6 +217,23 @@ const EventDialog = () => {
       handleEventChange(event);
     }
   };
+// const handleDateTimeChange = (name, value) => {
+//   console.log("value",value)
+//     if (value && !isNaN(value)) {
+//       // Convert to ISO string format
+//       const isoString = value.toISOString().slice(0, 19);
+//       console.log("isoString",isoString)
+//       handleEventChange({ name, value: isoString });
+//     }
+//   };
+
+const handleDateTimeChange = (name, value) => {
+  if (value) {
+    const localString = dayjs(value).format("YYYY-MM-DDTHH:mm");
+    console.log("localString", localString); // 2025-08-22T11:00
+    handleEventChange({ name, value: localString });
+  }
+};
 
   // Finding the original creator of the event
   const getCreatorName = () => {
@@ -429,48 +447,56 @@ const EventDialog = () => {
             </StyledFormControl>
           </Grid>
 
-          {/* Date and time */}
-          <Grid item size={{ xs: 12, md: 6 }}>
-            <HebrewReactDatePicker
-            showTimeSelect="true"
-              label="תאריך ושעת התחלה"
-              name="start"
-              type="datetime-local"
-              value={newEvent.start || ""}
-              onChange={handleEventChange}
-              fullWidth
-              required
-              variant="outlined"
-              error={validationErrors.start}
-              helperText={
-                validationErrors.start ? "יש להזין תאריך ושעת התחלה" : ""
-              }
-              InputLabelProps={{ shrink: true }}
-              
-            />
-          </Grid>
+          
 
-          <Grid item size={{ xs: 12, md: 6 }}>
-            <HebrewReactDatePicker
-            showTimeSelect="true"
-              label="תאריך ושעת סיום"
-              name="end"
-              type="datetime-local"
-              value={newEvent.end || ""}
-              onChange={handleEventChange}
-              fullWidth
-              required
-              variant="outlined"
-              error={validationErrors.end}
-              helperText={
-                validationErrors.end
-                  ? "שעת הסיום חייבת להיות מאוחרת משעת ההתחלה"
-                  : ""
-              }
-              InputLabelProps={{ shrink: true }}
-              
-            />
-          </Grid>
+         
+          <Grid item size={{xs:12,md:6}} >
+              <HebrewReactDatePicker
+                label="תאריך ושעת התחלה"
+                value={newEvent.start || ""}
+                onChange={(value) => handleDateTimeChange('start', value)}
+                format="dd/MM/yyyy HH:mm"
+                showTimeSelect="true"
+                ampm={false}
+                minDateTime={newEvent.start}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: validationErrors.start,
+                    helperText: validationErrors.start ? "זמן התחלה חייב להיות לפני זמן סיום" : "",
+                    sx: {
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                      }
+                    }
+                  }
+                }}
+              />
+            </Grid>
+          <Grid item size={{xs:12,md:6}}>
+              <HebrewReactDatePicker
+              minDate={newEvent.start}
+                label="תאריך ושעה סיום"
+                value={newEvent.end || ""}
+                onChange={(value) => handleDateTimeChange('end', value)}
+                format="dd/MM/yyyy HH:mm"
+                showTimeSelect="true"
+                ampm={false}
+                // minDateTime={newEvent.start}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: validationErrors.end,
+                    helperText: validationErrors.end ? "זמן סיום חייב להיות אחרי זמן התחלה" : "",
+                    sx: {
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '16px',
+                      }
+                    }
+                  }
+                }}
+              />
+            </Grid>
 
           {/* Location */}
           <Grid item size={{ xs: 12 }}>

@@ -1,3 +1,4 @@
+// CalendarContext.jsx - תיקון הבעיה עם שינוי תאריך
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from '../../components/common/axiosConfig';
 import Swal from 'sweetalert2';
@@ -9,14 +10,12 @@ import { fetchEvents } from '../../Redux/features/eventsSlice';
 import { useSelector } from 'react-redux';
 import { useAuth } from '../../components/login/AuthContext';
 
-
 const CalendarContext = createContext();
 
-
 export const CalendarProvider = ({ children }) => {
-
   const dispatch = useDispatch();
-  //data from redux store
+  
+  // Data from redux store
   const { events, status: eventsStatus } = useSelector(state => state.events);
   const { kids, status: kidsStatus } = useSelector(state => state.kids);
   const { employees, status: employeesStatus } = useSelector(state => state.employees);
@@ -36,12 +35,11 @@ export const CalendarProvider = ({ children }) => {
       dispatch(fetchEvents());
     }
   }, [dispatch, kidsStatus, employeesStatus, eventTypesStatus, eventsStatus]);
-  
 
   // States - Events
   const [filteredEvents, setFilteredEvents] = useState([]);
   const isLoadingFromRedux = (eventsStatus === 'loading');
-  const [createdByUserId, setCreatedByUserId] = useState(0); 
+  const [createdByUserId, setCreatedByUserId] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -49,68 +47,66 @@ export const CalendarProvider = ({ children }) => {
     end: '',
     location: '',
     description: '',
-    createdBy: 0,
-    eventTypeId: 0,
-    type: '', 
-    color: '', 
+    eventTypeId: '',
+    type: '',
+    color: '',
     kidIds: [],
     employeeIds: []
   });
-
-  // Display and show dialogs
   const [openDialog, setOpenDialog] = useState(false);
-  const [calendarView, setCalendarView] = useState('timeGridWeek');
+  const [calendarView, setCalendarView] = useState('dayGridMonth');
   const [showFilterForm, setShowFilterForm] = useState(false);
-  const {currentUser} = useAuth();
-
-  // Filtering
   const [filterOptions, setFilterOptions] = useState({
     kidId: '',
     employeeId: '',
-    eventTypeId: '' 
+    eventTypeId: ''
   });
 
-  useEffect(() => { // setup createdByUserId from localStorage
+  const { currentUser } = useAuth();
 
-    try {
-      if (currentUser && currentUser.id) {
-        setCreatedByUserId(currentUser.id);
-      }
-    } catch (error) {
-      console.error('Error reading user from localStorage:', error);
+  const isLoading = eventsStatus === 'loading';
+
+  useEffect(() => {
+    if (currentUser && currentUser.id) {
+      setCreatedByUserId(currentUser.id);
     }
-  }, [])
+  }, [currentUser]);
 
-   const toISOStringWithoutTimezone = (date) => {
-    if (!date) return '';
-    const dt = new Date(date);
-    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-    return dt.toISOString().slice(0, 16);
+  // Helper function for converting date to local ISO string
+  const toISOStringWithoutTimezone = (date) => {
+    const pad = (num) => (num < 10 ? '0' + num : num);
+    
+    return date.getFullYear() +
+      '-' + pad(date.getMonth() + 1) +
+      '-' + pad(date.getDate()) +
+      'T' + pad(date.getHours()) +
+      ':' + pad(date.getMinutes()) +
+      ':' + pad(date.getSeconds());
   };
 
-  const getDefaultEventValues = useCallback((startTime = new Date(), endTime = null) => {
-    if (!endTime) {
-      endTime = new Date(startTime);
-      endTime.setHours(startTime.getHours() + 1);
-    }
+  // Get default values for new event
+  const getDefaultEventValues = useCallback((start, end) => {
+    const defaultStart = start ? toISOStringWithoutTimezone(new Date(start)) : toISOStringWithoutTimezone(new Date());
+    const defaultEnd = end ? toISOStringWithoutTimezone(new Date(end)) : toISOStringWithoutTimezone(new Date(new Date().getTime() + 60 * 60 * 1000));
     
     return {
       title: '',
-      start: toISOStringWithoutTimezone(startTime),
-      end: toISOStringWithoutTimezone(endTime),
+      start: defaultStart,
+      end: defaultEnd,
       location: '',
       description: '',
-      createdBy: createdByUserId,
-      eventTypeId: eventTypes.length > 0 ? eventTypes[0].eventTypeId : '',
-      type: eventTypes.length > 0 ? eventTypes[0].eventType : '',
-      color: eventTypes.length > 0 ? eventTypes[0].color : '',
+      eventTypeId: '',
+      type: '',
+      color: '',
       kidIds: [],
       employeeIds: []
     };
-  }, [eventTypes, createdByUserId]);
+  }, []);
 
-
+  // Prepare event data for server
   const prepareEventData = useCallback((eventData) => {
+    const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(eventData.eventTypeId));
+    
     return {
       eventId: eventData.id ? parseInt(eventData.id) : 0,
       eventType: eventData.eventType,
@@ -126,33 +122,28 @@ export const CalendarProvider = ({ children }) => {
     };
   }, [createdByUserId]);
 
-
   // Adding a new event
   const addEvent = useCallback(async (eventData) => {
-
-      const serverEventData = prepareEventData(eventData);
-      console.log(serverEventData)
-      const response = await axios.post('/Events', serverEventData);
-      dispatch(fetchEvents());
-      return response.data;
-
+    const serverEventData = prepareEventData(eventData);
+    console.log(serverEventData);
+    const response = await axios.post('/Events', serverEventData);
+    dispatch(fetchEvents());
+    return response.data;
   }, [prepareEventData, dispatch]);
 
   // Update an existing event
   const updateEvent = useCallback(async (eventData) => {
-
     const serverEventData = prepareEventData(eventData);
-      const response = await axios.put(`/Events/${eventData.id}`, serverEventData);
-      dispatch(fetchEvents());
-      return response.data;
-  }, [prepareEventData,dispatch]);
+    const response = await axios.put(`/Events/${eventData.id}`, serverEventData);
+    dispatch(fetchEvents());
+    return response.data;
+  }, [prepareEventData, dispatch]);
 
   // Delete event
   const deleteEvent = useCallback(async (eventId) => {
     await axios.delete(`Events/${eventId}`);
     dispatch(fetchEvents());
-  },[dispatch]);
-
+  }, [dispatch]);
 
   // Event filtering function
   const filterEvents = useCallback(() => {
@@ -197,26 +188,39 @@ export const CalendarProvider = ({ children }) => {
     }));
   }, []);
 
-  const handleEventChange = useCallback((e) => {
-    const { name, value } = e.target;
-
-    setNewEvent(prev => {
-      if (name === 'eventTypeId') {
-        const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(value));
-
+  // FIXED: Handle event change for both regular inputs and date picker
+  const handleEventChange = useCallback((eventOrTarget) => {
+    // Check if it's a synthetic event or a custom object
+    if (eventOrTarget && eventOrTarget.target) {
+      // Regular input event
+      const { name, value } = eventOrTarget.target;
+      
+      setNewEvent(prev => {
+        if (name === 'eventTypeId') {
+          const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(value));
+          
+          return {
+            ...prev,
+            [name]: value,
+            type: selectedType ? selectedType.eventType : '',
+            color: selectedType ? selectedType.color : '',
+          };
+        }
+        
         return {
           ...prev,
-          [name]: value,
-          type: selectedType ? selectedType.eventType : '', 
-          color: selectedType ? selectedType.color : '',
+          [name]: value
         };
-      }
-
-      return {
+      });
+    } else if (eventOrTarget && typeof eventOrTarget === 'object') {
+      // Custom date picker event or direct value update
+      const { name, value } = eventOrTarget;
+      
+      setNewEvent(prev => ({
         ...prev,
         [name]: value
-      };
-    });
+      }));
+    }
   }, [eventTypes]);
 
   useEffect(() => {
@@ -224,48 +228,45 @@ export const CalendarProvider = ({ children }) => {
   }, [events, filterOptions, filterEvents]);
 
   useEffect(() => {
-     dispatch(fetchEvents());
+    dispatch(fetchEvents());
   }, [dispatch]);
 
-
   const handleDateClick = useCallback((info) => {
-    const defaultVal= getDefaultEventValues(info.date, null);
+    const defaultVal = getDefaultEventValues(info.date, null);
     setSelectedEvent(null);
     setNewEvent(defaultVal);
     setOpenDialog(true);
   }, [getDefaultEventValues]);
 
   const handleEventClick = useCallback((info) => {
-    const event = info.event;
-
+    const event = info.event || info; // Support both FullCalendar and BigCalendar formats
+    {console.log(info)}
     const startStr = toISOStringWithoutTimezone(new Date(event.start));
     const endStr = event.end ? toISOStringWithoutTimezone(new Date(event.end)) : startStr;
-
+    
     setSelectedEvent(event);
-
+    
     setNewEvent({
       id: event.id,
       title: event.title || '',
       start: startStr,
       end: endStr,
-      location: event.extendedProps.location || '',
-      description: event.extendedProps.description || '',
-      createdBy: event.extendedProps.createdBy,
-      eventTypeId: event.extendedProps.eventTypeId || '', 
-      type: event.extendedProps.type || '', 
-      color: event.extendedProps.color || '',
-      kidIds: event.extendedProps.kidIds || [],
-      employeeIds: event.extendedProps.employeeIds || []
+      location: event.extendedProps?.location || event.resource?.location || '',
+      description: event.extendedProps?.description || event.resource?.description || '',
+      createdBy: event.extendedProps?.createdBy || event.resource?.createdBy,
+      eventTypeId: event.extendedProps?.eventTypeId || event.resource?.eventTypeId || '',
+      type: event.extendedProps?.type || event.resource?.type || '',
+      color: event.extendedProps?.color || event.resource?.color || '',
+      kidIds: event.extendedProps?.kidIds || event.resource?.kidIds || [],
+      employeeIds: event.extendedProps?.employeeIds || event.resource?.employeeIds || []
     });
-
+    
     setOpenDialog(true);
   }, []);
 
-
   const handleSaveEvent = useCallback(async () => {
- 
     const selectedType = eventTypes.find(type => type.eventTypeId === parseInt(newEvent.eventTypeId));
-
+    
     const eventData = {
       id: selectedEvent ? selectedEvent.id : 0,
       title: newEvent.title,
@@ -274,24 +275,15 @@ export const CalendarProvider = ({ children }) => {
       location: newEvent.location || '',
       description: newEvent.description || '',
       createdBy: newEvent.createdBy || currentUser.id || 1,
-      color: selectedType.color || '', 
-      eventType: selectedType.eventType, 
-      eventTypeId: parseInt(newEvent.eventTypeId), 
+      color: selectedType?.color || '',
+      eventType: selectedType?.eventType,
+      eventTypeId: parseInt(newEvent.eventTypeId),
       kidIds: Array.isArray(newEvent.kidIds) ? newEvent.kidIds.map(id => parseInt(id)) : [],
       employeeIds: Array.isArray(newEvent.employeeIds) ? newEvent.employeeIds.map(id => parseInt(id)) : []
     };
-
+    
     try {
-      // setIsLoading(true);
       if (selectedEvent) {
-        setOpenDialog(false);
-        Swal.fire({
-          didOpen: () => {
-            Swal.showLoading();
-          },
-          text: 'מעדכן את האירוע',
-          showConfirmButton: false,
-        });
         await updateEvent(eventData);
         Swal.fire({
           icon: 'success',
@@ -301,14 +293,6 @@ export const CalendarProvider = ({ children }) => {
           showConfirmButton: false
         });
       } else {
-        setOpenDialog(false);
-        Swal.fire({
-          didOpen: () => {
-            Swal.showLoading();
-          },
-          text: 'ממתין להוספת האירוע',
-          showConfirmButton: false,
-        });
         await addEvent(eventData);
         Swal.fire({
           icon: 'success',
@@ -318,29 +302,22 @@ export const CalendarProvider = ({ children }) => {
           showConfirmButton: false
         });
       }
+      
+      setOpenDialog(false);
+      setSelectedEvent(null);
+      setNewEvent(getDefaultEventValues());
+      
     } catch (error) {
-      console.error('Error saving event:', error.response ? error.response.data : error);
+      console.error('Error saving event:', error);
       Swal.fire({
         icon: 'error',
         title: 'שגיאה',
-        text: 'שגיאה בשמירת האירוע',
+        text: 'אירעה שגיאה בשמירת האירוע',
       });
-    } 
-  }, [newEvent, selectedEvent, updateEvent, addEvent, eventTypes]);
-
-
-  const handleDeleteEvent = useCallback(async () => {
-    if (!selectedEvent || !selectedEvent.id) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'שגיאה',
-        text: 'לא נבחר אירוע למחיקה',
-      });
-      return;
     }
-    
-    setOpenDialog(false);
-    
+  }, [selectedEvent, newEvent, eventTypes, currentUser, addEvent, updateEvent, getDefaultEventValues]);
+
+  const handleDeleteEvent = useCallback(() => {
     setTimeout(() => {
       Swal.fire({
         title: 'האם אתה בטוח?',
@@ -362,6 +339,9 @@ export const CalendarProvider = ({ children }) => {
               timer: 2000,
               showConfirmButton: false
             });
+            setOpenDialog(false);
+            setSelectedEvent(null);
+            setNewEvent(getDefaultEventValues());
           } catch (error) {
             console.error('Error deleting event:', error);
             Swal.fire({
@@ -373,29 +353,25 @@ export const CalendarProvider = ({ children }) => {
         }
       });
     }, 100);
-  }, [selectedEvent, deleteEvent]);
+  }, [selectedEvent, deleteEvent, getDefaultEventValues]);
 
-
-  // changing calendar view
+  // Changing calendar view
   const handleViewChange = useCallback((view) => {
     setCalendarView(view);
   }, []);
 
-  // creating new event
+  // Creating new event
   const createNewEvent = useCallback(() => {
     const now = new Date();
     const later = new Date(now);
     later.setHours(later.getHours() + 1);
     setSelectedEvent(null);
-    const defaultVal= getDefaultEventValues(now,later);
+    const defaultVal = getDefaultEventValues(now, later);
     setNewEvent(defaultVal);
     setOpenDialog(true);
   }, [getDefaultEventValues]);
 
-
-
-
-  //what we want to expose to the components that use this context
+  // Context value
   const contextValue = {
     events,
     filteredEvents,
@@ -410,8 +386,8 @@ export const CalendarProvider = ({ children }) => {
     showFilterForm,
     filterOptions,
     createdByUserId,
-
-//actions
+    
+    // Actions
     fetchEvents: () => dispatch(fetchEvents()),
     addEvent,
     updateEvent,
@@ -440,14 +416,14 @@ export const CalendarProvider = ({ children }) => {
   );
 };
 
-// Useful hook for using the context
+// Hook for using the context
 export const useCalendar = () => {
   const context = useContext(CalendarContext);
-
+  
   if (!context) {
     throw new Error('useCalendar must be used within a CalendarProvider');
   }
-
+  
   return context;
 };
 
