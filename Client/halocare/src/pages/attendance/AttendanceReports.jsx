@@ -18,22 +18,19 @@ import {
   Cancel as CancelIcon,
   TrendingUp as TrendingUpIcon,
   ArrowForward as ArrowForwardIcon,
-  Person as PersonIcon,
   Analytics as AnalyticsIcon,
   Insights as InsightsIcon,
   School as SchoolIcon,
-  Timeline as TimelineIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
-import { useAttendance } from "../../components/context/AttendanceContext";
+import { useAttendance } from "./AttendanceContext";
 import { generateAttendanceReport } from '../../utils/pdfGenerator';
 import 'dayjs/locale/he';
 
 // Graph components
 import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
-import { fetchAttendanceByKidId } from "../../Redux/features/attendanceSlice";
 import { useDispatch } from "react-redux";
 import Swal from 'sweetalert2';
 import HebrewReactDatePicker from "../../components/common/HebrewReactDatePicker";

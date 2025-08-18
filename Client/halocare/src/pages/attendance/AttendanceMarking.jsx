@@ -26,8 +26,7 @@ import {
 import { styled } from '@mui/material/styles';
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
-import { useAttendance } from "../../components/context/AttendanceContext";
-import AttendanceAnalytics from "./AttendanceAnalytics";
+import { useAttendance } from "./AttendanceContext";
 import Swal from "sweetalert2";
 import { baseURL } from "../../components/common/axiosConfig";
 import HebrewReactDatePicker from "../../components/common/HebrewReactDatePicker";
@@ -660,7 +659,6 @@ const AttendanceMarking = () => {
             </Stack>
             
             <Box sx={{ height: 300, borderRadius: 2, overflow: 'hidden' }}>
-              <AttendanceAnalytics miniVersion={true} />
             </Box>
           </CardContent>
         </Card>

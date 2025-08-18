@@ -14,10 +14,9 @@ import {
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import { useDispatch } from "react-redux";
 import { fetchKids } from "../../Redux/features/kidsSlice";
-import { AttendanceProvider } from "../../components/context/AttendanceContext";
+import { AttendanceProvider } from "./AttendanceContext";
 import AttendanceMarking from "./AttendanceMarking";
 import AttendanceReports from "./AttendanceReports";
-import AttendanceAnalytics from "./AttendanceAnalytics";
 
 // Amazing theme for the attendance system
 const attendanceTheme = createTheme({
@@ -376,7 +375,6 @@ const AttendanceDashboard = () => {
                       <AnalyticsIcon sx={{ mr: 1 }} />
                       אנליטיקת נוכחות מתקדמת
                     </Typography>
-                    <AttendanceAnalytics />
                   </Box>
                 )}
               </CardContent>
