@@ -4,9 +4,8 @@ import {
   InputLabel, Button, Box, CircularProgress, Alert, Table,
   TableBody, TableCell, TableContainer, TableHead, TableRow,
   Avatar, Card, CardContent, Divider, Tooltip,
-  Chip, Stack, Fade, Zoom, alpha, useTheme
+  Chip, Stack, Fade, Zoom, alpha, useTheme, keyframes
 } from "@mui/material";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { 
@@ -34,8 +33,37 @@ import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGri
 import { useDispatch } from "react-redux";
 import Swal from 'sweetalert2';
 import HebrewReactDatePicker from "../../components/common/HebrewReactDatePicker";
+import { baseURL } from "../../components/common/axiosConfig";
 
-// Amazing theme for reports
+// Professional animations matching our style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const glow = keyframes`
+  0%, 100% { box-shadow: 0 0 20px rgba(76, 181, 195, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(76, 181, 195, 0.6), 0 0 40px rgba(76, 181, 195, 0.4); }
+`;
+
+// Professional theme with our colors
 const reportsTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -51,14 +79,14 @@ const reportsTheme = createTheme({
   },
   palette: {
     primary: {
-      main: '#667eea',
-      light: '#818cf8',
-      dark: '#4338ca',
+      main: '#4cb5c3',
+      light: '#7ec8d3',
+      dark: '#2a8a95',
     },
     secondary: {
-      main: '#10b981',
-      light: '#34d399',
-      dark: '#059669',
+      main: '#ff7043',
+      light: '#ff9575',
+      dark: '#c63f17',
     },
     warning: {
       main: '#f59e0b',
@@ -87,16 +115,6 @@ const reportsTheme = createTheme({
           border: '1px solid rgba(255, 255, 255, 0.2)',
           overflow: 'visible',
           position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6px',
-            background: 'linear-gradient(90deg, #667eea, #764ba2, #10b981, #667eea)',
-            borderRadius: '20px 20px 0 0',
-          }
         }
       }
     }
@@ -108,11 +126,11 @@ const COLORS = ['#10b981', '#ef4444'];
 
 // Styled control card
 const ControlCard = styled(Card)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.98)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
   borderRadius: 20,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   overflow: 'visible',
   position: 'relative',
   '&::before': {
@@ -121,9 +139,10 @@ const ControlCard = styled(Card)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
-    background: 'linear-gradient(90deg, #667eea, #10b981, #f59e0b)',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
     borderRadius: '20px 20px 0 0',
+    animation: `${gradientShift} 3s ease infinite`,
   }
 }));
 
@@ -133,23 +152,38 @@ const ReportCard = styled(Card)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.2)',
   borderRadius: 20,
-  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   overflow: 'visible',
   position: 'relative',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 15px 50px rgba(76, 181, 195, 0.15)',
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
-    background: 'linear-gradient(90deg, #667eea, #764ba2, #10b981)',
+    height: '4px',
+    background: 'linear-gradient(90deg, #4cb5c3, #2a8a95, #10b981)',
     borderRadius: '20px 20px 0 0',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(76, 181, 195, 0.05), transparent)',
+    animation: `${shimmer} 3s infinite`,
   }
 }));
 
 // Styled glowing button
-const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
+const GlowButton = styled(Button)(({ theme, glowColor = '#4cb5c3' }) => ({
   borderRadius: 16,
   fontWeight: 600,
   padding: '12px 24px',
@@ -163,12 +197,13 @@ const GlowButton = styled(Button)(({ theme, glowColor = '#667eea' }) => ({
     left: '-100%',
     width: '100%',
     height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(glowColor, 0.4)}, transparent)`,
+    background: `linear-gradient(90deg, transparent, ${alpha(glowColor, 0.3)}, transparent)`,
     transition: 'left 0.5s',
   },
   '&:hover': {
     transform: 'translateY(-3px)',
-    boxShadow: `0 8px 25px ${alpha(glowColor, 0.4)}`,
+    boxShadow: `0 12px 35px ${alpha(glowColor, 0.4)}`,
+    animation: `${pulse} 1.5s infinite`,
   },
   '&:hover::before': {
     left: '100%',
@@ -181,21 +216,21 @@ const StyledSelect = styled(Select)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.9)',
   backdropFilter: 'blur(10px)',
   '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    border: '1px solid rgba(76, 181, 195, 0.2)',
+    transition: 'all 0.3s ease',
   },
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.15)',
     '& .MuiOutlinedInput-notchedOutline': {
-      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)',
+      borderColor: '#4cb5c3',
+      boxShadow: '0 4px 15px rgba(76, 181, 195, 0.15)',
     },
   },
   '&.Mui-focused': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.25)',
     '& .MuiOutlinedInput-notchedOutline': {
-      boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)',
+      borderColor: '#4cb5c3',
+      borderWidth: '2px',
+      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.2)',
     },
   }
 }));
@@ -204,16 +239,17 @@ const StyledSelect = styled(Select)(({ theme }) => ({
 const StatCard = styled(Card)(({ borderColor }) => ({
   height: '100%',
   borderRadius: 16,
-  background: 'rgba(255, 255, 255, 0.9)',
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(borderColor || '#667eea', 0.2)}`,
-  boxShadow: `0 8px 24px ${alpha(borderColor || '#667eea', 0.15)}`,
+  border: `1px solid ${alpha(borderColor || '#4cb5c3', 0.2)}`,
+  boxShadow: `0 6px 20px ${alpha(borderColor || '#4cb5c3', 0.15)}`,
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `0 12px 32px ${alpha(borderColor || '#667eea', 0.25)}`,
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: `0 12px 35px ${alpha(borderColor || '#4cb5c3', 0.25)}`,
+    animation: `${glow} 2s infinite`,
   },
   '&::before': {
     content: '""',
@@ -221,12 +257,35 @@ const StatCard = styled(Card)(({ borderColor }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '4px',
-    background: borderColor || '#667eea',
+    height: '3px',
+    background: borderColor || '#4cb5c3',
   }
 }));
 
-// Component for viewing report content
+const AnimatedAvatar = styled(Avatar)(({ theme }) => ({
+  animation: `${float} 3s ease-in-out infinite`,
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  fontWeight: 600,
+  backdropFilter: 'blur(10px)',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+  }
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+  borderRadius: 16,
+  overflow: 'hidden',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+}));
+
+// Component for viewing report content - Enhanced styling only
 const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
   const theme = useTheme();
 
@@ -237,13 +296,13 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
   const absent = total - present;
   const percent = total > 0 ? Math.round((present / total) * 100) : 0;
   
-  // Prepare data for pie chart
+  // Prepare data for pie chart - PRESERVED EXACTLY
   const pieData = [
     { name: 'נוכחות', value: present },
     { name: 'היעדרות', value: absent }
   ];
   
-  // Prepare data for trend chart
+  // Prepare data for trend chart - PRESERVED EXACTLY
   const trendData = [];
   let currentDate = dayjs(startDate);
   const endDateObj = dayjs(endDate);
@@ -262,7 +321,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     currentDate = currentDate.add(1, 'day');
   }
   
-  // Analyze attendance streaks
+  // Analyze attendance streaks - PRESERVED EXACTLY
   let longestStreak = 0;
   let currentStreak = 0;
   let recentTrend = null;
@@ -282,7 +341,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     }
   });
   
-  // Analyze absence patterns
+  // Analyze absence patterns - PRESERVED EXACTLY
   const absencesByReason = {};
   attendanceRecords.filter(r => !r.isPresent).forEach(record => {
     const reason = record.absenceReason || 'לא צוין';
@@ -293,42 +352,49 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     <Fade in timeout={800}>
       <ReportCard sx={{ mt: 3 }}>
         <CardContent sx={{ p: 0 }}>
-          {/* Report title */}
+          {/* Report title - Enhanced styling */}
           <Box sx={{ 
             p: 4, 
-            background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(16,185,129,0.1) 100%)',
+            background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
             borderRadius: '20px 20px 0 0', 
             position: 'relative' 
           }}>
             <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 3 }}>
-              <Avatar 
+              <AnimatedAvatar 
                 src={child.photo || undefined}
                 alt={`${child.firstName} ${child.lastName}`}
                 sx={{ 
                   width: 80, 
                   height: 80, 
                   border: '4px solid white', 
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                  background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)'
+                  boxShadow: '0 8px 25px rgba(76, 181, 195, 0.3)',
+                  background: 'linear-gradient(45deg, #4cb5c3 30%, #10b981 90%)'
                 }}
               >
                 {child.firstName?.charAt(0)}
-              </Avatar>
+              </AnimatedAvatar>
               <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                <Typography variant="h4" sx={{ 
+                  fontWeight: 800,
+                  background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1
+                }}>
                   {child.firstName} {child.lastName}
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
                   דוח נוכחות מפורט
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <Chip 
+                  <StyledChip 
                     label={`${dayjs(startDate).format("DD/MM/YYYY")} - ${dayjs(endDate).format("DD/MM/YYYY")}`}
                     icon={<CalendarTodayIcon />}
                     color="primary"
                     variant="outlined"
                   />
-                  <Chip 
+                  <StyledChip 
                     label={`כיתה ${child.classId === 1 ? "א'" : "ב'"}`}
                     icon={<SchoolIcon />}
                     color="secondary"
@@ -340,11 +406,14 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             
             <Divider sx={{ mb: 3 }} />
             
-            {/* Graphs */}
+            {/* Graphs - Enhanced styling */}
             <Grid container spacing={4}>
               <Grid item size={{xs:12, md:6}}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 700,
+                    color: '#2a8a95'
+                  }}>
                     פילוח נוכחות
                   </Typography>
                   <Box sx={{ height: 220 }}>
@@ -380,7 +449,10 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               </Grid>
               <Grid item size={{xs:12, md:6}}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    fontWeight: 700,
+                    color: '#2a8a95'
+                  }}>
                     מגמת נוכחות יומית
                   </Typography>
                   <Box sx={{ height: 220 }}>
@@ -416,26 +488,30 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
             </Grid>
           </Box>
           
-          {/* Detailed statistics */}
+          {/* Detailed statistics - Enhanced styling */}
           <Box sx={{ p: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ 
+              fontWeight: 700, 
+              mb: 3,
+              color: '#2a8a95'
+            }}>
               סיכום נתונים
             </Typography>
             
             <Grid container spacing={3}>
               <Grid item size={{xs:6, sm:3}}>
-                <StatCard borderColor="#667eea">
+                <StatCard borderColor="#4cb5c3">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Avatar sx={{ 
-                      background: 'linear-gradient(45deg, #667eea 30%, #818cf8 90%)',
+                    <AnimatedAvatar sx={{ 
+                      background: 'linear-gradient(45deg, #4cb5c3 30%, #7ec8d3 90%)',
                       width: 48,
                       height: 48,
                       margin: '0 auto 12px',
-                      boxShadow: '0 4px 14px rgba(102, 126, 234, 0.3)'
+                      boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)'
                     }}>
                       <CalendarTodayIcon />
-                    </Avatar>
-                    <Typography variant="h3" color="#667eea" fontWeight={700}>
+                    </AnimatedAvatar>
+                    <Typography variant="h3" color="#4cb5c3" fontWeight={700}>
                       {total}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -447,15 +523,16 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#10b981">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Avatar sx={{ 
+                    <AnimatedAvatar sx={{ 
                       background: 'linear-gradient(45deg, #10b981 30%, #34d399 90%)',
                       width: 48,
                       height: 48,
                       margin: '0 auto 12px',
-                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+                      boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)',
+                      animationDelay: '0.2s'
                     }}>
                       <CheckCircleIcon />
-                    </Avatar>
+                    </AnimatedAvatar>
                     <Typography variant="h3" color="#10b981" fontWeight={700}>
                       {present}
                     </Typography>
@@ -468,15 +545,16 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#ef4444">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Avatar sx={{ 
+                    <AnimatedAvatar sx={{ 
                       background: 'linear-gradient(45deg, #ef4444 30%, #f87171 90%)',
                       width: 48,
                       height: 48,
                       margin: '0 auto 12px',
-                      boxShadow: '0 4px 14px rgba(239, 68, 68, 0.3)'
+                      boxShadow: '0 6px 20px rgba(239, 68, 68, 0.3)',
+                      animationDelay: '0.4s'
                     }}>
                       <CancelIcon />
-                    </Avatar>
+                    </AnimatedAvatar>
                     <Typography variant="h3" color="#ef4444" fontWeight={700}>
                       {absent}
                     </Typography>
@@ -489,15 +567,16 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               <Grid item size={{xs:6, sm:3}}>
                 <StatCard borderColor="#f59e0b">
                   <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Avatar sx={{ 
+                    <AnimatedAvatar sx={{ 
                       background: 'linear-gradient(45deg, #f59e0b 30%, #fbbf24 90%)',
                       width: 48,
                       height: 48,
                       margin: '0 auto 12px',
-                      boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)'
+                      boxShadow: '0 6px 20px rgba(245, 158, 11, 0.3)',
+                      animationDelay: '0.6s'
                     }}>
                       <AssessmentIcon />
-                    </Avatar>
+                    </AnimatedAvatar>
                     <Typography variant="h3" color="#f59e0b" fontWeight={700}>
                       {percent}%
                     </Typography>
@@ -509,23 +588,38 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               </Grid>
             </Grid>
             
-            {/* Additional analysis */}
+            {/* Additional analysis - Enhanced styling */}
             {total > 0 && (
               <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  fontWeight: 700, 
+                  mb: 3,
+                  color: '#2a8a95'
+                }}>
                   ניתוח מתקדם
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item size={{xs:12, md:6}}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+                    <Card variant="outlined" sx={{ 
+                      p: 3, 
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(139, 92, 246, 0.2)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(139, 92, 246, 0.15)'
+                      }
+                    }}>
                       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                        <Avatar sx={{ 
+                        <AnimatedAvatar sx={{ 
                           background: 'linear-gradient(45deg, #8b5cf6 30%, #a78bfa 90%)',
-                          boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)'
+                          boxShadow: '0 6px 20px rgba(139, 92, 246, 0.3)'
                         }}>
                           <TrendingUpIcon />
-                        </Avatar>
-                        <Typography variant="h6" fontWeight={600}>
+                        </AnimatedAvatar>
+                        <Typography variant="h6" fontWeight={700}>
                           מגמות ורצפים
                         </Typography>
                       </Stack>
@@ -535,7 +629,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
                             רצף נוכחות ארוך ביותר:
                           </Typography>
-                          <Chip 
+                          <StyledChip 
                             label={`${longestStreak} ימים רצופים`}
                             color="success"
                             variant="outlined"
@@ -546,14 +640,19 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
                             מגמה נוכחית:
                           </Typography>
-                          <Chip 
+                          <StyledChip 
                             label={recentTrend === 'עולה' ? 'חיובית' : 'לשיפור'}
                             color={recentTrend === 'עולה' ? 'success' : 'warning'}
                             size="small"
                           />
                         </Box>
                         {percent < 75 && (
-                          <Alert severity="warning" sx={{ mt: 2, borderRadius: 2 }}>
+                          <Alert severity="warning" sx={{ 
+                            mt: 2, 
+                            borderRadius: 2,
+                            background: 'rgba(245, 158, 11, 0.1)',
+                            border: '1px solid rgba(245, 158, 11, 0.3)'
+                          }}>
                             אחוז הנוכחות נמוך מהממוצע. מומלץ לבצע שיחה עם ההורים.
                           </Alert>
                         )}
@@ -561,15 +660,26 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                     </Card>
                   </Grid>
                   <Grid item size={{xs:12, md:6}}>
-                    <Card variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+                    <Card variant="outlined" sx={{ 
+                      p: 3, 
+                      borderRadius: 3,
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(6, 182, 212, 0.2)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 25px rgba(6, 182, 212, 0.15)'
+                      }
+                    }}>
                       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                        <Avatar sx={{ 
+                        <AnimatedAvatar sx={{ 
                           background: 'linear-gradient(45deg, #06b6d4 30%, #22d3ee 90%)',
-                          boxShadow: '0 4px 14px rgba(6, 182, 212, 0.3)'
+                          boxShadow: '0 6px 20px rgba(6, 182, 212, 0.3)'
                         }}>
                           <InsightsIcon />
-                        </Avatar>
-                        <Typography variant="h6" fontWeight={600}>
+                        </AnimatedAvatar>
+                        <Typography variant="h6" fontWeight={700}>
                           ניתוח היעדרויות
                         </Typography>
                       </Stack>
@@ -583,12 +693,17 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                               alignItems: 'center',
                               p: 1,
                               borderRadius: 2,
-                              bgcolor: alpha('#ef4444', 0.05)
+                              bgcolor: alpha('#ef4444', 0.05),
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                bgcolor: alpha('#ef4444', 0.1),
+                                transform: 'translateX(-4px)'
+                              }
                             }}>
                               <Typography variant="body2" fontWeight={500}>
                                 {reason}
                               </Typography>
-                              <Chip 
+                              <StyledChip 
                                 label={`${count} ימים`}
                                 size="small"
                                 color="error"
@@ -599,15 +714,15 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                         </Stack>
                       ) : (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Avatar sx={{ 
+                          <AnimatedAvatar sx={{ 
                             width: 60, 
                             height: 60, 
                             margin: '0 auto 12px',
                             background: 'linear-gradient(45deg, #10b981 30%, #34d399 90%)',
-                            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+                            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.3)'
                           }}>
                             <CheckCircleIcon sx={{ fontSize: '2rem' }} />
-                          </Avatar>
+                          </AnimatedAvatar>
                           <Typography variant="body2" color="text.secondary">
                             אין היעדרויות בתקופה זו
                           </Typography>
@@ -619,27 +734,30 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
               </Box>
             )}
             
-            {/* Attendance table */}
+            {/* Attendance table - Enhanced styling */}
             <Box sx={{ mt: 4 }}>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              <Typography variant="h6" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 2,
+                color: '#2a8a95'
+              }}>
                 פירוט נוכחות יומי
               </Typography>
-              <TableContainer 
+              <StyledTableContainer 
                 component={Paper} 
                 variant="outlined" 
-                sx={{ 
-                  maxHeight: 400, 
-                  borderRadius: 3,
-                  '& .MuiTableHead-root th': {
-                    background: 'linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(16,185,129,0.1) 100%)',
-                    fontWeight: 700,
-                    borderBottom: '2px solid #e0e0e0'
-                  }
-                }}
+                sx={{ maxHeight: 400 }}
               >
                 <Table size="small" stickyHeader>
                   <TableHead>
-                    <TableRow>
+                    <TableRow sx={{ 
+                      '& th': { 
+                        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%)',
+                        fontWeight: 700,
+                        borderBottom: '2px solid rgba(76, 181, 195, 0.2)',
+                        color: '#2a8a95'
+                      }
+                    }}>
                       <TableCell align="center">תאריך</TableCell>
                       <TableCell align="center">יום בשבוע</TableCell>
                       <TableCell align="center">סטטוס</TableCell>
@@ -655,12 +773,14 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           hover
                           sx={{ 
                             bgcolor: record.isPresent ? 
-                              alpha('#10b981', 0.08) : 
-                              alpha('#ef4444', 0.08),
+                              alpha('#10b981', 0.05) : 
+                              alpha('#ef4444', 0.05),
                             '&:hover': {
                               bgcolor: record.isPresent ? 
-                                alpha('#10b981', 0.15) : 
-                                alpha('#ef4444', 0.15),
+                                alpha('#10b981', 0.1) : 
+                                alpha('#ef4444', 0.1),
+                              transform: 'scale(1.01)',
+                              transition: 'all 0.2s ease',
                             }
                           }}
                         >
@@ -672,48 +792,50 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                           </TableCell>
                           <TableCell align="center">
                             {record.isPresent ? (
-                              <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="נוכח" arrow>
+                              <Tooltip placement="top" title="נוכח" arrow
+                                PopperProps={{
+                                  disablePortal: true,
+                                  modifiers: [
+                                    {
+                                      name: 'flip',
+                                      enabled: false 
+                                    },
+                                    {
+                                      name: 'preventOverflow',
+                                      options: {
+                                        boundary: 'window', 
+                                      },
+                                    },
+                                  ],
+                                }}
+                              >
                                 <CheckCircleIcon color="success" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             ) : (
-                              <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="נעדר" arrow>
+                              <Tooltip placement="top" title="נעדר" arrow
+                                PopperProps={{
+                                  disablePortal: true,
+                                  modifiers: [
+                                    {
+                                      name: 'flip',
+                                      enabled: false 
+                                    },
+                                    {
+                                      name: 'preventOverflow',
+                                      options: {
+                                        boundary: 'window', 
+                                      },
+                                    },
+                                  ],
+                                }}
+                              >
                                 <CancelIcon color="error" sx={{ fontSize: '1.5rem' }} />
                               </Tooltip>
                             )}
                           </TableCell>
                           <TableCell>
                             {record.absenceReason ? (
-                              <Chip 
+                              <StyledChip 
                                 label={record.absenceReason}
                                 size="small"
                                 color="error"
@@ -730,7 +852,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                     })}
                   </TableBody>
                 </Table>
-              </TableContainer>
+              </StyledTableContainer>
             </Box>
           </Box>
         </CardContent>
@@ -745,6 +867,7 @@ const AttendanceReports = () => {
   const { attData } = useSelector(state => state.attendance);
   const { selectedDateRange, updateDateRange, loadKidAttendance } = useAttendance();
   
+  // States - PRESERVED EXACTLY
   const [childId, setChildId] = useState("");
   const [rangeType, setRangeType] = useState("week");
   const [startDate, setStartDate] = useState(dayjs().startOf("week"));
@@ -757,7 +880,7 @@ const AttendanceReports = () => {
   
   const theme = useTheme();
   
-  // Update selected child for report
+  // Update selected child for report - PRESERVED EXACTLY
   useEffect(() => {
     if (childId && kids?.length > 0) {
       const child = kids.find(k => k.id.toString() === childId);
@@ -767,7 +890,7 @@ const AttendanceReports = () => {
     }
   }, [childId, kids]);
   
-  // Update dates based on selected range
+  // Update dates based on selected range - PRESERVED EXACTLY
   useEffect(() => {
     if (rangeType === "week") {
       setStartDate(dayjs().startOf("week"));
@@ -782,7 +905,7 @@ const AttendanceReports = () => {
     }
   }, [rangeType, updateDateRange]);
   
-  // Load attendance data for report
+  // Load attendance data for report - PRESERVED EXACTLY
   const fetchAttendanceData = async () => {
     if (!childId || !startDate || !endDate) {
       Swal.fire({
@@ -832,7 +955,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // Generate report preview
+  // Generate report preview - PRESERVED EXACTLY
   const handlePreviewReport = async () => {
     const data = await fetchAttendanceData();
     if (data?.length > 0 && selectedChild) {
@@ -847,7 +970,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // Generate and download report
+  // Generate and download report - PRESERVED EXACTLY
   const handleGenerateReport = async () => {
     try {
       if (!attendanceData.length && !showPreview) {
@@ -885,21 +1008,27 @@ const AttendanceReports = () => {
     <ThemeProvider theme={reportsTheme}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="he">
         <Box>
-          {/* Control Card */}
+          {/* Control Card - Enhanced styling */}
           <Fade in timeout={500}>
             <ControlCard>
               <CardContent sx={{ p: 4 }}>
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
-                  <Avatar sx={{ 
-                    background: 'linear-gradient(45deg, #667eea 30%, #10b981 90%)',
-                    boxShadow: '0 4px 14px rgba(102, 126, 234, 0.3)',
+                  <AnimatedAvatar sx={{ 
+                    background: 'linear-gradient(45deg, #4cb5c3 30%, #10b981 90%)',
+                    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
                     width: 56,
                     height: 56
                   }}>
                     <AssessmentIcon sx={{ fontSize: '2rem' }} />
-                  </Avatar>
+                  </AnimatedAvatar>
                   <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                    <Typography variant="h5" sx={{ 
+                      fontWeight: 800,
+                      background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}>
                       הפקת דוח נוכחות מתקדם
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
@@ -920,23 +1049,34 @@ const AttendanceReports = () => {
                           setAttendanceData([]);
                         }}
                         label="בחר ילד"
-                        startAdornment={
-                          childId && selectedChild && (
-                            <Avatar 
-                              src={selectedChild?.photo || undefined}
-                              alt={selectedChild?.firstName || ''}
-                              sx={{ width: 32, height: 32, mr: 1 }}
-                            >
-                              {selectedChild?.firstName?.charAt(0)}
-                            </Avatar>
-                          )
-                        }
+                        // startAdornment={
+                        //   childId && selectedChild && (
+                        //     <Avatar 
+                        //       src={selectedChild.photoPath ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(selectedChild.photoPath)}` : undefined}
+                        //       alt={selectedChild?.firstName || ''}
+                        //       sx={{ width: 32, height: 32, mr: 1 }}
+                        //     >
+                        //       {!selectedChild.photoPath && selectedChild.firstName?.charAt(0)}
+                        //     </Avatar>
+                        //   )
+                        // }
                       >
                         {kids?.filter(k => k.isActive).map(kid => (
-                          <MenuItem key={kid.id} value={kid.id.toString()}>
+                          <MenuItem key={kid.id} value={kid.id.toString()} dir="rtl">
                             <Stack direction="row" spacing={1} alignItems="center">
-                              <Avatar sx={{ width: 24, height: 24 }}>
-                                {kid.firstName?.charAt(0)}
+                              <Avatar sx={{ width: 24, height: 24 }}
+                                src={
+                                          kid.photoPath
+                                            ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(kid.photoPath)}`
+                                            : ''
+                                        }
+                                        alt={`${kid.firstName} ${kid.lastName}`}
+                                        >
+                                          {!kid.photoPath && (
+                                          <>
+                                            {`${kid.firstName?.[0] || ''}${kid.lastName?.[0] || ''}`}
+                                          </>
+                                        )}
                               </Avatar>
                               <Typography>
                                 {kid.firstName} {kid.lastName}
@@ -1033,12 +1173,12 @@ const AttendanceReports = () => {
                         startIcon={<VisibilityIcon />}
                         onClick={handlePreviewReport} 
                         disabled={loading || !childId}
-                        glowColor="#667eea"
+                        glowColor="#4cb5c3"
                         sx={{ 
-                          color: '#667eea',
-                          borderColor: '#667eea',
+                          color: '#4cb5c3',
+                          borderColor: '#4cb5c3',
                           '&:hover': {
-                            background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+                            background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
                             color: 'white',
                             borderColor: 'transparent',
                           }
@@ -1046,7 +1186,7 @@ const AttendanceReports = () => {
                       >
                         {loading ? (
                           <>
-                            <CircularProgress size={20} sx={{ mr: 1 }} />
+                            <CircularProgress size={20} sx={{ mr: 1 }} color="inherit" />
                             טוען...
                           </>
                         ) : (
@@ -1088,27 +1228,37 @@ const AttendanceReports = () => {
             />
           )}
           
-          {/* No data message */}
+          {/* No data message - Enhanced styling */}
           {showPreview && attendanceData.length === 0 && (
             <Fade in>
               <Card sx={{ 
                 mt: 3,
-                background: 'rgba(255, 255, 255, 0.9)',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: 20,
                 '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
                   background: 'linear-gradient(90deg, #06b6d4, #22d3ee, #0891b2)',
+                  borderRadius: '20px 20px 0 0',
                 }
               }}>
                 <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Avatar sx={{ 
+                  <AnimatedAvatar sx={{ 
                     width: 80, 
                     height: 80, 
                     margin: '0 auto 16px',
                     background: 'linear-gradient(45deg, #06b6d4 30%, #22d3ee 90%)',
-                    boxShadow: '0 4px 14px rgba(6, 182, 212, 0.3)'
+                    boxShadow: '0 6px 20px rgba(6, 182, 212, 0.3)'
                   }}>
                     <AnalyticsIcon sx={{ fontSize: '3rem' }} />
-                  </Avatar>
-                  <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
+                  </AnimatedAvatar>
+                  <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
                     לא נמצאו נתוני נוכחות
                   </Typography>
                   <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>

@@ -1062,6 +1062,57 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
                           </Grid>
 
                           <Grid item size={{ xs: 12, md: 6 }}>
+  <Autocomplete
+    id="cityName"
+    options={cities.map(city => city.cityName)}
+    value={formData.cityName}
+    disablePortal
+    onChange={(event, newValue) => {
+      handleChange({
+        target: {
+          name: 'cityName',
+          value: newValue || ''
+        }
+      });
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        fullWidth
+        label="🏙️ עיר"
+        variant="outlined"
+        required
+        error={hasFieldError("cityName")}
+        helperText={
+          getFieldError("cityName") ||
+          "חפש ובחר עיר מהרשימה"
+        }
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <>
+              <InputAdornment position="start">
+                <CityIcon />
+              </InputAdornment>
+              {params.InputProps.startAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+    noOptionsText="לא נמצאו ערים"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        borderRadius: 3,
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: '#4cb5c3',
+        },
+      }
+    }}
+  />
+</Grid>
+
+                          {/* <Grid item size={{ xs: 12, md: 6 }}>
                             <TextField
                               fullWidth
                               label="🏙️ עיר"
@@ -1095,7 +1146,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
                                 }
                               }}
                             />
-                          </Grid>
+                          </Grid> */}
                         </Grid>
                       </CardContent>
                     </Card>

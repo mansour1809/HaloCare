@@ -52,7 +52,6 @@ export const uploadDocument = createAsyncThunk(
       // Add the file
       formData.append('File', file);
       
-// **Critical fix - adding document details in the format the server expects**
       if (document.KidId) {
         formData.append('Document.KidId', document.KidId.toString());
       }

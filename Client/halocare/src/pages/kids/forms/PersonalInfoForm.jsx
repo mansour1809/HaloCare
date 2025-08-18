@@ -9,7 +9,8 @@ import {
   Paper, Chip, RadioGroup, FormControlLabel, Radio,
   Zoom, Card, CardContent, Badge,
   IconButton, Switch, Collapse, useTheme, Container,
-  Fade, Stack, alpha
+  Fade, Stack, alpha,
+  Autocomplete
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
@@ -1434,29 +1435,51 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                           </FormControl>
                         </Grid>
 
+
                         <Grid item size={{xs:12, sm:6}}>
-                          <TextField
-                            fullWidth
-                            id="cityName"
-                            name="cityName"
-                            label="עיר"
-                            placeholder="הקלד שם עיר..."
-                            value={formik.values.cityName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.cityName && Boolean(formik.errors.cityName)}
-                            helperText={formik.touched.cityName && formik.errors.cityName}
-                            required
-                            inputRef={cityRef}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <CityIcon color="primary" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
+  <Autocomplete
+    id="cityName"
+    disablePortal
+    options={cities.map(city => city.cityName)}
+    value={formik.values.cityName}
+    onChange={(event, newValue) => {
+      formik.setFieldValue('cityName', newValue || '');
+    }}
+    onBlur={formik.handleBlur}
+    renderInput={(params) => (
+      <TextField
+      dir="rtl"
+        {...params}
+        label="עיר"
+        placeholder="חפש עיר..."
+        required
+        error={formik.touched.cityName && Boolean(formik.errors.cityName)}
+        helperText={formik.touched.cityName && formik.errors.cityName}
+        
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <>
+              <InputAdornment position="start">
+                <CityIcon color="primary" />
+              </InputAdornment>
+              {params.InputProps.startAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+    noOptionsText="לא נמצאו ערים"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        borderRadius: 3,
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: '#4cb5c3',
+        },
+      }
+    }}
+  />
+</Grid>
 
                         <Grid item size={{xs:12, sm:6}}>
                           <TextField
@@ -1489,6 +1512,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                             fullWidth
                             error={formik.touched.hName && Boolean(formik.errors.hName)}
                             required
+                            
                           >
                             <InputLabel id="hName-label"> קופת חולים</InputLabel>
                             <Select
@@ -1499,6 +1523,14 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
                               label="🏥 קופת חולים"
+                              MenuProps={{
+    disablePortal: true,
+    PaperProps: {
+      sx: {
+        maxHeight: 300
+      }
+    }
+  }}
                               startAdornment={
                                 <InputAdornment position="start">
                                   <HospitalIcon color="primary" />
@@ -1506,7 +1538,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                               }
                             >
                               {healthInsurances.map((insurance) => (
-                                <MenuItem key={insurance.hName} value={insurance.hName}>
+                                <MenuItem key={insurance.hName} value={insurance.hName} dir="rtl">
                                   {insurance.hName}
                                 </MenuItem>
                               ))}
@@ -1529,6 +1561,14 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                                 value={formik.values.classId}
                                 onChange={formik.handleChange}
                                 label="📚 כיתה"
+                               MenuProps={{
+    disablePortal: true,
+    PaperProps: {
+      sx: {
+        maxHeight: 300
+      }
+    }
+  }}
                                 startAdornment={
                                   <InputAdornment position="start">
                                     <SchoolIcon color="primary" />
@@ -1536,7 +1576,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                                 }
                               >
                                 {classes.map((classItem) => (
-                                  <MenuItem key={classItem.classId} value={classItem.classId}>
+                                  <MenuItem key={classItem.classId} value={classItem.classId} dir="rtl">
                                      {classItem.className}
                                   </MenuItem>
                                 ))}
@@ -1862,27 +1902,46 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                         </Grid>
 
                         <Grid item size={{xs:12, sm:6}}>
-                          <TextField
-                            fullWidth
-                            id="parent1CityName"
-                            name="parent1CityName"
-                            label="עיר"
-                            placeholder="הקלד שם עיר..."
-                            value={formik.values.parent1CityName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.parent1CityName && Boolean(formik.errors.parent1CityName)}
-                            helperText={formik.touched.parent1CityName && formik.errors.parent1CityName}
-                            inputRef={parent1CityRef}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <CityIcon color="secondary" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
+  <Autocomplete
+    id="parent1CityName"
+    disablePortal
+    options={cities.map(city => city.cityName)}
+    value={formik.values.parent1CityName}
+    onChange={(event, newValue) => {
+      formik.setFieldValue('parent1CityName', newValue || '');
+    }}
+    onBlur={formik.handleBlur}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="עיר"
+        placeholder="חפש עיר..."
+        error={formik.touched.parent1CityName && Boolean(formik.errors.parent1CityName)}
+        helperText={formik.touched.parent1CityName && formik.errors.parent1CityName}
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <>
+              <InputAdornment position="start">
+                <CityIcon color="secondary" />
+              </InputAdornment>
+              {params.InputProps.startAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+    noOptionsText="לא נמצאו ערים"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        borderRadius: 3,
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: '#4cb5c3',
+        },
+      }
+    }}
+  />
+</Grid>
                       </Grid>
                     </CardContent>
                   </Collapse>
@@ -2080,27 +2139,46 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                         </Grid>
 
                         <Grid item size={{xs:12, sm:6}}>
-                          <TextField
-                            fullWidth
-                            id="parent2CityName"
-                            name="parent2CityName"
-                            label="עיר"
-                            placeholder="הקלד שם עיר..."
-                            value={formik.values.parent2CityName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={formik.touched.parent2CityName && Boolean(formik.errors.parent2CityName)}
-                            helperText={formik.touched.parent2CityName && formik.errors.parent2CityName}
-                            inputRef={parent2CityRef}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <CityIcon color="info" />
-                                </InputAdornment>
-                              ),
-                            }}
-                          />
-                        </Grid>
+  <Autocomplete
+    id="parent2CityName"
+    disablePortal
+    options={cities.map(city => city.cityName)}
+    value={formik.values.parent2CityName}
+    onChange={(event, newValue) => {
+      formik.setFieldValue('parent2CityName', newValue || '');
+    }}
+    onBlur={formik.handleBlur}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="עיר"
+        placeholder="חפש עיר..."
+        error={formik.touched.parent2CityName && Boolean(formik.errors.parent2CityName)}
+        helperText={formik.touched.parent2CityName && formik.errors.parent2CityName}
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <>
+              <InputAdornment position="start">
+                <CityIcon color="info" />
+              </InputAdornment>
+              {params.InputProps.startAdornment}
+            </>
+          ),
+        }}
+      />
+    )}
+    noOptionsText="לא נמצאו ערים"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        borderRadius: 3,
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: '#4cb5c3',
+        },
+      }
+    }}
+  />
+</Grid>
                       </Grid>
                     </CardContent>
                   </Collapse>
