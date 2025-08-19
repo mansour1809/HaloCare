@@ -395,7 +395,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                     variant="outlined"
                   />
                   <StyledChip 
-                    label={`כיתה ${child.classId === 1 ? "א'" : "ב'"}`}
+                    label={`כיתה ${child.classId === 1 ? "א" : "ב"}`}
                     icon={<SchoolIcon />}
                     color="secondary"
                     variant="outlined"
@@ -419,20 +419,39 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
                   <Box sx={{ height: 220 }}>
                     <ResponsiveContainer>
                       <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={90}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
+                     <Pie
+  data={pieData}
+  cx="50%"
+  cy="50%"
+  labelLine={false}
+  outerRadius={90}
+  fill="#8884d8"
+  dataKey="value"
+  label={({name, percent, cx, cy, midAngle, innerRadius, outerRadius}) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 30; // מרחק מהגרף
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#000000" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12px"
+        fontWeight="bold"
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  }}
+>
+  {pieData.map((entry, index) => (
+    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+  ))}
+</Pie>
                         <RechartsTooltip 
                           contentStyle={{
                             borderRadius: 12,
