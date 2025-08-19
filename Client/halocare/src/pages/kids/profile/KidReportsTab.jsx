@@ -225,7 +225,6 @@ const EmptyStateBox = styled(Box)(({ theme }) => ({
     left: '50%',
     width: '200%',
     height: '200%',
-    background: 'radial-gradient(circle, rgba(76, 181, 195, 0.05) 0%, transparent 70%)',
     transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }

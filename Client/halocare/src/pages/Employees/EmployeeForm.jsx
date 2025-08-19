@@ -6,7 +6,8 @@ import {
   InputAdornment, IconButton, Alert,
   Breadcrumbs, Card, CardContent, Chip, Fade, Zoom,
   Avatar, Stack, useTheme, alpha, Tooltip,
-  styled, Link,keyframes
+  styled, Link,keyframes,
+  Autocomplete
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -381,9 +382,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
   // const isEditMode = Boolean(existingEmployee);
   const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
   const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
-  
-  const cityInputRef = useRef(null);
-  const autocompleteCity = useRef(null);
+
   
   const { 
     addEmployee, 
@@ -393,6 +392,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
     roles, 
     classes, 
     employees,
+    cities,
   } = useEmployees();
   
   const existingEmployee = employees.find(emp => emp.employeeId === parseInt(employeeId));
@@ -428,94 +428,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
   const [uploadingFiles, setUploadingFiles] = useState(false);
 
 
-//   useEffect(() => {
-//   if (employeeId && employees.length > 0) {
-//     const employee = employees.find(emp => emp.employeeId === parseInt(employeeId));
-//     if (employee) {
-//       setFormData({...employee});
-//     }
-//   }
-// }, [employeeId, employees]);
-  // Google Places Autocomplete functionality 
-  const initializeGooglePlaces = () => {
-    if (typeof window === 'undefined' || !window.google || !window.google.maps || !window.google.maps.places) {
-      console.warn('Google Maps API לא נטען עדיין או Places API חסר');
-      return false;
-    }
-
-    try {
-      if (cityInputRef.current && !autocompleteCity.current) {
-        autocompleteCity.current = new window.google.maps.places.Autocomplete(
-          cityInputRef.current,
-          {
-            types: ['(cities)'],
-            componentRestrictions: { country: 'IL' },
-            fields: ['name', 'geometry', 'formatted_address']
-          }
-        );
-
-        autocompleteCity.current.addListener('place_changed', handleCitySelect);
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error initializing Google Places:', error);
-      return false;
-    }
-  };
-
-  const handleCitySelect = () => {
-    try {
-      if (!autocompleteCity.current) return;
-      
-      const place = autocompleteCity.current.getPlace();
-      
-      if (place && place.name) {
-        setFormData(prev => ({ 
-          ...prev, 
-          cityName: place.name 
-        }));
-        setErrors(prev => ({ ...prev, cityName: '' }));
-      }
-    } catch (error) {
-      console.error('Error handling city selection:', error);
-    }
-  };
-
-  // Initialize Google Places 
-  useEffect(() => {
-    let retryCount = 0;
-    const maxRetries = 10;
-    
-    const tryInitialize = () => {
-      const success = initializeGooglePlaces();
-      
-      if (!success && retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(tryInitialize, 500);
-      } else if (success) {
-        console.log('Google Places initialized successfully');
-      } else {
-        console.error('Failed to initialize Google Places after maximum retries');
-      }
-    };
-
-    const timer = setTimeout(tryInitialize, 100);
-
-    return () => {
-      clearTimeout(timer);
-      try {
-        if (autocompleteCity.current && window.google?.maps?.event) {
-          window.google.maps.event.clearInstanceListeners(autocompleteCity.current);
-        }
-      } catch (error) {
-        console.warn('Error cleaning up listeners:', error);
-      }
-    };
-  }, []);
-  
-  // All handler functions 
-  const handleChange = (e) => {
+    const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     validateField(name, value);
@@ -1112,41 +1025,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
   />
 </Grid>
 
-                          {/* <Grid item size={{ xs: 12, md: 6 }}>
-                            <TextField
-                              fullWidth
-                              label="🏙️ עיר"
-                              name="cityName"
-                              value={formData.cityName}
-                              onChange={handleChange}
-                              variant="outlined"
-                              required
-                              error={hasFieldError("cityName")}
-                              helperText={
-                                getFieldError("cityName") ||
-                                "התחל להקליד והמערכת תציע ערים"
-                              }
-                              inputRef={cityInputRef}
-                              InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <CityIcon />
-                                  </InputAdornment>
-                                ),
-                              }}
-                              onFocus={() => {
-                                if (
-                                  !autocompleteCity.current &&
-                                  window.google?.maps?.places
-                                ) {
-                                  setTimeout(
-                                    () => initializeGooglePlaces(),
-                                    100
-                                  );
-                                }
-                              }}
-                            />
-                          </Grid> */}
+
                         </Grid>
                       </CardContent>
                     </Card>

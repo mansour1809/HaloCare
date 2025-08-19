@@ -329,7 +329,7 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   }
 }));
 
-const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
+const ClassroomsSection = ({  onViewAllKids }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {currentUser} = useAuth();
@@ -1334,7 +1334,6 @@ const ClassroomsSection = ({ onKidClick, onViewAllKids }) => {
           </GlowingButton>
           <GlowingButton
             onClick={() => {
-              onKidClick(kidDetailsDialog.kid.id);
               setKidDetailsDialog({ open: false, kid: null });
               navigate(`/kids/${kidDetailsDialog.kid.id}`);
             }}

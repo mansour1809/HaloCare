@@ -194,6 +194,7 @@ const CustomInput = styled(TextField)(({ theme }) => ({
 
 
 const HebrewReactDatePicker = ({
+  dirr = "left",
   label,
   value,
   onChange,
@@ -271,7 +272,7 @@ const HebrewReactDatePicker = ({
             }}
           />
         }
-        popperPlacement="left"
+        popperPlacement={dirr}
         // popperModifiers={[
         //   {
         //     name: 'offset',

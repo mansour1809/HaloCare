@@ -293,7 +293,7 @@ const AttendanceDashboard = () => {
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load the list of kids - PRESERVED EXACTLY
+  // Load the list of kids 
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -308,12 +308,12 @@ const AttendanceDashboard = () => {
     loadData();
   }, [dispatch]);
 
-  // Handle tab switching - PRESERVED EXACTLY
+  // Handle tab switching 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Tab data - PRESERVED EXACTLY with updated colors
+  // Tab data  with updated colors
   const tabs = [
     {
       icon: <AttendanceIcon />,
@@ -474,14 +474,14 @@ const AttendanceDashboard = () => {
           <Fade in timeout={1400}>
             <ContentCard>
               <CardContent sx={{ p: 0 }}>
-                {/* Tab content for marking attendance - PRESERVED EXACTLY */}
+                {/* Tab content for marking attendance  */}
                 {tabValue === 0 && (
                   <Box sx={{ p: 3 }}>
                     <AttendanceMarking />
                   </Box>
                 )}
 
-                {/* Tab content for reports - PRESERVED EXACTLY */}
+                {/* Tab content for reports  */}
                 {tabValue === 1 && (
                   <Box sx={{ p: 3 }}>
                     <AttendanceReports />

@@ -163,7 +163,6 @@ const StatCard = styled(Card)(({ theme, color }) => ({
     left: '50%',
     width: '200%',
     height: '200%',
-    background: `radial-gradient(circle, ${alpha(theme.palette[color]?.main, 0.1)} 0%, transparent 70%)`,
     transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }

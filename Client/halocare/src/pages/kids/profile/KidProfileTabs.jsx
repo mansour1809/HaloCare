@@ -84,7 +84,6 @@ const EnhancedHeaderPaper = styled(Paper)(({ theme }) => ({
     left: '50%',
     width: '200%',
     height: '200%',
-    background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`,
     transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }

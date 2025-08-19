@@ -296,13 +296,13 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
   const absent = total - present;
   const percent = total > 0 ? Math.round((present / total) * 100) : 0;
   
-  // Prepare data for pie chart - PRESERVED EXACTLY
+  // Prepare data for pie chart 
   const pieData = [
     { name: 'נוכחות', value: present },
     { name: 'היעדרות', value: absent }
   ];
   
-  // Prepare data for trend chart - PRESERVED EXACTLY
+  // Prepare data for trend chart 
   const trendData = [];
   let currentDate = dayjs(startDate);
   const endDateObj = dayjs(endDate);
@@ -321,7 +321,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     currentDate = currentDate.add(1, 'day');
   }
   
-  // Analyze attendance streaks - PRESERVED EXACTLY
+  // Analyze attendance streaks 
   let longestStreak = 0;
   let currentStreak = 0;
   let recentTrend = null;
@@ -341,7 +341,7 @@ const ReportPreview = ({ child, attendanceRecords, startDate, endDate }) => {
     }
   });
   
-  // Analyze absence patterns - PRESERVED EXACTLY
+  // Analyze absence patterns 
   const absencesByReason = {};
   attendanceRecords.filter(r => !r.isPresent).forEach(record => {
     const reason = record.absenceReason || 'לא צוין';
@@ -867,7 +867,7 @@ const AttendanceReports = () => {
   const { attData } = useSelector(state => state.attendance);
   const { selectedDateRange, updateDateRange, loadKidAttendance } = useAttendance();
   
-  // States - PRESERVED EXACTLY
+  // States 
   const [childId, setChildId] = useState("");
   const [rangeType, setRangeType] = useState("week");
   const [startDate, setStartDate] = useState(dayjs().startOf("week"));
@@ -880,7 +880,7 @@ const AttendanceReports = () => {
   
   const theme = useTheme();
   
-  // Update selected child for report - PRESERVED EXACTLY
+  // Update selected child for report 
   useEffect(() => {
     if (childId && kids?.length > 0) {
       const child = kids.find(k => k.id.toString() === childId);
@@ -890,7 +890,7 @@ const AttendanceReports = () => {
     }
   }, [childId, kids]);
   
-  // Update dates based on selected range - PRESERVED EXACTLY
+  // Update dates based on selected range 
   useEffect(() => {
     if (rangeType === "week") {
       setStartDate(dayjs().startOf("week"));
@@ -905,7 +905,7 @@ const AttendanceReports = () => {
     }
   }, [rangeType, updateDateRange]);
   
-  // Load attendance data for report - PRESERVED EXACTLY
+  // Load attendance data for report 
   const fetchAttendanceData = async () => {
     if (!childId || !startDate || !endDate) {
       Swal.fire({
@@ -955,7 +955,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // Generate report preview - PRESERVED EXACTLY
+  // Generate report preview 
   const handlePreviewReport = async () => {
     const data = await fetchAttendanceData();
     if (data?.length > 0 && selectedChild) {
@@ -970,7 +970,7 @@ const AttendanceReports = () => {
     }
   };
   
-  // Generate and download report - PRESERVED EXACTLY
+  // Generate and download report 
   const handleGenerateReport = async () => {
     try {
       if (!attendanceData.length && !showPreview) {

@@ -58,7 +58,7 @@ const glow = keyframes`
 `;
 
 // Enhanced Styled Components with professional design
-const ModernHeader = styled(Paper)(({ theme }) => ({
+const ModernHeader = styled(Paper)(() => ({
   background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
   animation: `${gradientShift} 20s ease infinite`,
@@ -76,7 +76,6 @@ const ModernHeader = styled(Paper)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
   },
   '&::after': {
@@ -292,10 +291,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     getFilteredTreatmentStats
   } = useTreatmentContext();
 
-  // Get statistics - PRESERVED EXACTLY
+  // Get statistics
   const stats = getFilteredTreatmentStats();
 
-  // Function to calculate trend (approximate) - PRESERVED EXACTLY
+  // Function to calculate trend (approximate)
   const getTrend = () => {
     if (!filteredTreatments.length) return null;
     
@@ -380,7 +379,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                     <GlowingChip 
                       label={getTreatmentName(treatmentType)}
                       sx={{ 
-                        backgroundColor: alpha(getColorForTreatmentType(treatmentType), 0.9),
+                        backgroundColor: getColorForTreatmentType(treatmentType),
                         color: '#fff',
                         border: '1px solid rgba(255,255,255,0.3)',
                         boxShadow: '0 4px 15px rgba(0,0,0,0.2)'

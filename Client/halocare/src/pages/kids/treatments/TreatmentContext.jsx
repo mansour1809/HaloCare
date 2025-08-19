@@ -6,6 +6,8 @@ import axios from 'axios';
 import { fetchTreatmentsByKid } from '../../../Redux/features/treatmentsSlice';
 import { fetchTreatmentTypes } from '../../../Redux/features/treatmentTypesSlice';
 import { fetchEmployees } from '../../../Redux/features/employeesSlice';
+import { fetchKids } from '../../../Redux/features/kidsSlice';
+
 const TreatmentContext = createContext();
 
 export const useTreatmentContext = () => useContext(TreatmentContext);
@@ -15,7 +17,8 @@ export const TreatmentProvider = ({ children }) => {
   const { treatments } = useSelector(state => state.treatments);
   const treatmentTypes = useSelector(state => state.treatmentTypes.treatmentTypes);
   const { employees } = useSelector(state => state.employees);
-  
+  const { kids } = useSelector(state => state.kids);
+
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -49,6 +52,7 @@ export const TreatmentProvider = ({ children }) => {
 
     if(treatmentTypes.length === 0) {
       dispatch(fetchTreatmentTypes());
+      dispatch(fetchKids());
     }
 
     if (!treatments || treatments.length === 0) {
@@ -71,16 +75,16 @@ export const TreatmentProvider = ({ children }) => {
           (treatment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           treatment.highlight?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           treatment.treatmentTypeId?.toString().includes(searchTerm.toLowerCase()) ||
-          treatment.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()));
+          getEmployeeName(treatment.employeeId)?.toLowerCase().includes(searchTerm.toLowerCase()));
         
         // Filter by dates
         const treatmentDate = treatment.treatmentDate ? new Date(treatment.treatmentDate) : null;
         const dateFromMatches = !dateFrom || !treatmentDate ? true : treatmentDate >= dateFrom;
         const dateToMatches = !dateTo || !treatmentDate ? true : treatmentDate <= dateTo;
         
-        // Filter by employee
+        // Filter by employee - FIXED: Compare IDs directly
         const employeeMatches = !employeeFilter ? true : 
-          getEmployeeName(treatment.employeeId)?.toLowerCase().includes(employeeFilter.toLowerCase());
+          treatment.employeeId == employeeFilter;
         
         // Filter by cooperation level
         const cooperationMatches = !cooperationLevelFilter ? true :
@@ -111,14 +115,22 @@ export const TreatmentProvider = ({ children }) => {
         return order === 'asc' ? levelA - levelB : levelB - levelA;
       }
       
+      // Sort by employee name
+      if (orderBy === 'employeeId') {
+        const nameA = getEmployeeName(a.employeeId) || '';
+        const nameB = getEmployeeName(b.employeeId) || '';
+        return order === 'asc' 
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
+      }
      
       // Sort by other text fields
       const valueA = a[orderBy] || '';
       const valueB = b[orderBy] || '';
       
       return order === 'asc' 
-        ? valueA.localeCompare(valueB)
-        : valueB.localeCompare(valueA);
+        ? valueA.toString().localeCompare(valueB.toString())
+        : valueB.toString().localeCompare(valueA.toString());
     });
     
     setFilteredTreatments(filtered);
@@ -264,11 +276,13 @@ export const TreatmentProvider = ({ children }) => {
     const employee = employees.find(emp => emp.employeeId == employeeId);
     return employee ? `${employee.firstName} ${employee.lastName}` : 'לא ידוע';
   };
-const getEmployeePhoto = (employeeId) => {
+
+  const getEmployeePhoto = (employeeId) => {
     if (!employeeId || !employees) return 'לא ידוע';
     const employee = employees.find(emp => emp.employeeId == employeeId);
     return employee ? employee.photo : null;
   };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -277,35 +291,27 @@ const getEmployeePhoto = (employeeId) => {
 
   // Functions for quick statistics
   const getFilteredTreatmentStats = () => {
-    if (!filteredTreatments.length) return {};
+    if (!filteredTreatments.length) return {
+      total: 0,
+      averageCooperation: 0,
+      treatmentTypeDistribution: {}
+    };
     
     const stats = {
       total: filteredTreatments.length,
       averageCooperation: 0,
-      employeeDistribution: {},
-      monthlyDistribution: {}
+      treatmentTypeDistribution: {}
     };
     
     // Calculate average cooperation
     const cooperationSum = filteredTreatments.reduce((sum, t) => sum + (t.cooperationLevel || 0), 0);
     stats.averageCooperation = (cooperationSum / filteredTreatments.length).toFixed(1);
     
-    // Distribution by employees
+    // Distribution by treatment types
     filteredTreatments.forEach(treatment => {
-      const employeeName = getEmployeeName(treatment.employeeId) || 'לא ידוע';
-      stats.employeeDistribution[employeeName] = 
-        (stats.employeeDistribution[employeeName] || 0) + 1;
-    });
-    
-    // Group by month
-    filteredTreatments.forEach(treatment => {
-      if (treatment.treatmentDate) {
-        const month = new Date(treatment.treatmentDate).toLocaleDateString('he-IL', { 
-          year: 'numeric', 
-          month: 'long' 
-        });
-        stats.monthlyDistribution[month] = (stats.monthlyDistribution[month] || 0) + 1;
-      }
+      const typeName = getTreatmentName(treatment.treatmentTypeId);
+      stats.treatmentTypeDistribution[typeName] = 
+        (stats.treatmentTypeDistribution[typeName] || 0) + 1;
     });
     
     return stats;
@@ -370,7 +376,9 @@ const getEmployeePhoto = (employeeId) => {
     getEmployeeName,
     getEmployeePhoto,
     formatDate,
-    getFilteredTreatmentStats
+    getFilteredTreatmentStats,
+
+    kids
   };
 
   return (

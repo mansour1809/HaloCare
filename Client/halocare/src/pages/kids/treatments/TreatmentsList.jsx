@@ -55,7 +55,6 @@ const FullScreenContainer = styled(Box)(() => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
   }
@@ -96,7 +95,6 @@ const LoadingContainer = styled(Paper)(({ theme }) => ({
     left: '50%',
     width: '200%',
     height: '200%',
-    background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 70%)`,
     transform: 'translate(-50%, -50%)',
     pointerEvents: 'none',
   }
@@ -166,7 +164,7 @@ const TreatmentsList = () => {
     }
   }, [dispatch, kidId, treatmentType, selectedKid]);
 
-  // Loading state component - Enhanced styling
+  // Loading state component 
   const LoadingComponent = () => (
     <Fade in timeout={800}>
       <LoadingContainer elevation={0}>
@@ -199,7 +197,7 @@ const TreatmentsList = () => {
     </Fade>
   );
 
-  // Error state component - Enhanced styling
+  // Error state component 
   const ErrorComponent = ({ error }) => (
     <Fade in timeout={600}>
       <ErrorAlert severity="error" sx={{ mx: 2 }}>

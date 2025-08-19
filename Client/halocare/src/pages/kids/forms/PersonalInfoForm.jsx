@@ -466,7 +466,6 @@ const ProfilePhotoContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at center, rgba(76, 181, 195, 0.1) 0%, transparent 70%)',
     borderRadius: 20,
     pointerEvents: 'none',
   }

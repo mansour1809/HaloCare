@@ -17,7 +17,8 @@ import {
   Stack,
   alpha,
   Fade,
-  Zoom
+  Zoom,
+  keyframes
 } from '@mui/material';
 import { 
   Visibility as VisibilityIcon,
@@ -29,13 +30,36 @@ import { useTreatmentContext } from './TreatmentContext';
 import { baseURL } from '../../../components/common/axiosConfig';
 import PropTypes from 'prop-types';
 
-// Enhanced Styled Components with modern design
+// Professional animations
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+`;
+
+// Enhanced Styled Components with professional design
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: '20px',
+  borderRadius: 20,
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha('#ffffff', 0.2)}`,
-  boxShadow: '0 20px 60px rgba(76, 181, 195, 0.15)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   overflow: 'hidden',
   position: 'relative',
   '&::before': {
@@ -44,16 +68,16 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
+    height: '4px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
     backgroundSize: '400% 400%',
-    animation: 'gradientShift 8s ease infinite',
+    animation: `${gradientShift} 3s ease infinite`,
   },
   '& .MuiTableHead-root': {
     '& .MuiTableRow-root': {
-      background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)',
+      background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',
       '& .MuiTableCell-root': {
-        borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+        borderBottom: '2px solid rgba(76, 181, 195, 0.1)',
         fontWeight: 700,
         fontSize: '1rem',
         color: theme.palette.text.primary,
@@ -75,11 +99,6 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
         }
       }
     }
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
   }
 }));
 
@@ -90,16 +109,16 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.08),
     transform: 'translateY(-2px)',
-    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.15)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.15)',
     '& .MuiTableCell-root': {
       borderBottomColor: alpha(theme.palette.primary.main, 0.2),
     }
   },
   '&:nth-of-type(even)': {
-    backgroundColor: alpha(theme.palette.background.default, 0.3),
+    backgroundColor: 'rgba(248, 250, 252, 0.5)',
   },
   '& .MuiTableCell-root': {
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    borderBottom: '1px solid rgba(224, 224, 224, 0.4)',
     padding: '20px 16px',
     transition: 'all 0.3s ease',
   },
@@ -109,8 +128,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     left: 0,
     top: 0,
     bottom: 0,
-    width: '4px',
-    background: 'linear-gradient(45deg, #4cb5c3, #ff7043)',
+    width: '3px',
+    background: 'linear-gradient(180deg, #4cb5c3, #ff7043)',
     transform: 'scaleY(0)',
     transition: 'transform 0.3s ease',
     transformOrigin: 'bottom',
@@ -122,42 +141,43 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const AnimatedAvatar = styled(Avatar)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+  animation: `${float} 3s ease-in-out infinite`,
   '&:hover': {
     transform: 'scale(1.1) rotate(5deg)',
-    boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
+    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   }
 }));
 
 const ActionButton = styled(IconButton)(({ actiontype, theme }) => {
   const colors = {
     view: { 
-      bg: 'linear-gradient(45deg, #4fc3f7 30%, #29b6f6 90%)', 
-      hover: 'linear-gradient(45deg, #29b6f6 30%, #0277bd 90%)',
-      shadow: 'rgba(79, 195, 247, 0.4)'
+      bg: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)', 
+      hover: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+      shadow: 'rgba(76, 181, 195, 0.3)'
     },
     download: { 
-      bg: 'linear-gradient(45deg, #ff9800 30%, #f57c00 90%)', 
-      hover: 'linear-gradient(45deg, #f57c00 30%, #e65100 90%)',
-      shadow: 'rgba(255, 152, 0, 0.4)'
+      bg: 'linear-gradient(45deg, #ff7043 30%, #f4511e 90%)', 
+      hover: 'linear-gradient(45deg, #f4511e 30%, #d84315 90%)',
+      shadow: 'rgba(255, 112, 67, 0.3)'
     }
   };
   
   const color = colors[actiontype] || colors.view;
   
   return {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     background: color.bg,
     color: 'white',
-    boxShadow: `0 6px 20px ${color.shadow}`,
+    boxShadow: `0 4px 15px ${color.shadow}`,
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative',
     overflow: 'hidden',
     '&:hover': {
       background: color.hover,
       transform: 'translateY(-3px) scale(1.05)',
-      boxShadow: `0 12px 35px ${color.shadow}`,
+      boxShadow: `0 8px 25px ${color.shadow}`,
     },
     '&:active': {
       transform: 'translateY(-1px) scale(0.98)',
@@ -181,9 +201,9 @@ const ActionButton = styled(IconButton)(({ actiontype, theme }) => {
 const StyledPaper = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha('#ffffff', 0.2)}`,
-  boxShadow: '0 20px 60px rgba(76, 181, 195, 0.15)',
-  borderRadius: '20px',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  borderRadius: 20,
   overflow: 'hidden',
   position: 'relative',
   '&::before': {
@@ -192,15 +212,29 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '6px',
+    height: '4px',
     background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
     backgroundSize: '400% 400%',
-    animation: 'gradientShift 8s ease infinite',
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
+    animation: `${gradientShift} 3s ease infinite`,
+  }
+}));
+
+const HeaderAvatar = styled(Avatar)(({ theme }) => ({
+  width: 28,
+  height: 28,
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
+  fontSize: '0.8rem',
+  boxShadow: '0 3px 10px rgba(76, 181, 195, 0.3)',
+  animation: `${pulse} 2s ease-in-out infinite`,
+}));
+
+const StyledStarIcon = styled(StarIcon)(({ filled }) => ({
+  fontSize: 'small',
+  color: filled ? '#ffc107' : '#e0e0e0',
+  transition: 'all 0.2s ease',
+  filter: filled ? 'drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4))' : 'none',
+  '&:hover': {
+    transform: 'scale(1.2) rotate(15deg)',
   }
 }));
 
@@ -212,36 +246,42 @@ const CooperationRating = ({ level }) => {
       <Box 
         key={i} 
         sx={{ 
-          color: i <= level ? '#ffc107' : '#e0e0e0',
+          display: 'inline-flex',
           transition: 'all 0.2s ease',
           '&:hover': {
             transform: 'scale(1.2)',
-            filter: 'drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4))'
           }
         }}
       >
-        {i <= level ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
+        {i <= level ? (
+          <StyledStarIcon filled="true" />
+        ) : (
+          <StarBorderIcon fontSize="small" sx={{ color: '#e0e0e0' }} />
+        )}
       </Box>
     );
   }
   
   return (
-    <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title={`רמת שיתוף פעולה: ${level}/5`}>
+    <Tooltip 
+      placement="top" 
+      title={`רמת שיתוף פעולה: ${level}/5`}
+      PopperProps={{
+        disablePortal: true,
+        modifiers: [
+          {
+            name: 'flip',
+            enabled: false 
+          },
+          {
+            name: 'preventOverflow',
+            options: {
+              boundary: 'window', 
+            },
+          },
+        ],
+      }}
+    >
       <Stack direction="row" spacing={0.5} alignItems="center">
         {stars}
         <Typography 
@@ -249,8 +289,10 @@ const CooperationRating = ({ level }) => {
           sx={{ 
             ml: 1, 
             fontWeight: 600,
-            color: 'text.primary',
-            textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            background: 'linear-gradient(45deg, #ffc107 30%, #ff9800 90%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
           }}
         >
           {level}/5
@@ -301,9 +343,7 @@ const TreatmentsTable = () => {
         <StyledTableContainer>
           <Table stickyHeader>
             <TableHead>
-              {/* <TableRow> */}
-                <StyledTableRow 
-                     >
+              <StyledTableRow>
                 <TableCell align="center">
                   <TableSortLabel
                     active={orderBy === 'treatmentDate'}
@@ -318,18 +358,17 @@ const TreatmentsTable = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AnimatedAvatar sx={{ width: 28, height: 28, bgcolor: '#4cb5c3', fontSize: '0.8rem' }}>
+                      <HeaderAvatar>
                         📅
-                      </AnimatedAvatar>
+                      </HeaderAvatar>
                       תאריך טיפול
                     </Box>
                   </TableSortLabel>
                 </TableCell>
                 <TableCell align="center">
-                  <TableSortLabel
+                  {/* <TableSortLabel
                     active={orderBy === 'employeeId'}
                     direction={orderBy === 'employeeId' ? order : 'asc'}
-                    onClick={createSortHandler('employeeId')}
                     sx={{ 
                       fontSize: '1rem',
                       fontWeight: 700,
@@ -337,20 +376,20 @@ const TreatmentsTable = () => {
                         color: '#4cb5c3 !important',
                       }
                     }}
-                  >
+                  > */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AnimatedAvatar sx={{ width: 28, height: 28, bgcolor: '#4cb5c3', fontSize: '0.8rem' }}>
+                      <HeaderAvatar>
                         👨‍⚕️
-                      </AnimatedAvatar>
+                      </HeaderAvatar>
                       מטפל
                     </Box>
-                  </TableSortLabel>
+                  {/* </TableSortLabel> */}
                 </TableCell>
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                    <AnimatedAvatar sx={{ width: 28, height: 28, bgcolor: '#4cb5c3', fontSize: '0.8rem' }}>
+                    <HeaderAvatar>
                       🤝
-                    </AnimatedAvatar>
+                    </HeaderAvatar>
                     שיתוף פעולה
                   </Box>
                 </TableCell>
@@ -368,40 +407,41 @@ const TreatmentsTable = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AnimatedAvatar sx={{ width: 28, height: 28, bgcolor: '#4cb5c3', fontSize: '0.8rem' }}>
+                      <HeaderAvatar>
                         📝
-                      </AnimatedAvatar>
+                      </HeaderAvatar>
                       תיאור הטיפול
                     </Box>
                   </TableSortLabel>
                 </TableCell>
                 <TableCell align="center">
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center' }}>
-                    <AnimatedAvatar sx={{ width: 28, height: 28, bgcolor: '#4cb5c3', fontSize: '0.8rem' }}>
+                    <HeaderAvatar>
                       ⚡
-                    </AnimatedAvatar>
+                    </HeaderAvatar>
                     פעולות
                   </Box>
                 </TableCell>
-                                    </StyledTableRow>
-
-              {/* </TableRow> */}
+              </StyledTableRow>
             </TableHead>
             <TableBody>
               {paginatedTreatments.length > 0 ? (
                 paginatedTreatments.map((treatment, index) => (
                   <Zoom in timeout={300 + index * 100} key={treatment.treatmentId}>
-                     <StyledTableRow 
+                    <StyledTableRow 
                       onClick={() => openViewDialog(treatment)}
-                     >
-{/* <TableRow> */}
+                    >
                       <TableCell align="center">
                         <Box>
                           <Typography 
                             variant="body2" 
                             fontWeight={600} 
-                            color="text.primary"
-                            sx={{ textShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
+                            sx={{
+                              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                            }}
                           >
                             {formatDate(treatment.treatmentDate)}
                           </Typography>
@@ -425,7 +465,7 @@ const TreatmentsTable = () => {
                             sx={{ 
                               width: 40, 
                               height: 40, 
-                              bgcolor: getColorForTreatmentType(treatment.treatmentTypeId),
+                              background: `linear-gradient(135deg, ${getColorForTreatmentType(treatment.treatmentTypeId)} 0%)`,
                               fontSize: '1rem',
                               fontWeight: 600
                             }}
@@ -456,7 +496,7 @@ const TreatmentsTable = () => {
                             color="text.primary" 
                             sx={{ 
                               mb: 0.5,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                              textShadow: '0 1px 2px rgba(0,0,0,0.05)'
                             }}
                           >
                             {treatment.description?.substring(0, 40)}
@@ -466,22 +506,25 @@ const TreatmentsTable = () => {
                       </TableCell>
                       <TableCell align="center">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                          <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}title="צפייה בפרטי הטיפול">
+                          <Tooltip 
+                            placement="top" 
+                            title="צפייה בפרטי הטיפול"
+                            PopperProps={{
+                              disablePortal: true,
+                              modifiers: [
+                                {
+                                  name: 'flip',
+                                  enabled: false 
+                                },
+                                {
+                                  name: 'preventOverflow',
+                                  options: {
+                                    boundary: 'window', 
+                                  },
+                                },
+                              ],
+                            }}
+                          >
                             <ActionButton
                               actiontype="view"
                               size="small"
@@ -496,10 +539,7 @@ const TreatmentsTable = () => {
                         </Box>
                       </TableCell>
                     </StyledTableRow>
-                  {/* </TableRow> */}
-
-                                    </Zoom>
-
+                  </Zoom>
                 ))
               ) : (
                 <StyledTableRow>
@@ -514,8 +554,9 @@ const TreatmentsTable = () => {
                       <AnimatedAvatar sx={{ 
                         width: 80, 
                         height: 80, 
-                        bgcolor: alpha('#4cb5c3', 0.1),
-                        fontSize: '2rem'
+                        background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.1) 0%, rgba(255, 112, 67, 0.1) 100%)',
+                        fontSize: '2rem',
+                        animation: `${pulse} 2s ease-in-out infinite`,
                       }}>
                         📋
                       </AnimatedAvatar>
@@ -536,7 +577,7 @@ const TreatmentsTable = () => {
         {filteredTreatments.length > 0 && (
           <Box sx={{ 
             p: 3, 
-            borderTop: `1px solid ${alpha('#4cb5c3', 0.1)}`,
+            borderTop: '1px solid rgba(76, 181, 195, 0.1)',
             background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%)',
             backdropFilter: 'blur(10px)'
           }}>
@@ -557,11 +598,10 @@ const TreatmentsTable = () => {
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   fontWeight: 600,
                   color: 'text.primary',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.1)'
                 },
                 '& .MuiTablePagination-select': {
-                  borderRadius: '12px',
-                  border: `1px solid ${alpha('#4cb5c3', 0.2)}`,
+                  borderRadius: 12,
+                  border: '1px solid rgba(76, 181, 195, 0.2)',
                   background: 'rgba(255, 255, 255, 0.8)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
@@ -570,7 +610,7 @@ const TreatmentsTable = () => {
                   }
                 },
                 '& .MuiTablePagination-actions button': {
-                  borderRadius: '12px',
+                  borderRadius: 12,
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     backgroundColor: alpha('#4cb5c3', 0.1),

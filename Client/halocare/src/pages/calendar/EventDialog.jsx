@@ -49,6 +49,7 @@ import { useSelector } from 'react-redux';
 import { useAuth } from '../../components/login/AuthContext';
 import HebrewReactDatePicker from '../../components/common/HebrewReactDatePicker';
   import dayjs from "dayjs";
+import { baseURL } from '../../components/common/axiosConfig';
 
 
 const SlideTransition = React.forwardRef(function Transition(props, ref) {
@@ -309,22 +310,25 @@ const handleDateTimeChange = (name, value) => {
             </Box>
           </Stack>
 
-          <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="סגור" arrow
+          <Tooltip
+            placement="top"
+            PopperProps={{
+              disablePortal: true,
+              modifiers: [
+                {
+                  name: "flip",
+                  enabled: false,
+                },
+                {
+                  name: "preventOverflow",
+                  options: {
+                    boundary: "window",
+                  },
+                },
+              ],
+            }}
+            title="סגור"
+            arrow
           >
             <IconButton
               onClick={() => setOpenDialog(false)}
@@ -397,7 +401,7 @@ const handleDateTimeChange = (name, value) => {
               >
                 {eventTypes.map((type) => (
                   <MenuItem
-                  dir="rtl"
+                    dir="rtl"
                     key={type.eventTypeId}
                     value={type.eventTypeId}
                     sx={{
@@ -438,56 +442,57 @@ const handleDateTimeChange = (name, value) => {
             </StyledFormControl>
           </Grid>
 
-          
-
-         
-          <Grid item size={{xs:12,md:6}} >
-              <HebrewReactDatePicker
-                label="תאריך ושעת התחלה"
-                value={newEvent.start || ""}
-                onChange={(value) => handleDateTimeChange('start', value)}
-                format="dd/MM/yyyy HH:mm"
-                showTimeSelect="true"
-                ampm={false}
-                minDateTime={newEvent.start}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: validationErrors.start,
-                    helperText: validationErrors.start ? "זמן התחלה חייב להיות לפני זמן סיום" : "",
-                    sx: {
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '16px',
-                      }
-                    }
-                  }
-                }}
-              />
-            </Grid>
-          <Grid item size={{xs:12,md:6}}>
-              <HebrewReactDatePicker
+          <Grid item size={{ xs: 12, md: 6 }}>
+            <HebrewReactDatePicker
+              label="תאריך ושעת התחלה"
+              value={newEvent.start || ""}
+              onChange={(value) => handleDateTimeChange("start", value)}
+              format="dd/MM/yyyy HH:mm"
+              showTimeSelect="true"
+              ampm={false}
+              minDateTime={newEvent.start}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: validationErrors.start,
+                  helperText: validationErrors.start
+                    ? "זמן התחלה חייב להיות לפני זמן סיום"
+                    : "",
+                  sx: {
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "16px",
+                    },
+                  },
+                },
+              }}
+            />
+          </Grid>
+          <Grid item size={{ xs: 12, md: 6 }}>
+            <HebrewReactDatePicker
               minDate={newEvent.start}
-                label="תאריך ושעה סיום"
-                value={newEvent.end || ""}
-                onChange={(value) => handleDateTimeChange('end', value)}
-                format="dd/MM/yyyy HH:mm"
-                showTimeSelect="true"
-                ampm={false}
-                // minDateTime={newEvent.start}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: validationErrors.end,
-                    helperText: validationErrors.end ? "זמן סיום חייב להיות אחרי זמן התחלה" : "",
-                    sx: {
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '16px',
-                      }
-                    }
-                  }
-                }}
-              />
-            </Grid>
+              label="תאריך ושעה סיום"
+              value={newEvent.end || ""}
+              onChange={(value) => handleDateTimeChange("end", value)}
+              format="dd/MM/yyyy HH:mm"
+              showTimeSelect="true"
+              ampm={false}
+              // minDateTime={newEvent.start}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  error: validationErrors.end,
+                  helperText: validationErrors.end
+                    ? "זמן סיום חייב להיות אחרי זמן התחלה"
+                    : "",
+                  sx: {
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "16px",
+                    },
+                  },
+                },
+              }}
+            />
+          </Grid>
 
           {/* Location */}
           <Grid item size={{ xs: 12 }}>
@@ -549,7 +554,7 @@ const handleDateTimeChange = (name, value) => {
                   </Box>
                 )}
                 MenuProps={{
-                  dir:'rtl',
+                  dir: "rtl",
                   PaperProps: {
                     sx: {
                       borderRadius: 3,
@@ -565,12 +570,20 @@ const handleDateTimeChange = (name, value) => {
                 {kids
                   .filter((kid) => kid.isActive)
                   .map((kid) => (
-                    <MenuItem key={kid.id} value={kid.id}>
+                    <MenuItem key={kid.id} value={kid.id} dir="rtl">
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar
+                          src={
+                            kid.photoPath
+                              ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(
+                                  kid.photoPath
+                                )}`
+                              : undefined
+                          }
+                          alt={`${kid.firstName} ${kid.lastName}`}
                           sx={{ width: 24, height: 24, fontSize: "0.75rem" }}
                         >
-                          👶
+                          {!kid.photoPath && kid.firstName?.charAt(0)}
                         </Avatar>
                         <Typography>{`${kid.firstName} ${kid.lastName}`}</Typography>
                       </Stack>
@@ -625,7 +638,7 @@ const handleDateTimeChange = (name, value) => {
                   </Box>
                 )}
                 MenuProps={{
-                  dir: 'rtl',
+                  dir: "rtl",
                   PaperProps: {
                     sx: {
                       borderRadius: 3,
@@ -641,9 +654,21 @@ const handleDateTimeChange = (name, value) => {
                 {employees
                   .filter((emp) => emp.isActive)
                   .map((emp) => (
-                    <MenuItem key={emp.employeeId} value={emp.employeeId}>
+                    <MenuItem
+                      key={emp.employeeId}
+                      value={emp.employeeId}
+                      dir="rtl"
+                    >
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar
+                          src={
+                            emp.photo
+                              ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(
+                                  emp.photo
+                                )}`
+                              : ""
+                          }
+                          alt={`${emp.firstName} ${emp.lastName}`}
                           sx={{
                             width: 24,
                             height: 24,
@@ -652,7 +677,7 @@ const handleDateTimeChange = (name, value) => {
                               "linear-gradient(45deg, #f093fb 30%, #fbbf24 90%)",
                           }}
                         >
-                          {emp.firstName.charAt(0)}
+                          {!emp.photo && emp.firstName.charAt(0)}
                         </Avatar>
                         <Typography>{`${emp.firstName} ${emp.lastName}`}</Typography>
                       </Stack>
@@ -695,7 +720,10 @@ const handleDateTimeChange = (name, value) => {
         <Box>
           {selectedEvent && (
             <GlowButton
-              onClick={() => { setOpenDialog(false); handleDeleteEvent(); }}
+              onClick={() => {
+                setOpenDialog(false);
+                handleDeleteEvent();
+              }}
               variant="outlined"
               startIcon={<DeleteIcon />}
               glowColor="#ef4444"
@@ -721,22 +749,22 @@ const handleDateTimeChange = (name, value) => {
             <Tooltip
               title="יוצר האירוע"
               arrow
-              placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}
+              placement="top"
+              PopperProps={{
+                disablePortal: true,
+                modifiers: [
+                  {
+                    name: "flip",
+                    enabled: false,
+                  },
+                  {
+                    name: "preventOverflow",
+                    options: {
+                      boundary: "window",
+                    },
+                  },
+                ],
+              }}
             >
               <Stack direction="row" spacing={1} alignItems="center">
                 <AccountCircleIcon

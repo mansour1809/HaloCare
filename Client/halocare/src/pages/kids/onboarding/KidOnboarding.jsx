@@ -36,7 +36,7 @@ import ProgressLogo from './ProgressLogo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-// Updated RTL Theme matching Employee styling exactly - VISUAL ONLY
+// Updated RTL Theme matching Employee styling exactly 
 const rtlTheme = createTheme({
   direction: 'rtl',
   typography: {
@@ -164,14 +164,13 @@ const FullScreenContainer = styled(Container)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    // background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
     zIndex: 1,
   },
  
 }));
 
-// Enhanced Paper styling - VISUAL ONLY
+// Enhanced Paper styling 
 const EnhancedPaper = styled(Paper)(({ theme }) => ({
   borderRadius: 20,
   background: 'rgba(255, 255, 255, 0.95)',
@@ -251,7 +250,7 @@ const CurrentPage = styled(Typography)(({ theme }) => ({
   }
 }));
 
-// Enhanced Box styling for headers - VISUAL ONLY
+// Enhanced Box styling for headers 
 const EnhancedHeaderBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
   background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.05) 0%, rgba(255, 112, 67, 0.05) 100%)',

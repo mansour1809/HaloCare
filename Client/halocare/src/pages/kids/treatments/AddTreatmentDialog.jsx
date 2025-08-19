@@ -9,7 +9,6 @@ import {
   Button,
   IconButton,
   Typography,
-  Grid,
   FormControl,
   InputLabel,
   Select,
@@ -19,14 +18,13 @@ import {
   Alert,
   CircularProgress,
   FormHelperText,
-  Paper,
   Chip,
   Avatar,
   styled,
   alpha,
   Fade,
-  Zoom,
-  Stack
+  Stack,
+  Divider
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -45,102 +43,30 @@ import { useTreatmentContext } from './TreatmentContext';
 import { useAuth } from '../../../components/login/AuthContext';
 import Swal from 'sweetalert2';
 import HebrewReactDatePicker from '../../../components/common/HebrewReactDatePicker';
+import { baseURL } from '../../../components/common/axiosConfig';
 
-// Enhanced Styled Components
-const StyledDialog = styled(Dialog)(() => ({
+// Simple and clean styled components
+const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
-    borderRadius: '24px',
-    background: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha('#ffffff', 0.2)}`,
-    boxShadow: '0 25px 80px rgba(76, 181, 195, 0.15)',
-    overflow: 'visible',
-    position: 'relative',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '6px',
-      background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-      backgroundSize: '400% 400%',
-      animation: 'gradientShift 8s ease infinite',
-      borderRadius: '24px 24px 0 0',
-    },
-    '@keyframes gradientShift': {
-      '0%': { backgroundPosition: '0% 50%' },
-      '50%': { backgroundPosition: '100% 50%' },
-      '100%': { backgroundPosition: '0% 50%' },
-    }
+    borderRadius: 16,
+    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   }
 }));
 
-const ModernDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
-  backgroundSize: '400% 400%',
-  animation: 'gradientShift 15s ease infinite',
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 100%)',
   color: 'white',
-  padding: theme.spacing(3),
-  borderRadius: '24px 24px 0 0',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
-    pointerEvents: 'none',
-  },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
-  }
-}));
-
-const FormSection = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.8)',
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha('#4cb5c3', 0.1)}`,
-  borderRadius: '16px',
-  padding: theme.spacing(3),
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.15)',
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '3px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
-  }
+  padding: theme.spacing(2.5),
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
-    borderRadius: '12px',
-    background: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(10px)',
-    transition: 'all 0.3s ease',
-    '& fieldset': {
-      borderColor: alpha('#4cb5c3', 0.3),
-    },
+    borderRadius: 8,
     '&:hover fieldset': {
       borderColor: '#4cb5c3',
     },
     '&.Mui-focused fieldset': {
       borderColor: '#4cb5c3',
-      borderWidth: 2,
-      boxShadow: '0 0 0 3px rgba(76, 181, 195, 0.1)',
     },
   },
   '& .MuiInputLabel-root.Mui-focused': {
@@ -149,77 +75,21 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 const StyledSelect = styled(Select)(({ theme }) => ({
-  borderRadius: '12px',
-  background: 'rgba(255, 255, 255, 0.8)',
-  backdropFilter: 'blur(10px)',
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: alpha('#4cb5c3', 0.3),
-  },
+  borderRadius: 8,
   '&:hover .MuiOutlinedInput-notchedOutline': {
     borderColor: '#4cb5c3',
   },
   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
     borderColor: '#4cb5c3',
-    borderWidth: 2,
-    boxShadow: '0 0 0 3px rgba(76, 181, 195, 0.1)',
   }
 }));
 
-const AnimatedAvatar = styled(Avatar)(({ theme }) => ({
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
-  '&:hover': {
-    transform: 'scale(1.1) rotate(5deg)',
-    boxShadow: '0 10px 30px rgba(76, 181, 195, 0.4)',
-  }
+const ActionButton = styled(Button)(({ theme }) => ({
+  borderRadius: 8,
+  padding: '10px 24px',
+  fontWeight: 600,
+  textTransform: 'none',
 }));
-
-const ActionButton = styled(Button)(({ variant, theme }) => {
-  const colors = {
-    contained: {
-      bg: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-      hover: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
-      shadow: 'rgba(76, 181, 195, 0.4)'
-    },
-    outlined: {
-      bg: 'transparent',
-      hover: alpha('#4cb5c3', 0.1),
-      shadow: 'rgba(76, 181, 195, 0.2)'
-    }
-  };
-  
-  const colorScheme = variant === 'contained' ? colors.contained : colors.outlined;
-  
-  return {
-    borderRadius: '12px',
-    padding: '12px 24px',
-    fontWeight: 600,
-    fontSize: '1rem',
-    position: 'relative',
-    overflow: 'hidden',
-    background: colorScheme.bg,
-    boxShadow: `0 6px 20px ${colorScheme.shadow}`,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      background: colorScheme.hover,
-      transform: 'translateY(-2px)',
-      boxShadow: `0 10px 30px ${colorScheme.shadow}`,
-    },
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: '-100%',
-      width: '100%',
-      height: '100%',
-      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-      transition: 'all 0.5s ease',
-    },
-    '&:hover::after': {
-      left: '100%',
-    }
-  };
-});
 
 const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
   const { 
@@ -247,11 +117,10 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     treatmentTypeId: treatmentType || '',
     description: '',
     cooperationLevel: 3,
-    // status: 'active',
     highlight: ''
   });
   
-  // Reset the form when the dialog opens
+  // Reset the form when the dialog opens 
   useEffect(() => {
     if (isAddDialogOpen) {
       setFormData({
@@ -262,7 +131,6 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
         treatmentTypeId: treatmentType || '',
         description: '',
         cooperationLevel: 3,
-        // status: 'active',
         highlight: ''
       });
       setFormErrors({});
@@ -270,7 +138,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
   }, [isAddDialogOpen, kidId, treatmentType, currentUser]);
 
-  // Handle field changes
+  // Handle field changes 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData(prev => ({
@@ -278,7 +146,6 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       [name]: value
     }));
     
-    // Clear specific field error
     if (formErrors[name]) {
       setFormErrors(prev => ({
         ...prev,
@@ -286,14 +153,13 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       }));
     }
     
-    // Mark field as touched
     setTouched(prev => ({
       ...prev,
       [name]: true
     }));
   };
 
-  // Handle date change
+  // Handle date change 
   const handleDateChange = (newDate) => {
     setFormData(prev => ({
       ...prev,
@@ -308,7 +174,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }
   };
 
-  // Handle cooperation level change
+  // Handle cooperation level change 
   const handleCooperationChange = (event, newValue) => {
     setFormData(prev => ({
       ...prev,
@@ -316,7 +182,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     }));
   };
 
-  // Validation function
+  // Validation function 
   const validate = () => {
     const errors = {};
     
@@ -339,7 +205,7 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     return errors;
   };
 
-  // Handle form submission
+  // Handle form submission 
   const handleSubmit = async (event) => {
     event.preventDefault();
     
@@ -347,7 +213,6 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
     setFormErrors(errors);
     
     if (Object.keys(errors).length > 0) {
-      // Mark all fields as touched to show errors
       const touchedFields = {};
       Object.keys(errors).forEach(key => {
         touchedFields[key] = true;
@@ -389,23 +254,16 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
       fullWidth
       dir="rtl"
     >
-      <ModernDialogTitle>
+      <StyledDialogTitle>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <AnimatedAvatar sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)', 
-              width: 48, 
-              height: 48,
-              backdropFilter: 'blur(10px)'
-            }}>
-              <AddIcon />
-            </AnimatedAvatar>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AddIcon />
             <Box>
-              <Typography variant="h5" fontWeight="bold" sx={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+              <Typography variant="h6" fontWeight="bold">
                 הוספת סיכום טיפול חדש
               </Typography>
               {selectedKid && (
-                <Typography variant="body1" sx={{ opacity: 0.9, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   {selectedKid.firstName} {selectedKid.lastName} • {getTreatmentName(treatmentType)}
                 </Typography>
               )}
@@ -414,228 +272,146 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
           <IconButton 
             edge="end" 
             color="inherit" 
-            onClick={closeAddDialog} 
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(10px)',
-              '&:hover': { 
-                bgcolor: 'rgba(255,255,255,0.2)',
-                transform: 'scale(1.1)'
-              },
-              transition: 'all 0.3s ease'
-            }}
+            onClick={closeAddDialog}
           >
             <CloseIcon />
           </IconButton>
         </Box>
-      </ModernDialogTitle>
+      </StyledDialogTitle>
       
       <form onSubmit={handleSubmit}>
-        <DialogContent sx={{ p: 4, background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)' }}>
+        <DialogContent sx={{ pt: 3 }}>
           {error && (
-            <Fade in>
-              <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
-                {error}
-              </Alert>
-            </Fade>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
           )}
           
-          <Grid container spacing={3}>
-            {/* Therapist Selection */}
-            <Grid item size={{ xs: 12, md:6}}>
-              <Zoom in timeout={300}>
-                <FormSection>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <AnimatedAvatar sx={{ bgcolor: '#4cb5c3', width: 40, height: 40 }}>
-                      <PersonIcon />
-                    </AnimatedAvatar>
-                    <Typography variant="h6" fontWeight={700}>
-                      מטפל
-                    </Typography>
-                  </Box>
-                  <FormControl 
-                    fullWidth 
-                    required 
-                    error={touched.employeeId && Boolean(formErrors.employeeId)}
-                  >
-                    <InputLabel id="employee-label" sx={{ '&.Mui-focused': { color: '#4cb5c3' } }}>
-                      בחר מטפל
-                    </InputLabel>
-                    <StyledSelect
-                      labelId="employee-label"
-                      name="employeeId"
-                      value={formData.employeeId}
-                      onChange={handleInputChange}
-                      label="בחר מטפל"
-                    >
-                      {employees?.map((employee) => (
-                        <MenuItem key={employee.employeeId} value={employee.employeeId}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem' }}>
-                              {employee.firstName?.charAt(0)}
-                            </Avatar>
-                            {employee.firstName} {employee.lastName}
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </StyledSelect>
-                    {touched.employeeId && formErrors.employeeId && (
-                      <FormHelperText>{formErrors.employeeId}</FormHelperText>
-                    )}
-                  </FormControl>
-                </FormSection>
-              </Zoom>
-            </Grid>
+          <Stack spacing={3}>
+            {/* Row 1: Employee and Date */}
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+              <FormControl 
+                fullWidth 
+                required 
+                error={touched.employeeId && Boolean(formErrors.employeeId)}
+              >
+                <InputLabel id="employee-label">מטפל</InputLabel>
+                <StyledSelect
+                MenuProps={{
+    disablePortal: true,
+    PaperProps: {
+      sx: {
+        maxHeight: 300
+      }
+    }
+  }}
+                  labelId="employee-label"
+                  name="employeeId"
+                  value={formData.employeeId}
+                  onChange={handleInputChange}
+                  label="מטפל"
+                >
+                  {employees?.map((employee) => (
+                    <MenuItem key={employee.employeeId} value={employee.employeeId} dir="rtl">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: '#4cb5c3' }}
+                            src={
+                                    employee.photo
+                                      ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}`
+                                      : ''
+                                  }  
+                                  alt={`${employee.firstName} ${employee.lastName}`}
+                                  >
+                          {!employee.photo && employee.firstName?.charAt(0)}
+                        </Avatar>
+                        {employee.firstName} {employee.lastName}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </StyledSelect>
+                {touched.employeeId && formErrors.employeeId && (
+                  <FormHelperText>{formErrors.employeeId}</FormHelperText>
+                )}
+              </FormControl>
 
-            {/* Date Selection */}
-            <Grid item size={{ xs: 12, md:6}}>
-              <Zoom in timeout={400}>
-                <FormSection>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <AnimatedAvatar sx={{ bgcolor: '#ff7043', width: 40, height: 40 }}>
-                      <CalendarIcon />
-                    </AnimatedAvatar>
-                    <Typography variant="h6" fontWeight={700}>
-                      תאריך טיפול
-                    </Typography>
-                  </Box>
-                  <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-                    <HebrewReactDatePicker
-                      maxDate={new Date()}
-                      label="בחר תאריך"
-                      value={formData.treatmentDate}
-                      onChange={handleDateChange}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          error: touched.treatmentDate && Boolean(formErrors.treatmentDate),
-                          helperText: touched.treatmentDate && formErrors.treatmentDate,
-                          sx: {
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '12px',
-                              background: 'rgba(255, 255, 255, 0.8)',
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  </LocalizationProvider>
-                </FormSection>
-              </Zoom>
-            </Grid>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+                <HebrewReactDatePicker
+                  maxDate={new Date()}
+                  label="תאריך טיפול"
+                  value={formData.treatmentDate}
+                  onChange={handleDateChange}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true,
+                      error: touched.treatmentDate && Boolean(formErrors.treatmentDate),
+                      helperText: touched.treatmentDate && formErrors.treatmentDate,
+                    }
+                  }}
+                />
+              </LocalizationProvider>
+            </Stack>
 
-            {/* Cooperation Level */}
-            <Grid item size={{ xs: 12}}>
-              <Zoom in timeout={500}>
-                <FormSection>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <AnimatedAvatar sx={{ bgcolor: '#10b981', width: 40, height: 40 }}>
-                      <StarIcon />
-                    </AnimatedAvatar>
-                    <Typography variant="h6" fontWeight={700}>
-                      רמת שיתוף פעולה
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" alignItems="center" spacing={3}>
-                    <Rating
-                      value={formData.cooperationLevel}
-                      onChange={handleCooperationChange}
-                      max={5}
-                      size="large"
-                      sx={{
-                        '& .MuiRating-iconFilled': {
-                          color: '#ffc107',
-                          filter: 'drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3))'
-                        },
-                        '& .MuiRating-iconHover': {
-                          color: '#ffb300',
-                        }
-                      }}
-                    />
-                    <Chip 
-                      label={`${formData.cooperationLevel}/5`}
-                      color="primary"
-                      sx={{ 
-                        fontWeight: 700,
-                        fontSize: '1rem',
-                        backgroundColor: '#4cb5c3'
-                      }}
-                    />
-                  </Stack>
-                  {touched.cooperationLevel && formErrors.cooperationLevel && (
-                    <FormHelperText error sx={{ mt: 1 }}>
-                      {formErrors.cooperationLevel}
-                    </FormHelperText>
-                  )}
-                </FormSection>
-              </Zoom>
-            </Grid>
+            {/* Row 2: Cooperation Level */}
+            <Box>
+              <Typography variant="subtitle1" gutterBottom fontWeight={500}>
+                רמת שיתוף פעולה
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Rating
+                  value={formData.cooperationLevel}
+                  onChange={handleCooperationChange}
+                  max={5}
+                  size="large"
+                />
+                <Chip 
+                  label={`${formData.cooperationLevel}/5`}
+                  color="primary"
+                  size="small"
+                />
+              </Stack>
+              {touched.cooperationLevel && formErrors.cooperationLevel && (
+                <FormHelperText error>
+                  {formErrors.cooperationLevel}
+                </FormHelperText>
+              )}
+            </Box>
 
-            {/* Treatment Description */}
-            <Grid item size={{ xs: 12}}>
-              <Zoom in timeout={600}>
-                <FormSection>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <AnimatedAvatar sx={{ bgcolor: '#9c27b0', width: 40, height: 40 }}>
-                      <DescriptionIcon />
-                    </AnimatedAvatar>
-                    <Typography variant="h6" fontWeight={700}>
-                      תיאור הטיפול
-                    </Typography>
-                  </Box>
-                  <StyledTextField
-                    fullWidth
-                    multiline
-                    rows={6}
-                    name="description"
-                    label="פרט על הטיפול שניתן..."
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    required
-                    error={touched.description && Boolean(formErrors.description)}
-                    helperText={touched.description && formErrors.description}
-                  />
-                </FormSection>
-              </Zoom>
-            </Grid>
+            {/* Row 3: Description */}
+            <StyledTextField
+              fullWidth
+              multiline
+              rows={5}
+              name="description"
+              label="תיאור הטיפול"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+              error={touched.description && Boolean(formErrors.description)}
+              helperText={touched.description && formErrors.description}
+              placeholder="פרט על הטיפול שניתן..."
+            />
 
-            {/* Highlight (Optional) */}
-            <Grid item size={{ xs: 12}}>
-              <Zoom in timeout={700}>
-                <FormSection>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <AnimatedAvatar sx={{ bgcolor: '#f57c00', width: 40, height: 40 }}>
-                      <HighlightIcon />
-                    </AnimatedAvatar>
-                    <Typography variant="h6" fontWeight={700}>
-                      הדגשה (אופציונלי)
-                    </Typography>
-                  </Box>
-                  <StyledTextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    name="highlight"
-                    label="הדגשות חשובות או הערות מיוחדות..."
-                    value={formData.highlight}
-                    onChange={handleInputChange}
-                  />
-                </FormSection>
-              </Zoom>
-            </Grid>
-          </Grid>
+            {/* Row 4: Highlight (Optional) */}
+            <StyledTextField
+              fullWidth
+              multiline
+              rows={2}
+              name="highlight"
+              label="הדגשות (אופציונלי)"
+              value={formData.highlight}
+              onChange={handleInputChange}
+              placeholder="הערות חשובות או המלצות..."
+            />
+          </Stack>
         </DialogContent>
         
-        <DialogActions sx={{ 
-          justifyContent: 'space-between', 
-          p: 3,
-          background: 'linear-gradient(135deg, #f8fafb 0%, #ffffff 100%)'
-        }}>
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
           <ActionButton
             variant="outlined"
             onClick={closeAddDialog}
             disabled={loading}
+            color="inherit"
           >
             ביטול
           </ActionButton>
@@ -644,7 +420,14 @@ const AddTreatmentDialog = ({ kidId, treatmentType = null }) => {
             type="submit"
             variant="contained"
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+            sx={{
+              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
+              }
+            }}
           >
             {loading ? 'שומר...' : 'שמור טיפול'}
           </ActionButton>
