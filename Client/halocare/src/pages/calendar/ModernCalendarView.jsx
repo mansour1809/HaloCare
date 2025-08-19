@@ -383,10 +383,8 @@ const getEventColor = (event, eventTypes) => {
   
   // המר צבע HEX לגרדיאנט
   const hexToGradient = (hex) => {
-    // אם זה כבר גרדיאנט, החזר אותו
     if (hex.includes('gradient')) return hex;
-    
-    // צור גרדיאנט מצבע HEX
+
     const lighterColor = hex + '99'; // הוסף שקיפות
     return `linear-gradient(45deg, ${hex} 30%, ${lighterColor} 90%)`;
   };

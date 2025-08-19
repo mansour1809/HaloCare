@@ -58,11 +58,6 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לדווח נוכחות על ידי עובד שאינו פעיל");
             }
 
-            //// If the child is absent, an absence reason is required
-            //if (!attendance.IsPresent && string.IsNullOrEmpty(attendance.AbsenceReason))
-            //{
-            //    throw new ArgumentException("חובה לציין סיבת היעדרות כאשר הילד לא נוכח");
-            //}navi
 
             // Set attendance date if not provided
             if (attendance.AttendanceDate == DateTime.MinValue)
@@ -75,11 +70,6 @@ namespace halocare.BL.Services
 
         public bool UpdateAttendance(Attendance attendance)
         {
-            //// If the child is absent, an absence reason is required
-            //if (!attendance.IsPresent && string.IsNullOrEmpty(attendance.AbsenceReason))
-            //{
-            //    throw new ArgumentException("חובה לציין סיבת היעדרות כאשר הילד לא נוכח");
-            //}
 
             return _attendanceRepository.UpdateAttendance(attendance);
         }

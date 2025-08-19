@@ -89,6 +89,8 @@ const SimpleFlowerProfile = ({ kid }) => {
     }, 300);
   };
 
+
+  
   // calculate Petal Angle
   const calculatePetalAngle = (index, total) => {
     return (360 / total) * index;
@@ -117,6 +119,8 @@ const SimpleFlowerProfile = ({ kid }) => {
     
     return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
   };
+
+  
 
   if (!treatmentTypes || treatmentTypes.length === 0) {
     return (

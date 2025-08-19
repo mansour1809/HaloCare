@@ -1049,17 +1049,6 @@ const AttendanceReports = () => {
                           setAttendanceData([]);
                         }}
                         label="בחר ילד"
-                        // startAdornment={
-                        //   childId && selectedChild && (
-                        //     <Avatar 
-                        //       src={selectedChild.photoPath ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(selectedChild.photoPath)}` : undefined}
-                        //       alt={selectedChild?.firstName || ''}
-                        //       sx={{ width: 32, height: 32, mr: 1 }}
-                        //     >
-                        //       {!selectedChild.photoPath && selectedChild.firstName?.charAt(0)}
-                        //     </Avatar>
-                        //   )
-                        // }
                       >
                         {kids?.filter(k => k.isActive).map(kid => (
                           <MenuItem key={kid.id} value={kid.id.toString()} dir="rtl">

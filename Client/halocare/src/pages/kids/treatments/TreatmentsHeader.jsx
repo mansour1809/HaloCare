@@ -14,7 +14,8 @@ import {
   alpha,
   Fade,
   Zoom,
-  Container
+  Container,
+  keyframes
 } from '@mui/material';
 import { 
   Add as AddIcon,
@@ -28,17 +29,46 @@ import { useNavigate } from 'react-router-dom';
 import { useTreatmentContext } from './TreatmentContext';
 import PropTypes from 'prop-types';
 
-// Enhanced Styled Components with modern design
-const ModernHeader = styled(Paper)(() => ({
-  background: 'linear-gradient(135deg, rgba(76, 181, 195, 0.95) 0%, rgba(42, 138, 149, 0.95) 25%, rgba(255, 112, 67, 0.95) 50%, rgba(16, 185, 129, 0.95) 75%, rgba(76, 181, 195, 0.95) 100%)',
+// Professional animations matching the global style
+const gradientShift = keyframes`
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+`;
+
+const shimmer = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+`;
+
+const glow = keyframes`
+  0%, 100% { box-shadow: 0 0 20px rgba(76, 181, 195, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(76, 181, 195, 0.6), 0 0 40px rgba(76, 181, 195, 0.4); }
+`;
+
+// Enhanced Styled Components with professional design
+const ModernHeader = styled(Paper)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #4cb5c3 0%, #2a8a95 25%, #ff7043 50%, #10b981 75%, #4cb5c3 100%)',
   backgroundSize: '400% 400%',
-  animation: 'gradientShift 20s ease infinite',
+  animation: `${gradientShift} 20s ease infinite`,
   color: 'white',
-  borderRadius: '20px',
+  borderRadius: 20,
   overflow: 'hidden',
   position: 'relative',
   backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha('#ffffff', 0.2)}`,
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -46,21 +76,26 @@ const ModernHeader = styled(Paper)(() => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 0%, transparent 50%)',
+    background: 'radial-gradient(circle at 30% 40%, rgba(76, 181, 195, 0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(255, 112, 67, 0.2) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 50%)',
     pointerEvents: 'none',
   },
-  '@keyframes gradientShift': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '4px',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+    animation: `${shimmer} 3s infinite`,
   }
 }));
 
-const StatsCard = styled(Paper)(({ theme }) => ({
+const StatsCard = styled(Paper)(({ theme, color = '#4cb5c3' }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha('#ffffff', 0.2)}`,
-  borderRadius: '16px',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  borderRadius: 16,
   padding: theme.spacing(3),
   textAlign: 'center',
   position: 'relative',
@@ -68,7 +103,8 @@ const StatsCard = styled(Paper)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: '0 20px 60px rgba(76, 181, 195, 0.25)',
+    boxShadow: '0 15px 35px rgba(76, 181, 195, 0.25)',
+    animation: `${glow} 2s infinite`,
   },
   '&::before': {
     content: '""',
@@ -76,24 +112,35 @@ const StatsCard = styled(Paper)(({ theme }) => ({
     top: 0,
     left: 0,
     right: 0,
-    height: '4px',
-    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981)',
+    height: '3px',
+    background: `linear-gradient(90deg, ${color}, ${alpha(color, 0.6)}, ${color})`,
+    animation: `${gradientShift} 3s ease infinite`,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha(color, 0.1)}, transparent)`,
+    animation: `${shimmer} 3s infinite`,
   }
 }));
 
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 16,
   padding: '12px 32px',
-  fontWeight: 700,
+  fontWeight: 600,
   fontSize: '1.1rem',
   position: 'relative',
   overflow: 'hidden',
   background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-  boxShadow: '0 8px 25px rgba(76, 181, 195, 0.4)',
+  boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
     transform: 'translateY(-3px) scale(1.05)',
-    boxShadow: '0 15px 40px rgba(76, 181, 195, 0.5)',
+    boxShadow: '0 12px 35px rgba(76, 181, 195, 0.4)',
     background: 'linear-gradient(45deg, #3da1af 30%, #1a6b75 90%)',
   },
   '&::after': {
@@ -114,40 +161,40 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 const AnimatedAvatar = styled(Avatar)(({ theme }) => ({
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
+  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+  animation: `${float} 3s ease-in-out infinite`,
   '&:hover': {
     transform: 'scale(1.1) rotate(5deg)',
   },
   '&::before': {
     content: '""',
     position: 'absolute',
-    top: '-4px',
-    left: '-4px',
-    right: '-4px',
-    bottom: '-4px',
+    top: '-3px',
+    left: '-3px',
+    right: '-3px',
+    bottom: '-3px',
     background: 'linear-gradient(45deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
     borderRadius: '50%',
     zIndex: -1,
-    animation: 'avatarBorderRotate 3s linear infinite',
-  },
-  '@keyframes avatarBorderRotate': {
-    '0%': { transform: 'rotate(0deg)' },
-    '100%': { transform: 'rotate(360deg)' },
+    opacity: 0.7,
+    animation: `${gradientShift} 3s linear infinite`,
   }
 }));
 
 const GlowingChip = styled(Chip)(({ theme }) => ({
-  fontWeight: 700,
-  fontSize: '1rem',
-  padding: '8px 16px',
+  fontWeight: 600,
+  fontSize: '0.95rem',
+  padding: '6px 12px',
   height: 'auto',
-  borderRadius: '12px',
-  boxShadow: '0 4px 15px rgba(76, 181, 195, 0.3)',
+  borderRadius: 8,
+  backdropFilter: 'blur(10px)',
   transition: 'all 0.3s ease',
   '&:hover': {
     transform: 'scale(1.05)',
-    boxShadow: '0 6px 20px rgba(76, 181, 195, 0.4)',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
   }
 }));
+
 const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   marginBottom: theme.spacing(4),
   padding: theme.spacing(2),
@@ -156,6 +203,18 @@ const EnhancedBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   borderRadius: 16,
   border: '1px solid rgba(255, 255, 255, 0.2)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
+    animation: `${gradientShift} 3s ease infinite`,
+  },
   '& .MuiBreadcrumbs-separator': {
     color: theme.palette.primary.main,
   },
@@ -208,6 +267,19 @@ const CurrentPage = styled(Typography)(({ theme }) => ({
   }
 }));
 
+const StatAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
+  background: `linear-gradient(135deg, ${bgcolor} 0%, ${alpha(bgcolor, 0.7)} 100%)`,
+  margin: '0 auto',
+  marginBottom: theme.spacing(2),
+  width: 56,
+  height: 56,
+  fontSize: '1.5rem',
+  boxShadow: `0 6px 20px ${alpha(bgcolor, 0.3)}`,
+  animation: `${pulse} 2s ease-in-out infinite`,
+  '&:hover': {
+    animation: `${float} 1s ease-in-out`,
+  }
+}));
 
 const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
   const navigate = useNavigate();
@@ -220,10 +292,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     getFilteredTreatmentStats
   } = useTreatmentContext();
 
-  // Get statistics
+  // Get statistics - PRESERVED EXACTLY
   const stats = getFilteredTreatmentStats();
 
-  // Function to calculate trend (approximate)
+  // Function to calculate trend (approximate) - PRESERVED EXACTLY
   const getTrend = () => {
     if (!filteredTreatments.length) return null;
     
@@ -248,37 +320,33 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
     <Box dir="rtl" sx={{ mb: 4 }}>
       {/* Enhanced Breadcrumbs */}
       <Fade in timeout={600}>
-
-          <EnhancedBreadcrumbs dir="rtl" >
-                                      <StyledLink
-                                        underline="hover"
-                                        onClick={() => navigate('/')}
-                                      >
-                                        <HomeIcon />
-                                        ראשי
-                                      </StyledLink>
-                                      <StyledLink
-                                        underline="hover"
-                                        onClick={() => navigate('/kids/list')}
-                                      >
-                                        <HomeIcon />
-                                        רשימת ילדים
-                                      </StyledLink>
-                                      <StyledLink
-                                        underline="hover"
-                                        onClick={() => navigate(`/kids/${kidId}`)}
-                                      >
-                                        <PersonIcon />
-                                        {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
-                                      </StyledLink>
-                                      
-                                  
-                                      <CurrentPage>
-                                        <AssessmentIcon />
-                                        סיכומי טיפולים
-                                      </CurrentPage>
-                                    </EnhancedBreadcrumbs>
-       
+        <EnhancedBreadcrumbs dir="rtl">
+          <StyledLink
+            underline="hover"
+            onClick={() => navigate('/')}
+          >
+            <HomeIcon />
+            ראשי
+          </StyledLink>
+          <StyledLink
+            underline="hover"
+            onClick={() => navigate('/kids/list')}
+          >
+            <HomeIcon />
+            רשימת ילדים
+          </StyledLink>
+          <StyledLink
+            underline="hover"
+            onClick={() => navigate(`/kids/${kidId}`)}
+          >
+            <PersonIcon />
+            {selectedKid ? `${selectedKid.firstName} ${selectedKid.lastName}` : 'פרופיל ילד'}
+          </StyledLink>
+          <CurrentPage>
+            <AssessmentIcon />
+            סיכומי טיפולים
+          </CurrentPage>
+        </EnhancedBreadcrumbs>
       </Fade>
       
       {/* Modern Header */}
@@ -288,7 +356,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
               <Box>
                 <Typography variant="h3" component="h1" sx={{ 
-                  fontWeight: 600, 
+                  fontWeight: 800, 
                   color: 'white',
                   mb: 2,
                   display: 'flex',
@@ -301,7 +369,8 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                     width: 64, 
                     height: 64,
                     fontSize: '2rem',
-                    backdropFilter: 'blur(10px)'
+                    backdropFilter: 'blur(10px)',
+                    border: '3px solid rgba(255,255,255,0.3)'
                   }}>
                     📋
                   </AnimatedAvatar>
@@ -311,8 +380,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                     <GlowingChip 
                       label={getTreatmentName(treatmentType)}
                       sx={{ 
-                        backgroundColor: getColorForTreatmentType(treatmentType),
+                        backgroundColor: alpha(getColorForTreatmentType(treatmentType), 0.9),
                         color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                       }}
                     />
                   )}
@@ -322,7 +393,7 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                     <Typography variant="h5" sx={{ 
                       color: 'white',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                     }}>
                       {selectedKid.firstName} {selectedKid.lastName}
@@ -334,7 +405,8 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                         color: 'white',
                         fontWeight: 700,
                         backgroundColor: selectedKid.isActive ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)',
-                        backdropFilter: 'blur(10px)'
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255,255,255,0.3)'
                       }}
                     />
                   </Box>
@@ -380,17 +452,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               {/* Total treatments */}
               <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={300}>
-                  <StatsCard>
-                    <AnimatedAvatar sx={{ 
-                      bgcolor: '#4cb5c3', 
-                      mx: 'auto', 
-                      mb: 2,
-                      width: 56,
-                      height: 56,
-                      fontSize: '1.5rem'
-                    }}>
+                  <StatsCard color="#4cb5c3">
+                    <StatAvatar bgcolor="#4cb5c3">
                       📊
-                    </AnimatedAvatar>
+                    </StatAvatar>
                     <Typography variant="h3" sx={{ 
                       color: '#4cb5c3', 
                       fontWeight: 800,
@@ -412,17 +477,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               {/* Average cooperation */}
               <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={400}>
-                  <StatsCard>
-                    <AnimatedAvatar sx={{ 
-                      bgcolor: '#ff7043', 
-                      mx: 'auto', 
-                      mb: 2,
-                      width: 56,
-                      height: 56,
-                      fontSize: '1.5rem'
-                    }}>
+                  <StatsCard color="#ff7043">
+                    <StatAvatar bgcolor="#ff7043">
                       🤝
-                    </AnimatedAvatar>
+                    </StatAvatar>
                     <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mb: 1 }}>
                       {[1, 2, 3, 4, 5].map((star) => (
                         <StarIcon 
@@ -431,7 +489,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                           sx={{ 
                             color: star <= (stats.averageCooperation || 0) ? '#ffc107' : '#e0e0e0',
                             transition: 'all 0.2s ease',
-                            '&:hover': { transform: 'scale(1.2)' }
+                            filter: star <= (stats.averageCooperation || 0) ? 'drop-shadow(0 2px 4px rgba(255,193,7,0.5))' : 'none',
+                            '&:hover': { 
+                              transform: 'scale(1.2) rotate(15deg)' 
+                            }
                           }} 
                         />
                       ))}
@@ -456,17 +517,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               {/* Different therapists */}
               <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={500}>
-                  <StatsCard>
-                    <AnimatedAvatar sx={{ 
-                      bgcolor: '#10b981', 
-                      mx: 'auto', 
-                      mb: 2,
-                      width: 56,
-                      height: 56,
-                      fontSize: '1.5rem'
-                    }}>
+                  <StatsCard color="#10b981">
+                    <StatAvatar bgcolor="#10b981">
                       👨‍⚕️
-                    </AnimatedAvatar>
+                    </StatAvatar>
                     <Typography variant="h3" sx={{ 
                       color: '#10b981', 
                       fontWeight: 800,
@@ -494,17 +548,10 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
               {/* Recent treatments */}
               <Grid item size={{ xs:12,sm:6, md:3}}>
                 <Zoom in timeout={600}>
-                  <StatsCard>
-                    <AnimatedAvatar sx={{ 
-                      bgcolor: '#9c27b0', 
-                      mx: 'auto', 
-                      mb: 2,
-                      width: 56,
-                      height: 56,
-                      fontSize: '1.5rem'
-                    }}>
+                  <StatsCard color="#9c27b0">
+                    <StatAvatar bgcolor="#9c27b0">
                       📅
-                    </AnimatedAvatar>
+                    </StatAvatar>
                     <Typography variant="h3" sx={{ 
                       color: '#9c27b0', 
                       fontWeight: 800,
@@ -532,7 +579,12 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
             {/* Distribution by treatment types */}
             {Object.keys(stats.treatmentTypeDistribution || {}).length > 1 && (
               <Fade in timeout={1400}>
-                <StatsCard sx={{ p: 3, textAlign: 'right' }}>
+                <StatsCard sx={{ 
+                  p: 3, 
+                  textAlign: 'right',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                }}>
                   <Typography variant="h6" sx={{ 
                     fontWeight: 700, 
                     color: 'text.primary', 
@@ -541,27 +593,34 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                     alignItems: 'center',
                     gap: 1
                   }}>
-                    <TrendingUpIcon sx={{ color: '#4cb5c3' }} />
+                    <TrendingUpIcon sx={{ 
+                      color: '#4cb5c3',
+                      animation: `${pulse} 2s ease-in-out infinite`
+                    }} />
                     התפלגות לפי סוגי טיפול:
                   </Typography>
                   <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap justifyContent="center">
                     {Object.entries(stats.treatmentTypeDistribution || {}).map(([type, count]) => (
-                      <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }}key={type} title={`${count} טיפולים מסוג ${type}`}>
+                      <Tooltip 
+                        placement="top" 
+                        key={type} 
+                        title={`${count} טיפולים מסוג ${type}`}
+                        PopperProps={{
+                          disablePortal: true,
+                          modifiers: [
+                            {
+                              name: 'flip',
+                              enabled: false 
+                            },
+                            {
+                              name: 'preventOverflow',
+                              options: {
+                                boundary: 'window', 
+                              },
+                            },
+                          ],
+                        }}
+                      >
                         <GlowingChip
                           label={`${type}: ${count}`}
                           variant="outlined"
@@ -570,9 +629,12 @@ const TreatmentsHeader = ({ kidId, treatmentType, selectedKid }) => {
                             fontSize: '0.9rem',
                             borderColor: '#4cb5c3',
                             color: '#4cb5c3',
+                            background: 'rgba(76, 181, 195, 0.05)',
                             '&:hover': {
-                              backgroundColor: alpha('#4cb5c3', 0.1),
-                              transform: 'scale(1.05)',
+                              backgroundColor: alpha('#4cb5c3', 0.15),
+                              transform: 'scale(1.08) translateY(-2px)',
+                              boxShadow: '0 6px 20px rgba(76, 181, 195, 0.3)',
+                              borderColor: '#3da1af',
                             },
                           }}
                         />
