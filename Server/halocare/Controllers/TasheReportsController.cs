@@ -14,7 +14,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class TasheReportsController : ControllerBase
     {
         private readonly TasheReportService _tasheReportService;
@@ -32,19 +32,19 @@ namespace halocare.Controllers
         {
             try
             {
-                // בדיקות תקינות
+                // Validate request
                 if (request.PeriodStartDate >= request.PeriodEndDate)
                 {
                     return BadRequest("תאריך התחלה חייב להיות לפני תאריך הסיום");
                 }
 
-                // בדיקה שהתקופה לא עולה על 6 חודשים
+                // Check if the period does not exceed 6 months
                 if ((request.PeriodEndDate - request.PeriodStartDate).TotalDays > 180)
                 {
                     return BadRequest("תקופת הדוח לא יכולה לעלות על 6 חודשים");
                 }
 
-                // בדיקה שהתאריכים לא בעתיד
+                // Check if the dates are not in the future 
                 if (request.PeriodEndDate > DateTime.Now.Date)
                 {
                     return BadRequest("לא ניתן ליצור דוח לתקופה עתידית");
@@ -191,7 +191,7 @@ namespace halocare.Controllers
                     return NotFound("הדוח לא נמצא");
                 }
 
-                // יצירת HTML מעוצב לתצוגה
+                // Creating HTML for display
                 string htmlContent = GenerateHtmlView(report);
 
                 return Content(htmlContent, "text/html; charset=utf-8");
@@ -202,7 +202,7 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/TasheReports/{reportId}/download-word - הורדה כ-Word
+        // GET: api/TasheReports/{reportId}/download-word 
         [HttpGet("{reportId}/download-word")]
         public ActionResult DownloadWordReport(int reportId)
         {
@@ -214,7 +214,7 @@ namespace halocare.Controllers
                     return NotFound("הדוח לא נמצא");
                 }
 
-                // יצירת קובץ Word
+                // Creating Word document
                 byte[] wordBytes = _wordExportService.GenerateWordDocument(report);
 
                 string fileName = $"דוח_תשה_{report.KidName?.Replace(" ", "_")}_{report.PeriodStartDate:yyyy-MM}.docx";
@@ -227,37 +227,37 @@ namespace halocare.Controllers
             }
         }
 
-        // GET: api/TasheReports/{reportId}/download-text - הורדה כטקסט
-        [HttpGet("{reportId}/download-text")]
-        public ActionResult DownloadTextReport(int reportId)
-        {
-            try
-            {
-                var report = _tasheReportService.GetReportById(reportId);
-                if (report == null)
-                {
-                    return NotFound("הדוח לא נמצא");
-                }
+        // // GET: api/TasheReports/{reportId}/download-text       
+        // [HttpGet("{reportId}/download-text")]
+        // public ActionResult DownloadTextReport(int reportId)
+        // {
+        //     try
+        //     {
+        //         var report = _tasheReportService.GetReportById(reportId);
+        //         if (report == null)
+        //         {
+        //             return NotFound("הדוח לא נמצא");
+        //         }
 
-                // יצירת תוכן טקסט מעוצב
-                string textContent = GenerateTextContent(report);
-                byte[] textBytes = Encoding.UTF8.GetBytes(textContent);
+        //         // יצירת תוכן טקסט מעוצב
+        //         string textContent = GenerateTextContent(report);
+        //         byte[] textBytes = Encoding.UTF8.GetBytes(textContent);
 
-                string fileName = $"דוח_תשה_{report.KidName?.Replace(" ", "_")}_{report.PeriodStartDate:yyyy-MM}.txt";
+        //         string fileName = $"דוח_תשה_{report.KidName?.Replace(" ", "_")}_{report.PeriodStartDate:yyyy-MM}.txt";
 
-                return File(textBytes, "text/plain; charset=utf-8", fileName);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"שגיאה בהורדת הדוח: {ex.Message}");
-            }
-        }
+        //         return File(textBytes, "text/plain; charset=utf-8", fileName);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return StatusCode(500, $"שגיאה בהורדת הדוח: {ex.Message}");
+        //     }
+        // }
         [HttpPut("{reportId}")]
         public ActionResult<TasheReport> UpdateReport(int reportId, [FromBody] UpdateReportRequest request)
         {
             try
             {
-                // בדיקות תקינות
+                // Validating input
                 if (request.UpdatedByEmployeeId <= 0)
                 {
                     return BadRequest("נדרש מזהה עובד תקין");
@@ -412,13 +412,13 @@ namespace halocare.Controllers
             html.AppendLine("<body>");
             html.AppendLine("<div class='container'>");
 
-            // כותרת
+            // Title
             html.AppendLine("<div class='header'>");
             html.AppendLine($"<h1>{report.ReportTitle}</h1>");
             html.AppendLine("<h2>גן הילד - חיפה</h2>");
             html.AppendLine("</div>");
 
-            // פרטי הדוח
+            // Report Details
             html.AppendLine("<div class='report-info'>");
             html.AppendLine($"<p><strong>שם הילד:</strong> {report.KidName ?? "לא צוין"}</p>");
             html.AppendLine($"<p><strong>תקופת הדוח:</strong> {report.PeriodStartDate:dd/MM/yyyy} - {report.PeriodEndDate:dd/MM/yyyy}</p>");
@@ -444,10 +444,10 @@ namespace halocare.Controllers
             }
             html.AppendLine("</div>");
 
-            // תוכן הדוח
+            // Report Content
             html.AppendLine("<div class='content'>");
 
-            // המרת הMarkdown ל-HTML בסיסי
+            // Converting Markdown to basic HTML
             string htmlContent = ConvertMarkdownToHtml(report.ReportContent);
             html.AppendLine(htmlContent);
 
@@ -548,7 +548,7 @@ namespace halocare.Controllers
         }
     }
 
-    // מודלים לבקשות
+    // Request models
     public class GenerateReportRequest
     {
         public int KidId { get; set; }

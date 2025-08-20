@@ -1,10 +1,9 @@
-// src/services/axiosConfig.js
+// src/components/common/axiosConfig.js
 import axios from 'axios';
-// import {useNavigate} from 'react-router-dom';
 
 // Set the base URL
-axios.defaults.baseURL = 'https://localhost:7225/api';
-// axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/test2/tar1/api';
+// axios.defaults.baseURL = 'https://localhost:7225/api';
+axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/prod/backend/api';
 
 // 🔥 List of public endpoints that do not require a token
 const publicEndpoints = [
@@ -12,7 +11,7 @@ const publicEndpoints = [
   '/ParentForm/form/',
   '/ParentForm/submit',
   '/Auth/reset-password',
-  '/Auth/forgot-password', // If exists
+  '/Auth/forgot-password', 
   '/Auth/login',
 ];
 
@@ -52,8 +51,7 @@ axios.interceptors.response.use(
 
       // 🔥 Redirect to login only if it's not a public page
       if (!isPublicPage) {
-        window.location.href = '/bgroup3/test2/halocare/#/login';
-        // navigate('/login')
+        window.location.href = '/bgroup3/prod/#/login';
       }
 
       return Promise.reject({ silent: true });

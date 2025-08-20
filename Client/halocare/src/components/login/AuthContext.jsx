@@ -86,7 +86,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setCurrentUser(null);
     setIsAuthenticated(false);
-// window.location.href = '/bgroup3/test2/halocare/#/login';
     window.location.href = '/#/login';
   };
 

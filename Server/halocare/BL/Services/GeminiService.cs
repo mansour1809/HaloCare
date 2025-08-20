@@ -38,19 +38,19 @@ namespace halocare.BL.Services
                 Console.WriteLine($"שפת מקור: {sourceLanguage}, שפת יעד: {targetLanguage}");
                 Console.WriteLine($"מספר שאלות: {questions.Count}");
 
-                // אם השפות זהות - מחזירים כמו שזה
+                // If the languages are the same - return as is
                 if (sourceLanguage == targetLanguage)
                 {
                     Console.WriteLine("שפת מקור ויעד זהות - מחזירים ללא תרגום");
                     return questions;
                 }
 
-                // בניית הפרומפט לתרגום
+                // Build the translation prompt
                 var prompt = BuildTranslationPrompt(questions, targetLanguage, sourceLanguage);
                 Console.WriteLine($"Prompt length: {prompt.Length}");
                 Console.WriteLine($"First 500 chars of prompt: {prompt.Substring(0, Math.Min(500, prompt.Length))}");
 
-                // יצירת הבקשה ל-Gemini
+                // Create the request for Gemini
                 var requestBody = new
                 {
                     contents = new[]
@@ -84,7 +84,7 @@ namespace halocare.BL.Services
 
                 Console.WriteLine($"שולח בקשה ל-Gemini API...");
 
-                // שליחת הבקשה
+                // Send the request
                 var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
 
                 Console.WriteLine($"Status Code: {response.StatusCode}");
@@ -101,7 +101,7 @@ namespace halocare.BL.Services
                         string translatedJson = geminiResponse.candidates[0].content.parts[0].text;
                         Console.WriteLine($"Translated JSON (first 500 chars): {translatedJson.Substring(0, Math.Min(500, translatedJson.Length))}");
 
-                        // נסיון לנקות את ה-JSON אם יש טקסט נוסף
+                        // Attempt to clean the JSON if there is extra text
                         translatedJson = CleanJsonResponse(translatedJson);
 
                         var translated = JsonSerializer.Deserialize<List<QuestionTranslationDto>>(translatedJson);
@@ -126,7 +126,7 @@ namespace halocare.BL.Services
             {
                 Console.WriteLine($"Translation error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                // במקרה של שגיאה, מחזירים את השאלות המקוריות
+                // In case of error, return the original questions
                 return questions;
             }
         }
@@ -146,16 +146,16 @@ namespace halocare.BL.Services
                     return answers;
                 }
 
-                // מילון תרגומים קבועים - לא צריך Gemini
+                // Fixed translations dictionary - no need for Gemini
                 var fixedTranslations = GetFixedTranslations(sourceLanguage, targetLanguage);
 
-                // הפרדה בין תשובות שצריך לתרגם לאלו שלא
+                // Separate answers that need translation from those that don't
                 var answersToTranslate = new List<AnswerTranslationDto>();
                 var translatedAnswers = new List<AnswerTranslationDto>();
 
                 foreach (var answer in answers)
                 {
-                    // בדיקה אם זו תשובה קבועה
+                    // Check if this is a fixed answer
                     if (fixedTranslations.ContainsKey(answer.Answer))
                     {
                         Console.WriteLine($"תרגום קבוע: '{answer.Answer}' → '{fixedTranslations[answer.Answer]}'");
@@ -166,13 +166,13 @@ namespace halocare.BL.Services
                             Other = answer.Other
                         });
                     }
-                    // בדיקה אם זו חתימה דיגיטלית
+                    // Check if this is a digital signature
                     else if (answer.Answer.StartsWith("data:image/"))
                     {
                         Console.WriteLine($"חתימה דיגיטלית - לא מתרגמים");
                         translatedAnswers.Add(answer);
                     }
-                    // בדיקה אם זה מספר או תאריך
+                    // Check if this is a number or date
                     else if (IsNumericOrDate(answer.Answer))
                     {
                         Console.WriteLine($"מספר/תאריך - לא מתרגמים: {answer.Answer}");
@@ -180,12 +180,12 @@ namespace halocare.BL.Services
                     }
                     else
                     {
-                        // צריך תרגום עם Gemini
+                        // Needs translation with Gemini
                         answersToTranslate.Add(answer);
                     }
                 }
 
-                // אם יש תשובות שצריך לתרגם עם Gemini
+                // If there are answers that need translation with Gemini
                 if (answersToTranslate.Count > 0)
                 {
                     Console.WriteLine($"שולח {answersToTranslate.Count} תשובות ל-Gemini");
@@ -247,7 +247,7 @@ namespace halocare.BL.Services
                     }
                 }
 
-                // מיון לפי מספר שאלה
+                // Sort by question number
                 return translatedAnswers.OrderBy(a => a.QuestionNo).ToList();
             }
             catch (Exception ex)
@@ -297,13 +297,13 @@ namespace halocare.BL.Services
         {
             if (string.IsNullOrWhiteSpace(value)) return false;
 
-            // בדיקה אם זה מספר
+            // Check if this is a number
             if (double.TryParse(value, out _)) return true;
 
-            // בדיקה אם זה תאריך
+            // Check if this is a date
             if (DateTime.TryParse(value, out _)) return true;
 
-            // בדיקה אם זה נראה כמו תאריך בפורמטים נפוצים
+            // Check if this looks like a date in common formats
             var datePatterns = new[] { @"\d{1,2}/\d{1,2}/\d{4}", @"\d{1,2}-\d{1,2}-\d{4}" };
             foreach (var pattern in datePatterns)
             {
@@ -343,7 +343,7 @@ namespace halocare.BL.Services
 
             var prompt = new StringBuilder();
 
-            // הוראות ברורות וחד משמעיות
+            // Clear and unambiguous instructions
             prompt.AppendLine("You are a professional translator for a daycare center's parent forms.");
             prompt.AppendLine($"Translate these daycare/childcare form questions from {languageNames[sourceLanguage]} to {languageNames[targetLanguage]}.");
             prompt.AppendLine();
@@ -369,7 +369,7 @@ namespace halocare.BL.Services
             prompt.AppendLine("   - לא = no");
             prompt.AppendLine();
 
-            // דוגמאות ספציפיות
+            // Specific examples
             if (targetLanguage == "en")
             {
                 prompt.AppendLine("Translation examples:");
@@ -446,10 +446,10 @@ namespace halocare.BL.Services
             {
                 try
                 {
-                    // בניית הפרומפט המשופר
+                    // Build the enhanced prompt
                     string prompt = BuildProfessionalTashePrompt(treatments, kidName, startDate, endDate);
 
-                    // יצירת הבקשה ל-Gemini
+                    // Create the request for Gemini
                     var requestBody = new
                     {
                         contents = new[]
@@ -464,9 +464,9 @@ namespace halocare.BL.Services
                         },
                         generationConfig = new
                         {
-                            temperature = 0.3, // הפחתה לעקביות טובה יותר
+                            temperature = 0.3, // Reduce for better consistency
                             topK = 40,
-                            topP = 0.8, // הפחתה לעקביות
+                            topP = 0.8, // Reduce for consistency
                             maxOutputTokens = 8192,
                         },
                         safetySettings = new[]
@@ -481,7 +481,7 @@ namespace halocare.BL.Services
                     string json = JsonSerializer.Serialize(requestBody);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    // שליחת הבקשה
+                    // Send the request
                     var response = await _httpClient.PostAsync($"{_baseUrl}?key={_apiKey}", content);
 
                     if (response.IsSuccessStatusCode)
@@ -494,14 +494,14 @@ namespace halocare.BL.Services
                                : "שגיאה ביצירת הדוח";
                     }
 
-                    // אם זה שגיאת 503 (עומס), ננסה שוב
+                    // If it's a 503 (overloaded) error, we'll try again
                     string errorContent = await response.Content.ReadAsStringAsync();
                     if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable ||
                         response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                     {
                         if (attempt < maxRetries)
                         {
-                            await Task.Delay(delaySeconds * 1000 * attempt); // עיכוב מתרחב
+                            await Task.Delay(delaySeconds * 1000 * attempt); // Expanding delay
                             continue;
                         }
                     }
@@ -510,7 +510,7 @@ namespace halocare.BL.Services
                 }
                 catch (Exception ex) when (attempt < maxRetries && (ex.Message.Contains("503") || ex.Message.Contains("429")))
                 {
-                    // אם זה שגיאת עומס ויש לנו עוד ניסיונות
+                    // If it's an overload error and we have more attempts
                     await Task.Delay(delaySeconds * 1000 * attempt);
                     continue;
                 }
@@ -532,22 +532,22 @@ namespace halocare.BL.Services
 
             Console.WriteLine($"Raw response (first 200 chars): {response.Substring(0, Math.Min(200, response.Length))}");
 
-            // הסרת markdown code blocks
+           // Removing markdown code blocks 
             if (response.Contains("```json"))
             {
                 response = response.Replace("```json", "").Replace("```", "");
             }
 
-            // הסרת backticks בודדים
+            // Removing single backticks
             response = response.Replace("`", "");
 
-            // חיפוש תחילת וסוף ה-JSON
+            // Searching for the start and end of the JSON
             int startIndex = response.IndexOf('[');
             int endIndex = response.LastIndexOf(']');
 
             if (startIndex == -1)
             {
-                // אם אין מערך, נחפש אובייקט
+                // If there's no array, we'll look for an object
                 startIndex = response.IndexOf('{');
                 endIndex = response.LastIndexOf('}');
             }
@@ -559,16 +559,16 @@ namespace halocare.BL.Services
                 return jsonPart.Trim();
             }
 
-            // ניסיון אחרון - ניקוי כללי
+            // Last attempt - general cleanup
             response = response.Trim();
 
-            // הסרת תווים לא חוקיים מההתחלה
+            // Removing illegal characters from the start
             while (response.Length > 0 && !response.StartsWith("[") && !response.StartsWith("{"))
             {
                 response = response.Substring(1);
             }
 
-            // הסרת תווים לא חוקיים מהסוף
+            // Remove invalid characters from the end
             while (response.Length > 0 && !response.EndsWith("]") && !response.EndsWith("}"))
             {
                 response = response.Substring(0, response.Length - 1);
@@ -582,12 +582,12 @@ namespace halocare.BL.Services
         {
             StringBuilder prompt = new StringBuilder();
 
-            // הגדרת התפקיד והמטרה
+            // Defining the role and purpose
             prompt.AppendLine("אתה מומחה בכתיבת דוחות תש\"ה (תוכניות שיקומיות התפתחותיות) למעונות יום טיפוליים.");
             prompt.AppendLine("תפקידך ליצור דוח מקצועי בפורמט אחיד שתואם למבנה הסטנדרטי של גן הילד בחיפה.");
             prompt.AppendLine();
 
-            // הוראות כלליות
+            // General instructions 
             prompt.AppendLine("== הוראות כלליות ==");
             prompt.AppendLine("• השתמש בשפה מקצועית אך נגישה");
             prompt.AppendLine("• התבסס רק על הנתונים שסופקו");
@@ -597,14 +597,14 @@ namespace halocare.BL.Services
             prompt.AppendLine("• אל תוסיף כפילויות או חזרות על אותו מידע");
             prompt.AppendLine();
 
-            // פרטי הדוח
+            // Report details
             prompt.AppendLine($"== פרטי הדוח ==");
             prompt.AppendLine($"שם הילד: {kidName}");
             prompt.AppendLine($"תקופת הדוח: {startDate:dd/MM/yyyy} - {endDate:dd/MM/yyyy}");
             prompt.AppendLine($"תאריך יצירת הדוח: {DateTime.Now:dd/MM/yyyy}");
             prompt.AppendLine();
 
-            // המבנה הנדרש - בהתאם למבנה של נאדר
+            // The required structure
             prompt.AppendLine("== מבנה הדוח הנדרש ==");
             prompt.AppendLine("יש ליצור דוח עם המבנה הבא בדיוק (ללא כפילויות!):");
             prompt.AppendLine();
@@ -627,7 +627,7 @@ namespace halocare.BL.Services
             prompt.AppendLine("## 3. מטרות טיפוליות על פי תחומים");
             prompt.AppendLine();
 
-            // בנייה דינמית של תחומי הטיפול
+            // Dynamic construction of treatment areas
             var treatmentGroups = treatments.GroupBy(t => t.TreatmentTypeName).ToList();
 
             foreach (var group in treatmentGroups.OrderBy(g => GetTreatmentTypeOrder(g.Key)))
@@ -670,7 +670,7 @@ namespace halocare.BL.Services
             prompt.AppendLine("• הערכה מחודשת של התקדמותו של הילד בתוך 3 חודשים");
             prompt.AppendLine();
 
-            // נתוני הטיפולים לעיבוד
+            // Treatment data to be processed
             prompt.AppendLine("== נתוני הטיפולים לעיבוד ==");
             prompt.AppendLine("השתמש בנתונים הבאים ליצירת הדוח:");
             prompt.AppendLine();
@@ -702,7 +702,7 @@ namespace halocare.BL.Services
                 prompt.AppendLine();
             }
 
-            // סטטיסטיקות
+            // Statistics
             prompt.AppendLine("== סטטיסטיקות ==");
             prompt.AppendLine($"סה\"כ טיפולים בתקופה: {treatments.Count}");
 
@@ -719,7 +719,7 @@ namespace halocare.BL.Services
             }
             prompt.AppendLine();
 
-            // הוראות סיום
+            // Ending instructions
             prompt.AppendLine("== הוראות חשובות ==");
             prompt.AppendLine("• שמור על המבנה והכותרות בדיוק כפי שהוגדרו");
             prompt.AppendLine("• השתמש בעברית תקנית וברורה");
@@ -737,7 +737,7 @@ namespace halocare.BL.Services
 
         private int GetTreatmentTypeOrder(string treatmentType)
         {
-            // סדר מועדף לתצוגה
+            // Preferred order for display
             return treatmentType switch
             {
                 "טיפול רגשי" => 1,
@@ -762,7 +762,7 @@ namespace halocare.BL.Services
             };
         }
 
-        // מודלים לתגובת Gemini
+        // Models for Gemini response
         private class GeminiResponse
         {
             public Candidate[] candidates { get; set; }

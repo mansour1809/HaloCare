@@ -50,8 +50,8 @@ namespace halocare.BL.Services
                 var token = GenerateSecureToken(kidId, formId);
 
                 // Create link
-                var baseUrl = _configuration["AppSettings:BaseUrl"];
-                var parentFormUrl = $"{baseUrl}#/parent-form/{token}";
+                var baseUrl = _configuration["AppSettings:ClientUrl"];
+                var parentFormUrl = $"{baseUrl}/#/parent-form/{token}";
 
                 // Get parent's name
                 var parentName = parent?.FirstName ?? "הורה יקר";

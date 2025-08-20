@@ -22,7 +22,7 @@ namespace halocare.BL.Services
             _geminiService = new GeminiService(configuration);
         }
 
-        // המתודה החדשה - זו שחסרה!
+        
         public async Task<TasheReport> GenerateReport(
             int kidId,
             DateTime periodStartDate,
@@ -31,7 +31,7 @@ namespace halocare.BL.Services
             string reportTitle = null,
             string notes = null)
         {
-            // בדיקה שהילד קיים ופעיל
+            // Check if the kid exists and is active
             Kid kid = _kidRepository.GetKidById(kidId);
             if (kid == null)
             {
@@ -42,7 +42,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן ליצור דוח לילד שאינו פעיל");
             }
 
-            // בדיקה שהעובד קיים ופעיל
+            // Check if the employee exists and is active
             Employee employee = _employeeRepository.GetEmployeeById(generatedByEmployeeId);
             if (employee == null)
             {
@@ -53,7 +53,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן ליצור דוח על ידי עובד שאינו פעיל");
             }
 
-            // שליפת טיפולים לתקופה
+            // Fetching treatments for the period
             List<TreatmentForTashe> treatments = _tasheReportRepository.GetTreatmentsForTashe(kidId, periodStartDate, periodEndDate);
 
             if (treatments.Count == 0)
@@ -61,17 +61,17 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא נמצאו טיפולים לתקופה המבוקשת");
             }
 
-            // יצירת הדוח באמצעות AI
+            // Creating the report using AI
             string kidName = $"{kid.FirstName} {kid.LastName}";
             string reportContent = await _geminiService.GenerateTasheReportAsync(treatments, kidName, periodStartDate, periodEndDate);
 
-            // יצירת כותרת ברירת מחדל אם לא סופקה
+            // Creating a default title if not provided
             if (string.IsNullOrEmpty(reportTitle))
             {
                 reportTitle = $"דוח תש\"ה - {kidName} - {periodStartDate:MM/yyyy}";
             }
 
-            // שמירת הדוח במסד הנתונים
+            // Saving the report to the database
             TasheReport newReport = new TasheReport
             {
                 KidId = kidId,
@@ -88,7 +88,7 @@ namespace halocare.BL.Services
             int reportId = _tasheReportRepository.AddTasheReport(newReport);
             newReport.ReportId = reportId;
 
-            // הוספת שמות לתצוגה
+            // Adding names for display
             newReport.KidName = kidName;
             newReport.GeneratedByEmployeeName = $"{employee.FirstName} {employee.LastName}";
 
@@ -99,7 +99,7 @@ namespace halocare.BL.Services
         {
             var reports = _tasheReportRepository.GetTasheReportsByKid(kidId);
 
-            // הוספת שמות עובדים ובילדים לכל דוח
+            // Adding names for display
             foreach (var report in reports)
             {
                 var kid = _kidRepository.GetKidById(report.KidId);
@@ -134,7 +134,7 @@ namespace halocare.BL.Services
 
         public bool ApproveReport(int reportId, int approvedByEmployeeId)
         {
-            // בדיקה שהעובד המאשר קיים ופעיל
+            // Checking if the approving employee exists and is active
             Employee employee = _employeeRepository.GetEmployeeById(approvedByEmployeeId);
             if (employee == null)
             {
@@ -159,7 +159,7 @@ namespace halocare.BL.Services
 
             if (report != null)
             {
-                // הוספת שמות לתצוגה
+                // Adding names for display
                 var kid = _kidRepository.GetKidById(report.KidId);
                 if (kid != null)
                 {
@@ -187,7 +187,7 @@ namespace halocare.BL.Services
 
         public TasheReport UpdateReport(int reportId, string reportTitle, string reportContent, string notes, int updatedByEmployeeId)
         {
-            // בדיקה שהעובד המעדכן קיים ופעיל
+            // Checking if the updating employee exists and is active
             Employee employee = _employeeRepository.GetEmployeeById(updatedByEmployeeId);
             if (employee == null)
             {
@@ -198,7 +198,7 @@ namespace halocare.BL.Services
                 throw new ArgumentException("לא ניתן לעדכן דוח על ידי עובד שאינו פעיל");
             }
 
-            // עדכון הדוח - הבדיקות יתבצעו ב-SP
+            // Updating the report - checks will be performed in the SP
             var updatedReport = _tasheReportRepository.UpdateTasheReport(reportId, reportTitle, reportContent, notes, updatedByEmployeeId);
 
             if (updatedReport == null)
