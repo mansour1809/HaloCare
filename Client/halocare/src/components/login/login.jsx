@@ -303,14 +303,11 @@ const LoginPage = () => {
             }}
           >
             <img
-              src={"/logo.png"}
+              src={"/bgroup3/prod/logo.png"}
               alt="Halo Care Logo"
               style={{
                 height: "250px",
 
-                // borderRadius: "50%",
-                // border: '5px solid rgba(255,255,255,0.5)',
-                // boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
                 transition: 'all 0.3s ease',
                 position: 'relative',
                 zIndex: 2

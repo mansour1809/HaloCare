@@ -86,6 +86,8 @@ namespace halocare
             builder.Services.AddHttpClient();
 
             var app = builder.Build();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();  
 
             // Configure the HTTP request pipeline.
             if (true)
@@ -94,14 +96,21 @@ namespace halocare
                 app.UseSwaggerUI();
             }
 
-            app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseHttpsRedirection();
             app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"),
+    appBuilder => {
+        appBuilder.UseMiddleware<ErrorHandlingMiddleware>();
+    });
+
             app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapFallbackToFile("index.html");
+
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(

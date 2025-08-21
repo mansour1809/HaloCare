@@ -16,12 +16,14 @@ namespace halocare.Controllers
         private readonly AuthenticationService _authService;     
         private readonly EmployeeService _employeeService;
         private readonly EmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public AuthController(IConfiguration configuration)
         {
             _authService = new AuthenticationService(configuration);
             _employeeService = new EmployeeService(configuration);
             _emailService = new EmailService(configuration);
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -61,6 +63,7 @@ namespace halocare.Controllers
         [HttpPost("request-password-reset")]
         public async Task<ActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
         {
+            var baseUrl = _configuration["AppSettings:ClientUrl"];
             try
             {
                 // check if employee exist
@@ -76,7 +79,7 @@ namespace halocare.Controllers
                 bool emailSent = await _emailService.SendPasswordResetEmail(
                     request.Email,
                     resetToken,
-                    $"{clientUrl}/#/reset-password"
+                    $"{baseUrl}/#/reset-password"
                     // "https://proj.ruppin.ac.il/bgroup3/prod/#/reset-password" 
                 );
 

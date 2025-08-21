@@ -3,7 +3,8 @@ import axios from 'axios';
 
 // Set the base URL
 // axios.defaults.baseURL = 'https://localhost:7225/api';
-axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/prod/backend/api';
+// axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/tes2/tar1/api';
+axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/prod/api';
 
 // 🔥 List of public endpoints that do not require a token
 const publicEndpoints = [

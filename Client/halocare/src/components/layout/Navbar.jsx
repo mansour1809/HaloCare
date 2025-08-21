@@ -232,7 +232,7 @@ const Navbar = () => {
           {/* Left side - Logo */}
           <LogoContainer>
             <img 
-              src={'./logo.png'} 
+              src={"/bgroup3/prod/logo.png"} 
               alt="HALO CARE" 
               style={{ 
                 height: '45px', 
