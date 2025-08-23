@@ -22,9 +22,10 @@ namespace halocare.BL.Services
             _kidRepository = new KidRepository(configuration);
             _employeeRepository = new EmployeeRepository(configuration);
 
-            // Get base path for saving files from configuration
-            _uploadsBasePath = configuration.GetValue<string>("UploadsBasePath") ??
-                               Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
+            //Get base path for saving files from configuration
+           _uploadsBasePath = configuration.GetValue<string>("UploadsBasePath") ??
+                       Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+
         }
 
         // New function to create folder structure for a kid
@@ -286,28 +287,72 @@ namespace halocare.BL.Services
             return _documentRepository.DeleteDocument(id);
         }
 
+        //public byte[] GetDocumentContentByPath(string path)
+        //{
+        //    if (string.IsNullOrEmpty(path))
+        //    {
+        //        throw new ArgumentException("נתיב לא יכול להיות ריק");
+        //    }
+
+        //    // Decode URL if needed
+        //    path = Uri.UnescapeDataString(path);
+
+        //    // Replace / with \ (Windows) or vice versa (Linux)
+        //    string normalizedPath = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+
+        //    // Create full path
+        //    string fullPath = Path.Combine(_uploadsBasePath, normalizedPath);
+
+        //    if (!File.Exists(fullPath))
+        //    {
+        //        throw new FileNotFoundException($"הקובץ לא נמצא: {fullPath}");
+        //    }
+
+        //    return File.ReadAllBytes(fullPath);
+        //}
         public byte[] GetDocumentContentByPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            try
             {
-                throw new ArgumentException("נתיב לא יכול להיות ריק");
+                if (string.IsNullOrEmpty(path))
+                {
+                    throw new ArgumentException("נתיב לא יכול להיות ריק");
+                }
+
+                // Decode URL if needed
+                path = Uri.UnescapeDataString(path);
+
+                // לוג לדיבוג
+                Console.WriteLine($"Original path: {path}");
+                Console.WriteLine($"_uploadsBasePath: {_uploadsBasePath}");
+
+                // Replace / with \ (Windows)
+                string normalizedPath = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+                Console.WriteLine($"Normalized path: {normalizedPath}");
+
+                // Create full path
+                string fullPath = Path.Combine(_uploadsBasePath, normalizedPath);
+                Console.WriteLine($"Full path: {fullPath}");
+                Console.WriteLine($"File exists: {File.Exists(fullPath)}");
+
+                if (!File.Exists(fullPath))
+                {
+                    // נסה לראות אם יש בעיה עם encoding
+                    var alternativePath = Path.Combine(_uploadsBasePath, path);
+                    Console.WriteLine($"Alternative path: {alternativePath}");
+                    Console.WriteLine($"Alternative exists: {File.Exists(alternativePath)}");
+
+                    throw new FileNotFoundException($"הקובץ לא נמצא: {normalizedPath}");
+                }
+
+                return File.ReadAllBytes(fullPath);
             }
-
-            // Decode URL if needed
-            path = Uri.UnescapeDataString(path);
-
-            // Replace / with \ (Windows) or vice versa (Linux)
-            string normalizedPath = path.Replace("/", Path.DirectorySeparatorChar.ToString());
-
-            // Create full path
-            string fullPath = Path.Combine(_uploadsBasePath, normalizedPath);
-
-            if (!File.Exists(fullPath))
+            catch (Exception ex)
             {
-                throw new FileNotFoundException($"הקובץ לא נמצא: {fullPath}");
+                Console.WriteLine($"Error in GetDocumentContentByPath: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw new Exception($"שגיאה בטעינת הקובץ: {ex.Message}", ex);
             }
-
-            return File.ReadAllBytes(fullPath);
         }
 
         public byte[] GetDocumentContent(int id)

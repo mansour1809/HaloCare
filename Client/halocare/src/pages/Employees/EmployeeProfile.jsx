@@ -32,11 +32,11 @@ import axios from '../../components/common/axiosConfig';
 import Swal from 'sweetalert2';
 
 import { useEmployees } from './EmployeesContext';
-import EmployeeForm from './EmployeeForm';
 import EmployeeDocumentManager from './EmployeeDocumentManager';
 import { baseURL } from '../../components/common/axiosConfig';
 import { useAuth } from '../../components/login/AuthContext';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchRoles } from '../../Redux/features/rolesSlice';
 
 const profileTheme = createTheme({
   direction: 'rtl',
@@ -852,10 +852,14 @@ const EmployeeProfile = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
 
   // Redux/Context
   const { employees, loading  } = useEmployees();
-  const{roles} =useEmployees();
+  // const{roles} =useEmployees();
+    const {roles} = useSelector((state) => state.roles);
+    const rolesStatus = useSelector((state) => state.roles.status);
+  
   
   // Local State
   const [employee, setEmployee] = useState(null);
@@ -863,6 +867,11 @@ const EmployeeProfile = () => {
   const [loadingEmployee, setLoadingEmployee] = useState(true);
   
   useEffect(() => {
+
+    if (rolesStatus === 'idle') {
+      dispatch(fetchRoles());
+    }
+
     const loadEmployee = () => {
       if (employees && employees.length > 0) {
         const foundEmployee = employees.find(emp => 
@@ -880,17 +889,22 @@ const EmployeeProfile = () => {
   }, [employeeId, employees]);
 
   const formatDate = (dateString) => {
-    if (!dateString || dateString === 'NULL') return 'לא הוזן';
+    if (!dateString || dateString === "NULL") return "לא הוזן";
     try {
-      return format(new Date(dateString), 'dd/MM/yyyy', { locale: he });
+      return format(new Date(dateString), "dd/MM/yyyy", { locale: he });
     } catch {
-      return 'לא הוזן';
+      return "לא הוזן";
     }
   };
 
   const getRoleColor = (roleName) => {
-    const role = roles.find(role => role.roleName == roleName)
-    return role.description || '#718096'
+    if(roles.length==0)
+      fetchRoles();
+else{
+  const role = roles.find(role => role.roleName == roleName)
+  console.log(roles,roleName,role)
+  return role.description || '#718096'
+}
   };
 
   const calculateSeniority = (startDate) => {
@@ -911,10 +925,6 @@ const EmployeeProfile = () => {
     } catch {
       return 'לא הוזן';
     }
-  };
-
-  const handleEmployeeUpdate = (updatedEmployee) => {
-    setEmployee(updatedEmployee);
   };
 
   // cheking if the user can edit
@@ -992,47 +1002,48 @@ const EmployeeProfile = () => {
 
   return (
     <ThemeProvider theme={profileTheme}>
-      <Box dir='rtl'>
+      <Box dir="rtl">
         <FullScreenContainer>
-          <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 2 }}>
+          <Container
+            maxWidth="lg"
+            sx={{ py: 4, position: "relative", zIndex: 2 }}
+          >
             {/* Breadcrumbs */}
             <Fade in timeout={600}>
-               <EnhancedBreadcrumbs dir="rtl">
-                                            <StyledLink
-                                              underline="hover"
-                                              onClick={() => navigate('/')}
-                                            >
-                                              <HomeIcon />
-                                              ראשי
-                                            </StyledLink>
-                                            <StyledLink
-                                              underline="hover"
-                                              onClick={() => navigate('/employees/list')}
-                                            >
-                                              <GroupIcon />
-                                              רשימת עובדים
-                                            </StyledLink>
-                                            
-                                        
-                                            <CurrentPage>
-                                              <PersonIcon />
-                                              פרופיל עובד
-                                            </CurrentPage>
-                                          </EnhancedBreadcrumbs>
-             
+              <EnhancedBreadcrumbs dir="rtl">
+                <StyledLink underline="hover" onClick={() => navigate("/")}>
+                  <HomeIcon />
+                  ראשי
+                </StyledLink>
+                <StyledLink
+                  underline="hover"
+                  onClick={() => navigate("/employees/list")}
+                >
+                  <GroupIcon />
+                  רשימת עובדים
+                </StyledLink>
+
+                <CurrentPage>
+                  <PersonIcon />
+                  פרופיל עובד
+                </CurrentPage>
+              </EnhancedBreadcrumbs>
             </Fade>
 
             {/* Hero Profile Card */}
             <Zoom in timeout={800}>
               <HeroProfileCard elevation={8}>
                 <Grid container spacing={3} alignItems="center">
-                  <Grid item size={{xs:12 , md:3 }} textAlign="center"  >
+                  <Grid item size={{ xs: 12, md: 3 }} textAlign="center">
                     <ProfileAvatar
-                      src={employee.photo ? 
-                        `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(employee.photo)}` : 
-                        undefined
+                      src={
+                        employee.photo
+                          ? `${baseURL}/Documents/content-by-path?path=${encodeURIComponent(
+                              employee.photo
+                            )}`
+                          : undefined
                       }
-                      sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}
+                      sx={{ bgcolor: "rgba(255,255,255,0.2)" }}
                     >
                       {!employee.photo && (
                         <>
@@ -1042,79 +1053,99 @@ const EmployeeProfile = () => {
                       )}
                     </ProfileAvatar>
                   </Grid>
-                  
-                  <Grid item size={{xs:12 , md:6 }}>
-                    <Typography variant="h4" gutterBottom sx={{ 
-                      fontWeight: 800,
-                      display: 'flex',
-                      alignItems: 'center',
-                      mb: 2
-                    }}>
-                      <StarIcon sx={{ mr: 2, fontSize: '2.5rem', color: '#fbbf24' }} />
+
+                  <Grid item size={{ xs: 12, md: 6 }}>
+                    <Typography
+                      variant="h4"
+                      gutterBottom
+                      sx={{
+                        fontWeight: 800,
+                        display: "flex",
+                        alignItems: "center",
+                        mb: 2,
+                      }}
+                    >
+                      <StarIcon
+                        sx={{ mr: 2, fontSize: "2.5rem", color: "#fbbf24" }}
+                      />
                       {employee.firstName} {employee.lastName}
                     </Typography>
-                    
-                    <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}
+                    >
                       <Chip
                         icon={<WorkIcon />}
-                        label={employee.roleName || 'לא הוזן תפקיד'}
+                        label={employee.roleName || "לא הוזן תפקיד"}
                         sx={{
                           backgroundColor: getRoleColor(employee.roleName),
-                          color: 'white',
+                          color: "white",
                           fontWeight: 700,
-                          fontSize: '1rem',
+                          fontSize: "1rem",
                           px: 2,
                           py: 1,
-                          height: 'auto'
+                          height: "auto",
                         }}
                       />
-                     
+
                       <Chip
-                        icon={employee.isActive ? <CelebrationIcon /> : <SecurityIcon />}
-                        label={employee.isActive ? ' פעיל' : ' לא פעיל'}
-                        color={employee.isActive ? 'success' : 'error'}
-                        sx={{ 
+                        icon={
+                          employee.isActive ? (
+                            <CelebrationIcon />
+                          ) : (
+                            <SecurityIcon />
+                          )
+                        }
+                        label={employee.isActive ? " פעיל" : " לא פעיל"}
+                        color={employee.isActive ? "success" : "error"}
+                        sx={{
                           fontWeight: 700,
-                          fontSize: '1rem',
+                          fontSize: "1rem",
                           px: 2,
                           py: 1,
-                          height: 'auto'
+                          height: "auto",
                         }}
                       />
                     </Stack>
-                    
-                    <Typography variant="h6" sx={{ 
-                      opacity: 0.9, 
-                      fontSize: '1.3rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
+
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: "1.3rem",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
                       <EventIcon sx={{ mr: 1 }} />
                       ותק: {calculateSeniority(employee.startDate)}
                     </Typography>
                   </Grid>
-                  
-                  <Grid item size={{xs:12 , md:3 }} textAlign="center">
+
+                  <Grid item size={{ xs: 12, md: 3 }} textAlign="center">
                     {canEdit && (
                       <Button
                         variant="contained"
-                        
-  onClick={() => navigate(`/employees/edit/${employee.employeeId}`)}
+                        onClick={() =>
+                          navigate(`/employees/edit/${employee.employeeId}`)
+                        }
                         sx={{
-                          backgroundColor: 'rgba(255,255,255,0.2)',
-                          color: 'white',
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          backdropFilter: 'blur(10px)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255,255,255,0.3)',
-                            transform: 'translateY(-3px) scale(1.05)',
-                            boxShadow: '0 15px 35px rgba(0,0,0,0.2)'
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                          color: "white",
+                          border: "2px solid rgba(255,255,255,0.3)",
+                          backdropFilter: "blur(10px)",
+                          "&:hover": {
+                            backgroundColor: "rgba(255,255,255,0.3)",
+                            transform: "translateY(-3px) scale(1.05)",
+                            boxShadow: "0 15px 35px rgba(0,0,0,0.2)",
                           },
                           borderRadius: 3,
                           px: 4,
                           py: 2,
-                          fontSize: '1.1rem',
-                          fontWeight: 700
+                          fontSize: "1.1rem",
+                          fontWeight: 700,
                         }}
                       >
                         ✏️ עריכת פרטים
@@ -1127,54 +1158,57 @@ const EmployeeProfile = () => {
 
             {/* Main Tabs */}
             <Fade in timeout={1000}>
-              <Paper sx={{ 
-                borderRadius: 4, 
-                overflow: 'hidden', 
-                mb: 4,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '3px',
-                  background: 'linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)',
-                }
-              }}>
-                <Tabs 
-                  value={currentTab} 
+              <Paper
+                sx={{
+                  borderRadius: 4,
+                  overflow: "hidden",
+                  mb: 4,
+                  background: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "3px",
+                    background:
+                      "linear-gradient(90deg, #4cb5c3, #ff7043, #10b981, #4cb5c3)",
+                  },
+                }}
+              >
+                <Tabs
+                  value={currentTab}
                   onChange={(e, newValue) => setCurrentTab(newValue)}
                   variant="fullWidth"
                   sx={{
-                    borderBottom: '2px solid rgba(76, 181, 195, 0.1)',
-                    backgroundColor: 'rgba(76, 181, 195, 0.05)',
-                    '& .MuiTab-root': {
-                      fontSize: '1.1rem',
+                    borderBottom: "2px solid rgba(76, 181, 195, 0.1)",
+                    backgroundColor: "rgba(76, 181, 195, 0.05)",
+                    "& .MuiTab-root": {
+                      fontSize: "1.1rem",
                       fontWeight: 700,
                       py: 3,
-                      transition: 'all 0.3s ease',
-                      borderBottom: '4px solid transparent', 
-                      '&.Mui-selected': {
-                        color: '#2a8a95 !important',
-                        background: 'rgba(76, 181, 195, 0.1)',
-                        borderBottom: '4px solid #4cb5c3'
-                      }
+                      transition: "all 0.3s ease",
+                      borderBottom: "4px solid transparent",
+                      "&.Mui-selected": {
+                        color: "#2a8a95 !important",
+                        background: "rgba(76, 181, 195, 0.1)",
+                        borderBottom: "4px solid #4cb5c3",
+                      },
                     },
-                    '& .MuiTabs-indicator': {
-                      display: 'none'
-                    }
+                    "& .MuiTabs-indicator": {
+                      display: "none",
+                    },
                   }}
                 >
                   <Tab label="📋 מידע כללי" />
                   <Tab label="📁 מסמכים וקבצים" />
                   {/* add login details tab*/}
-                  {(currentUser.role === 'מנהל/ת' || 
-  currentUser.role === 'admin' || 
-   currentUser.id === employee.employeeId) && (
+                  {(currentUser.role === "מנהל/ת" ||
+                    currentUser.role === "admin" ||
+                    currentUser.id === employee.employeeId) && (
                     <Tab label="🔐 פרטי התחברות" />
                   )}
                 </Tabs>
@@ -1186,56 +1220,124 @@ const EmployeeProfile = () => {
                     <Fade in timeout={500}>
                       <Box>
                         <Grid container spacing={4}>
-                           {/* Personal Details */}
-                          <Grid item size={{xs:12 , md:6}}>
+                          {/* Personal Details */}
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
-                                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
+                                  <Typography
+                                    variant="h6"
+                                    color="primary.main"
+                                    sx={{ fontWeight: 700, fontSize: "1.3rem" }}
+                                  >
                                     👤 פרטים אישיים
                                   </Typography>
                                 </SectionHeader>
-                                
+
                                 <Stack spacing={3}>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(76, 181, 195, 0.05)' }}>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(76, 181, 195, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         📧 דוא"ל
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#2a8a95' }}>
-                                        {employee.email || 'לא הוזן'}
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#2a8a95" }}
+                                      >
+                                        {employee.email || "לא הוזן"}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(255, 112, 67, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(255, 112, 67, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         📱 טלפון נייד
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#c63f17' }}>
-                                        {employee.mobilePhone || 'לא הוזן'}
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#c63f17" }}
+                                      >
+                                        {employee.mobilePhone || "לא הוזן"}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(16, 185, 129, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(16, 185, 129, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         🏠 עיר מגורים
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#059669' }}>
-                                        {employee.cityName || 'לא הוזן'}
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#059669" }}
+                                      >
+                                        {employee.cityName || "לא הוזן"}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(245, 158, 11, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(245, 158, 11, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         🎂 תאריך לידה
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#d97706' }}>
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#d97706" }}
+                                      >
                                         {formatDate(employee.birthDate)}
                                       </Typography>
                                     </Box>
@@ -1246,61 +1348,133 @@ const EmployeeProfile = () => {
                           </Grid>
 
                           {/* Work Details */}
-                          <Grid item size={{xs:12 , md:6}}>
+                          <Grid item size={{ xs: 12, md: 6 }}>
                             <InfoCard>
                               <CardContent sx={{ p: 4 }}>
                                 <SectionHeader>
-                                  <Typography variant="h6" color="secondary.main" sx={{ fontWeight: 700, fontSize: '1.3rem' }}>
+                                  <Typography
+                                    variant="h6"
+                                    color="secondary.main"
+                                    sx={{ fontWeight: 700, fontSize: "1.3rem" }}
+                                  >
                                     💼 פרטי עבודה
                                   </Typography>
                                 </SectionHeader>
-                                
+
                                 <Stack spacing={3}>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(76, 181, 195, 0.05)' }}>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(76, 181, 195, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         🎯 תפקיד
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#2a8a95' }}>
-                                        {employee.roleName || 'לא הוזן'}
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#2a8a95" }}
+                                      >
+                                        {employee.roleName || "לא הוזן"}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(255, 112, 67, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(255, 112, 67, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         🆔 מספר רישיון
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#c63f17' }}>
-                                        {employee.licenseNum || 'לא הוזן'}
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#c63f17" }}
+                                      >
+                                        {employee.licenseNum || "לא הוזן"}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(16, 185, 129, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(16, 185, 129, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         📅 תחילת עבודה
                                       </Typography>
-                                      <Typography variant="h6" fontWeight={600} sx={{ color: '#059669' }}>
+                                      <Typography
+                                        variant="h6"
+                                        fontWeight={600}
+                                        sx={{ color: "#059669" }}
+                                      >
                                         {formatDate(employee.startDate)}
                                       </Typography>
                                     </Box>
                                   </Box>
-                                  
-                                  <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderRadius: 2, background: 'rgba(245, 158, 11, 0.05)' }}>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      p: 2,
+                                      borderRadius: 2,
+                                      background: "rgba(245, 158, 11, 0.05)",
+                                    }}
+                                  >
                                     <Box>
-                                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        fontWeight={600}
+                                      >
                                         🔐 סטטוס
                                       </Typography>
                                       <Chip
-                                        label={employee.isActive ? '✅ עובד פעיל' : '❌ עובד לא פעיל'}
-                                        color={employee.isActive ? 'success' : 'error'}
+                                        label={
+                                          employee.isActive
+                                            ? "✅ עובד פעיל"
+                                            : "❌ עובד לא פעיל"
+                                        }
+                                        color={
+                                          employee.isActive
+                                            ? "success"
+                                            : "error"
+                                        }
                                         size="medium"
-                                        sx={{ 
+                                        sx={{
                                           fontWeight: 700,
-                                          fontSize: '1rem'
+                                          fontSize: "1rem",
                                         }}
                                       />
                                     </Box>
@@ -1330,25 +1504,24 @@ const EmployeeProfile = () => {
                   )}
 
                   {/* Login Details */}
-                  {currentTab === 2 && (currentUser.role === 'מנהל/ת' || 
-  currentUser.role === 'admin' || 
-   currentUser.id === employee.employeeId) && (
-                    <Fade in timeout={500}>
-                      <Box>
-                        <LoginDetailsUpdateForm 
-                          employee={employee}
-                          onSuccess={() => {
-                            // 
-                          }}
-                        />
-                      </Box>
-                    </Fade>
-                  )}
+                  {currentTab === 2 &&
+                    (currentUser.role === "מנהל/ת" ||
+                      currentUser.role === "admin" ||
+                      currentUser.id === employee.employeeId) && (
+                      <Fade in timeout={500}>
+                        <Box>
+                          <LoginDetailsUpdateForm
+                            employee={employee}
+                            onSuccess={() => {
+                              //
+                            }}
+                          />
+                        </Box>
+                      </Fade>
+                    )}
                 </Box>
               </Paper>
             </Fade>
-
-    
           </Container>
         </FullScreenContainer>
       </Box>

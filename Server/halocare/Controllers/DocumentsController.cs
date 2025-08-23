@@ -23,6 +23,177 @@ namespace halocare.Controllers
             _documentService = new DocumentService(configuration);
             _uploadsBasePath = configuration.GetValue<string>("UploadsBasePath") ??
                                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
+
+
+
+        }
+
+        [HttpGet("content-by-path")]
+        public ActionResult GetDocumentContentByPath([FromQuery] string path)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(path))
+                {
+                    return BadRequest("נדרש נתיב למסמך");
+                }
+
+                // דיבוג
+                var debugInfo = new
+                {
+                    ReceivedPath = path,
+                    DecodedPath = Uri.UnescapeDataString(path),
+                    UploadsBasePath = _uploadsBasePath,
+                    FullPath = Path.Combine(_uploadsBasePath, Uri.UnescapeDataString(path).Replace("/", "\\")),
+                    FileExists = (Path.Combine(_uploadsBasePath, Uri.UnescapeDataString(path).Replace("/", "\\")))
+                };
+
+                Console.WriteLine($"Debug Info: {System.Text.Json.JsonSerializer.Serialize(debugInfo)}");
+
+                byte[] fileContent = _documentService.GetDocumentContentByPath(path);
+                string contentType = GetContentTypeFromPath(path);
+                return File(fileContent, contentType);
+            }
+            catch (FileNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message, path = path });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message,
+                    path = path,
+                    uploadsBase = _uploadsBasePath
+                });
+            }
+        }
+
+        [HttpGet("find-file")]
+        public ActionResult FindFile([FromQuery] string fileName)
+        {
+            try
+            {
+                var results = new List<string>();
+
+                // חפש בכל התיקיות
+                if (Directory.Exists(_uploadsBasePath))
+                {
+                    var files = Directory.GetFiles(_uploadsBasePath, fileName, SearchOption.AllDirectories);
+                    results.AddRange(files.Select(f => f.Replace(_uploadsBasePath, "UPLOADS_ROOT")));
+                }
+
+                return Ok(new
+                {
+                    SearchedFile = fileName,
+                    Found = results.Count > 0,
+                    Locations = results,
+                    UploadsPath = _uploadsBasePath
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+        [HttpGet("list-all-images")]
+        public ActionResult ListAllImages()
+        {
+            try
+            {
+                var allImages = new
+                {
+                    EmployeeImages = Directory.Exists(Path.Combine(_uploadsBasePath, "employees", "pictures"))
+                        ? Directory.GetFiles(Path.Combine(_uploadsBasePath, "employees", "pictures"), "*.jpg")
+                            .Concat(Directory.GetFiles(Path.Combine(_uploadsBasePath, "employees", "pictures"), "*.jpeg"))
+                            .Concat(Directory.GetFiles(Path.Combine(_uploadsBasePath, "employees", "pictures"), "*.png"))
+                            .Select(Path.GetFileName)
+                            .ToList()
+                        : new List<string>(),
+
+                    KidsProfileImages = new List<object>()
+                };
+
+                // חפש תמונות בתיקיות הילדים
+                var kidsPath = Path.Combine(_uploadsBasePath, "kids");
+                if (Directory.Exists(kidsPath))
+                {
+                    foreach (var kidFolder in Directory.GetDirectories(kidsPath))
+                    {
+                        var profilePath = Path.Combine(kidFolder, "profile");
+                        if (Directory.Exists(profilePath))
+                        {
+                            var images = Directory.GetFiles(profilePath)
+                                .Select(f => new
+                                {
+                                    FolderName = Path.GetFileName(kidFolder),
+                                    FileName = Path.GetFileName(f),
+                                    RelativePath = $"kids/{Path.GetFileName(kidFolder)}/profile/{Path.GetFileName(f)}"
+                                });
+                            ((List<object>)allImages.KidsProfileImages).AddRange(images);
+                        }
+                    }
+                }
+
+                return Ok(allImages);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("check-structure")]
+        public ActionResult CheckFolderStructure()
+        {
+            try
+            {
+                var result = new
+                {
+                    UploadsPath = _uploadsBasePath,
+                    UploadsExists = Directory.Exists(_uploadsBasePath),
+
+                    // בדיקת תיקיית employees
+                    EmployeesFolder = new
+                    {
+                        Path = Path.Combine(_uploadsBasePath, "employees"),
+                        Exists = Directory.Exists(Path.Combine(_uploadsBasePath, "employees")),
+                        SubFolders = Directory.Exists(Path.Combine(_uploadsBasePath, "employees"))
+                            ? Directory.GetDirectories(Path.Combine(_uploadsBasePath, "employees")).Select(Path.GetFileName)
+                            : null,
+                        PicturesFolder = Directory.Exists(Path.Combine(_uploadsBasePath, "employees", "pictures")),
+                        PictureFiles = Directory.Exists(Path.Combine(_uploadsBasePath, "employees", "pictures"))
+                            ? Directory.GetFiles(Path.Combine(_uploadsBasePath, "employees", "pictures")).Take(5).Select(Path.GetFileName)
+                            : null
+                    },
+
+                    // בדיקת תיקיית kids
+                    KidsFolder = new
+                    {
+                        Path = Path.Combine(_uploadsBasePath, "kids"),
+                        Exists = Directory.Exists(Path.Combine(_uploadsBasePath, "kids")),
+                        SubFolders = Directory.Exists(Path.Combine(_uploadsBasePath, "kids"))
+                            ? Directory.GetDirectories(Path.Combine(_uploadsBasePath, "kids")).Take(5).Select(Path.GetFileName)
+                            : null
+                    },
+
+                    // כל הקבצים והתיקיות ישירות תחת uploads
+                    RootContents = Directory.Exists(_uploadsBasePath)
+                        ? new
+                        {
+                            Folders = Directory.GetDirectories(_uploadsBasePath).Select(Path.GetFileName),
+                            Files = Directory.GetFiles(_uploadsBasePath).Select(Path.GetFileName)
+                        }
+                        : null
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // GET: api/Documents
@@ -135,28 +306,28 @@ namespace halocare.Controllers
         }
 
         // In DocumentsController
-        [HttpGet("content-by-path")]
-        public ActionResult GetDocumentContentByPath([FromQuery] string path)
-        {
-            Console.WriteLine(path);
-            try
-            {
-                if (string.IsNullOrEmpty(path))
-                {
-                    return BadRequest("נדרש נתיב למסמך");
-                }
+        //[HttpGet("content-by-path")]
+        //public ActionResult GetDocumentContentByPath([FromQuery] string path)
+        //{
+        //    Console.WriteLine(path);
+        //    try
+        //    {
+        //        if (string.IsNullOrEmpty(path))
+        //        {
+        //            return BadRequest("נדרש נתיב למסמך");
+        //        }
 
-                byte[] fileContent = _documentService.GetDocumentContentByPath(path);
+        //        byte[] fileContent = _documentService.GetDocumentContentByPath(path);
 
-                string contentType = GetContentTypeFromPath(path);
+        //        string contentType = GetContentTypeFromPath(path);
 
-                return File(fileContent, contentType);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        //        return File(fileContent, contentType);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
 
         // POST: api/Documents/upload
         [HttpPost("upload")]

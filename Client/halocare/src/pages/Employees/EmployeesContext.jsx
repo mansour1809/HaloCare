@@ -1,6 +1,6 @@
 // src/contexts/EmployeesContext.jsx
 import { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import axios from '../../components/common/axiosConfig';
+import axios, { baseURL } from '../../components/common/axiosConfig';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { fetchCities } from '../../Redux/features/citiesSlice';
@@ -276,7 +276,7 @@ export const EmployeesProvider = ({ children }) => {
         password,
         firstName,
         lastName,
-        loginUrl: window.location.origin + "/#/login",
+        loginUrl: `${baseURL}/#/login`,
       });
 
       // Success email message

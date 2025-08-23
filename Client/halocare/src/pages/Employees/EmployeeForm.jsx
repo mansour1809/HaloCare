@@ -376,15 +376,10 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const { employeeId } = useParams();
+  const [existingEmployee, setExistingEmployee] = useState({});
 
 
-
-  // const isEditMode = Boolean(existingEmployee);
-  const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
-  const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
-
-  
-  const { 
+ const { 
     addEmployee, 
     updateEmployee,
     sendWelcomeEmail, 
@@ -395,11 +390,52 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
     cities,
   } = useEmployees();
   
-  const existingEmployee = employees.find(emp => emp.employeeId === parseInt(employeeId));
+  useEffect(() => {
+    if (employeeId) {
+      const employee = employees.find(emp => emp.employeeId === parseInt(employeeId));
+      setExistingEmployee(employee);
+    }
+  }, [employeeId, employees]);
+
+useEffect(() => {
+  if (employeeId && employees.length > 0) {
+    const employee = employees.find(emp => emp.employeeId === parseInt(employeeId));
+    if (employee) {
+      setExistingEmployee(employee);
+      setFormData({
+        employeeId: employee.employeeId,
+        firstName: employee.firstName || '',
+        lastName: employee.lastName || '',
+        email: employee.email || '',
+        mobilePhone: employee.mobilePhone || '',
+        cityName: employee.cityName || '',
+        birthDate: employee.birthDate ? new Date(employee.birthDate) : null,
+        licenseNum: employee.licenseNum || '',
+        startDate: employee.startDate ? new Date(employee.startDate) : new Date(),
+        roleName: employee.roleName || '',
+        classId: employee.classId || '',
+        password: '',
+        isActive: employee.isActive !== undefined ? employee.isActive : true,
+        photo: employee.photo || '',
+      });
+    }
+  } else if (!employeeId) {
+    setExistingEmployee({});
+    setFormData(initialFormData);
+  }
+}, [employeeId, employees, isEditMode])
+
+  // const isEditMode = Boolean(existingEmployee);
+  const pageTitle = isEditMode ? "עריכת פרטי עובד" : "קליטת עובד חדש";
+  const submitButtonText = isEditMode ? "✏️ שמור שינויים" : "💾 הוספת עובד חדש";
+
+
+
+
   // Form state 
   const [formData, setFormData] = useState(
     isEditMode ? {
-      employeeId: existingEmployee.employeeId,
+      employeeId: existingEmployee.employeeId || employeeId,
       firstName: existingEmployee.firstName || '',
       lastName: existingEmployee.lastName || '',
       email: existingEmployee.email || '',
@@ -415,6 +451,7 @@ const EmployeeForm = ({ onSubmitSuccess, isEditMode = false }) => {
       photo: existingEmployee.photo || '',  
     } : initialFormData
   );
+
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);

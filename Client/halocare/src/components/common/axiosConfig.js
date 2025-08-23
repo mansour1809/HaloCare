@@ -1,9 +1,9 @@
 // src/components/common/axiosConfig.js
 import axios from 'axios';
+import { Navigate } from 'react-router-dom';
 
 // Set the base URL
 // axios.defaults.baseURL = 'https://localhost:7225/api';
-// axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/tes2/tar1/api';
 axios.defaults.baseURL = 'https://proj.ruppin.ac.il/bgroup3/prod/api';
 
 // 🔥 List of public endpoints that do not require a token
@@ -40,10 +40,10 @@ axios.interceptors.request.use(
 
 // Handle authentication errors (401)
 axios.interceptors.response.use(
+  
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // const navigate = useNavigate();
 
       // 🔥 Extended check for public pages
       const currentPath = window.location.pathname + window.location.hash;
@@ -52,7 +52,10 @@ axios.interceptors.response.use(
 
       // 🔥 Redirect to login only if it's not a public page
       if (!isPublicPage) {
-        window.location.href = '/bgroup3/prod/#/login';
+        // window.location.href = `${window.location.origin}/bgroup3/prod/#/login`;
+        window.location.href = `${window.location.origin}/#/login`;
+        // const navigate = useNavigate();
+        // navigate('/login');
       }
 
       return Promise.reject({ silent: true });

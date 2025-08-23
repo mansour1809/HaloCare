@@ -51,7 +51,7 @@ namespace halocare
 
             builder.Services.AddScoped<IKidOnboardingRepository, KidOnboardingRepository>();
             builder.Services.AddScoped<IKidOnboardingService, KidOnboardingService>();
-
+            builder.Services.AddScoped<DocumentService>();
             builder.Services.AddScoped<KidRepository>();
             builder.Services.AddScoped<AnswerToQuestionRepository>();
             builder.Services.AddScoped<ParentService>(); // אם זה לא רשום כבר
@@ -73,10 +73,10 @@ namespace halocare
             var uploadsPath = builder.Configuration.GetValue<string>("UploadsBasePath");
             var tempPath = builder.Configuration.GetValue<string>("TempFilesPath");
 
-            if (!string.IsNullOrEmpty(uploadsPath) && !Directory.Exists(uploadsPath))
-            {
-                Directory.CreateDirectory(uploadsPath);
-            }
+            //if (!string.IsNullOrEmpty(uploadsPath) && !Directory.Exists(uploadsPath))
+            //{
+            //    Directory.CreateDirectory(uploadsPath);
+            //}
 
             if (!string.IsNullOrEmpty(tempPath) && !Directory.Exists(tempPath))
             {
@@ -85,9 +85,11 @@ namespace halocare
 
             builder.Services.AddHttpClient();
 
+
             var app = builder.Build();
+
             app.UseDefaultFiles();
-            app.UseStaticFiles();  
+            app.UseStaticFiles();
 
             // Configure the HTTP request pipeline.
             if (true)
@@ -98,18 +100,16 @@ namespace halocare
 
             app.UseHttpsRedirection();
             app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/api"),
-    appBuilder => {
-        appBuilder.UseMiddleware<ErrorHandlingMiddleware>();
-    });
+                appBuilder => {
+                    appBuilder.UseMiddleware<ErrorHandlingMiddleware>();
+                });
 
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.MapControllers();
-
-            app.MapFallbackToFile("index.html");
 
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -117,6 +117,9 @@ namespace halocare
                     Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
                 RequestPath = "/uploads"
             });
+
+            app.MapFallbackToFile("index.html");
+
             app.Run();
         }
     }

@@ -5,14 +5,10 @@ import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 
 // Minimalist and clean icons
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import AssessmentIcon from '@mui/icons-material/Assessment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import GroupIcon from '@mui/icons-material/Group';
-import EventIcon from '@mui/icons-material/Event';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import { useAuth } from '../login/AuthContext.jsx';
 

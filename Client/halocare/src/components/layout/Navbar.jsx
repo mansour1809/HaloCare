@@ -141,8 +141,8 @@ const Navbar = () => {
   };
 
   const userSettings = [
-    { name: 'פרופיל', icon: <PersonIcon />, action: () => window.location.href = '/#/employees/profile/' + selectedEmployeeId },
-    { name: 'הגדרות מערכת', icon: <SettingsIcon />, action: () => window.location.href = '/#/settings' },
+    { name: 'פרופיל', icon: <PersonIcon />, action: () => navigate(`/employees/profile/` + selectedEmployeeId) },
+    { name: 'הגדרות מערכת', icon: <SettingsIcon />, action: () => navigate(`/settings`) },
     { name: 'התנתקות', icon: <LogoutIcon />, action: () => handleLogout() }
   ];
   

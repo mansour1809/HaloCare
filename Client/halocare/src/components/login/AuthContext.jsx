@@ -2,6 +2,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from '../common/axiosConfig';
 import PropTypes from 'prop-types';
+// import { Navigate } from 'react-router-dom';
 
 // Creating the context
 export const AuthContext = createContext(null);
@@ -10,6 +11,7 @@ export const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  // const navigate = Navigate();
   // State variables for authentication
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -86,7 +88,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setCurrentUser(null);
     setIsAuthenticated(false);
-    window.location.href = '/#/login';
+    // window.location.href = '/#/login';
+    // navigate('/login');
   };
 
   // Function to request password reset
