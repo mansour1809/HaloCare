@@ -44,7 +44,6 @@ axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-
       // 🔥 Extended check for public pages
       const currentPath = window.location.pathname + window.location.hash;
       const publicPaths = ['/login', '/reset-password', '/parent-form'];
@@ -53,9 +52,9 @@ axios.interceptors.response.use(
       // 🔥 Redirect to login only if it's not a public page
       if (!isPublicPage) {
         // window.location.href = `${window.location.origin}/bgroup3/prod/#/login`;
-        window.location.href = `${window.location.origin}/#/login`;
-        // const navigate = useNavigate();
-        // navigate('/login');
+        window.location.href = `https://proj.ruppin.ac.il/bgroup3/prod/#/login`;
+        // window.location.href = `http://localhost:5173/#/login`;
+
       }
 
       return Promise.reject({ silent: true });

@@ -14,7 +14,7 @@ namespace halocare.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class TasheReportsController : ControllerBase
     {
         private readonly TasheReportService _tasheReportService;

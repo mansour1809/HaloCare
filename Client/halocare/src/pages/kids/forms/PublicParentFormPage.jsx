@@ -244,7 +244,6 @@ const handleSubmit = async () => {
     
     // אם הטופס מולא בשפה אחרת, נתרגם חזרה לעברית
     if (currentLanguage !== 'he') {
-      // מסננים רק תשובות עם תוכן
       const answersToTranslate = Object.entries(answers)
         .filter(([_, answerData]) => answerData.answer || answerData.other)
         .map(([questionNo, answerData]) => ({
@@ -263,7 +262,6 @@ const handleSubmit = async () => {
           
           
           if (translateResponse.data.success && translateResponse.data.translatedAnswers) {
-            // יצירת מפה חדשה של תשובות מתורגמות
             const translatedAnswersMap = {};
             
             translateResponse.data.translatedAnswers.forEach(item => {

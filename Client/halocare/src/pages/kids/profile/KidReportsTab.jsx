@@ -662,36 +662,33 @@ const KidReportsTab = ({ selectedKid }) => {
 
   return (
     <MainContainer dir="rtl">
-      {error && (
-        <StyledAlert severity="error">
-          {error}
-        </StyledAlert>
-      )}
+      {error && <StyledAlert severity="error">{error}</StyledAlert>}
 
       {/* Statistics Widget */}
       {selectedKid?.id && (
-        <ReportsStatisticsWidget 
-          kidId={selectedKid.id} 
-          kidName={kidName}
-        />
+        <ReportsStatisticsWidget kidId={selectedKid.id} kidName={kidName} />
       )}
 
       <HeaderBox>
         <AnimatedBrainIcon />
         <Box sx={{ flex: 1 }}>
-          <Typography 
-            variant="h4" 
+          <Typography
+            variant="h4"
             fontWeight="bold"
             sx={{
-              background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              background: "linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
             דוחות תש"ה
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            sx={{ fontWeight: 500 }}
+          >
             {kidName} • דוחות התפתחותיים חכמים
           </Typography>
         </Box>
@@ -711,7 +708,7 @@ const KidReportsTab = ({ selectedKid }) => {
         <FilterBar>
           <Grid container spacing={2} alignItems="center">
             {/* Search */}
-            <Grid item size={{xs:12 , md:3}}>
+            <Grid item size={{ xs: 12, md: 3 }}>
               <StyledTextField
                 fullWidth
                 size="small"
@@ -721,14 +718,14 @@ const KidReportsTab = ({ selectedKid }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ color: 'primary.main' }} />
+                      <SearchIcon sx={{ color: "primary.main" }} />
                     </InputAdornment>
                   ),
                   endAdornment: searchTerm && (
                     <InputAdornment position="end">
                       <IconButton
                         size="small"
-                        onClick={() => setSearchTerm('')}
+                        onClick={() => setSearchTerm("")}
                         sx={{ mr: -1 }}
                       >
                         <ClearIcon fontSize="small" />
@@ -740,7 +737,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Grid>
 
             {/* Status Filter */}
-            <Grid item size={{xs:12,sm:6,md:2}}>
+            <Grid item size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>סטטוס</InputLabel>
                 <StyledSelect
@@ -750,13 +747,13 @@ const KidReportsTab = ({ selectedKid }) => {
                 >
                   <MenuItem value="all">הכל</MenuItem>
                   <MenuItem value="approved">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <ApprovedIcon fontSize="small" color="success" />
                       מאושרים
                     </Box>
                   </MenuItem>
                   <MenuItem value="pending">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PendingIcon fontSize="small" color="warning" />
                       ממתינים
                     </Box>
@@ -766,7 +763,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Grid>
 
             {/* Period Filter */}
-            <Grid item size={{xs:12,sm:6,md:2}}>
+            <Grid item size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>תקופה</InputLabel>
                 <StyledSelect
@@ -784,7 +781,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Grid>
 
             {/* Sort */}
-            <Grid item size={{xs:12,sm:6,md:2}}>
+            <Grid item size={{ xs: 12, sm: 6, md: 2 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>מיון</InputLabel>
                 <StyledSelect
@@ -803,7 +800,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Grid>
 
             {/* View Mode Toggle */}
-            <Grid item size={{xs:12,sm:6,md:2}}>
+            <Grid item size={{ xs: 12, sm: 6, md: 2 }}>
               <StyledToggleButtonGroup
                 value={viewMode}
                 exclusive
@@ -820,7 +817,7 @@ const KidReportsTab = ({ selectedKid }) => {
             </Grid>
 
             {/* Clear Filters */}
-            <Grid item size={{xs:12,sm:6,md:1}}>
+            <Grid item size={{ xs: 12, sm: 6, md: 1 }}>
               {hasActiveFilters && (
                 <Button
                   variant="outlined"
@@ -829,12 +826,12 @@ const KidReportsTab = ({ selectedKid }) => {
                   startIcon={<ClearIcon />}
                   sx={{
                     borderRadius: 12,
-                    borderColor: 'error.main',
-                    color: 'error.main',
-                    '&:hover': {
-                      borderColor: 'error.dark',
-                      background: 'rgba(244, 67, 54, 0.08)',
-                    }
+                    borderColor: "error.main",
+                    color: "error.main",
+                    "&:hover": {
+                      borderColor: "error.dark",
+                      background: "rgba(244, 67, 54, 0.08)",
+                    },
                   }}
                 >
                   נקה
@@ -845,35 +842,42 @@ const KidReportsTab = ({ selectedKid }) => {
 
           {/* Results Summary */}
           {hasActiveFilters && (
-            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                נמצאו {filteredAndSortedReports.length} דוחות מתוך {reports.length}
+                נמצאו {filteredAndSortedReports.length} דוחות מתוך{" "}
+                {reports.length}
               </Typography>
               {searchTerm && (
                 <Chip
                   size="small"
                   label={`חיפוש: "${searchTerm}"`}
-                  onDelete={() => setSearchTerm('')}
+                  onDelete={() => setSearchTerm("")}
                   sx={{ height: 24 }}
                 />
               )}
-              {statusFilter !== 'all' && (
+              {statusFilter !== "all" && (
                 <Chip
                   size="small"
-                  label={`סטטוס: ${statusFilter === 'approved' ? 'מאושרים' : 'ממתינים'}`}
-                  onDelete={() => setStatusFilter('all')}
+                  label={`סטטוס: ${
+                    statusFilter === "approved" ? "מאושרים" : "ממתינים"
+                  }`}
+                  onDelete={() => setStatusFilter("all")}
                   sx={{ height: 24 }}
                 />
               )}
-              {periodFilter !== 'all' && (
+              {periodFilter !== "all" && (
                 <Chip
                   size="small"
                   label={`תקופה: ${
-                    periodFilter === 'last30' ? '30 יום' :
-                    periodFilter === 'last90' ? '3 חודשים' :
-                    periodFilter === 'last180' ? '6 חודשים' : 'שנה'
+                    periodFilter === "last30"
+                      ? "30 יום"
+                      : periodFilter === "last90"
+                      ? "3 חודשים"
+                      : periodFilter === "last180"
+                      ? "6 חודשים"
+                      : "שנה"
                   }`}
-                  onDelete={() => setPeriodFilter('all')}
+                  onDelete={() => setPeriodFilter("all")}
                   sx={{ height: 24 }}
                 />
               )}
@@ -885,7 +889,7 @@ const KidReportsTab = ({ selectedKid }) => {
       {/* Reports Grid */}
       {filteredAndSortedReports.length === 0 && reports.length > 0 ? (
         <EmptyStateBox>
-          <SearchIcon sx={{ fontSize: 60, color: 'grey.300', mb: 2 }} />
+          <SearchIcon sx={{ fontSize: 60, color: "grey.300", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             לא נמצאו דוחות תואמים
           </Typography>
@@ -903,9 +907,9 @@ const KidReportsTab = ({ selectedKid }) => {
       ) : reports.length === 0 ? (
         <EmptyStateBox>
           <AnimatedEmptyIcon />
-          <Typography 
-            variant="h5" 
-            color="text.secondary" 
+          <Typography
+            variant="h5"
+            color="text.secondary"
             gutterBottom
             sx={{ fontWeight: 600 }}
           >
@@ -919,19 +923,19 @@ const KidReportsTab = ({ selectedKid }) => {
             size="large"
             startIcon={<AddIcon />}
             onClick={() => setGeneratorOpen(true)}
-            sx={{ 
-              px: 4, 
+            sx={{
+              px: 4,
               py: 1.5,
               borderRadius: 12,
-              borderColor: 'primary.main',
-              color: 'primary.main',
+              borderColor: "primary.main",
+              color: "primary.main",
               fontWeight: 600,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                borderColor: 'primary.dark',
-                background: 'rgba(76, 181, 195, 0.05)',
-                transform: 'translateY(-2px)',
-              }
+              transition: "all 0.3s ease",
+              "&:hover": {
+                borderColor: "primary.dark",
+                background: "rgba(76, 181, 195, 0.05)",
+                transform: "translateY(-2px)",
+              },
             }}
           >
             צרו דוח חדש
@@ -940,20 +944,32 @@ const KidReportsTab = ({ selectedKid }) => {
       ) : (
         <Grid container spacing={3}>
           {filteredAndSortedReports.map((report) => (
-            <Grid item size={{xs:12, lg:viewMode === 'list' ? 12 : 6}} key={report.reportId}>
+            <Grid
+              item
+              size={{ xs: 12, lg: viewMode === "list" ? 12 : 6 }}
+              key={report.reportId}
+            >
               <StyledCard>
                 <CardContent sx={{ flex: 1, p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography 
-                      variant="h6" 
-                      fontWeight="bold" 
-                      sx={{ 
-                        flex: 1, 
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      sx={{
+                        flex: 1,
                         mr: 1,
-                        background: 'linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)',
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
+                        background:
+                          "linear-gradient(45deg, #4cb5c3 30%, #2a8a95 90%)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
                       }}
                     >
                       {report.reportTitle}
@@ -961,116 +977,147 @@ const KidReportsTab = ({ selectedKid }) => {
                     {getStatusChip(report)}
                   </Box>
 
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
-                    <strong>תקופה:</strong> {formatDate(report.periodStartDate)} - {formatDate(report.periodEndDate)}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                    sx={{ fontWeight: 500 }}
+                  >
+                    <strong>תקופה:</strong> {formatDate(report.periodStartDate)}{" "}
+                    - {formatDate(report.periodEndDate)}
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
-                    <strong>נוצר על ידי:</strong> {report.generatedByEmployeeName}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                    sx={{ fontWeight: 500 }}
+                  >
+                    <strong>נוצר על ידי:</strong>{" "}
+                    {report.generatedByEmployeeName}
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 500 }}>
-                    <strong>תאריך יצירה:</strong> {formatDate(report.generatedDate)}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                    sx={{ fontWeight: 500 }}
+                  >
+                    <strong>תאריך יצירה:</strong>{" "}
+                    {formatDate(report.generatedDate)}
                   </Typography>
 
                   {report.isApproved && (
-                    <Typography variant="body2" sx={{ mt: 1, color: 'success.main', fontWeight: 600 }}>
-                      <strong>אושר על ידי:</strong> {report.approvedByEmployeeName}
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: 1, color: "success.main", fontWeight: 600 }}
+                    >
+                      <strong>אושר על ידי:</strong>{" "}
+                      {report.approvedByEmployeeName}
                       <br />
                       <strong>בתאריך:</strong> {formatDate(report.approvedDate)}
                     </Typography>
                   )}
 
                   {report.notes && (
-                    <Typography variant="body2" sx={{ 
-                      mt: 1, 
-                      fontStyle: 'italic',
-                      color: 'text.secondary',
-                      p: 1.5,
-                      background: 'rgba(76, 181, 195, 0.05)',
-                      borderRadius: 2,
-                      borderLeft: '3px solid',
-                      borderColor: 'primary.main'
-                    }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1,
+                        fontStyle: "italic",
+                        color: "text.secondary",
+                        p: 1.5,
+                        background: "rgba(76, 181, 195, 0.05)",
+                        borderRadius: 2,
+                        borderLeft: "3px solid",
+                        borderColor: "primary.main",
+                      }}
+                    >
                       <strong>הערות:</strong> {report.notes}
                     </Typography>
                   )}
                 </CardContent>
 
-                <CardActions sx={{ justifyContent: 'space-between', px: 3, pb: 3 }}>
+                <CardActions
+                  sx={{ justifyContent: "space-between", px: 3, pb: 3 }}
+                >
                   {/* View and download buttons */}
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
                       size="small"
                       variant="outlined"
                       startIcon={<ViewIcon />}
                       onClick={() => handleViewReport(report)}
-                      sx={{ 
+                      sx={{
                         mr: 1,
                         borderRadius: 10,
-                        borderColor: 'primary.main',
-                        color: 'primary.main',
+                        borderColor: "primary.main",
+                        color: "primary.main",
                         fontWeight: 600,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          borderColor: 'primary.dark',
-                          background: 'rgba(76, 181, 195, 0.05)',
-                          transform: 'translateY(-2px)',
-                        }
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          borderColor: "primary.dark",
+                          background: "rgba(76, 181, 195, 0.05)",
+                          transform: "translateY(-2px)",
+                        },
                       }}
                     >
                       צפייה
                     </Button>
-                    
-                    <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="הורדה כ-Word">
-                      <ActionIconButton 
-                        size="small" 
+
+                    <Tooltip
+                      placement="top"
+                      PopperProps={{
+                        disablePortal: true,
+                        modifiers: [
+                          {
+                            name: "flip",
+                            enabled: false,
+                          },
+                          {
+                            name: "preventOverflow",
+                            options: {
+                              boundary: "window",
+                            },
+                          },
+                        ],
+                      }}
+                      title="הורדה כ-Word"
+                    >
+                      <ActionIconButton
+                        size="small"
                         onClick={() => handleDownloadWord(report)}
                         color="primary"
                       >
                         <WordIcon />
                       </ActionIconButton>
                     </Tooltip>
-
-                   
                   </Box>
-                  
+
                   {/* Admin action buttons */}
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: "flex", gap: 1 }}>
                     {canEdit(report) && (
-                      <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="עריכת דוח">
-                        <ActionIconButton 
-                          size="small" 
+                      <Tooltip
+                        placement="top"
+                        PopperProps={{
+                          disablePortal: true,
+                          modifiers: [
+                            {
+                              name: "flip",
+                              enabled: false,
+                            },
+                            {
+                              name: "preventOverflow",
+                              options: {
+                                boundary: "window",
+                              },
+                            },
+                          ],
+                        }}
+                        title="עריכת דוח"
+                      >
+                        <ActionIconButton
+                          size="small"
                           onClick={() => handleEditClick(report)}
                           color="info"
                         >
@@ -1080,24 +1127,27 @@ const KidReportsTab = ({ selectedKid }) => {
                     )}
 
                     {canApprove(report) && (
-                      <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="אישור דוח">
-                        <ActionIconButton 
-                          size="small" 
+                      <Tooltip
+                        placement="top"
+                        PopperProps={{
+                          disablePortal: true,
+                          modifiers: [
+                            {
+                              name: "flip",
+                              enabled: false,
+                            },
+                            {
+                              name: "preventOverflow",
+                              options: {
+                                boundary: "window",
+                              },
+                            },
+                          ],
+                        }}
+                        title="אישור דוח"
+                      >
+                        <ActionIconButton
+                          size="small"
                           onClick={() => handleApprove(report)}
                           color="success"
                         >
@@ -1107,24 +1157,27 @@ const KidReportsTab = ({ selectedKid }) => {
                     )}
 
                     {canDelete(report) && (
-                      <Tooltip placement="top" 
-  PopperProps={{
-    disablePortal: true,
-    modifiers: [
-      {
-        name: 'flip',
-        enabled: false 
-      },
-      {
-        name: 'preventOverflow',
-        options: {
-          boundary: 'window', 
-        },
-      },
-    ],
-  }} title="מחיקת דוח">
-                        <ActionIconButton 
-                          size="small" 
+                      <Tooltip
+                        placement="top"
+                        PopperProps={{
+                          disablePortal: true,
+                          modifiers: [
+                            {
+                              name: "flip",
+                              enabled: false,
+                            },
+                            {
+                              name: "preventOverflow",
+                              options: {
+                                boundary: "window",
+                              },
+                            },
+                          ],
+                        }}
+                        title="מחיקת דוח"
+                      >
+                        <ActionIconButton
+                          size="small"
                           onClick={() => handleDeleteClick(report)}
                           color="error"
                         >
@@ -1149,11 +1202,15 @@ const KidReportsTab = ({ selectedKid }) => {
       />
 
       {/* Delete confirmation dialog */}
-      <StyledDialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <StyledDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitleStyled>אישור מחיקה</DialogTitleStyled>
         <DialogContent sx={{ p: 3 }}>
           <Typography sx={{ fontWeight: 500 }}>
-            האם אתם בטוחים שברצונכם למחוק את הדוח "{reportToDelete?.reportTitle}"?
+            האם אתם בטוחים שברצונכם למחוק את הדוח "{reportToDelete?.reportTitle}
+            "?
             <br />
             <Typography component="span" color="error" sx={{ fontWeight: 700 }}>
               פעולה זו אינה ניתנת לביטול.
@@ -1161,28 +1218,28 @@ const KidReportsTab = ({ selectedKid }) => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button 
+          <Button
             onClick={() => setDeleteDialogOpen(false)}
-            sx={{ 
+            sx={{
               borderRadius: 10,
               px: 3,
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             ביטול
           </Button>
-          <Button 
-            onClick={handleDeleteConfirm} 
-            color="error" 
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
             variant="contained"
-            sx={{ 
+            sx={{
               borderRadius: 10,
               px: 3,
               fontWeight: 600,
-              background: 'linear-gradient(45deg, #f44336 30%, #ef5350 90%)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
-              }
+              background: "linear-gradient(45deg, #f44336 30%, #ef5350 90%)",
+              "&:hover": {
+                background: "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)",
+              },
             }}
           >
             מחיקה

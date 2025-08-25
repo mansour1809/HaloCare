@@ -73,10 +73,6 @@ namespace halocare
             var uploadsPath = builder.Configuration.GetValue<string>("UploadsBasePath");
             var tempPath = builder.Configuration.GetValue<string>("TempFilesPath");
 
-            //if (!string.IsNullOrEmpty(uploadsPath) && !Directory.Exists(uploadsPath))
-            //{
-            //    Directory.CreateDirectory(uploadsPath);
-            //}
 
             if (!string.IsNullOrEmpty(tempPath) && !Directory.Exists(tempPath))
             {

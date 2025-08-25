@@ -1524,11 +1524,7 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                               label="🏥 קופת חולים"
                               MenuProps={{
     disablePortal: true,
-    PaperProps: {
-      sx: {
-        maxHeight: 300
-      }
-    }
+   
   }}
                               startAdornment={
                                 <InputAdornment position="start">
@@ -1562,11 +1558,6 @@ const PersonalInfoForm = ({ data, onUpdate = null, isEditMode = false }) => {
                                 label="📚 כיתה"
                                MenuProps={{
     disablePortal: true,
-    PaperProps: {
-      sx: {
-        maxHeight: 300
-      }
-    }
   }}
                                 startAdornment={
                                   <InputAdornment position="start">

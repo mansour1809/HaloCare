@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../components/common/axiosConfig';
 
-// יצירת דוח תש"ה חדש
 export const generateTasheReport = createAsyncThunk(
   'tasheReports/generateReport',
   async (reportData, { rejectWithValue }) => {
@@ -14,7 +13,6 @@ export const generateTasheReport = createAsyncThunk(
   }
 );
 
-// שליפת דוחות תש"ה לפי ילד
 export const fetchTasheReportsByKid = createAsyncThunk(
   'tasheReports/fetchByKid',
   async (kidId, { rejectWithValue }) => {
@@ -27,7 +25,6 @@ export const fetchTasheReportsByKid = createAsyncThunk(
   }
 );
 
-// שליפת טיפולים לתצוגה מקדימה
 export const fetchTreatmentsPreview = createAsyncThunk(
   'tasheReports/fetchTreatmentsPreview',
   async ({ kidId, startDate, endDate }, { rejectWithValue }) => {
@@ -42,7 +39,6 @@ export const fetchTreatmentsPreview = createAsyncThunk(
   }
 );
 
-// אישור דוח תש"ה
 export const approveTasheReport = createAsyncThunk(
   'tasheReports/approveReport',
   async ({ reportId, approvedByEmployeeId }, { rejectWithValue }) => {
@@ -58,7 +54,6 @@ export const approveTasheReport = createAsyncThunk(
   }
 );
 
-// מחיקת דוח תש"ה
 export const deleteTasheReport = createAsyncThunk(
   'tasheReports/deleteReport',
   async ({ reportId, deletedByEmployeeId }, { rejectWithValue }) => {
@@ -70,7 +65,7 @@ export const deleteTasheReport = createAsyncThunk(
     }
   }
 );
-// עדכון דוח תש"ה
+
 export const updateTasheReport = createAsyncThunk(
   'tasheReports/updateReport',
   async ({ reportId, reportData }, { rejectWithValue }) => {
@@ -84,7 +79,6 @@ export const updateTasheReport = createAsyncThunk(
 );
 
 
-// שליפת סטטיסטיקות דוחות
 export const fetchReportStatistics = createAsyncThunk(
   'tasheReports/fetchStatistics',
   async (kidId, { rejectWithValue }) => {
@@ -146,7 +140,7 @@ const tasheReportsSlice = createSlice({
       })
       .addCase(generateTasheReport.fulfilled, (state, action) => {
         state.generateStatus = 'succeeded';
-        state.reports.unshift(action.payload); // הוסף בתחילת הרשימה
+        state.reports.unshift(action.payload); 
         state.currentReport = action.payload;
       })
       .addCase(generateTasheReport.rejected, (state, action) => {
